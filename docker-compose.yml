@@ -1,0 +1,24 @@
+version: '3'
+services:
+  python:
+    build: .
+    container_name: amblema_${INSTANCE}_back
+    ports:
+      - $BACK_PORT:5000
+    environment:
+      INSTANCE: $INSTANCE
+      DB_URL: $DB_URL
+      SERVER_URL: $SERVER_URL
+      TESTING_DB_URL: $TESTING_DB_URL
+      JWT_SECRET_KEY: $JWT_SECRET_KEY
+    volumes:
+      - .:/home
+    networks:
+      - back_network
+      - db_network
+networks:
+  back_network:
+    driver: bridge
+  db_network:
+    external:
+      name: $DB_NETWORK

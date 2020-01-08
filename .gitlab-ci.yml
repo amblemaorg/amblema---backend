@@ -27,7 +27,7 @@ QA-testing:
     refs:
       - merge_requests
     variables:
-      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qa-stable*/
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qaestable*/
   script:
     - export INSTANCE="testing"
     - export BACK_PORT=$TESTING_BACK_PORT
@@ -38,10 +38,10 @@ QA-testing:
       mkdir -p $QA_PROJECT_DIR
     - fi
     - cd $QA_PROJECT_DIR
-    - git clone -b qa-stable --single-branch $CI_REPOSITORY_URL qa-testing
+    - git clone -b qaestable --single-branch $CI_REPOSITORY_URL qa-testing
     - else
     - cd $QA_PROJECT_DIR/qa-testing
-    - git pull $CI_REPOSITORY_URL qa-stable
+    - git pull $CI_REPOSITORY_URL qaestable
     - fi
     - cd $QA_PROJECT_DIR/qa-testing
     - docker-compose -p amblema_qa_testing up -d
@@ -58,7 +58,7 @@ Drop-QA-testing:
     - amblema-back
   only:
     refs:
-      - qa-stable
+      - qaestable
   when: manual
   script:
     - if docker ps --format '{{.Names}}' | grep -w amblema_testing_back &> /dev/null; then
@@ -76,7 +76,7 @@ Staging-testing:
     refs:
       - merge_requests
     variables:
-      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^staging-stable*/
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^staging*/
   script:
     - export INSTANCE="testing"
     - export BACK_PORT=$TESTING_BACK_PORT
@@ -87,10 +87,10 @@ Staging-testing:
       mkdir -p $STAGING_PROJECT_DIR
     - fi
     - cd $STAGING_PROJECT_DIR
-    - git clone -b staging-stable --single-branch $CI_REPOSITORY_URL staging-testing
+    - git clone -b staging --single-branch $CI_REPOSITORY_URL staging-testing
     - else
     - cd $STAGING_PROJECT_DIR/staging-testing
-    - git pull $CI_REPOSITORY_URL staging-stable
+    - git pull $CI_REPOSITORY_URL staging
     - fi
     - cd $STAGING_PROJECT_DIR/staging-testing
     - docker-compose -p amblema_staging_testing up -d
@@ -107,7 +107,7 @@ Drop-Staging-testing:
     - amblema-back
   only:
     refs:
-      - staging-stable
+      - staging
   when: manual
   script:
     - if docker ps --format '{{.Names}}' | grep -w amblema_testing_back &> /dev/null; then
@@ -123,7 +123,7 @@ qa-deploy:
     - amblema-back
   only:
     refs:
-      - qa-stable
+      - qaestable
   script:
     - export INSTANCE="qa"
     - export BACK_PORT=$QA_BACK_PORT
@@ -132,10 +132,10 @@ qa-deploy:
     - if ! [ -d $QA_PROJECT_DIR/$CI_PROJECT_NAME ]; then
     - mkdir -p $QA_PROJECT_DIR
     - cd $QA_PROJECT_DIR
-    - git clone -b qa-stable --single-branch $CI_REPOSITORY_URL $CI_PROJECT_NAME
+    - git clone -b qaestable --single-branch $CI_REPOSITORY_URL $CI_PROJECT_NAME
     - else
     - cd $QA_PROJECT_DIR/$CI_PROJECT_NAME
-    - git pull $CI_REPOSITORY_URL qa-stable
+    - git pull $CI_REPOSITORY_URL qaestable
     - fi
     - if ! docker ps --format '{{.Names}}' | grep -w $QA_CONTAINER_NAME &> /dev/null; then
     - cd $QA_PROJECT_DIR/$CI_PROJECT_NAME
@@ -150,7 +150,7 @@ qa-turn-down:
     - amblema-back
   only:
     refs:
-      - qa-stable
+      - qaestable
   when: manual
   script:
     - export INSTANCE="qa"
@@ -172,7 +172,7 @@ staging-deploy:
     - amblema-back
   only:
     refs:
-      - staging-stable
+      - staging
   script:
     - export INSTANCE="staging"
     - export BACK_PORT=$STAGING_BACK_PORT
@@ -181,10 +181,10 @@ staging-deploy:
     - if ! [ -d $STAGING_PROJECT_DIR/$CI_PROJECT_NAME ]; then
     - mkdir -p $STAGING_PROJECT_DIR
     - cd $STAGING_PROJECT_DIR
-    - git clone -b staging-stable --single-branch $CI_REPOSITORY_URL $CI_PROJECT_NAME
+    - git clone -b staging --single-branch $CI_REPOSITORY_URL $CI_PROJECT_NAME
     - else
     - cd $STAGING_PROJECT_DIR/$CI_PROJECT_NAME
-    - git pull $CI_REPOSITORY_URL staging-stable
+    - git pull $CI_REPOSITORY_URL staging
     - fi
     - if ! docker ps --format '{{.Names}}' | grep -w $STAGING_CONTAINER_NAME &> /dev/null; then
     - cd $STAGING_PROJECT_DIR/$CI_PROJECT_NAME
@@ -199,7 +199,7 @@ staging-turn-down:
     - amblema-back
   only:
     refs:
-      - staging-stable
+      - staging
   when: manual
   script:
     - export INSTANCE="staging"

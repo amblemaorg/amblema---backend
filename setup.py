@@ -14,6 +14,7 @@ setup(
         'PyJWT',
         'flask-jwt-extended',
         'flask-bcrypt',
-        'coverage'
+        'coverage',
+        'marshmallow'
     ]
 )

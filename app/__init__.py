@@ -11,6 +11,7 @@ from app.helpers.error_helpers import CustomApi
 from instance.config import app_config
 from app.helpers.error_helpers import RegisterNotFound, handleNotFound
 from app.controllers.state_controller import StateController, StateHandlerController
+from app.controllers.municipality_controller import MunicipalityController, MunicipalityHandlerController
 
 
 db = MongoEngine()
@@ -31,8 +32,21 @@ def create_app(config_instance):
     app.register_blueprint(auth_blueprint)
 
     api = CustomApi(app)
-    api.add_resource(StateController, '/states', '/states/')
-    api.add_resource(StateHandlerController, '/states/<string:stateId>',
-                                             '/states/<string:stateId>/')
+    api.add_resource(
+        StateController,
+        '/states',
+        '/states/')
+    api.add_resource(
+        StateHandlerController,
+        '/states/<string:stateId>',
+        '/states/<string:stateId>/')
+    api.add_resource(
+        MunicipalityController,
+        '/municipalities/<string:stateId>',
+        '/municipalities/<string:stateId>/')
+    api.add_resource(
+        MunicipalityHandlerController,
+        '/municipalities/<string:stateId>/<string:municipalityId>',
+        '/municipalities/<string:stateId>/<string:municipalityId>/')
 
     return app

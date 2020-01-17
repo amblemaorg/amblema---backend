@@ -13,25 +13,23 @@ from mongoengine import (
     DateTimeField,
     ObjectIdField,
     EmbeddedDocumentListField)
-from marshmallow import Schema, fields, pre_load
+from marshmallow import Schema, fields, pre_load, EXCLUDE
 
 from app.helpers.ma_schema_fields import MAPolygonField
 from app.helpers.ma_schema_validators import must_not_be_blank
 
+
 class Municipality(EmbeddedDocument):
     id = ObjectIdField(default=ObjectId)
-    name = StringField()
+    name = StringField(unique=True)
     polygon = PolygonField()
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
 
-    def clean(self):
-        self.updatedAt = datetime.utcnow()
-
 
 class State(DynamicDocument):
-    name = StringField()
+    name = StringField(unique=True)
     polygon = PolygonField()
     status = BooleanField(default=True)
     municipalities = EmbeddedDocumentListField(Municipality)
@@ -40,6 +38,7 @@ class State(DynamicDocument):
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
+
 
 
 """
@@ -57,17 +56,17 @@ class MunicipalitySchema(Schema):
     def process_input(self, data, **kwargs):
         data["name"] = data["name"].title()
         return data
-
-class MunicipalitySchemaUpdate(Schema):
-    name = fields.Str(validate=must_not_be_blank)
-    polygon = MAPolygonField()
+    
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
 
 class StateSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=must_not_be_blank)
     polygon = MAPolygonField()
-    municipalities = fields.List(fields.Nested(MunicipalitySchema()),dump_only=True)
+    municipalities = fields.List(fields.Nested(MunicipalitySchema(only=("id","name"))),dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 
@@ -75,8 +74,8 @@ class StateSchema(Schema):
     def process_input(self, data, **kwargs):
         data["name"] = data["name"].title()
         return data
+    
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
-
-class StateSchemaUpdate(Schema):
-    name = fields.Str(validate=must_not_be_blank)
-    polygon = MAPolygonField()

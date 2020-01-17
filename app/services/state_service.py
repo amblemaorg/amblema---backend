@@ -2,9 +2,11 @@
 
 
 from marshmallow import ValidationError
+from mongoengine import NotUniqueError
 
-from app.models.state_model import State, StateSchema, StateSchemaUpdate
+from app.models.state_model import State, StateSchema
 from app.helpers.error_helpers import RegisterNotFound
+from app.helpers.document_metadata import getUniqueFields
 
 
 def getAllStates():
@@ -22,14 +24,30 @@ def saveState(jsonData):
     params: jsonData -> name<string>, polygon<array(coords)>
     """
     stateSchema = StateSchema()
+    
     try:
         data = stateSchema.load(jsonData)
     except ValidationError as err:
         return err.messages, 400
-    name, polygon = data["name"], data["polygon"]
-    state = State(name=name, polygon= polygon)
-    state.save()
-    state.reload()
+
+    uniquesFields = getUniqueFields(State)
+    fieldsForCheckDuplicates = []
+    state = State()
+    for field in data.keys():
+        state[field] = data[field]
+        if field in uniquesFields:
+            fieldsForCheckDuplicates.append(
+                {"field":field, "value":data[field]})
+    isDuplicated = checkForDuplicates(fieldsForCheckDuplicates)
+    if isDuplicated:
+        return {
+            "message": "Duplicated record found.",
+            "data":isDuplicated}, 400
+    try:
+        state.save()
+    except Exception as e:
+        return {'status': 0, 'message': str(e)}, 400
+
     return stateSchema.dump(state), 201
 
 
@@ -46,26 +64,30 @@ def updateState(stateId, jsonData):
     Update a state record
     """
     stateSchema = StateSchema()
-    stateSchemaUpd = StateSchemaUpdate()
-    state = getOr404(stateId)
     try:
-        data = stateSchemaUpd.load(jsonData)
+        data = stateSchema.load(jsonData, partial=("name"))
     except ValidationError as err:
         return err.messages, 400
-    name, polygon = data["name"], data["polygon"]
-
+    
+    state = getOr404(stateId)
     has_changed = False
-
-    if name and name != state.name:
-        state.name = name
-        has_changed = True
-    if polygon and polygon != state.polygon:
-        state.polygon = polygon
-        has_changed = True
-
+    uniquesFields = getUniqueFields(State)
+    fieldsForCheckDuplicates = []
+    for field in data.keys():
+        if data[field] != state[field]:
+            state[field] = data[field]
+            has_changed = True
+            if field in uniquesFields:
+                fieldsForCheckDuplicates.append(
+                    {"field":field, "value":data[field]})
+    
     if has_changed:
+        isDuplicated = checkForDuplicates(fieldsForCheckDuplicates)
+        if isDuplicated:
+            return {
+                "message": "Duplicates record found.",
+                "data": isDuplicated}, 400
         state.save()
-        state.reload()
     
     return stateSchema.dump(state), 200
 
@@ -95,3 +117,29 @@ def getOr404(stateId):
                                payload={"stateId": stateId})
     return state
     
+
+def checkForDuplicates(attributes):
+    """
+    Return True if find an duplicate field  
+    Return False otherwise
+
+    Params.
+      attributes: array. example [{"field":"name", "value":"Iribarren"}]
+    """
+    filterList = []
+    
+    if len(attributes):
+        for f in attributes:
+            filterList.append(Q(**{f['field']: f['value']}))
+        
+        states = State.objects.filter(
+            reduce(operator.and_, attributes)
+            ).all()
+        if states:
+            duplicates = []
+            for state in states:
+                for attr in attributes:
+                    if attr['value'] == state[attr['field']]:
+                        duplicates.append(attr)
+            return duplicates
+    return False

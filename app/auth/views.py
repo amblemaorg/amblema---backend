@@ -12,16 +12,6 @@ from flask_jwt_extended import (
     set_access_cookies, set_refresh_cookies)
 
 
-
-class RegistrationView(MethodView):
-    """This class registers a new user."""
-
-    def post(self):
-        """Handle POST request for this view.   
-        Connected with login microservice"""
-        return {'msg': 'register'}, 201
-
-
 class LoginView(MethodView):
     """This class-based view handles user login and access token generation."""
 
@@ -84,16 +74,9 @@ class TokenRefreshView(MethodView):
 
 
 # Define the API resource
-registration_view = RegistrationView.as_view('register_view')
 login_view = LoginView.as_view('login_view')
 refresh_view = TokenRefreshView.as_view('refresh_view')
 
-# Define the rule for the registration url --->  /auth/register
-# Then add the rule to the blueprint
-auth_blueprint.add_url_rule(
-    '/auth/register',
-    view_func=registration_view,
-    methods=['POST', 'GET'])
 
 # Define the rule for the registration url --->  /auth/login
 # Then add the rule to the blueprint

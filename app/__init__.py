@@ -10,8 +10,18 @@ from flask_jwt_extended import JWTManager
 from app.helpers.error_helpers import CustomApi
 from instance.config import app_config
 from app.helpers.error_helpers import RegisterNotFound, handleNotFound
-from app.controllers.state_controller import StateController, StateHandlerController
-from app.controllers.municipality_controller import MunicipalityController, MunicipalityHandlerController
+from app.controllers.state_controller import (
+    StateController,
+    StateHandlerController)
+from app.controllers.municipality_controller import (
+    MunicipalityController,
+    MunicipalityHandlerController)
+from app.controllers.role_controller import (
+    EntityController,
+    EntityHandlerController,
+    RoleController,
+    RoleHandlerController
+)
 
 
 db = MongoEngine()
@@ -42,11 +52,31 @@ def create_app(config_instance):
         '/states/<string:stateId>/')
     api.add_resource(
         MunicipalityController,
-        '/municipalities/<string:stateId>',
-        '/municipalities/<string:stateId>/')
+        '/municipalities',
+        '/municipalities/')
     api.add_resource(
         MunicipalityHandlerController,
-        '/municipalities/<string:stateId>/<string:municipalityId>',
-        '/municipalities/<string:stateId>/<string:municipalityId>/')
+        '/municipalities/<string:municipalityId>',
+        '/municipalities/<string:municipalityId>/')
+    api.add_resource(
+        EntityController,
+        '/entities',
+        '/entities/'
+    )
+    api.add_resource(
+        EntityHandlerController,
+        '/entities/<string:entityId>',
+        '/entities/<string:entityId>/'
+    )
+    api.add_resource(
+        RoleController,
+        '/roles/',
+        '/roles'
+    )
+    api.add_resource(
+        RoleHandlerController,
+        '/roles/<string:roleId>',
+        '/roles/<string:roleId>/'
+    )
 
     return app

@@ -4,7 +4,7 @@
 from marshmallow import ValidationError
 
 
-def must_not_be_blank(data):
+def not_blank(data):
     """Custom marshmallow validator for empty string data
     """
     if not data:

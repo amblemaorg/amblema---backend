@@ -22,6 +22,10 @@ from app.controllers.role_controller import (
     RoleController,
     RoleHandlerController
 )
+from app.controllers.user_controller import (
+    UserController,
+    UserHandlerController
+)
 
 
 db = MongoEngine()
@@ -77,6 +81,16 @@ def create_app(config_instance):
         RoleHandlerController,
         '/roles/<string:roleId>',
         '/roles/<string:roleId>/'
+    )
+    api.add_resource(
+        UserController,
+        '/users/',
+        '/users'
+    )
+    api.add_resource(
+        UserHandlerController,
+        '/users/<string:userId>',
+        '/users/<string:userId>/'
     )
 
     return app

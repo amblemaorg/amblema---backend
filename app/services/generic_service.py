@@ -77,11 +77,11 @@ class GenericServices():
         return schema.dump(record), 200
 
     
-    def updateRecord(self, recordId, jsonData, partial=False):
+    def updateRecord(self, recordId, jsonData, partial=False, exclude=None):
         """
         Update a record
         """
-        schema = self.Schema()
+        schema = self.Schema(exclude=exclude)
         try:
             data = schema.load(jsonData, partial=partial)
             record = self.getOr404(recordId)
@@ -140,9 +140,14 @@ class GenericServices():
             for f in attributes:
                 filterList.append(Q(**{f['field']: f['value']}))
             
-            records = self.Model.objects.filter(
-                reduce(operator.and_, filterList)
-                ).all()
+            if self.Model.__base__._meta['allow_inheritance']:
+                records = self.Model.__base__.objects.filter(
+                    reduce(operator.and_, filterList)
+                    ).all()
+            else: 
+                records = self.Model.objects.filter(
+                    reduce(operator.and_, filterList)
+                    ).all()
             if records:
                 duplicates = []
                 for record in records:

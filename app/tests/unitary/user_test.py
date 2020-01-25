@@ -130,3 +130,22 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(
             userSchema.validate(user),
             {'cardId': ['Invalid field length']})
+
+    def test_email_field(self):
+        userSchema = AdminUserSchema(partial=True)
+        user = {
+            "email": "greudys@binaural.com.ve"
+        }
+        self.assertEqual(userSchema.validate(user),{})
+        user = {
+            "email": "abdc@gmail"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'email': ['Not a valid email address.']})
+        user = {
+            "email": "dfghgmail.com"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'email': ['Not a valid email address.']})

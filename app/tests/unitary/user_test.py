@@ -132,7 +132,7 @@ class UserTestCase(unittest.TestCase):
             {'cardId': ['Invalid field length']})
 
     def test_email_field(self):
-        userSchema = AdminUserSchema(partial=True)
+        userSchema = UserSchema(partial=True)
         user = {
             "email": "greudys@binaural.com.ve"
         }
@@ -149,3 +149,22 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(
             userSchema.validate(user),
             {'email': ['Not a valid email address.']})
+
+    def test_phone_field(self):
+        userSchema = UserSchema(partial=True)
+        user = {
+            "phone": "04245687571"
+        }
+        self.assertEqual(userSchema.validate(user),{})
+        user = {
+            "phone": "041475677aa"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'phone': ['Field accepts only numbers']})
+        user = {
+            "phone": "041456766**"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'phone': ['Field accepts only numbers']})

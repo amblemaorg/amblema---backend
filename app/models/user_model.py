@@ -119,7 +119,7 @@ class UserSchema(Schema):
                 ["1", "2","3","4"],
                 ["admin", "coordinator", "sponsor", "school"]
             )))
-    phone = fields.Str()
+    phone = fields.Str(validate=only_numbers)
     role = MAReferenceField(required=True)
     addressState = MAReferenceField(required=True)
     addressMunicipality = MAReferenceField(required=True)

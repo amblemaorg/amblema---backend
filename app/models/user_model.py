@@ -164,6 +164,12 @@ class UserSchema(Schema):
             and (len(data["cardId"])<8 or len(data["cardId"])>9)
            ):
            errors["cardId"] = ["Invalid field length"]
+        if (
+            "cardType" in data
+            and str(data["cardType"]) == "3"
+            and (len(data["cardId"]) != 10)
+           ):
+           errors["cardId"] = ["Invalid field length"]
         if errors:
             raise ValidationError(errors)
     

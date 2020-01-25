@@ -108,3 +108,25 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(
             userSchema.validate(user),
             {'cardId': ['Invalid field length']})
+
+    def test_cardId_E_length_field(self):
+        userSchema = AdminUserSchema(partial=True)
+        user = {
+            "cardType": "3",
+            "cardId": "2092284223"
+        }
+        self.assertEqual(userSchema.validate(user),{})
+        user = {
+            "cardType": "3",
+            "cardId": "20922",
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'cardId': ['Invalid field length']})
+        user = {
+            "cardType": "3",
+            "cardId": "20922842324",
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'cardId': ['Invalid field length']})

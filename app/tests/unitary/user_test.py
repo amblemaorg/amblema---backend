@@ -187,3 +187,22 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(
             userSchema.validate(user),
             {'password': ['Length must be 8.']})
+
+    def test_function_field(self):
+        userSchema = AdminUserSchema(partial=True)
+        user = {
+            "function": "Cargo"
+        }
+        self.assertEqual(userSchema.validate(user),{})
+        user = {
+            "function": "Cargo 1"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'function': ['Field accepts only letters']})
+        user = {
+            "function": "Cargo **"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'function': ['Field accepts only letters']})

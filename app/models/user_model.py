@@ -189,8 +189,10 @@ class AdminUserSchema(UserSchema):
             )))
     cardId = fields.Str(
         required=True,
-        validate=(not_blank,only_numbers))
-    function = fields.Str(required=True, validate=not_blank)
+        validate=(not_blank, only_numbers))
+    function = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
 
 
 class CoordinatorUserSchema(UserSchema):
@@ -204,7 +206,7 @@ class CoordinatorUserSchema(UserSchema):
             )))
     cardId = fields.Str(
         required=True,
-        validate=(not_blank,only_numbers))
+        validate=(not_blank, only_numbers))
 
 
 class SponsorUserSchema(UserSchema):
@@ -218,7 +220,7 @@ class SponsorUserSchema(UserSchema):
             )))
     cardId = fields.Str(
         required=True,
-        validate=(not_blank,only_numbers))
+        validate=(not_blank, only_numbers))
 
 
 class SchoolUserSchema(UserSchema):

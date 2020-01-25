@@ -1,6 +1,6 @@
 # /app/auth/views.py
 
-from app.auth import auth_blueprint
+from app.blueprints.auth import auth_blueprint
 
 from flask.views import MethodView
 

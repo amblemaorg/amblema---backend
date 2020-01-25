@@ -25,7 +25,7 @@ from marshmallow import (
     EXCLUDE,
     validate)
 
-from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_validators import not_blank, only_letters
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.role_model import Role
@@ -101,7 +101,9 @@ class UserSchema(Schema):
         validate=(
             not_blank,
             validate.Length(equal=8)))
-    firstName = fields.Str(required=True, validate=not_blank)
+    firstName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
     lastName = fields.Str(required=True, validate=not_blank)
     userType = fields.Str(
         required=True,
@@ -144,13 +146,13 @@ class UserSchema(Schema):
                                        payload={"id": data['addressMunicipality']})
             data['addressMunicipality'] = municipality
         if 'email' in data:
-            data["email"] = data["email"].lower()
+            data["email"] = str(data["email"]).lower()
         if 'firstName' in data:
-            data["firstName"] = data["firstName"].title()
+            data["firstName"] = str(data["firstName"]).title()
         if 'lastName' in data:
-            data["lastName"] = data["lastName"].title()
+            data["lastName"] = str(data["lastName"]).title()
         if 'address' in data:
-            data["address"] = data["address"].title()
+            data["address"] = str(data["address"]).title()
         return data
     
     class Meta:

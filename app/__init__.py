@@ -42,7 +42,7 @@ def create_app(config_instance):
     app.register_error_handler(RegisterNotFound, handleNotFound)
 
     # import the authentication blueprint and register it on the app
-    from app.auth import auth_blueprint
+    from app.blueprints.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
 
     api = CustomApi(app)

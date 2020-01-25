@@ -2,6 +2,7 @@
 
 
 from marshmallow import ValidationError
+import re
 
 
 def not_blank(data):
@@ -9,3 +10,9 @@ def not_blank(data):
     """
     if not data:
         raise ValidationError("Field can't be blank")
+
+def only_letters(data):
+    """Custom marshmallow validator for only letters
+    """
+    if not re.match("^[a-zA-ZñÑáéíóúÁÉÍÓÚ ]*$", data):
+        raise ValidationError("Field accepts only letters")    

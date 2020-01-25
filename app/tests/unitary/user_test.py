@@ -168,3 +168,22 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(
             userSchema.validate(user),
             {'phone': ['Field accepts only numbers']})
+
+    def test_password_field(self):
+        userSchema = UserSchema(partial=True)
+        user = {
+            "password": "12345678"
+        }
+        self.assertEqual(userSchema.validate(user),{})
+        user = {
+            "password": "1234567"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'password': ['Length must be 8.']})
+        user = {
+            "password": "123456789"
+        }
+        self.assertEqual(
+            userSchema.validate(user),
+            {'password': ['Length must be 8.']})

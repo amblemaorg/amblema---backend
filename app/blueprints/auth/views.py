@@ -1,6 +1,6 @@
 # /app/auth/views.py
 
-from app.auth import auth_blueprint
+from app.blueprints.auth import auth_blueprint
 
 from flask.views import MethodView
 
@@ -10,16 +10,6 @@ from flask_jwt_extended import (
     create_access_token, create_refresh_token, get_jti, get_raw_jwt,
     jwt_required, jwt_refresh_token_required, get_jwt_identity,
     set_access_cookies, set_refresh_cookies)
-
-
-
-class RegistrationView(MethodView):
-    """This class registers a new user."""
-
-    def post(self):
-        """Handle POST request for this view.   
-        Connected with login microservice"""
-        return {'msg': 'register'}, 201
 
 
 class LoginView(MethodView):
@@ -84,16 +74,9 @@ class TokenRefreshView(MethodView):
 
 
 # Define the API resource
-registration_view = RegistrationView.as_view('register_view')
 login_view = LoginView.as_view('login_view')
 refresh_view = TokenRefreshView.as_view('refresh_view')
 
-# Define the rule for the registration url --->  /auth/register
-# Then add the rule to the blueprint
-auth_blueprint.add_url_rule(
-    '/auth/register',
-    view_func=registration_view,
-    methods=['POST', 'GET'])
 
 # Define the rule for the registration url --->  /auth/login
 # Then add the rule to the blueprint

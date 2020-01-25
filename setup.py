@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name='fvac',
-    author='Greudys Godoy',
+    name='amblema',
+    author='BinauralDev',
     version='0.1',
-    description='Services for FVAC application',
+    description='Services for amblema application',
     url='',
     install_requires = [
         'flask',

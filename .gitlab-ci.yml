@@ -45,9 +45,9 @@ QA-testing:
     - fi
     - cd $QA_PROJECT_DIR/qa-testing
     - docker-compose -p amblema_qa_testing up -d
-    - docker exec -i amblema_testing_back bash -c "python -m unittest discover -s app/tests/ -p \"test_*\" -v"
+    - docker exec -i amblema_testing_back bash -c "python -m unittest discover -s app/tests/unitary/ -p \"*_test.py\" -v"
     - docker exec -i amblema_testing_back bash -c "coverage erase"
-    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests -p \"test_*\""
+    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/unitary -p \"*_test.py\""
     #- docker exec -i amblema_testing_back bash -c "coverage report"
     - docker-compose -p amblema_qa_testing down
     - rm -rf images/*/*.png
@@ -94,9 +94,9 @@ Staging-testing:
     - fi
     - cd $STAGING_PROJECT_DIR/staging-testing
     - docker-compose -p amblema_staging_testing up -d
-    - docker exec -i amblema_testing_back bash -c "python -m unittest discover -s app/tests/ -p \"test_*\" -v"
+    - docker exec -i amblema_testing_back bash -c "python -m unittest discover -s app/tests/unitary/ -p \"*_test.py\" -v"
     - docker exec -i amblema_testing_back bash -c "coverage erase"
-    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests -p \"test_*\""
+    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/unitary -p \"*_test.py\""
     #- docker exec -i amblema_testing_back bash -c "coverage report"
     - docker-compose -p amblema_staging_testing down
     - rm -rf images/*/*.png

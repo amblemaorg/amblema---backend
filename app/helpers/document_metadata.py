@@ -1,7 +1,6 @@
 # app/helpers/document_metadata.py
 
 
-
 def getUniqueFields(document):
     """
     Method that return all fields which  

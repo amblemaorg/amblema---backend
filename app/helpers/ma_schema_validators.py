@@ -15,4 +15,10 @@ def only_letters(data):
     """Custom marshmallow validator for only letters
     """
     if not re.match("^[a-zA-ZñÑáéíóúÁÉÍÓÚ ]*$", data):
-        raise ValidationError("Field accepts only letters")    
+        raise ValidationError("Field accepts only letters")
+
+def only_numbers(data):
+    """Custom marshmallow validator for only numbers
+    """
+    if not re.match("^[0-9]*$", data):
+        raise ValidationError("Field accepts only numbers")

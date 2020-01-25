@@ -25,9 +25,10 @@ from marshmallow import (
     EXCLUDE,
     validate)
 
-from app.helpers.ma_schema_validators import not_blank, only_letters
+from app.helpers.ma_schema_validators import not_blank, only_letters, only_numbers
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.error_helpers import RegisterNotFound
+from app.services.generic_service import getRecordOr404
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 
@@ -111,6 +112,7 @@ class UserSchema(Schema):
         required=True,
         validate=(
             not_blank,
+            only_numbers,
             validate.OneOf(
                 ["1", "2","3","4"],
                 ["admin", "coordinator", "sponsor", "school"]
@@ -127,25 +129,13 @@ class UserSchema(Schema):
     @pre_load
     def process_input(self, data, **kwargs):
         if "role" in data:
-            role = Role.objects(id=data["role"], status=True).first()
-            if not role:
-                raise RegisterNotFound(message="Role not found",
-                                       status_code=404,
-                                       payload={"id": data['role']})
+            role = getRecordOr404(Role,data['role'])
             data['role'] = role
         if "addressState" in data:
-            state = State.objects(id=data["addressState"], status=True).first()
-            if not state:
-                raise RegisterNotFound(message="State not found",
-                                       status_code=404,
-                                       payload={"id": data['addressState']})
+            state = getRecordOr404(State,data['addressState'])
             data['addressState'] = state
         if "addressMunicipality" in data:
-            municipality = Municipality.objects(id=data["addressMunicipality"], status=True).first()
-            if not municipality:
-                raise RegisterNotFound(message="Municipality not found",
-                                       status_code=404,
-                                       payload={"id": data['addressMunicipality']})
+            municipality = getRecordOr404(Municipality,data['addressMunicipality'])
             data['addressMunicipality'] = municipality
         if 'email' in data:
             data["email"] = str(data["email"]).lower()
@@ -171,7 +161,9 @@ class AdminUserSchema(UserSchema):
                 ["1", "2","3"],
                 ["v", "j", "e"]
             )))
-    cardId = fields.Str(required=True, validate=not_blank)
+    cardId = fields.Str(
+        required=True,
+        validate=(not_blank,only_numbers))
     function = fields.Str(required=True, validate=not_blank)
 
 
@@ -184,7 +176,9 @@ class CoordinatorUserSchema(UserSchema):
                 ["1", "2","3"],
                 ["v", "j", "e"]
             )))
-    cardId = fields.Str(required=True, validate=not_blank)
+    cardId = fields.Str(
+        required=True,
+        validate=(not_blank,only_numbers))
 
 
 class SponsorUserSchema(UserSchema):
@@ -196,7 +190,9 @@ class SponsorUserSchema(UserSchema):
                 ["1", "2","3"],
                 ["v", "j", "e"]
             )))
-    cardId = fields.Str(required=True, validate=not_blank)
+    cardId = fields.Str(
+        required=True,
+        validate=(not_blank,only_numbers))
 
 
 class SchoolUserSchema(UserSchema):

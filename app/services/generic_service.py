@@ -170,3 +170,18 @@ class GenericServices():
                                 status_code=404,
                                 payload={"recordId": recordId})
         return record
+
+def getRecordOr404(model, recordId):
+    """Method that find a record by its id  
+    Return record if found  
+    params:  
+      model: a document model
+      recordId: id for search
+    """
+    record = model.objects(id=str(recordId), status=True).first()
+    if not record:
+        raise RegisterNotFound(message="Record not found",
+                               status_code=404,
+                               payload={"Model": model.__name__, "recordId": recordId})
+
+    return record

@@ -104,7 +104,9 @@ class UserSchema(Schema):
     firstName = fields.Str(
         required=True,
         validate=(not_blank, only_letters))
-    lastName = fields.Str(required=True, validate=not_blank)
+    lastName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
     userType = fields.Str(
         required=True,
         validate=(

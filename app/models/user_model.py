@@ -23,7 +23,9 @@ from marshmallow import (
     pre_load,
     post_load,
     EXCLUDE,
-    validate)
+    validate,
+    validates_schema,
+    ValidationError)
 
 from app.helpers.ma_schema_validators import not_blank, only_letters, only_numbers
 from app.helpers.ma_schema_fields import MAReferenceField
@@ -146,6 +148,18 @@ class UserSchema(Schema):
         if 'address' in data:
             data["address"] = str(data["address"]).title()
         return data
+
+    @validates_schema
+    def validate_cardId_length(self, data, **kwargs):
+        errors = {}
+        if (
+            "cardType" in data
+            and str(data["cardType"]) == "1"
+            and (len(data["cardId"])<7 or len(data["cardId"])>8)
+           ):
+           errors["cardId"] = ["Invalid field length"]
+        if errors:
+            raise ValidationError(errors)
     
     class Meta:
         unknown = EXCLUDE

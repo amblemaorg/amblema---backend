@@ -1,16 +1,16 @@
 # /app/auth/views.py
 
-from app.blueprints.auth import auth_blueprint
-
-from flask.views import MethodView
 
 from flask import jsonify
 from flask_restful import Resource, reqparse
+from flask.views import MethodView
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, get_jti, get_raw_jwt,
     jwt_required, jwt_refresh_token_required, get_jwt_identity,
     set_access_cookies, set_refresh_cookies)
 
+from app.blueprints.auth import auth_blueprint
+from app.models.user_model import User, UserSchema
 
 class LoginView(MethodView):
     """This class-based view handles user login and access token generation."""
@@ -26,24 +26,29 @@ class LoginView(MethodView):
 
             args = parser.parse_args()
             password = args['password'].strip()
-            email = args['email'].strip().lower()            
+            email = args['email'].strip().lower()
 
+            user = User.objects(email=email).first()
+            if not user or  not user.password_is_valid(password):
+                return {"message": "Incorrect credectials"}, 400
+
+            userSchema = UserSchema(only=("id", "firstName","userType"))
+            userJson = userSchema.dump(user)
+            permissions = user.get_permissions()
+            payload = userJson
+            payload['permissions']=permissions
             # Generate the access token. 
             # This will be generated in login microservice
-            access_token = create_access_token(
-                {'email': email}
-            )
-            refresh_token = create_refresh_token(
-                {'email': email}
-            )
+            access_token = create_access_token(payload)
+            refresh_token = create_refresh_token(payload)
 
             resp = jsonify(
                 {'msg': 'You logged in successfully',
                  'access_token': access_token,
                  'refresh_token': refresh_token
                 })
-            set_access_cookies(resp, access_token)
-            set_refresh_cookies(resp, refresh_token)
+            #set_access_cookies(resp, access_token)
+            #set_refresh_cookies(resp, refresh_token)
             return resp, 200
             
         except Exception as e:
@@ -64,8 +69,8 @@ class TokenRefreshView(MethodView):
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
-        
-        return {'access_token': 'access_token_microservice'}
+        access_token = create_access_token(current_user)
+        return {'access_token': access_token}
 
     @jwt_refresh_token_required
     def delete(self):

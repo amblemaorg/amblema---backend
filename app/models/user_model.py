@@ -65,6 +65,17 @@ class User(Document):
         Checks the password against it's hash to validates the user's password
         """
         return Bcrypt().check_password_hash(self.password, password)
+
+    def get_permissions(self):
+        """
+        Checks all available permissions for each entity
+        """
+        permissions = []
+        for permission in self.role.permissions:
+            for action in permission.actions:
+                if action.allowed:
+                    permissions.append(action.name)
+        return permissions
         
 
     meta = {'allow_inheritance': True}

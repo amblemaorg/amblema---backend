@@ -15,9 +15,9 @@ class Config(object):
     SERVER_URL = os.getenv('SERVER_URL') # for image url
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=15)
-    JWT_TOKEN_LOCATION = ['cookies']
+    JWT_TOKEN_LOCATION = ['headers']
     JWT_COOKIE_SECURE = False
-    JWT_COOKIE_CSRF_PROTECT = True
+    JWT_COOKIE_CSRF_PROTECT = False
 
 
 class TestingConfig(Config):

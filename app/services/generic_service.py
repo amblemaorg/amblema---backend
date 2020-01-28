@@ -77,7 +77,7 @@ class GenericServices():
         return schema.dump(record), 200
 
     
-    def updateRecord(self, recordId, jsonData, partial=False, exclude=())):
+    def updateRecord(self, recordId, jsonData, partial=False, exclude=()):
         """
         Update a record
         """

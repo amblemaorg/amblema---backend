@@ -3,6 +3,8 @@ __pycache__
 .idea/
 .vscode
 venv
-images/
+resources/images/*.png
+resources/images/*.jpg
+resources/images/*.svg
 .coverage
 htmlcov/

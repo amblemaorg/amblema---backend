@@ -66,6 +66,8 @@ class GenericServices():
                 return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:
             return err.messages, 400
+        except BaseException as e:
+            return {"message": "Contact to support and mention it: File generic_service.py. "+str(e)}, 500
 
     
     def getRecord(self, recordId):
@@ -110,6 +112,8 @@ class GenericServices():
             return schema.dump(record), 200
         except ValidationError as err:
             return err.messages, 400
+        except BaseException as e:
+            return {"message": "Contact to support and mention it: File generic_service.py. "+str(e)}, 500
 
 
     def deleteRecord(self, recordId):

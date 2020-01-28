@@ -34,6 +34,25 @@ class RegisterNotFound(Exception):
         rv['message'] = self.message
         return rv
 
+class CSTM_Exception(Exception):
+    """
+    Custom Exception for errors handler
+    """
+    status_code = 404
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
+
+
 def handleNotFound(error):
     """
     Method that convert exception error into json response

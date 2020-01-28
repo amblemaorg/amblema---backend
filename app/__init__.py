@@ -43,7 +43,9 @@ def create_app(config_instance):
 
     # import the authentication blueprint and register it on the app
     from app.blueprints.auth import auth_blueprint
+    from app.blueprints.web_content import web_content_blueprint
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(web_content_blueprint)
 
     api = CustomApi(app)
     api.add_resource(

@@ -17,7 +17,7 @@ class GenericServices():
         self.Model = Model
         self.Schema = Schema
 
-    def getAllRecords(self, filters=None, only=None, exclude=None):
+    def getAllRecords(self, filters=None, only=None, exclude=()):
         """
         get all available states records
         """
@@ -77,7 +77,7 @@ class GenericServices():
         return schema.dump(record), 200
 
     
-    def updateRecord(self, recordId, jsonData, partial=False, exclude=None):
+    def updateRecord(self, recordId, jsonData, partial=False, exclude=())):
         """
         Update a record
         """

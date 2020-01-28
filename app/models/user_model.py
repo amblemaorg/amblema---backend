@@ -100,6 +100,7 @@ class SponsorUser(User):
 class SchoolUser(User):
     institutionCode = StringField(required=True)
     institutionPhone = StringField(required=True)
+    institutionEmail = EmailField(required=True)
 
 
 """
@@ -237,3 +238,4 @@ class SponsorUserSchema(UserSchema):
 class SchoolUserSchema(UserSchema):
     institutionCode = fields.Str(required=True, validate=not_blank)
     institutionPhone = fields.Str()
+    institutionEmail = fields.Email(required=True)

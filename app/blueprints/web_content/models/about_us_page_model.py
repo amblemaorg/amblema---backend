@@ -1,4 +1,4 @@
-# /app/blueprints/web_content/home_page_model.py
+# /app/blueprints/web_content/about_us_page_model.py
 
 
 from mongoengine import (
@@ -9,33 +9,50 @@ from mongoengine import (
 from marshmallow import Schema, fields, pre_load, post_load, EXCLUDE
 
 from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_fields import MAImageField
 from app.blueprints.web_content.models.templates_model import (
-    Background, BackgroundSchema, Testimonial, TestimonialSchema)
+    Background, BackgroundSchema)
 
-class HomePage(EmbeddedDocument):
+class Award(EmbeddedDocument):
+    title = StringField(required=True)
+    image = StringField(required=True)
+    description = StringField(required=True)
+    description2 = StringField(required=True)
+
+class AboutUsPage(EmbeddedDocument):
     slider = EmbeddedDocumentListField(Background, required=True)
     aboutUsText = StringField(required=True)
     environmentText = StringField(required=True)
     readingText = StringField(required=True)
     mathText = StringField(required=True)
-    testimonials = EmbeddedDocumentListField(Testimonial, required=True)
+    awards = EmbeddedDocumentListField(Award, required=True)
 
 
 """
 SCHEMAS FOR MODELS 
 """
 
-class HomePageSchema(Schema):
+class AwardSchema(Schema):
+    title = fields.Str(required=True, validate=not_blank)
+    image = MAImageField(required=True, validate=not_blank)
+    description = fields.Str(required=True, validate=not_blank)
+    description2 = fields.Str(required=True, validate=not_blank)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Award(**data)
+
+class AboutUsPageSchema(Schema):
     slider = fields.List(fields.Nested(BackgroundSchema), required=True, validate=not_blank)
     aboutUsText = fields.Str(required=True, validate=not_blank)
     environmentText = fields.Str(required=True, validate=not_blank)
     readingText = fields.Str(required=True, validate=not_blank)
     mathText = fields.Str(required=True, validate=not_blank)
-    testimonials= fields.List(fields.Nested(TestimonialSchema), required=True, validate=not_blank)
+    awards= fields.List(fields.Nested(AwardSchema), required=True, validate=not_blank)
 
     @post_load
     def make_document(self, data, **kwargs):
-        return HomePage(**data)
+        return AboutUsPage(**data)
 
     class Meta:
         unknown = EXCLUDE

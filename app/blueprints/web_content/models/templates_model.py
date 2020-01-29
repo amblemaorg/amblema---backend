@@ -11,7 +11,7 @@ from app.helpers.ma_schema_validators import not_blank
 from app.helpers.ma_schema_fields import MAImageField
 
 
-class Slider(EmbeddedDocument):
+class Background(EmbeddedDocument):
     image = StringField(required=True)
     description = StringField()
 
@@ -31,13 +31,13 @@ class Testimonial(EmbeddedDocument):
 SCHEMAS FOR MODELS 
 """
 
-class SliderSchema(Schema):
+class BackgroundSchema(Schema):
     image = MAImageField(required=True, validate=not_blank)
     description = fields.Str()
 
     @post_load
     def make_document(self, data, **kwargs):
-        return Slider(**data)
+        return Background(**data)
 
 class TestimonialSchema(Schema):
     firstName = fields.Str(required=True, validate=not_blank)

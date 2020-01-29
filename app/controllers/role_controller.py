@@ -78,5 +78,5 @@ class RoleHandlerController(Resource):
             jsonData=jsonData,
             partial=True)
 
-    def delete(self, recordId):
-        return self.service.deleteRecord(recordId)
+    def delete(self, roleId):
+        return self.service.deleteRecord(roleId)

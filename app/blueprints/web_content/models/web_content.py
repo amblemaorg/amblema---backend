@@ -15,10 +15,14 @@ from app.blueprints.web_content.models.home_page_model import (
 from app.blueprints.web_content.models.about_us_page_model import (
     AboutUsPage, AboutUsPageSchema
 )
+from app.blueprints.web_content.models.sponsor_page_model import (
+    SponsorPage, SponsorPageSchema
+)
 
 class WebContent(Document):
     homePage = EmbeddedDocumentField(HomePage, required=True)
     aboutUsPage = EmbeddedDocumentField(AboutUsPage, required=True)
+    sponsorPage = EmbeddedDocumentField(SponsorPage, required=True)
     status = BooleanField(default=True)
 
 
@@ -29,4 +33,5 @@ SCHEMAS FOR MODELS
 class WebContentSchema(Schema):
     homePage = fields.Nested(HomePageSchema, required=True, validate=not_blank)
     aboutUsPage = fields.Nested(AboutUsPageSchema, required=True, validate=not_blank)
+    sponsorPage = fields.Nested(SponsorPageSchema, required=True, validate=not_blank)
     

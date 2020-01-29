@@ -9,7 +9,7 @@ from flask_jwt_extended import JWTManager
 
 from app.helpers.error_helpers import CustomApi
 from instance.config import app_config
-from app.helpers.error_helpers import RegisterNotFound, handleNotFound
+from app.helpers.error_helpers import RegisterNotFound, handleNotFound, CSTM_Exception
 from app.controllers.state_controller import (
     StateController,
     StateHandlerController)
@@ -40,6 +40,7 @@ def create_app(config_instance):
     jwt = JWTManager(app)
 
     app.register_error_handler(RegisterNotFound, handleNotFound)
+    app.register_error_handler(CSTM_Exception, handleNotFound)
 
     # import the authentication blueprint and register it on the app
     from app.blueprints.auth import auth_blueprint

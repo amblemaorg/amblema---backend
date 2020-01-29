@@ -7,7 +7,7 @@ from mongoengine import (
     EmbeddedDocumentField)
 from marshmallow import Schema, fields, pre_load, post_load
 
-from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_validators import not_blank, validate_image
 from app.helpers.ma_schema_fields import MAImageField
 
 
@@ -32,7 +32,7 @@ SCHEMAS FOR MODELS
 """
 
 class BackgroundSchema(Schema):
-    image = MAImageField(required=True, validate=not_blank)
+    image = MAImageField(required=True, validate=(not_blank, validate_image))
     description = fields.Str()
 
     @post_load
@@ -42,7 +42,7 @@ class BackgroundSchema(Schema):
 class TestimonialSchema(Schema):
     firstName = fields.Str(required=True, validate=not_blank)
     lastName = fields.Str(required=True, validate=not_blank)
-    image = MAImageField(required=True, validate=not_blank)
+    image = MAImageField(required=True, validate=(not_blank, validate_image))
     function = fields.Str(required=True, validate=not_blank)
     description = fields.Str(required=True, validate=not_blank)
 

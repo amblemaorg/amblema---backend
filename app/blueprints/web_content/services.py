@@ -24,7 +24,7 @@ class WebContentService(GenericServices):
         elif exclude: schema = self.Schema(exclude=exclude)
         else: schema = self.Schema()
 
-        record = self.Model.objects(status = True).first()
+        record = self.Model.objects().first()
         return schema.dump(record), 200
 
 

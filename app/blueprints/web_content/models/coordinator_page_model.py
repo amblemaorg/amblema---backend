@@ -1,4 +1,4 @@
-# /app/blueprints/web_content/sponsor_page_model.py
+# /app/blueprints/web_content/coordinator_page_model.py
 
 
 from mongoengine import (
@@ -13,7 +13,7 @@ from app.helpers.ma_schema_fields import MAImageField
 from app.blueprints.web_content.models.templates_model import (
     Testimonial, TestimonialSchema)
 
-class SponsorPage(EmbeddedDocument):
+class CoordinatorPage(EmbeddedDocument):
     backgroundImage = StringField(required=True)
     testimonials = EmbeddedDocumentListField(Testimonial, required=True)
     steps = ListField(StringField(), required=True)
@@ -23,14 +23,14 @@ class SponsorPage(EmbeddedDocument):
 SCHEMAS FOR MODELS 
 """
 
-class SponsorPageSchema(Schema):
+class CoordinatorPageSchema(Schema):
     backgroundImage = MAImageField(required=True, validate=not_blank)
     testimonials= fields.List(fields.Nested(TestimonialSchema), required=True, validate=not_blank)
     steps = fields.List(fields.String(validate=not_blank))
 
     @post_load
     def make_document(self, data, **kwargs):
-        return SponsorPage(**data)
+        return CoordinatorPage(**data)
 
     class Meta:
         unknown = EXCLUDE

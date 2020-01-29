@@ -19,20 +19,17 @@ class WebContentView(MethodView):
         Schema=WebContentSchema)
     
     def get(self):
-        return self.service.getAllRecords()
+        page = None
+        if 'page' in request.args:
+            page = [request.args.get('page')]
+        return self.service.getAllRecords(only=page)
 
     def post(self):
         jsonData = request.get_json()
-        return self.service.saveRecord(jsonData)
-
-
-class HomePageView(MethodView):
-    service  = WebContentService(
-        Model=WebContent,
-        Schema=WebContentSchema)
-    
-    def get(self):
-        return self.service.getAllRecords(only=("homePage",))
+        page = None
+        if 'page' in request.args:
+            page = [request.args.get('page')]
+        return self.service.saveRecord(jsonData, only=page)
 
 
 class ImagesView(MethodView):
@@ -44,18 +41,12 @@ class ImagesView(MethodView):
 
 
 webContentView = WebContentView.as_view('webContentView')
-homePageView = HomePageView.as_view('homePageView')
 imagesView = ImagesView.as_view('imagesView')
 
 web_content_blueprint.add_url_rule(
     '/webcontent',
     view_func=webContentView,
     methods=['POST', 'GET']
-)
-web_content_blueprint.add_url_rule(
-    '/webcontent/home',
-    view_func=homePageView,
-    methods=['GET']
 )
 web_content_blueprint.add_url_rule(
     '/resources/images/<string:imageId>',

@@ -24,18 +24,18 @@ class WebContentService(GenericServices):
         elif exclude: schema = self.Schema(exclude=exclude)
         else: schema = self.Schema()
 
-        record = self.Model.objects(status = True).first()
+        record = self.Model.objects().first()
         return schema.dump(record), 200
 
 
-    def saveRecord(self, jsonData):
+    def saveRecord(self, jsonData, only=None):
         """
         Method that saves a new record.
         params: jsonData
         """
-        schema = self.Schema()
+        schema = self.Schema(only=only)
         try:
-            data = schema.load(jsonData)
+            data = schema.load(jsonData, partial=True)
             
             record = WebContent.objects().first()
             if not record : record = self.Model()

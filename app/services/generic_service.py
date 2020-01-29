@@ -35,7 +35,7 @@ class GenericServices():
         else:
             records = self.Model.objects(status = True).all()
         
-        return schema.dump(records, many=True), 200
+        return {"records": schema.dump(records, many=True)}, 200
 
     
     def saveRecord(self, jsonData):

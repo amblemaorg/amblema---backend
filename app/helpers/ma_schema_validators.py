@@ -1,6 +1,7 @@
 # app/helpers/ma_schema_validators.py
 
 
+import mimetypes
 from marshmallow import ValidationError
 import re
 
@@ -22,3 +23,8 @@ def only_numbers(data):
     """
     if not re.match("^[0-9]*$", data):
         raise ValidationError("Field accepts only numbers")
+
+def validate_image(data):
+    mimetype,encoding = mimetypes.guess_type(data)
+    if not (mimetype and mimetype.startswith('image')):
+        raise ValidationError("Invalid image url")

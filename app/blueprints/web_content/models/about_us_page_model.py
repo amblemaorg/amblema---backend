@@ -8,7 +8,7 @@ from mongoengine import (
     EmbeddedDocumentListField)
 from marshmallow import Schema, fields, pre_load, post_load, EXCLUDE
 
-from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_validators import not_blank, validate_image
 from app.helpers.ma_schema_fields import MAImageField
 from app.blueprints.web_content.models.templates_model import (
     Background, BackgroundSchema)
@@ -34,7 +34,7 @@ SCHEMAS FOR MODELS
 
 class AwardSchema(Schema):
     title = fields.Str(required=True, validate=not_blank)
-    image = MAImageField(required=True, validate=not_blank)
+    image = MAImageField(required=True, validate=(not_blank, validate_image))
     description = fields.Str(required=True, validate=not_blank)
     description2 = fields.Str(required=True, validate=not_blank)
 

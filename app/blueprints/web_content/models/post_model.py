@@ -22,6 +22,7 @@ class Post(Document):
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
+    meta={'collection': 'posts'}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()

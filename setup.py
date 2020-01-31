@@ -15,6 +15,7 @@ setup(
         'flask-jwt-extended',
         'flask-bcrypt',
         'coverage',
-        'marshmallow'
+        'marshmallow',
+        'blinker'
     ]
 )

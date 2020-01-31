@@ -38,8 +38,6 @@ from app.models.state_model import State, Municipality
 class User(Document):
     email = EmailField(unique=True, required=True)
     password = StringField(required=True)
-    firstName = StringField(required=True)
-    lastName = StringField(required=True)
     userType= StringField(required=True)
     phone = StringField(required=True)
     role = ReferenceField('Role', required=True)
@@ -75,32 +73,42 @@ class User(Document):
             for action in permission.actions:
                 if action.allowed:
                     permissions.append(action.name)
-        return permissions
-        
+        return permissions        
 
-    meta = {'allow_inheritance': True}
+    meta = {
+        'allow_inheritance': True,
+        'collection':'users'}
 
 
 class AdministratorUser(User):
+    firstName = StringField(required=True)
+    lastName = StringField(required=True)
     cardType = StringField(required=True)
     cardId = StringField(required=True)
     function = StringField(required=True)
 
 
 class CoordinatorUser(User):
+    firstName = StringField(required=True)
+    lastName = StringField(required=True)
     cardType = StringField(required=True)
     cardId = StringField(required=True)
 
 
 class SponsorUser(User):
+    firstName = StringField(required=True)
+    lastName = StringField(required=True)
     cardType = StringField(required=True)
     cardId = StringField(required=True)
 
 
 class SchoolUser(User):
-    institutionCode = StringField(required=True)
-    institutionPhone = StringField(required=True)
-    institutionEmail = EmailField(required=True)
+    code = StringField(required=True)
+    name = StringField(required=True)
+    contactFirstName = StringField(required=True)
+    contactLastName = StringField(required=True)
+    contactEmail = StringField(required=True)
+    contactPhone = StringField(required=True)
 
 
 """
@@ -116,12 +124,6 @@ class UserSchema(Schema):
         validate=(
             not_blank,
             validate.Length(equal=8)))
-    firstName = fields.Str(
-        required=True,
-        validate=(not_blank, only_letters))
-    lastName = fields.Str(
-        required=True,
-        validate=(not_blank, only_letters))
     userType = fields.Str(
         required=True,
         validate=(
@@ -191,6 +193,12 @@ class UserSchema(Schema):
 
 
 class AdminUserSchema(UserSchema):
+    firstName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
+    lastName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
     cardType = fields.Str(
         required=True,
         validate=(
@@ -208,6 +216,12 @@ class AdminUserSchema(UserSchema):
 
 
 class CoordinatorUserSchema(UserSchema):
+    firstName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
+    lastName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
     cardType = fields.Str(
         required=True,
         validate=(
@@ -222,6 +236,12 @@ class CoordinatorUserSchema(UserSchema):
 
 
 class SponsorUserSchema(UserSchema):
+    firstName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
+    lastName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
     cardType = fields.Str(
         required=True,
         validate=(
@@ -236,6 +256,19 @@ class SponsorUserSchema(UserSchema):
 
 
 class SchoolUserSchema(UserSchema):
-    institutionCode = fields.Str(required=True, validate=not_blank)
-    institutionPhone = fields.Str()
-    institutionEmail = fields.Email(required=True)
+    code = fields.Str(
+        required=True,
+        validate=(not_blank))
+    name = fields.Str(
+        required=True,
+        validate=(not_blank))
+    contactFirstName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
+    contactLastName = fields.Str(
+        required=True,
+        validate=(not_blank, only_letters))
+    contactEmail = fields.Email(required=True)
+    contactPhone = fields.Str(
+        required=True,
+        validate=(not_blank, only_numbers))

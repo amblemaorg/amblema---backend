@@ -26,7 +26,8 @@ class State(Document):
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
-
+    meta = {'collection': 'states'}
+    
     def clean(self):
         self.updatedAt = datetime.utcnow()
 
@@ -38,9 +39,11 @@ class Municipality(Document):
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
+    meta = {'collection': 'municipalities'}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
+
 
 """
 SCHEMAS FOR MODELS 

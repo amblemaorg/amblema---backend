@@ -9,13 +9,12 @@ from flask_jwt_extended import JWTManager
 
 from app.helpers.error_helpers import CustomApi
 from instance.config import app_config
-from app.helpers.error_helpers import RegisterNotFound, handleNotFound, CSTM_Exception
+from app.helpers.error_helpers import (
+    RegisterNotFound, handleNotFound, CSTM_Exception)
 from app.controllers.state_controller import (
-    StateController,
-    StateHandlerController)
+    StateController, StateHandlerController)
 from app.controllers.municipality_controller import (
-    MunicipalityController,
-    MunicipalityHandlerController)
+    MunicipalityController, MunicipalityHandlerController)
 from app.controllers.role_controller import (
     EntityController,
     EntityHandlerController,
@@ -23,8 +22,13 @@ from app.controllers.role_controller import (
     RoleHandlerController
 )
 from app.controllers.user_controller import (
-    UserController,
-    UserHandlerController
+    UserController, UserHandlerController
+)
+from app.controllers.learning_module_controller import (
+    LearningController,
+    LearningHandlerController,
+    QuizController,
+    QuizHandlerController
 )
 
 
@@ -94,6 +98,26 @@ def create_app(config_instance):
         UserHandlerController,
         '/users/<string:userId>',
         '/users/<string:userId>/'
+    )
+    api.add_resource(
+        LearningController,
+        '/learningmodules',
+        '/learningmodules/'
+    )
+    api.add_resource(
+        LearningHandlerController,
+        '/learningmodules/<string:id>',
+        '/learningmodules/<string:id>/'
+    )
+    api.add_resource(
+        QuizController,
+        '/quizzes',
+        '/quizzes/'
+    )
+    api.add_resource(
+        QuizHandlerController,
+        '/quizzes/<string:id>',
+        '/quizzes/<string:id>/'
     )
 
     return app

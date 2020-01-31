@@ -9,7 +9,7 @@ class UserTestCase(unittest.TestCase):
     """Test case for user validations."""
 
     def test_firstName_field_only_letters(self):
-        userSchema = UserSchema(partial=True)
+        userSchema = AdminUserSchema(partial=True)
         user = {
             "firstName": "greudys",
         }
@@ -28,7 +28,7 @@ class UserTestCase(unittest.TestCase):
             {'firstName': ['Field accepts only letters']})
 
     def test_lastName_field_only_letters(self):
-        userSchema = UserSchema(partial=True)
+        userSchema = AdminUserSchema(partial=True)
         user = {
             "lastName": "Godoy",
         }

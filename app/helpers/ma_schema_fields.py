@@ -28,7 +28,12 @@ class MAReferenceField(fields.Field):
     def _serialize(self, value, attr, obj, **kwargs):
         if value is None:
             return ""
-        record = {"id": str(value["id"]), "name": value["name"]}
+        if "field" in self.metadata:
+            record = {
+                "id": str(value["id"]),
+                self.metadata["field"]: value[self.metadata["field"]]}
+        else:
+            record = {"id": str(value["id"]), "name": value["name"]}
         return record
 
     def _deserialize(self, value, attr, data, **kwargs):

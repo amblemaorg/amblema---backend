@@ -28,3 +28,10 @@ def validate_image(data):
     mimetype,encoding = mimetypes.guess_type(data)
     if not (mimetype and mimetype.startswith('image')):
         raise ValidationError("Invalid image url")
+
+def validate_video(data):
+
+    #mimetype,encoding = mimetypes.guess_type(data)
+    #if not (mimetype and mimetype.startswith('video')):
+    #    raise ValidationError("Invalid video url")
+    return True

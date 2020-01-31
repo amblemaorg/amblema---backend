@@ -6,6 +6,7 @@
 #
 aniso8601==8.0.0          # via flask-restful
 bcrypt==3.1.7             # via flask-bcrypt
+blinker==1.4
 cffi==1.13.2              # via bcrypt
 click==7.0                # via flask
 coverage==5.0.2

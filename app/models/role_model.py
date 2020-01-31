@@ -28,10 +28,7 @@ class Action(EmbeddedDocument):
     label = StringField(required=True)
     sort = IntField()
     status = BooleanField(default=True)
-
-    meta = {
-        'ordering': ['+sort']
-    }
+    meta = {'ordering': ['+sort']}
 
 
 class Entity(Document):
@@ -40,6 +37,7 @@ class Entity(Document):
     actions = EmbeddedDocumentListField(Action)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
+    meta = {'collection': 'entities'}
 
 
 class ActionHandler(EmbeddedDocument):
@@ -47,19 +45,13 @@ class ActionHandler(EmbeddedDocument):
     label = StringField(required=True)
     sort = IntField()
     allowed = BooleanField(default=False)
-
-    meta = {
-        'ordering': ['+sort']
-    }
+    meta = {'ordering': ['+sort']}
 
 class Permission(EmbeddedDocument):
     entityId = StringField(required=True)
     entityName = StringField(required=True)
     actions = EmbeddedDocumentListField(ActionHandler, required=True)
-
-    meta = {
-        'ordering': ['+entityName']
-    }
+    meta = {'ordering': ['+entityName']}
 
 class Role(Document):
     name = StringField(unique=True, required=True)
@@ -67,9 +59,9 @@ class Role(Document):
     permissions = EmbeddedDocumentListField(Permission)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
-
     meta = {
-        'ordering': ['+name', '+permissions__entityName']
+        'ordering': ['+name', '+permissions__entityName'],
+        'collection': 'roles'
     }
 
 

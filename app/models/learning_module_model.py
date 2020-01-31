@@ -39,11 +39,12 @@ class Quiz(Document):
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
+    meta = {'collection': 'quizzes'}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
-
-
+    
+    
 class LearningModule(Document):
     title = StringField(required=True)
     description = StringField(required=True)
@@ -57,6 +58,7 @@ class LearningModule(Document):
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
+    meta = {'collection': 'learning_modules'}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
@@ -98,6 +100,7 @@ class LearningModule(Document):
             return incorrectAnswers
     
 signals.post_save.connect(LearningModule.post_save, sender=LearningModule)
+
 
 """        
 SCHEMAS FOR MODELS 

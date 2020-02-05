@@ -30,6 +30,9 @@ from app.controllers.learning_module_controller import (
     QuizController,
     QuizHandlerController
 )
+from app.controllers.step_controller import (
+    StepController, StepHandlerController
+)
 
 
 db = MongoEngine()
@@ -118,6 +121,16 @@ def create_app(config_instance):
         QuizHandlerController,
         '/quizzes/<string:id>',
         '/quizzes/<string:id>/'
+    )
+    api.add_resource(
+        StepController,
+        '/steps',
+        '/steps/'
+    )
+    api.add_resource(
+        StepHandlerController,
+        '/steps/<string:id>',
+        '/steps/<string:id>/'
     )
 
     return app

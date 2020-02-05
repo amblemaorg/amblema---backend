@@ -46,16 +46,13 @@ class GenericServices():
         params: jsonData
         """
         schema = self.Schema()
-        try:
+        try:    
             documentFiles = getFileFields(self.Model)
             if files and documentFiles:
                 validFiles = validate_files(files, documentFiles)
-                fileSchema = self.Schema(partial=documentFiles)
-                fileSchema.validate(jsonData)
                 uploadedfiles = upload_files(validFiles)
                 jsonData.update(uploadedfiles)
             data = schema.load(jsonData)
-            current_app.logger.info(data)
             uniquesFields = getUniqueFields(self.Model)
             fieldsForCheckDuplicates = []
             record = self.Model()

@@ -3,6 +3,7 @@
 
 from datetime import datetime
 import json
+from flask import current_app
 
 from mongoengine import (
     Document,
@@ -11,7 +12,8 @@ from mongoengine import (
     BooleanField,
     DateTimeField,
     EmbeddedDocument,
-    EmbeddedDocumentField)
+    EmbeddedDocumentField,
+    ReferenceField)
 from marshmallow import (
     Schema,
     fields,
@@ -23,6 +25,10 @@ from marshmallow import (
     ValidationError)
 
 from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_fields import MAReferenceField
+from app.models.school_year_model import SchoolYear
+from app.helpers.error_helpers import RegisterNotFound
+from app.services.generic_service import getRecordOr404
 
 
 class File(EmbeddedDocument):
@@ -36,6 +42,7 @@ class Step(Document):
     text = StringField(required=True)
     date = DateTimeField(required=False)
     file = EmbeddedDocumentField(File, is_file=True)
+    schoolYear = ReferenceField('SchoolYear', required=True)
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
@@ -79,6 +86,7 @@ class StepSchema(Schema):
     text = fields.Str(required=True, validate=not_blank)
     date = fields.DateTime()
     file = fields.Nested(FileSchema)
+    schoolYear = MAReferenceField(required=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 
@@ -86,6 +94,9 @@ class StepSchema(Schema):
     def process_input(self, data, **kwargs):
         if 'name' in data:
             data["name"] = data["name"].title()
+        if 'schoolYear' in data:
+            year = getRecordOr404(SchoolYear,data['schoolYear'])
+            data['schoolYear'] = year
         return data
     
     @validates_schema

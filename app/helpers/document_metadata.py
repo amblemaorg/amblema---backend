@@ -11,3 +11,14 @@ def getUniqueFields(document):
         if document._fields[field].unique:
             uniquesFields.append(document._fields[field].name)
     return uniquesFields
+
+def getFileFields(document):
+    """
+    Method that return all fields wich
+    are received as file
+    """
+    fileFields = []
+    for field in document._fields:
+        if hasattr(document._fields[field], 'is_file'):
+            fileFields.append(document._fields[field].name)
+    return fileFields

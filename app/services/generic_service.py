@@ -4,12 +4,14 @@
 from functools import reduce
 import operator
 
+from flask import current_app
 from marshmallow import ValidationError
 from mongoengine import Q
 
 from app.helpers.error_helpers import RegisterNotFound
-from app.helpers.document_metadata import getUniqueFields
-
+from app.helpers.document_metadata import (
+    getUniqueFields, getFileFields)
+from app.helpers.handler_files import validate_files, upload_files
 
 
 class GenericServices():
@@ -38,14 +40,22 @@ class GenericServices():
         return {"records": schema.dump(records, many=True)}, 200
 
     
-    def saveRecord(self, jsonData):
+    def saveRecord(self, jsonData, files=None):
         """
         Method that saves a new record.   
         params: jsonData
         """
         schema = self.Schema()
         try:
+            documentFiles = getFileFields(self.Model)
+            if files and documentFiles:
+                validFiles = validate_files(files, documentFiles)
+                fileSchema = self.Schema(partial=documentFiles)
+                fileSchema.validate(jsonData)
+                uploadedfiles = upload_files(validFiles)
+                jsonData.update(uploadedfiles)
             data = schema.load(jsonData)
+            current_app.logger.info(data)
             uniquesFields = getUniqueFields(self.Model)
             fieldsForCheckDuplicates = []
             record = self.Model()
@@ -77,12 +87,18 @@ class GenericServices():
         return schema.dump(record), 200
 
     
-    def updateRecord(self, recordId, jsonData, partial=False, exclude=()):
+    def updateRecord(self, recordId, jsonData, partial=False, exclude=(), files=None):
         """
         Update a record
         """
         schema = self.Schema(exclude=exclude)
         try:
+            documentFiles = getFileFields(self.Model)
+            current_app.logger.info(documentFiles)
+            if files and documentFiles:
+                validFiles = validate_files(files, documentFiles)
+                uploadedfiles = upload_files(validFiles)
+                jsonData.update(uploadedfiles)
             data = schema.load(jsonData, partial=partial)
             record = self.getOr404(recordId)
             has_changed = False

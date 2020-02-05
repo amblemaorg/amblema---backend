@@ -5,6 +5,7 @@ import os
 from flask import request, send_file
 from flask_restful import Resource
 from flask.views import MethodView
+from flask import send_from_directory
 
 from app.blueprints.web_content import web_content_blueprint
 from app.blueprints.web_content.models.web_content import WebContent, WebContentSchema
@@ -13,6 +14,7 @@ from app.blueprints.web_content.services import WebContentService
 from app.helpers.handler_request import getQueryParams
 from app.services.generic_service import GenericServices
 from resources.images import path_images
+from resources.files import files_path
 
 
 class WebContentView(MethodView):
@@ -68,17 +70,21 @@ class PostHandlerView(MethodView):
 
 
 class ImagesView(MethodView):
-    
     def get(self, imageId):
         filename = path_images+'/'+imageId
         extension = os.path.splitext(filename)[1]
         return send_file(filename, mimetype='image/'+extension)
 
+class FileView(MethodView):
+    def get(self, filename):
+        return send_from_directory(files_path, filename)
+
 
 webContentView = WebContentView.as_view('webContentView')
-imagesView = ImagesView.as_view('imagesView')
 postView = PostView.as_view('postView')
 postHandlerView = PostHandlerView.as_view('postHandlerView')
+imagesView = ImagesView.as_view('imagesView')
+fileView = FileView.as_view('fileView')
 
 web_content_blueprint.add_url_rule(
     '/webcontent',
@@ -101,5 +107,11 @@ web_content_blueprint.add_url_rule(
 web_content_blueprint.add_url_rule(
     '/resources/images/<string:imageId>',
     view_func=imagesView,
+    methods=['GET']
+)
+
+web_content_blueprint.add_url_rule(
+    '/resources/files/<string:filename>',
+    view_func=fileView,
     methods=['GET']
 )

@@ -30,6 +30,9 @@ from app.controllers.learning_module_controller import (
     QuizController,
     QuizHandlerController
 )
+from app.controllers.school_year_controller import (
+    SchoolYearController, SchoolYearHandlerController
+)
 from app.controllers.step_controller import (
     StepController, StepHandlerController
 )
@@ -131,6 +134,16 @@ def create_app(config_instance):
         StepHandlerController,
         '/steps/<string:id>',
         '/steps/<string:id>/'
+    )
+    api.add_resource(
+        SchoolYearController,
+        '/schoolyears',
+        '/schoolyears/'
+    )
+    api.add_resource(
+        SchoolYearHandlerController,
+        '/schoolyears/<string:id>',
+        '/schoolyears/<string:id>/'
     )
 
     return app

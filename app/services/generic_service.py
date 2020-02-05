@@ -23,10 +23,7 @@ class GenericServices():
         """
         get all available states records
         """
-        if only and exclude: schema = self.Schema(only=only, exclude=exclude)
-        elif only: schema = self.Schema(only=only)
-        elif exclude: schema = self.Schema(exclude=exclude)
-        else: schema = self.Schema()
+        schema = self.Schema(only=only, exclude=exclude)
 
         if filters:
             filterList = []
@@ -75,20 +72,20 @@ class GenericServices():
             return err.messages, 400
 
     
-    def getRecord(self, recordId):
+    def getRecord(self, recordId, only=None, exclude=()):
         """
         Return a record filterd by its id
         """
-        schema = self.Schema()
+        schema = self.Schema(exclude=exclude, only=only)
         record = self.getOr404(recordId)
         return schema.dump(record), 200
 
     
-    def updateRecord(self, recordId, jsonData, partial=False, exclude=(), files=None):
+    def updateRecord(self, recordId, jsonData, partial=False, exclude=(), only=None, files=None):
         """
         Update a record
         """
-        schema = self.Schema(exclude=exclude)
+        schema = self.Schema(exclude=exclude, only=only)
         try:
             documentFiles = getFileFields(self.Model)
             current_app.logger.info(documentFiles)

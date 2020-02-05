@@ -9,6 +9,7 @@ from mongoengine import (
     StringField,
     URLField,
     BooleanField,
+    IntField,
     DateField,
     DateTimeField,
     EmbeddedDocument,
@@ -26,10 +27,23 @@ from marshmallow import (
 from app.helpers.ma_schema_validators import not_blank
 
 
+class ReadingDiagnostic(EmbeddedDocument):
+    wordsPerMin = IntField(required=True)
+
+class MathDiagnostic(EmbeddedDocument):
+    multiplicationsPerMin = IntField(required=True)
+    operationsPerMin = IntField(required=True)
+
+class DiagnosticSettings(EmbeddedDocument):
+    reading = EmbeddedDocumentField(ReadingDiagnostic, required=True)
+    math = EmbeddedDocumentField(MathDiagnostic, required=True)
+
+
 class SchoolYear(Document):
     name = StringField(required=True)
     startDate = DateField(required=True)
     endDate = DateField(required=True)
+    diagnosticSettings = EmbeddedDocumentField(DiagnosticSettings)
     state = StringField(required=True, default="1")
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -44,11 +58,35 @@ SCHEMAS
 """
 
 
+class ReadingSchema(Schema):
+    wordsPerMin = fields.Int(required=True)
+    
+    @post_load
+    def make_action(self, data, **kwargs):
+        return ReadingDiagnostic(**data)
+
+class MathSchema(Schema):
+    multiplicationsPerMin = fields.Int(required=True)
+    operationsPerMin = fields.Int(required=True)
+    
+    @post_load
+    def make_action(self, data, **kwargs):
+        return MathDiagnostic(**data)
+
+class DiagnosticSettingsSchema(Schema):
+    reading = fields.Nested(ReadingSchema, required=True)
+    math = fields.Nested(MathSchema, required=True)
+
+    @post_load
+    def make_action(self, data, **kwargs):
+        return DiagnosticSettings(**data)
+
 class SchoolYearSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
     startDate = fields.Date(required=True)
     endDate = fields.Date(required=True)
+    diagnosticSettings = fields.Nested(DiagnosticSettingsSchema)
     state = fields.Str(
         validate=validate.OneOf(
             ["1","2"],

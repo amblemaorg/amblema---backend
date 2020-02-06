@@ -40,7 +40,9 @@ from app.controllers.diagnosis_controller import DiagnosticController
 from app.controllers.school_contact_controller import (
     SchoolContactController, SchoolContactHandlerController
 )
-
+from app.controllers.sponsor_contact_controller import (
+    SponsorContactController, SponsorContactHandlerController
+)
 
 db = MongoEngine()
 
@@ -152,5 +154,8 @@ def create_app(config_instance):
     api.add_resource(DiagnosticController, '/diagnosticsettings')
     api.add_resource(SchoolContactController, '/schoolscontacts')
     api.add_resource(SchoolContactHandlerController, '/schoolscontacts/<string:id>')
+    api.add_resource(SponsorContactController, '/sponsorscontacts')
+    api.add_resource(SponsorContactHandlerController, '/sponsorscontacts/<string:id>')
+
 
     return app

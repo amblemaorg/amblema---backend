@@ -1,20 +1,20 @@
-# /app/controllers/school_contact_controller.py
+# /app/controllers/sponsor_contact_controller.py
 
 
 from flask import request
 from flask_restful import Resource
 
 from app.services.generic_service import GenericServices
-from app.models.school_contact_model import (
-    SchoolContact, SchoolContactSchema)
+from app.models.sponsor_contact_model import (
+    SponsorContact, SponsorContactSchema)
 from app.helpers.handler_request import getQueryParams
 
 
-class SchoolContactController(Resource):
+class SponsorContactController(Resource):
     
     service = GenericServices(
-        Model=SchoolContact,
-        Schema=SchoolContactSchema)
+        Model=SponsorContact,
+        Schema=SponsorContactSchema)
 
     def get(self):
         filters = getQueryParams(request)
@@ -25,11 +25,11 @@ class SchoolContactController(Resource):
         return self.service.saveRecord(jsonData)
 
     
-class SchoolContactHandlerController(Resource):
+class SponsorContactHandlerController(Resource):
     
     service = GenericServices(
-        Model=SchoolContact,
-        Schema=SchoolContactSchema)
+        Model=SponsorContact,
+        Schema=SponsorContactSchema)
 
     def get(self, id):
         return self.service.getRecord(id)

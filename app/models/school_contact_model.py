@@ -1,4 +1,4 @@
-# /app/models/step_model.py
+# /app/models/school_contact_model.py
 
 
 from datetime import datetime

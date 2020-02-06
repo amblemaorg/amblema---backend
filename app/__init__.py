@@ -37,6 +37,9 @@ from app.controllers.step_controller import (
     StepController, StepHandlerController
 )
 from app.controllers.diagnosis_controller import DiagnosticController
+from app.controllers.school_contact_controller import (
+    SchoolContactController, SchoolContactHandlerController
+)
 
 
 db = MongoEngine()
@@ -147,5 +150,7 @@ def create_app(config_instance):
         '/schoolyears/<string:id>/'
     )
     api.add_resource(DiagnosticController, '/diagnosticsettings')
+    api.add_resource(SchoolContactController, '/schoolscontacts')
+    api.add_resource(SchoolContactHandlerController, '/schoolscontacts/<string:id>')
 
     return app

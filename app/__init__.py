@@ -37,7 +37,15 @@ from app.controllers.step_controller import (
     StepController, StepHandlerController
 )
 from app.controllers.diagnosis_controller import DiagnosticController
-
+from app.controllers.school_contact_controller import (
+    SchoolContactController, SchoolContactHandlerController
+)
+from app.controllers.sponsor_contact_controller import (
+    SponsorContactController, SponsorContactHandlerController
+)
+from app.controllers.coordinator_contact_controller import (
+    CoordinatorContactController, CoordinatorContactHandlerController
+)
 
 db = MongoEngine()
 
@@ -147,5 +155,12 @@ def create_app(config_instance):
         '/schoolyears/<string:id>/'
     )
     api.add_resource(DiagnosticController, '/diagnosticsettings')
+    api.add_resource(SchoolContactController, '/schoolscontacts')
+    api.add_resource(SchoolContactHandlerController, '/schoolscontacts/<string:id>')
+    api.add_resource(SponsorContactController, '/sponsorscontacts')
+    api.add_resource(SponsorContactHandlerController, '/sponsorscontacts/<string:id>')
+    api.add_resource(CoordinatorContactController, '/coordinatorscontacts')
+    api.add_resource(CoordinatorContactHandlerController, '/coordinatorscontacts/<string:id>')
+
 
     return app

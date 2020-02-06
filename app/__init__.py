@@ -46,6 +46,9 @@ from app.controllers.sponsor_contact_controller import (
 from app.controllers.coordinator_contact_controller import (
     CoordinatorContactController, CoordinatorContactHandlerController
 )
+from app.controllers.steps_tracking_controller import (
+    StepsTrackingController, StepsTrackingHandlerController
+)
 
 db = MongoEngine()
 
@@ -161,6 +164,8 @@ def create_app(config_instance):
     api.add_resource(SponsorContactHandlerController, '/sponsorscontacts/<string:id>')
     api.add_resource(CoordinatorContactController, '/coordinatorscontacts')
     api.add_resource(CoordinatorContactHandlerController, '/coordinatorscontacts/<string:id>')
+    api.add_resource(StepsTrackingController, '/stepstrackings')
+    api.add_resource(StepsTrackingHandlerController, '/stepstrackings/<string:id>')
 
 
     return app

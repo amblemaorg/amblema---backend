@@ -6,87 +6,32 @@ import json
 
 from mongoengine import (
     Document,
-    StringField,
-    EmailField,
-    URLField,
-    BooleanField,
-    IntField,
-    DateField,
-    DateTimeField,
     EmbeddedDocument,
-    EmbeddedDocumentField)
-from marshmallow import (
-    Schema,
-    fields,
-    pre_load,
-    post_load,
-    EXCLUDE,
-    validate,
-    validates_schema,
-    ValidationError)
-
-from app.helpers.ma_schema_validators import not_blank, only_numbers
+    fields)
 
 
 class CoordinatorContact(Document):
-    firstName = StringField(required=True)
-    lastName = StringField(required=True)
-    birthDate = DateField(required=True)
-    gender = StringField(required=True, max_length=1)
-    city = StringField(required=True)
-    email = EmailField(required=True)
-    phone = StringField(required=True)
-    profession = StringField(required=True)
-    referredName = StringField(required=True)
-    state = StringField(required=True, default="1")
-    status = BooleanField(default=True)
-    createdAt = DateTimeField(default=datetime.utcnow)
-    updatedAt = DateTimeField(default=datetime.utcnow)
+    firstName = fields.StringField(required=True)
+    lastName = fields.StringField(required=True)
+    cardType = fields.StringField(required=True)
+    cardId = fields.StringField(required=True)
+    birthDate = fields.DateField(required=True)
+    gender = fields.StringField(required=True, max_length=1)
+    addressState = fields.ReferenceField('State', required=True)
+    addressMunicipality = fields.ReferenceField('Municipality', required=True)
+    addressCity = fields.StringField(required=True)
+    addressStreet = fields.StringField()
+    addressHome = fields.StringField()
+    email = fields.EmailField(required=True)
+    phone = fields.StringField(required=True)
+    homePhone = fields.StringField()
+    profession = fields.StringField(required=True)
+    referredName = fields.StringField(required=True)
+    state = fields.StringField(required=True, default="1")
+    status = fields.BooleanField(default=True)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'coordinators_contacts'}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
-    
-"""
-SCHEMAS
-"""
-
-
-class CoordinatorContactSchema(Schema):
-    id = fields.Str(dump_only=True)
-    firstName = fields.Str(required=True, validate=not_blank)
-    lastName = fields.Str(required=True, validate=not_blank)
-    birthDate = fields.Date(required=True)
-    gender = fields.Str(
-        required=True,
-        validate=validate.OneOf(
-            ('1','2'),
-            ('female','male')
-        ))
-    city = fields.Str(required=True, validate=not_blank)
-    email = fields.Email(required=True, validate=not_blank)
-    phone = fields.Str(required=True, validate=(not_blank, only_numbers))
-    profession = fields.Str(required=True, validate=not_blank)
-    referredName = fields.Str(required=True, validate=not_blank)
-    state = fields.Str(
-        default="1",
-        validate=validate.OneOf(
-            ('1','2','3'),
-            ('pending', 'acepted', 'rejected')
-        ))
-    createdAt = fields.DateTime(dump_only=True)
-    updatedAt = fields.DateTime(dump_only=True)
-
-    @pre_load
-    def process_input(self, data, **kwargs):
-        if 'firstName' in data:
-            data["firstName"] = data["firstName"].title()
-        if 'lastName' in data:
-            data["lastName"] = data["lastName"].title()
-        if 'email' in data:
-            data["email"] = data["email"].lower()
-        return data
-    
-    class Meta:
-        unknown = EXCLUDE
-        ordered = True

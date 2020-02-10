@@ -2,7 +2,10 @@
 
 
 from marshmallow import fields
+
 from app.helpers.handler_images import upload_image
+from app.services.generic_service import getRecordOr404
+
 
 class MAPolygonField(fields.Field):
     """Marshmallow field that validate a polygon field
@@ -37,7 +40,10 @@ class MAReferenceField(fields.Field):
         return record
 
     def _deserialize(self, value, attr, data, **kwargs):
-        return value
+        if 'document' in self.metadata:
+            record = getRecordOr404(self.metadata['document'], value)
+        return record
+
 
 class MAImageField(fields.Field):
     """Marshmallow field that validate a image field

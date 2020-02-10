@@ -4,20 +4,19 @@
 from flask import request
 from flask_restful import Resource
 
-from app.models.user_model import (
-    User,
-    AdministratorUser,
-    CoordinatorUser,
-    SponsorUser,
-    SchoolUser,
-    UserSchema,
-    AdminUserSchema,
-    CoordinatorUserSchema,
-    SponsorUserSchema,
-    SchoolUserSchema
-)
+from app.models.user_model import User
+from app.models.admin_user_model import AdminUser
+from app.models.school_user_model import SchoolUser
+from app.models.sponsor_user_model import SponsorUser
+from app.models.coordinator_user_model import CoordinatorUser
+from app.schemas.user_schema import UserSchema
+from app.schemas.admin_user_schema import AdminUserSchema
+from app.schemas.school_user_schema import SchoolUserSchema
+from app.schemas.sponsor_user_schema import SponsorUserSchema
+from app.schemas.coordinator_user_schema import CoordinatorUserSchema
 from app.services.generic_service import GenericServices
 from app.helpers.handler_request import getQueryParams
+
 
 class UserController(Resource):
 
@@ -27,18 +26,17 @@ class UserController(Resource):
         return service.getAllRecords(filters=filters)
 
     def post(self):
-        
         jsonData = request.get_json()
         service = getService(request)
         return service.saveRecord(jsonData)
 
-    
+
 class UserHandlerController(Resource):
 
     def get(self, userId):
         service = getService(request)
         return service.getRecord(userId)
-    
+
     def put(self, userId):
         jsonData = request.get_json()
         service = getService(request)
@@ -60,7 +58,7 @@ def getService(request):
     )
     if 'userType' in request.args:
         if str(request.args['userType']) == '1':
-            service.Model = AdministratorUser
+            service.Model = AdminUser
             service.Schema = AdminUserSchema
         elif str(request.args['userType']) == '2':
             service.Model = CoordinatorUser

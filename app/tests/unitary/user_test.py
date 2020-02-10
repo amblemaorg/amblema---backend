@@ -2,8 +2,8 @@
 
 import unittest
 import json
-from app.models.user_model import UserSchema
-from app.models.admin_user_model import AdminUserSchema
+from app.schemas.user_schema import UserSchema
+from app.schemas.admin_user_schema import AdminUserSchema
 
 
 class UserTestCase(unittest.TestCase):
@@ -14,7 +14,7 @@ class UserTestCase(unittest.TestCase):
         user = {
             "firstName": "greudys",
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "firstName": "3445",
         }
@@ -33,7 +33,7 @@ class UserTestCase(unittest.TestCase):
         user = {
             "lastName": "Godoy",
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "lastName": "3445",
         }
@@ -52,7 +52,7 @@ class UserTestCase(unittest.TestCase):
         user = {
             "cardId": "20922842",
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "cardId": "Git",
         }
@@ -72,7 +72,7 @@ class UserTestCase(unittest.TestCase):
             "cardType": "1",
             "cardId": "20922842"
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "cardType": "1",
             "cardId": "20922",
@@ -94,7 +94,7 @@ class UserTestCase(unittest.TestCase):
             "cardType": "2",
             "cardId": "20922842"
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "cardType": "2",
             "cardId": "20922",
@@ -116,7 +116,7 @@ class UserTestCase(unittest.TestCase):
             "cardType": "3",
             "cardId": "2092284223"
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "cardType": "3",
             "cardId": "20922",
@@ -137,7 +137,7 @@ class UserTestCase(unittest.TestCase):
         user = {
             "email": "greudys@binaural.com.ve"
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "email": "abdc@gmail"
         }
@@ -156,7 +156,7 @@ class UserTestCase(unittest.TestCase):
         user = {
             "phone": "04245687571"
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "phone": "041475677aa"
         }
@@ -175,7 +175,7 @@ class UserTestCase(unittest.TestCase):
         user = {
             "password": "12345678"
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "password": "1234567"
         }
@@ -194,7 +194,7 @@ class UserTestCase(unittest.TestCase):
         user = {
             "function": "Cargo"
         }
-        self.assertEqual(userSchema.validate(user),{})
+        self.assertEqual(userSchema.validate(user), {})
         user = {
             "function": "Cargo 1"
         }

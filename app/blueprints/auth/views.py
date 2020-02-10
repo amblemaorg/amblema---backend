@@ -10,7 +10,9 @@ from flask_jwt_extended import (
     set_access_cookies, set_refresh_cookies)
 
 from app.blueprints.auth import auth_blueprint
-from app.models.user_model import User, UserSchema
+from app.models.user_model import User
+from app.schemas.user_schema import UserSchema
+
 
 class LoginView(MethodView):
     """This class-based view handles user login and access token generation."""
@@ -29,15 +31,15 @@ class LoginView(MethodView):
             email = args['email'].strip().lower()
 
             user = User.objects(email=email).first()
-            if not user or  not user.password_is_valid(password):
+            if not user or not user.password_is_valid(password):
                 return {"message": "Incorrect credectials"}, 400
 
-            userSchema = UserSchema(only=("id", "firstName","userType"))
+            userSchema = UserSchema(only=("id", "firstName", "userType"))
             userJson = userSchema.dump(user)
             permissions = user.get_permissions()
             payload = userJson
-            payload['permissions']=permissions
-            # Generate the access token. 
+            payload['permissions'] = permissions
+            # Generate the access token.
             # This will be generated in login microservice
             access_token = create_access_token(payload)
             refresh_token = create_refresh_token(payload)
@@ -46,11 +48,11 @@ class LoginView(MethodView):
                 {'msg': 'You logged in successfully',
                  'access_token': access_token,
                  'refresh_token': refresh_token
-                })
+                 })
             #set_access_cookies(resp, access_token)
             #set_refresh_cookies(resp, refresh_token)
             return resp, 200
-            
+
         except Exception as e:
             # Create a response containing an string error message
             return {
@@ -60,7 +62,7 @@ class LoginView(MethodView):
     @jwt_required
     def delete(self):
         """ Endpoint for revoking the current users access token"""
-        
+
         return {"msg": "Access token revoked"}, 200
 
 

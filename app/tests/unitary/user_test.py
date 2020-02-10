@@ -2,7 +2,8 @@
 
 import unittest
 import json
-from app.models.user_model import UserSchema, AdminUserSchema
+from app.models.user_model import UserSchema
+from app.models.admin_user_model import AdminUserSchema
 
 
 class UserTestCase(unittest.TestCase):

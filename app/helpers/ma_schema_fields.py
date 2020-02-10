@@ -42,7 +42,9 @@ class MAReferenceField(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):
         if 'document' in self.metadata:
             record = getRecordOr404(self.metadata['document'], value)
-        return record
+            return record
+        else:
+            return value
 
 
 class MAImageField(fields.Field):

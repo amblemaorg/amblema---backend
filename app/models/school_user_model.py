@@ -22,7 +22,7 @@ class SchoolUser(User):
 
         projectRef = ProjectReference(
             id=str(project.id),
-            code=project.code,
+            code=project.code.zfill(7),
             school=DocumentReference(
                 id=str(self.pk),
                 name=self.name))

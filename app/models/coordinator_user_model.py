@@ -33,7 +33,7 @@ class CoordinatorUser(User):
     def addProject(self, project):
         projectRef = ProjectReference(
             id=str(project.id),
-            code=project.code,
+            code=project.code.zfill(7),
             coordinator=DocumentReference(
                 id=str(self.pk),
                 name=self.name))

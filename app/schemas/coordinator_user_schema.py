@@ -31,7 +31,7 @@ class CoordinatorUserSchema(UserSchema):
     schools = fields.List(fields.Nested(
         ProjectReferenceSchema), dump_only=True)
     homePhone = fields.Str(required=True, validate=only_numbers)
-    addressHouse = fields.Str()
+    addressHome = fields.Str()
 
     class Meta:
         unknown = EXCLUDE

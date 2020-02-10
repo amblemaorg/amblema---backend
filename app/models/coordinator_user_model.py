@@ -19,7 +19,7 @@ class CoordinatorUser(User):
     birthdate = fields.DateField(required=True)
     projects = fields.EmbeddedDocumentListField(ProjectReference)
     homePhone = fields.StringField(required=True)
-    addressHouse = fields.StringField()
+    addressHome = fields.StringField()
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName

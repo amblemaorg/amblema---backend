@@ -23,7 +23,7 @@ class StepsProgressSchema(Schema):
 
 class ProjectSchema(Schema):
     id = fields.Str(dump_only=True)
-    code = fields.Str(dump_only=True)
+    code = fields.Function(lambda obj: str(obj.code).zfill(7))
     school = MAReferenceField(document=SchoolUser, allow_none=True)
     sponsor = MAReferenceField(document=SponsorUser, allow_none=True)
     coordinator = MAReferenceField(document=CoordinatorUser, allow_none=True)

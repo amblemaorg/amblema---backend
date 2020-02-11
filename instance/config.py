@@ -12,12 +12,17 @@ class Config(object):
         'host': os.getenv('DB_URL')
     }
     SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-    SERVER_URL = os.getenv('SERVER_URL') # for image url
+    SERVER_URL = os.getenv('SERVER_URL')  # for image url
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=15)
     JWT_TOKEN_LOCATION = ['headers']
     JWT_COOKIE_SECURE = False
     JWT_COOKIE_CSRF_PROTECT = False
+    SMTP_USERNAME = os.getenv('SMTP_USERNAME')
+    SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
+    SMTP_FROM = os.getenv('SMTP_FROM')
+    SMTP_HOST = os.getenv('SMTP_HOST')
+    SMTP_PORT = os.getenv('SMTP_PORT')
 
 
 class TestingConfig(Config):

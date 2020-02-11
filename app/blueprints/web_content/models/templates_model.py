@@ -15,9 +15,11 @@ class Background(EmbeddedDocument):
     image = StringField(required=True)
     description = StringField()
 
+
 class Multimedia(EmbeddedDocument):
     url = StringField(required=True)
     type = StringField(required=True)
+
 
 class Testimonial(EmbeddedDocument):
     firstName = StringField(required=True)
@@ -31,18 +33,26 @@ class Testimonial(EmbeddedDocument):
 SCHEMAS FOR MODELS 
 """
 
+
 class BackgroundSchema(Schema):
-    image = MAImageField(required=True, validate=(not_blank, validate_image))
+    image = MAImageField(
+        required=True,
+        validate=(not_blank, validate_image),
+        folder='webcontent')
     description = fields.Str()
 
     @post_load
     def make_document(self, data, **kwargs):
         return Background(**data)
 
+
 class TestimonialSchema(Schema):
     firstName = fields.Str(required=True, validate=not_blank)
     lastName = fields.Str(required=True, validate=not_blank)
-    image = MAImageField(required=True, validate=(not_blank, validate_image))
+    image = MAImageField(
+        required=True,
+        validate=(not_blank, validate_image),
+        folder='webcontent')
     function = fields.Str(required=True, validate=not_blank)
     description = fields.Str(required=True, validate=not_blank)
 

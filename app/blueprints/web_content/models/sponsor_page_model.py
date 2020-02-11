@@ -13,6 +13,7 @@ from app.helpers.ma_schema_fields import MAImageField
 from app.blueprints.web_content.models.templates_model import (
     Testimonial, TestimonialSchema)
 
+
 class SponsorPage(EmbeddedDocument):
     backgroundImage = StringField(required=True)
     testimonials = EmbeddedDocumentListField(Testimonial, required=True)
@@ -23,9 +24,14 @@ class SponsorPage(EmbeddedDocument):
 SCHEMAS FOR MODELS 
 """
 
+
 class SponsorPageSchema(Schema):
-    backgroundImage = MAImageField(required=True, validate=(not_blank, validate_image))
-    testimonials= fields.List(fields.Nested(TestimonialSchema), required=True, validate=not_blank)
+    backgroundImage = MAImageField(
+        required=True,
+        validate=(not_blank, validate_image),
+        folder='webcontent')
+    testimonials = fields.List(fields.Nested(
+        TestimonialSchema), required=True, validate=not_blank)
     steps = fields.List(fields.String(validate=not_blank))
 
     @post_load

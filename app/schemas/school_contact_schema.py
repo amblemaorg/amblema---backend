@@ -99,7 +99,7 @@ class SchoolContactSchema(Schema):
     @validates_schema
     def validate_schema(self, data, **kwargs):
         errors = {}
-        if data['hasSponsor']:
+        if 'hasSponsor' in data and data['hasSponsor']:
             requiredSponsor = (
                 'sponsorName',
                 'sponsorEmail',

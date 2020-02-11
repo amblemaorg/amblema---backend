@@ -14,6 +14,7 @@ from mongoengine import (
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
+from app.models.school_year_model import SchoolYear
 
 
 class StepsProgress(EmbeddedDocument):
@@ -24,7 +25,7 @@ class StepsProgress(EmbeddedDocument):
 
 
 class Project(Document):
-    code = fields.SequenceField(required=True)
+    code = fields.SequenceField(required=True, value_decorator=str)
     school = fields.ReferenceField('SchoolUser')
     sponsor = fields.ReferenceField('SponsorUser')
     coordinator = fields.ReferenceField('CoordinatorUser')
@@ -42,13 +43,17 @@ class Project(Document):
         current_app.logger.info(kwargs)
         current_app.logger.info(document.id)
         if not document.id:
+            year = SchoolYear.objects(state="1", status=True).first()
+            if not year:
+                raise ValidationError(
+                    message="There is not an active school year")
             current_app.logger.info('Before created')
             if not (document.school or document.sponsor or document.coordinator):
                 raise ValidationError(
                     message="At least an sponsor, school or coordinator is required")
             initialSteps = StepsProgress()
             document.stepsProgress = initialSteps
-            document.code = 'asd'
+            document.schoolYear = year
         else:
             current_app.logger.info('before updated')
 

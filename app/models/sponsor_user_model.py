@@ -35,7 +35,7 @@ class SponsorUser(User):
 
         projectRef = ProjectReference(
             id=str(project.id),
-            code=project.code,
+            code=project.code.zfill(7),
             sponsor=DocumentReference(
                 id=str(self.pk),
                 name=self.name))

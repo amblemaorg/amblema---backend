@@ -21,7 +21,7 @@ class WebContentView(MethodView):
     service = WebContentService(
         Model=WebContent,
         Schema=WebContentSchema)
-    
+
     def get(self):
         page = None
         if 'page' in request.args:
@@ -34,6 +34,7 @@ class WebContentView(MethodView):
         if 'page' in request.args:
             page = [request.args.get('page')]
         return self.service.saveRecord(jsonData, only=page)
+
 
 class PostView(MethodView):
     service = GenericServices(
@@ -56,7 +57,7 @@ class PostHandlerView(MethodView):
 
     def get(self, id):
         return self.service.getRecord(id)
-    
+
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -68,12 +69,12 @@ class PostHandlerView(MethodView):
         return self.service.deleteRecord(id)
 
 
-
 class ImagesView(MethodView):
-    def get(self, imageId):
-        filename = path_images+'/'+imageId
+    def get(self, folder, imageId):
+        filename = path_images+'/'+folder+'/'+imageId
         extension = os.path.splitext(filename)[1]
         return send_file(filename, mimetype='image/'+extension)
+
 
 class FileView(MethodView):
     def get(self, filename):
@@ -105,7 +106,7 @@ web_content_blueprint.add_url_rule(
 )
 
 web_content_blueprint.add_url_rule(
-    '/resources/images/<string:imageId>',
+    '/resources/images/<string:folder>/<string:imageId>',
     view_func=imagesView,
     methods=['GET']
 )

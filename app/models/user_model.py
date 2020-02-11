@@ -11,6 +11,8 @@ from mongoengine import Document, fields, signals, QuerySetManager, DynamicDocum
 
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
+from app.helpers.handler_emails import send_email
+from resources.email_templates.register_email import messageRegisterEmail
 
 
 class User(DynamicDocument):
@@ -37,7 +39,7 @@ class User(DynamicDocument):
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         current_app.logger.info('user pre_save')
-        if 'created' in kwargs and kwargs['created']:
+        if not document.id:
             current_app.logger.info('Before created')
             document.setHashPassword()
 
@@ -66,9 +68,20 @@ class User(DynamicDocument):
                     permissions.append(action.name)
         return permissions
 
+    def sendRegistrationEmail(self, password):
+        """
+        Send email when a user is registered
+        Params:
+            password: str (user password)
+        """
+        current_app.logger.info(send_email(
+            messageRegisterEmail(self.email, password),
+            'Amblema - Registro de usuario',
+            self.email))
+
     meta = {
         'allow_inheritance': True,
         'collection': 'users'}
 
 
-signals.pre_save_post_validation.connect(User.pre_save, sender=User)
+signals.pre_save.connect(User.pre_save, sender=User)

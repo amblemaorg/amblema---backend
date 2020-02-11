@@ -135,6 +135,7 @@ class SchoolContact(Document):
                         sponsorUser.password = password
                         sponsorUser.setHashPassword()
                         sponsorUser.save()
+                        sponsorUser.sendRegistrationEmail(password)
                     project.sponsor = sponsorUser
                 project.save()
 

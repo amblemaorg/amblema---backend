@@ -2,6 +2,8 @@
 
 
 from datetime import datetime
+import random
+import string
 
 from flask import current_app
 from flask_bcrypt import Bcrypt
@@ -42,6 +44,10 @@ class User(DynamicDocument):
     def setHashPassword(self):
         """Set a hashed password"""
         self.password = Bcrypt().generate_password_hash(self.password).decode()
+
+    def generatePassword(self):
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(8))
 
     def password_is_valid(self, password):
         """

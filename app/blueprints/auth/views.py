@@ -34,7 +34,7 @@ class LoginView(MethodView):
             if not user or not user.password_is_valid(password):
                 return {"message": "Incorrect credectials"}, 400
 
-            userSchema = UserSchema(only=("id", "firstName", "userType"))
+            userSchema = UserSchema(only=("id", "email", "name", "userType"))
             userJson = userSchema.dump(user)
             permissions = user.get_permissions()
             payload = userJson

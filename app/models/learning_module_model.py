@@ -27,7 +27,6 @@ from app.helpers.ma_schema_validators import (
 from app.helpers.error_helpers import RegisterNotFound
 
 
-
 class Quiz(Document):
     module = ReferenceField('LearningModule')
     question = StringField(required=True)
@@ -43,8 +42,8 @@ class Quiz(Document):
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
-    
-    
+
+
 class LearningModule(Document):
     title = StringField(required=True)
     description = StringField(required=True)
@@ -62,7 +61,7 @@ class LearningModule(Document):
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
-    
+
     @classmethod
     def post_save(cls, sender, document, **kwargs):
         current_app.logger.info('LearningModule POST_SAVE')
@@ -82,23 +81,24 @@ class LearningModule(Document):
         """
         Check if the answers given are incorrects  
         answers : {'quizId':str, 'option':str(1-4)}
-        
+
         Return all incorrects answers
         Otherwise return false
         """
         incorrectAnswers = []
         for quiz in self.getQuizzes():
-            
+
             if (
-                    (str(quiz.id) not in answers) or
-                    (quiz.correctOption != str(answers[str(quiz.id)]))
-                ):
+                (str(quiz.id) not in answers) or
+                (quiz.correctOption != str(answers[str(quiz.id)]))
+            ):
                 incorrectAnswers.append(str(quiz.id))
         if not incorrectAnswers:
             return False
         else:
             return incorrectAnswers
-    
+
+
 signals.post_save.connect(LearningModule.post_save, sender=LearningModule)
 
 
@@ -127,14 +127,15 @@ class QuizSchema(Schema):
     def process_input(self, data, **kwargs):
         if "module" in data:
             module = ""
-            module = LearningModule.objects(id=data["module"], status=True).first()
+            module = LearningModule.objects(
+                id=data["module"], status=True).first()
             if not module:
                 raise RegisterNotFound(message="Module not found",
                                        status_code=404,
                                        payload={"id": data['module']})
             data['module'] = module
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -149,7 +150,8 @@ class LearningModuleSchema(Schema):
     objectives = fields.List(fields.String(validate=not_blank))
     images = fields.List(
         MAImageField(
-            validate=(not_blank, validate_image)
+            validate=(not_blank, validate_image),
+            folder='learningmodules'
         ),
         required=True,
         validate=not_blank)
@@ -162,7 +164,7 @@ class LearningModuleSchema(Schema):
     quizzes = fields.List(fields.Nested(QuizSchema()), dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True

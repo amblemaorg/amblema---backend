@@ -14,12 +14,13 @@ from app.models.state_model import State, Municipality
 class UserSchema(Schema):
     id = fields.Str(dump_only=True)
     email = fields.Email(required=True, validate=not_blank)
+    name = fields.Str(dump_only=True)
     password = fields.Str(
         required=True,
         load_only=True,
         validate=(
             not_blank,
-            validate.Length(equal=8)))
+            validate.Length(min=8)))
     userType = fields.Str(
         required=True,
         validate=(

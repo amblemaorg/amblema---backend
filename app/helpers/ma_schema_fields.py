@@ -51,5 +51,5 @@ class MAImageField(fields.Field):
 
     def _deserialize(self, value, attr, data, **kwargs):
         if str(value).startswith('data'):
-            return upload_image(value)
+            return upload_image(value, self.metadata['folder'])
         return value

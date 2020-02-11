@@ -23,10 +23,10 @@ from app.blueprints.web_content.models.coordinator_page_model import (
 )
 
 class WebContent(Document):
-    homePage = EmbeddedDocumentField(HomePage, required=True)
-    aboutUsPage = EmbeddedDocumentField(AboutUsPage, required=True)
-    sponsorPage = EmbeddedDocumentField(SponsorPage, required=True)
-    coordinatorPage = EmbeddedDocumentField(CoordinatorPage, required=True)
+    homePage = EmbeddedDocumentField(HomePage)
+    aboutUsPage = EmbeddedDocumentField(AboutUsPage)
+    sponsorPage = EmbeddedDocumentField(SponsorPage)
+    coordinatorPage = EmbeddedDocumentField(CoordinatorPage)
 
 
 """

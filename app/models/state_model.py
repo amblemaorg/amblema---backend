@@ -19,22 +19,21 @@ from app.helpers.ma_schema_validators import not_blank
 from app.helpers.error_helpers import RegisterNotFound
 
 
-
 class State(Document):
-    name = StringField(unique=True, required=True)
+    name = StringField(unique_c=True, required=True)
     polygon = PolygonField()
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'states'}
-    
+
     def clean(self):
         self.updatedAt = datetime.utcnow()
 
 
 class Municipality(Document):
-    name = StringField(unique=True, required=True)
-    state = ReferenceField(State,required=True)
+    name = StringField(unique_c=True, required=True)
+    state = ReferenceField(State, required=True)
     polygon = PolygonField()
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -62,7 +61,7 @@ class StateSchema(Schema):
         if 'name' in data:
             data["name"] = data["name"].title()
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -88,7 +87,7 @@ class MunicipalitySchema(Schema):
         if 'name' in data:
             data["name"] = data["name"].title()
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True

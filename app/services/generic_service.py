@@ -143,6 +143,7 @@ class GenericServices():
         if len(attributes):
             for f in attributes:
                 filterList.append(Q(**{f['field']: f['value']}))
+            filterList.append(Q(**{"status": True}))
 
             if self.Model.__base__._meta['allow_inheritance']:
                 records = self.Model.__base__.objects.filter(

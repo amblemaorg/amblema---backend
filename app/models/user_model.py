@@ -18,7 +18,7 @@ from resources.email_templates.register_email import messageRegisterEmail
 class User(DynamicDocument):
     objects = QuerySetManager()
     name = fields.StringField()
-    email = fields.EmailField(unique=True, required=True)
+    email = fields.EmailField(unique_c=True, required=True)
     password = fields.StringField(required=True)
     userType = fields.StringField(required=True)
     phone = fields.StringField(required=True)

@@ -29,21 +29,20 @@ class GenericServices():
             filterList = []
             for f in filters:
                 filterList.append(Q(**{f['field']: f['value']}))
-            records = self.Model.objects(status = True).filter(
+            records = self.Model.objects(status=True).filter(
                 reduce(operator.and_, filterList)).all()
         else:
-            records = self.Model.objects(status = True).all()
-        
+            records = self.Model.objects(status=True).all()
+
         return {"records": schema.dump(records, many=True)}, 200
 
-    
     def saveRecord(self, jsonData, files=None):
         """
         Method that saves a new record.   
         params: jsonData
         """
         schema = self.Schema()
-        try:    
+        try:
             documentFiles = getFileFields(self.Model)
             if files and documentFiles:
                 validFiles = validate_files(files, documentFiles)
@@ -57,12 +56,12 @@ class GenericServices():
                 record[field] = data[field]
                 if field in uniquesFields:
                     fieldsForCheckDuplicates.append(
-                        {"field":field, "value":data[field]})
+                        {"field": field, "value": data[field]})
             isDuplicated = self.checkForDuplicates(fieldsForCheckDuplicates)
             if isDuplicated:
                 return {
                     "message": "Duplicated record found.",
-                    "data":isDuplicated}, 400
+                    "data": isDuplicated}, 400
             try:
                 record.save()
                 return schema.dump(record), 201
@@ -71,7 +70,6 @@ class GenericServices():
         except ValidationError as err:
             return err.messages, 400
 
-    
     def getRecord(self, recordId, only=None, exclude=()):
         """
         Return a record filterd by its id
@@ -80,7 +78,6 @@ class GenericServices():
         record = self.getOr404(recordId)
         return schema.dump(record), 200
 
-    
     def updateRecord(self, recordId, jsonData, partial=False, exclude=(), only=None, files=None):
         """
         Update a record
@@ -104,23 +101,21 @@ class GenericServices():
                     has_changed = True
                     if field in uniquesFields:
                         fieldsForCheckDuplicates.append(
-                            {"field":field, "value":data[field]})
-            
+                            {"field": field, "value": data[field]})
+
             if has_changed:
-                isDuplicated = self.checkForDuplicates(fieldsForCheckDuplicates)
+                isDuplicated = self.checkForDuplicates(
+                    fieldsForCheckDuplicates)
                 if isDuplicated:
                     return {
                         "message": "Duplicates record found.",
                         "data": isDuplicated}, 400
-                try:
-                    record.save()
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
-            
+
+                record.save()
+
             return schema.dump(record), 200
         except ValidationError as err:
             return err.messages, 400
-
 
     def deleteRecord(self, recordId):
         """
@@ -132,9 +127,8 @@ class GenericServices():
             record.save()
         except Exception as e:
             return {'status': 0, 'message': str(e)}, 400
-        
+
         return {"message": "Record deleted successfully"}, 200
-    
 
     def checkForDuplicates(self, attributes):
         """
@@ -145,19 +139,20 @@ class GenericServices():
         attributes: array. example [{"field":"name", "value":"Iribarren"}]
         """
         filterList = []
-        
+
         if len(attributes):
             for f in attributes:
                 filterList.append(Q(**{f['field']: f['value']}))
-            
+            filterList.append(Q(**{"status": True}))
+
             if self.Model.__base__._meta['allow_inheritance']:
                 records = self.Model.__base__.objects.filter(
                     reduce(operator.and_, filterList)
-                    ).all()
-            else: 
+                ).all()
+            else:
                 records = self.Model.objects.filter(
                     reduce(operator.and_, filterList)
-                    ).all()
+                ).all()
             if records:
                 duplicates = []
                 for record in records:
@@ -167,19 +162,19 @@ class GenericServices():
                 return duplicates
         return False
 
-    
     def getOr404(self, recordId):
         """
         Return a record filterd by its id.
         Otherwise return a 404 not found error
         """
-        
+
         record = self.Model.objects(id=recordId, status=True).first()
         if not record:
             raise RegisterNotFound(message="Record not found",
-                                status_code=404,
-                                payload={"recordId": recordId})
+                                   status_code=404,
+                                   payload={"recordId": recordId})
         return record
+
 
 def getRecordOr404(model, recordId):
     """Method that find a record by its id  

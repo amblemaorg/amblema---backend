@@ -3,6 +3,9 @@ __pycache__
 .idea/
 .vscode
 venv
+resources/images/*/*.png
+resources/images/*/*.jpg
+resources/images/*/*.svg
 resources/images/*.png
 resources/images/*.jpg
 resources/images/*.svg

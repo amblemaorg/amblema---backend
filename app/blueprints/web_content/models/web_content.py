@@ -7,7 +7,7 @@ from mongoengine import (
     BooleanField,
     EmbeddedDocumentField,
     EmbeddedDocumentListField)
-from marshmallow import Schema, fields, pre_load, post_load
+from marshmallow import Schema, fields, post_load
 
 from app.helpers.ma_schema_validators import not_blank
 from app.blueprints.web_content.models.home_page_model import (
@@ -22,6 +22,7 @@ from app.blueprints.web_content.models.coordinator_page_model import (
     CoordinatorPage, CoordinatorPageSchema
 )
 
+
 class WebContent(Document):
     homePage = EmbeddedDocumentField(HomePage)
     aboutUsPage = EmbeddedDocumentField(AboutUsPage)
@@ -33,9 +34,12 @@ class WebContent(Document):
 SCHEMAS FOR MODELS 
 """
 
+
 class WebContentSchema(Schema):
     homePage = fields.Nested(HomePageSchema, required=True, validate=not_blank)
-    aboutUsPage = fields.Nested(AboutUsPageSchema, required=True, validate=not_blank)
-    sponsorPage = fields.Nested(SponsorPageSchema, required=True, validate=not_blank)
-    coordinatorPage = fields.Nested(CoordinatorPageSchema, required=True, validate=not_blank)
-    
+    aboutUsPage = fields.Nested(
+        AboutUsPageSchema, required=True, validate=not_blank)
+    sponsorPage = fields.Nested(
+        SponsorPageSchema, required=True, validate=not_blank)
+    coordinatorPage = fields.Nested(
+        CoordinatorPageSchema, required=True, validate=not_blank)

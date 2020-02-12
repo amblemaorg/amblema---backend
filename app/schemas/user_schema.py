@@ -14,12 +14,13 @@ from app.models.state_model import State, Municipality
 class UserSchema(Schema):
     id = fields.Str(dump_only=True)
     email = fields.Email(required=True, validate=not_blank)
+    name = fields.Str(dump_only=True)
     password = fields.Str(
         required=True,
         load_only=True,
         validate=(
             not_blank,
-            validate.Length(equal=8)))
+            validate.Length(min=8)))
     userType = fields.Str(
         required=True,
         validate=(
@@ -42,13 +43,13 @@ class UserSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'email' in data:
+        if 'email' in data and isinstance(data["email"], str):
             data["email"] = str(data["email"]).lower()
-        if 'firstName' in data:
+        if 'firstName' in data and isinstance(data["firstName"], str):
             data["firstName"] = str(data["firstName"]).title()
-        if 'lastName' in data:
+        if 'lastName' in data and isinstance(data["lastName"], str):
             data["lastName"] = str(data["lastName"]).title()
-        if 'address' in data:
+        if 'address' in data and isinstance(data["address"], str):
             data["address"] = str(data["address"]).title()
         return data
 

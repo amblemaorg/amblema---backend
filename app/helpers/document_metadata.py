@@ -8,9 +8,10 @@ def getUniqueFields(document):
     """
     uniquesFields = []
     for field in document._fields:
-        if document._fields[field].unique:
+        if hasattr(document._fields[field], 'unique_c'):
             uniquesFields.append(document._fields[field].name)
     return uniquesFields
+
 
 def getFileFields(document):
     """

@@ -30,9 +30,11 @@ from app.helpers.ma_schema_validators import not_blank
 class ReadingDiagnostic(EmbeddedDocument):
     wordsPerMin = IntField(required=True)
 
+
 class MathDiagnostic(EmbeddedDocument):
     multiplicationsPerMin = IntField(required=True)
     operationsPerMin = IntField(required=True)
+
 
 class DiagnosticSettings(EmbeddedDocument):
     reading = EmbeddedDocumentField(ReadingDiagnostic, required=True)
@@ -48,11 +50,12 @@ class SchoolYear(Document):
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
-    meta = {'collection': 'seasons'}
+    meta = {'collection': 'school_years'}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
-    
+
+
 """
 SCHEMAS
 """
@@ -60,18 +63,20 @@ SCHEMAS
 
 class ReadingSchema(Schema):
     wordsPerMin = fields.Int(required=True)
-    
+
     @post_load
     def make_action(self, data, **kwargs):
         return ReadingDiagnostic(**data)
 
+
 class MathSchema(Schema):
     multiplicationsPerMin = fields.Int(required=True)
     operationsPerMin = fields.Int(required=True)
-    
+
     @post_load
     def make_action(self, data, **kwargs):
         return MathDiagnostic(**data)
+
 
 class DiagnosticSettingsSchema(Schema):
     reading = fields.Nested(ReadingSchema, required=True)
@@ -81,6 +86,7 @@ class DiagnosticSettingsSchema(Schema):
     def make_action(self, data, **kwargs):
         return DiagnosticSettings(**data)
 
+
 class SchoolYearSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
@@ -89,7 +95,7 @@ class SchoolYearSchema(Schema):
     diagnosticSettings = fields.Nested(DiagnosticSettingsSchema)
     state = fields.Str(
         validate=validate.OneOf(
-            ["1","2"],
+            ["1", "2"],
             ["Active", "Inactive"]
         ), required=True)
     createdAt = fields.DateTime(dump_only=True)
@@ -97,10 +103,10 @@ class SchoolYearSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True

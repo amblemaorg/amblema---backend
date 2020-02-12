@@ -70,9 +70,9 @@ class CoordinatorContactSchema(Schema):
             'referredName'
         )
         for field in toTitle:
-            if field in data:
+            if field in data and isinstance(data["field"], str):
                 data[field] = data[field].title()
-        if 'email' in data:
+        if "email" in data and isinstance(data["email"], str):
             data["email"] = data["email"].lower()
         return data
 

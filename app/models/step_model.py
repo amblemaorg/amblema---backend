@@ -35,6 +35,7 @@ class File(EmbeddedDocument):
     name = StringField(required=True)
     url = URLField(required=True)
 
+
 class Step(Document):
     name = StringField(required=True)
     type = StringField(required=True, max_length=1)
@@ -50,10 +51,12 @@ class Step(Document):
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
-    
+
+
 """
 SCHEMAS
 """
+
 
 class FileSchema(Schema):
     name = fields.Str(validate=not_blank)
@@ -64,7 +67,7 @@ class FileSchema(Schema):
         if isinstance(data, str):
             data = json.loads(data)
         return data
-    
+
     @post_load
     def make_document(self, data, **kwargs):
         return File(**data)
@@ -75,12 +78,12 @@ class StepSchema(Schema):
     name = fields.Str(required=True, validate=not_blank)
     type = fields.Str(
         validate=validate.OneOf(
-            ["1","2","3","4","5"],
+            ["1", "2", "3", "4", "5"],
             ["Text", "Date", "AttachedFile", "DateAttachedFile", "Form"]
         ), required=True)
     tag = fields.Str(
         validate=validate.OneOf(
-            ["1","2","3","4"],
+            ["1", "2", "3", "4"],
             ["General", "School", "Sponsor", "Coordinator"]
         ), required=True)
     text = fields.Str(required=True, validate=not_blank)
@@ -92,35 +95,35 @@ class StepSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         if 'schoolYear' in data:
-            year = getRecordOr404(SchoolYear,data['schoolYear'])
+            year = getRecordOr404(SchoolYear, data['schoolYear'])
             data['schoolYear'] = year
         return data
-    
+
     @validates_schema
     def validate_schema(self, data, **kwargs):
         errors = {}
         if (
             str(data["type"]) == "2"
             and "date" not in data
-           ):
-           errors["date"] = ["Field is required"]
+        ):
+            errors["date"] = ["Field is required"]
         if (
             str(data["type"]) == "3"
             and "file" not in data
-           ):
-           errors["file"] = ["Field is required"]
+        ):
+            errors["file"] = ["Field is required"]
         if (
             str(data["type"]) == "4"
             and ("date" not in data or "file" not in data)
-           ):
-           errors["date"] = ["Field is required"]
-           errors["file"] = ["Field is required"]
+        ):
+            errors["date"] = ["Field is required"]
+            errors["file"] = ["Field is required"]
         if errors:
             raise ValidationError(errors)
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True

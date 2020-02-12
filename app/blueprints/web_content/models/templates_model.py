@@ -5,7 +5,7 @@ from mongoengine import (
     EmbeddedDocument,
     StringField,
     EmbeddedDocumentField)
-from marshmallow import Schema, fields, pre_load, post_load
+from marshmallow import Schema, fields, post_load
 
 from app.helpers.ma_schema_validators import not_blank, validate_image
 from app.helpers.ma_schema_fields import MAImageField

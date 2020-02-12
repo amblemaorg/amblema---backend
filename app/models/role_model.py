@@ -79,8 +79,10 @@ class ActionSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        data["name"] = data["name"].lower()
-        data["label"] = data["label"].title()
+        if "name" in data and isinstance(data["name"], str):
+            data["name"] = data["name"].lower()
+        if "label" in data and isinstance(data["label"], str):
+            data["label"] = data["label"].title()
         return data
 
     @post_load
@@ -102,7 +104,7 @@ class EntitySchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if "name" in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
 
@@ -141,7 +143,8 @@ class RoleSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        data["name"] = data["name"].title()
+        if "name" in data and isinstance(data["name"], str):
+            data["name"] = data["name"].title()
         return data
 
     class Meta:

@@ -58,7 +58,7 @@ class StateSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
 
@@ -84,7 +84,7 @@ class MunicipalitySchema(Schema):
                                        status_code=404,
                                        payload={"id": data['state']})
             data['state'] = state
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
 

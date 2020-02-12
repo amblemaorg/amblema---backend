@@ -103,7 +103,7 @@ class SchoolYearSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
 

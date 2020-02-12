@@ -46,9 +46,9 @@ class SponsorContactSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
-        if 'email' in data:
+        if "email" in data and isinstance(data["email"], str):
             data["email"] = data["email"].lower()
         return data
 

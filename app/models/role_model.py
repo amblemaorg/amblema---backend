@@ -24,7 +24,7 @@ from app.helpers.ma_schema_validators import not_blank
 
 
 class Action(EmbeddedDocument):
-    name = StringField(unique=True, required=True)
+    name = StringField(unique_c=True, required=True)
     label = StringField(required=True)
     sort = IntField()
     status = BooleanField(default=True)
@@ -32,7 +32,7 @@ class Action(EmbeddedDocument):
 
 
 class Entity(Document):
-    name = StringField(unique=True, required=True)
+    name = StringField(unique_c=True, required=True)
     status = BooleanField(default=True)
     actions = EmbeddedDocumentListField(Action)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -47,14 +47,16 @@ class ActionHandler(EmbeddedDocument):
     allowed = BooleanField(default=False)
     meta = {'ordering': ['+sort']}
 
+
 class Permission(EmbeddedDocument):
     entityId = StringField(required=True)
     entityName = StringField(required=True)
     actions = EmbeddedDocumentListField(ActionHandler, required=True)
     meta = {'ordering': ['+entityName']}
 
+
 class Role(Document):
-    name = StringField(unique=True, required=True)
+    name = StringField(unique_c=True, required=True)
     status = BooleanField(default=True)
     permissions = EmbeddedDocumentListField(Permission)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -77,14 +79,16 @@ class ActionSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        data["name"] = data["name"].lower()
-        data["label"] = data["label"].title()
+        if "name" in data and isinstance(data["name"], str):
+            data["name"] = data["name"].lower()
+        if "label" in data and isinstance(data["label"], str):
+            data["label"] = data["label"].title()
         return data
-    
+
     @post_load
     def make_action(self, data, **kwargs):
         return Action(**data)
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -93,19 +97,21 @@ class ActionSchema(Schema):
 class EntitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
-    actions = fields.List(fields.Nested(ActionSchema(only=("name", "label", "sort"))),required=True)
+    actions = fields.List(fields.Nested(ActionSchema(
+        only=("name", "label", "sort"))), required=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if "name" in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True
+
 
 class ActionHandlerSchema(Schema):
     name = fields.Str(required=True, validate=not_blank)
@@ -113,19 +119,20 @@ class ActionHandlerSchema(Schema):
     sort = fields.Int(required=True)
     allowed = fields.Bool(required=True)
 
+
 class PermissionSchema(Schema):
     entityId = fields.Str(required=True, validate=not_blank)
     entityName = fields.Str(required=True, validate=not_blank)
     actions = fields.List(fields.Nested(ActionHandlerSchema()))
-    
+
     @post_load
     def make_action(self, data, **kwargs):
         return Permission(**data)
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True
-    
+
 
 class RoleSchema(Schema):
     id = fields.Str(dump_only=True)
@@ -136,9 +143,10 @@ class RoleSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        data["name"] = data["name"].title()
+        if "name" in data and isinstance(data["name"], str):
+            data["name"] = data["name"].title()
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True

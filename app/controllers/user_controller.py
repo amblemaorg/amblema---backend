@@ -14,7 +14,7 @@ from app.schemas.admin_user_schema import AdminUserSchema
 from app.schemas.school_user_schema import SchoolUserSchema
 from app.schemas.sponsor_user_schema import SponsorUserSchema
 from app.schemas.coordinator_user_schema import CoordinatorUserSchema
-from app.services.generic_service import GenericServices
+from app.services.user_service import UserService
 from app.helpers.handler_request import getQueryParams
 
 
@@ -52,7 +52,7 @@ class UserHandlerController(Resource):
 
 
 def getService(request):
-    service = GenericServices(
+    service = UserService(
         Model=User,
         Schema=UserSchema
     )

@@ -16,8 +16,6 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.project_model import Project
 from app.models.role_model import Role
 from app.services.generic_service import getRecordOr404
-from app.helpers.handler_emails import send_email
-from resources.email_templates.register_email import messageRegisterEmail
 
 
 class SchoolContact(Document):
@@ -104,10 +102,8 @@ class SchoolContact(Document):
                     password = schoolUser.generatePassword()
                     schoolUser.password = password
                     schoolUser.setHashPassword()
-                    current_app.logger.info(schoolUser.role)
                     schoolUser.save()
-                    current_app.logger.info(send_email(messageRegisterEmail(schoolUser.email, password), 'Amblema - Registro de usuario',
-                                                       schoolUser.email))
+                    schoolUser.sendRegistrationEmail(password)
                 project.school = schoolUser
 
                 if document.hasSponsor:
@@ -139,6 +135,7 @@ class SchoolContact(Document):
                         sponsorUser.password = password
                         sponsorUser.setHashPassword()
                         sponsorUser.save()
+                        sponsorUser.sendRegistrationEmail(password)
                     project.sponsor = sponsorUser
                 project.save()
 

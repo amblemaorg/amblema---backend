@@ -31,7 +31,7 @@ class CoordinatorContactSchema(Schema):
     cardId = fields.Str(
         required=True,
         validate=(not_blank, only_numbers))
-    birthDate = fields.Date(required=True)
+    birthdate = fields.Date(required=True)
     gender = fields.Str(
         required=True,
         validate=validate.OneOf(
@@ -46,7 +46,7 @@ class CoordinatorContactSchema(Schema):
     addressHome = fields.Str()
     email = fields.Email(required=True, validate=not_blank)
     phone = fields.Str(required=True, validate=(not_blank, only_numbers))
-    homePhone = fields.Str(validate=only_numbers)
+    homePhone = fields.Str(validate=only_numbers, required=True)
     profession = fields.Str(required=True, validate=not_blank)
     referredName = fields.Str(required=True, validate=not_blank)
     state = fields.Str(
@@ -70,9 +70,9 @@ class CoordinatorContactSchema(Schema):
             'referredName'
         )
         for field in toTitle:
-            if field in data:
+            if field in data and isinstance(data["field"], str):
                 data[field] = data[field].title()
-        if 'email' in data:
+        if "email" in data and isinstance(data["email"], str):
             data["email"] = data["email"].lower()
         return data
 

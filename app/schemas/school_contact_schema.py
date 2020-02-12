@@ -79,9 +79,9 @@ class SchoolContactSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'email' in data:
+        if "email" in data and isinstance(data["email"], str):
             data["email"] = data["email"].lower()
-        if 'sponsorEmail' in data:
+        if "sponsorEmail" in data and isinstance(data["sponsorEmail"], str):
             data["sponsorEmail"] = data["sponsorEmail"].lower()
         toTitle = (
             'name'
@@ -92,7 +92,7 @@ class SchoolContactSchema(Schema):
             'sponsorContactFirstName',
             'sponsorContactLastName')
         for field in toTitle:
-            if field in data:
+            if field in data and isinstance(data[field], str):
                 data[field] = data[field].title()
         return data
 

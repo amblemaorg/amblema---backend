@@ -19,22 +19,21 @@ from app.helpers.ma_schema_validators import not_blank
 from app.helpers.error_helpers import RegisterNotFound
 
 
-
 class State(Document):
-    name = StringField(unique=True, required=True)
+    name = StringField(unique_c=True, required=True)
     polygon = PolygonField()
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'states'}
-    
+
     def clean(self):
         self.updatedAt = datetime.utcnow()
 
 
 class Municipality(Document):
-    name = StringField(unique=True, required=True)
-    state = ReferenceField(State,required=True)
+    name = StringField(unique_c=True, required=True)
+    state = ReferenceField(State, required=True)
     polygon = PolygonField()
     status = BooleanField(default=True)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -59,10 +58,10 @@ class StateSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -85,10 +84,10 @@ class MunicipalitySchema(Schema):
                                        status_code=404,
                                        payload={"id": data['state']})
             data['state'] = state
-        if 'name' in data:
+        if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data
-    
+
     class Meta:
         unknown = EXCLUDE
         ordered = True

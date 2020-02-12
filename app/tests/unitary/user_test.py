@@ -181,13 +181,7 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'password': ['Length must be 8.']})
-        user = {
-            "password": "123456789"
-        }
-        self.assertEqual(
-            userSchema.validate(user),
-            {'password': ['Length must be 8.']})
+            {'password': ['Shorter than minimum length 8.']})
 
     def test_function_field(self):
         userSchema = AdminUserSchema(partial=True)

@@ -1,6 +1,7 @@
 # app/services/user_service.py
 
 
+from flask import current_app
 from functools import reduce
 import operator
 
@@ -21,7 +22,9 @@ class UserService(GenericServices):
         """
         schema = self.Schema()
         try:
+            current_app.logger.info("ahora si")
             data = schema.load(jsonData)
+            current_app.logger.info("ahora no")
             password = data['password']
             uniquesFields = getUniqueFields(self.Model)
             fieldsForCheckDuplicates = []
@@ -43,4 +46,4 @@ class UserService(GenericServices):
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:
-            return err.messages, 400
+            return err.normalized_messages(), 400

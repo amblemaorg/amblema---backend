@@ -1,10 +1,10 @@
 # /app/helpers/ma_schema_fields.py
 
 
-from marshmallow import fields
+from marshmallow import fields, validate, ValidationError
 
 from app.helpers.handler_images import upload_image
-from app.services.generic_service import getRecordOr404
+from app.services.generic_service import getRecordById
 
 
 class MAPolygonField(fields.Field):
@@ -28,6 +28,10 @@ class MAReferenceField(fields.Field):
     """Marshmallow field that validate a reference field
     """
 
+    default_error_messages = {
+        "invalid": [{"status": "5", "msg": "Record not found"}]
+    }
+
     def _serialize(self, value, attr, obj, **kwargs):
         if value is None:
             return ""
@@ -41,7 +45,10 @@ class MAReferenceField(fields.Field):
 
     def _deserialize(self, value, attr, data, **kwargs):
         if 'document' in self.metadata:
-            record = getRecordOr404(self.metadata['document'], value)
+
+            record = getRecordById(self.metadata['document'], value)
+            if not record:
+                raise self.make_error("invalid")
             return record
         else:
             return value

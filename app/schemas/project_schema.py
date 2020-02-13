@@ -7,7 +7,8 @@ from marshmallow import (
     validate,
     EXCLUDE)
 
-from app.helpers.ma_schema_validators import not_blank, only_letters, only_numbers
+from app.helpers.ma_schema_validators import (
+    not_blank, only_letters, only_numbers, OneOf)
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
@@ -28,7 +29,7 @@ class ProjectSchema(Schema):
     sponsor = MAReferenceField(document=SponsorUser, allow_none=True)
     coordinator = MAReferenceField(document=CoordinatorUser, allow_none=True)
     stepsProgress = fields.Nested(StepsProgressSchema, dump_only=True)
-    state = fields.Str(validate=validate.OneOf(
+    state = fields.Str(validate=OneOf(
         ('1', '2'),
         ('in_progress', 'in_peca')
     ), dump_only=True)

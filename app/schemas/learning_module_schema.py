@@ -3,9 +3,9 @@
 from marshmallow import (
     Schema, fields, pre_load, post_load, EXCLUDE, validate)
 
-from app.helpers.ma_schema_fields import MAImageField, MAReferenceField
+from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
-    not_blank, validate_image, validate_video)
+    not_blank, validate_image, validate_video, OneOf, Range)
 from app.models.learning_module_model import Quiz
 
 
@@ -18,7 +18,7 @@ class QuizSchema(Schema):
     optionD = fields.Str(required=True, validate=not_blank)
     correctOption = fields.Str(
         required=True,
-        validate=validate.OneOf(
+        validate=OneOf(
             ["optionA", "optionB", "optionC", "optionD"],
             ["optionA", "optionB", "optionC", "optionD"]))
     createdAt = fields.DateTime(dump_only=True)
@@ -48,11 +48,11 @@ class LearningModuleSchema(Schema):
         required=True,
         validate=not_blank)
     videos = fields.List(
-        fields.Url(validate=(not_blank, validate_video)),
+        fields.Str(validate=(not_blank, validate_video)),
         required=True,
         validate=not_blank)
-    duration = fields.Int(required=True, validate=validate.Range(min=0))
-    points = fields.Int(required=True, validate=validate.Range(min=0))
+    duration = fields.Int(required=True, validate=Range(min=0))
+    points = fields.Int(required=True, validate=Range(min=0))
     quizzes = fields.List(fields.Nested(QuizSchema, required=True))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

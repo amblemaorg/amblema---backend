@@ -6,7 +6,7 @@ from marshmallow import fields, validate, EXCLUDE
 from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers)
+    not_blank, only_letters, only_numbers, OneOf)
 
 
 class SponsorUserSchema(UserSchema):
@@ -20,7 +20,7 @@ class SponsorUserSchema(UserSchema):
         required=True,
         validate=(
             not_blank,
-            validate.OneOf(
+            OneOf(
                 ["1", "2", "3"],
                 ["v", "j", "e"]
             )))
@@ -30,7 +30,7 @@ class SponsorUserSchema(UserSchema):
     companyRIF = fields.Str(required=True, validate=only_numbers)
     companyType = fields.Str(
         required=True,
-        validate=validate.OneOf(
+        validate=OneOf(
             ('1', '2', '3', '4'),
             ('factory', 'grocery', 'personal business', 'other')
         ))

@@ -15,7 +15,6 @@ from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.project_model import Project
 from app.models.role_model import Role
-from app.services.generic_service import getRecordOr404
 
 
 class SchoolContact(Document):

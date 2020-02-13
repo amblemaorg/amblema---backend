@@ -11,7 +11,7 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
-from app.helpers.ma_schema_validators import not_blank, only_numbers
+from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 
@@ -24,7 +24,7 @@ class CoordinatorContactSchema(Schema):
         required=True,
         validate=(
             not_blank,
-            validate.OneOf(
+            OneOf(
                 ["1", "2", "3"],
                 ["v", "j", "e"]
             )))
@@ -34,7 +34,7 @@ class CoordinatorContactSchema(Schema):
     birthdate = fields.Date(required=True)
     gender = fields.Str(
         required=True,
-        validate=validate.OneOf(
+        validate=OneOf(
             ('1', '2'),
             ('female', 'male')
         ))
@@ -51,7 +51,7 @@ class CoordinatorContactSchema(Schema):
     referredName = fields.Str(required=True, validate=not_blank)
     state = fields.Str(
         default="1",
-        validate=validate.OneOf(
+        validate=OneOf(
             ('1', '2', '3'),
             ('pending', 'acepted', 'rejected')
         ))

@@ -17,6 +17,7 @@ from marshmallow import Schema, fields, pre_load, EXCLUDE
 from app.helpers.ma_schema_fields import MAPolygonField, MAReferenceField
 from app.helpers.ma_schema_validators import not_blank
 from app.helpers.error_helpers import RegisterNotFound
+from app.schemas import fields
 
 
 class State(Document):
@@ -70,20 +71,13 @@ class StateSchema(Schema):
 class MunicipalitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
-    state = MAReferenceField(required=True)
+    state = MAReferenceField(required=True, document=State)
     polygon = MAPolygonField()
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if "state" in data:
-            state = State.objects(id=data["state"], status=True).first()
-            if not state:
-                raise RegisterNotFound(message="State not found",
-                                       status_code=404,
-                                       payload={"id": data['state']})
-            data['state'] = state
         if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         return data

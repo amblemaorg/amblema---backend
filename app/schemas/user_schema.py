@@ -4,31 +4,33 @@ from marshmallow import (
     fields, validate, EXCLUDE, pre_load, validates_schema, Schema)
 
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers)
+    not_blank, only_letters, only_numbers, validate_email, OneOf, Length)
 from app.helpers.ma_schema_validators import ValidationError
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
+from app.schemas import fields
 
 
 class UserSchema(Schema):
     id = fields.Str(dump_only=True)
-    email = fields.Email(required=True, validate=not_blank)
+    email = fields.Str(required=True, validate=(validate_email))
     name = fields.Str(dump_only=True)
     password = fields.Str(
         required=True,
         load_only=True,
         validate=(
             not_blank,
-            validate.Length(min=8)))
+            Length(min=8)))
     userType = fields.Str(
         required=True,
         validate=(
             not_blank,
             only_numbers,
-            validate.OneOf(
+            OneOf(
                 ["1", "2", "3", "4"],
                 ["admin", "coordinator", "sponsor", "school"]
+
             )))
     phone = fields.Str(validate=only_numbers)
     role = MAReferenceField(required=True, document=Role)
@@ -37,7 +39,7 @@ class UserSchema(Schema):
         required=True, document=Municipality)
     address = fields.Str()
     addressCity = fields.Str()
-    state = fields.Str(validate=validate.OneOf(["1", "2"]))
+    state = fields.Str(validate=OneOf(["1", "2"]))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

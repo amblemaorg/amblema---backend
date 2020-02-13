@@ -8,7 +8,7 @@ from marshmallow import (
     EXCLUDE,
     validate)
 
-from app.helpers.ma_schema_validators import not_blank, only_numbers
+from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 
@@ -30,14 +30,14 @@ class SponsorContactSchema(Schema):
     contactPhone = fields.Str(required=True, validate=not_blank)
     schoolContact = fields.Str(
         required=True,
-        validate=validate.OneOf(
+        validate=OneOf(
             ('1', '2', '3', '4'),
             ('director', 'teacher', 'parent', 'neighbor')
         ))
     schoolContactName = fields.Str(required=True, validate=not_blank)
     state = fields.Str(
         default="1",
-        validate=validate.OneOf(
+        validate=OneOf(
             ('1', '2', '3'),
             ('pending', 'acepted', 'rejected')
         ))

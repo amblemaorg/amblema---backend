@@ -5,7 +5,7 @@ from marshmallow import fields, validate, EXCLUDE
 
 from app.schemas.user_schema import UserSchema
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers)
+    not_blank, only_letters, only_numbers, OneOf)
 
 
 class AdminUserSchema(UserSchema):
@@ -19,7 +19,7 @@ class AdminUserSchema(UserSchema):
         required=True,
         validate=(
             not_blank,
-            validate.OneOf(
+            OneOf(
                 ["1", "2", "3"],
                 ["v", "j", "e"]
             )))

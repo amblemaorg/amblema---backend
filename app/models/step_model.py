@@ -24,11 +24,10 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
-from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_validators import not_blank, validate_url, OneOf
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.school_year_model import SchoolYear
 from app.helpers.error_helpers import RegisterNotFound
-from app.services.generic_service import getRecordOr404
 
 
 class File(EmbeddedDocument):
@@ -60,7 +59,7 @@ SCHEMAS
 
 class FileSchema(Schema):
     name = fields.Str(validate=not_blank)
-    url = fields.Url(validate=not_blank)
+    url = fields.Str(validate=(not_blank, validate_url))
 
     @pre_load
     def process_input(self, data, **kwargs):
@@ -77,19 +76,19 @@ class StepSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
     type = fields.Str(
-        validate=validate.OneOf(
+        validate=OneOf(
             ["1", "2", "3", "4", "5"],
             ["Text", "Date", "AttachedFile", "DateAttachedFile", "Form"]
         ), required=True)
     tag = fields.Str(
-        validate=validate.OneOf(
+        validate=OneOf(
             ["1", "2", "3", "4"],
             ["General", "School", "Sponsor", "Coordinator"]
         ), required=True)
     text = fields.Str(required=True, validate=not_blank)
     date = fields.DateTime()
     file = fields.Nested(FileSchema)
-    schoolYear = MAReferenceField(required=True)
+    schoolYear = MAReferenceField(required=True, document=SchoolYear)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 
@@ -97,9 +96,6 @@ class StepSchema(Schema):
     def process_input(self, data, **kwargs):
         if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
-        if 'schoolYear' in data:
-            year = getRecordOr404(SchoolYear, data['schoolYear'])
-            data['schoolYear'] = year
         return data
 
     @validates_schema

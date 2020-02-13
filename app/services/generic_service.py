@@ -3,6 +3,7 @@
 
 from functools import reduce
 import operator
+from bson import ObjectId
 
 from flask import current_app
 from marshmallow import ValidationError
@@ -38,7 +39,7 @@ class GenericServices():
 
     def saveRecord(self, jsonData, files=None):
         """
-        Method that saves a new record.   
+        Method that saves a new record.
         params: jsonData
         """
         schema = self.Schema()
@@ -59,16 +60,18 @@ class GenericServices():
                         {"field": field, "value": data[field]})
             isDuplicated = self.checkForDuplicates(fieldsForCheckDuplicates)
             if isDuplicated:
-                return {
-                    "message": "Duplicated record found.",
-                    "data": isDuplicated}, 400
+                for field in isDuplicated:
+                    raise ValidationError(
+                        {"status": "5",
+                            "msg": "Duplicated record found: '{}'".format(field["value"])}, field["field"]
+                    )
             try:
                 record.save()
                 return schema.dump(record), 201
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:
-            return err.messages, 400
+            return err.normalized_messages(), 400
 
     def getRecord(self, recordId, only=None, exclude=()):
         """
@@ -132,7 +135,7 @@ class GenericServices():
 
     def checkForDuplicates(self, attributes):
         """
-        Return True if find an duplicate field  
+        Return True if find an duplicate field
         Return False otherwise
 
         Params.
@@ -176,17 +179,18 @@ class GenericServices():
         return record
 
 
-def getRecordOr404(model, recordId):
-    """Method that find a record by its id  
-    Return record if found  
-    params:  
+def getRecordById(model, recordId):
+    """Method that find a record by its id
+    Return record if found
+    params:
       model: a document model
       recordId: id for search
     """
+    if len(str(recordId)) != 24:
+        return False
+
     record = model.objects(id=str(recordId), status=True).first()
     if not record:
-        raise RegisterNotFound(message="Record not found",
-                               status_code=404,
-                               payload={"Model": model.__name__, "recordId": recordId})
+        return False
 
     return record

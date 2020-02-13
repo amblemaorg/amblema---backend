@@ -24,7 +24,7 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
-from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_validators import not_blank, OneOf
 
 
 class ReadingDiagnostic(EmbeddedDocument):
@@ -94,7 +94,7 @@ class SchoolYearSchema(Schema):
     endDate = fields.Date(required=True)
     diagnosticSettings = fields.Nested(DiagnosticSettingsSchema)
     state = fields.Str(
-        validate=validate.OneOf(
+        validate=OneOf(
             ["1", "2"],
             ["Active", "Inactive"]
         ), required=True)

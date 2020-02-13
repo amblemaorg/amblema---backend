@@ -97,8 +97,8 @@ def create_app(config_instance):
     )
     api.add_resource(
         RoleController,
-        '/roles/',
-        '/roles'
+        '/roles',
+        '/roles/'
     )
     api.add_resource(
         RoleHandlerController,
@@ -107,8 +107,8 @@ def create_app(config_instance):
     )
     api.add_resource(
         UserController,
-        '/users/',
-        '/users'
+        '/users',
+        '/users/'
     )
     api.add_resource(
         UserHandlerController,

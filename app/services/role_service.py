@@ -33,12 +33,14 @@ class EntityService(GenericServices):
                         {"field": field, "value": data[field]})
             isDuplicated = self.checkForDuplicates(fieldsForCheckDuplicates)
             if isDuplicated:
-                return {
-                    "message": "Duplicated record found.",
-                    "data": isDuplicated}, 400
+                for field in isDuplicated:
+                    raise ValidationError(
+                        {field["field"]: [{"status": "5",
+                                           "msg": "Duplicated record found: '{}'".format(field["value"])}]}
+                    )
             try:
                 record.save()
-                roles = Role.objects(status=True).all()
+                roles = Role.objects(isDeleted=False).all()
                 for role in roles:
                     permission = Permission(
                         entityId=str(record.id),
@@ -81,13 +83,15 @@ class EntityService(GenericServices):
                 isDuplicated = self.checkForDuplicates(
                     fieldsForCheckDuplicates)
                 if isDuplicated:
-                    return {
-                        "message": "Duplicates record found.",
-                        "data": isDuplicated}, 400
+                    for field in isDuplicated:
+                        raise ValidationError(
+                            {field["field"]: [{"status": "5",
+                                               "msg": "Duplicated record found: '{}'".format(field["value"])}]}
+                        )
                 try:
                     record.save()
                     roles = Role.objects(
-                        status=True,
+                        isDeleted=False,
                         permissions__entityId=str(record.id))
 
                     newActions = {}
@@ -133,7 +137,7 @@ class EntityService(GenericServices):
         try:
             record.isDeleted = True
             record.save()
-            for role in Role.objects(status=True, permissions__entityId=recordId):
+            for role in Role.objects(isDeleted=False, permissions__entityId=recordId):
                 permission = role.permissions.filter(
                     entityId=str(recordId)).first()
                 role.permissions.remove(permission)

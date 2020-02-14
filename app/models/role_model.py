@@ -57,7 +57,7 @@ class Permission(EmbeddedDocument):
 
 class Role(Document):
     name = StringField(unique_c=True, required=True)
-    state = StringField(max_length=1)
+    state = StringField(max_length=1, default='1')
     isDeleted = BooleanField(default=False)
     permissions = EmbeddedDocumentListField(Permission)
     createdAt = DateTimeField(default=datetime.utcnow)

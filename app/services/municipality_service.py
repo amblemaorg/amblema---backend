@@ -21,7 +21,8 @@ def getAllMunicipalities(stateId):
     get all available municipalities records in state
     """
     municipalitySchema = MunicipalitySchema()
-    municipalities = getStateOr404(stateId).municipalities.filter(status=True)
+    municipalities = getStateOr404(
+        stateId).municipalities.filter(isDeleted=False)
     return municipalitySchema.dump(municipalities, many=True), 200
 
 
@@ -49,9 +50,11 @@ def saveMunicipality(stateId, jsonData):
     state = getStateOr404(stateId)
     isDuplicated = checkForDuplicates(stateId, fieldsForCheckDuplicates)
     if isDuplicated:
-        return {
-            "message": "Duplicated record found.",
-            "data": isDuplicated}, 400
+        for field in isDuplicated:
+            raise ValidationError(
+                {field["field"]: [{"status": "5",
+                                   "msg": "Duplicated record found: '{}'".format(field["value"])}]}
+            )
     state.municipalities.append(municipality)
     state.save()
     return municipalitySchema.dump(municipality), 201
@@ -91,9 +94,11 @@ def updateMunicipality(stateId, municipalityId, jsonData):
     if has_changed:
         isDuplicated = checkForDuplicates(stateId, fieldsForCheckDuplicates)
         if isDuplicated:
-            return {
-                "message": "Duplicates record found.",
-                "data": isDuplicated}, 400
+            for field in isDuplicated:
+                raise ValidationError(
+                    {field["field"]: [{"status": "5",
+                                       "msg": "Duplicated record found: '{}'".format(field["value"])}]}
+                )
         municipality.updateAt = datetime.utcnow()
         State.objects(
             id=stateId,
@@ -122,7 +127,7 @@ def getStateOr404(stateId):
     Return a state record filterd by its id.
     Otherwise return a 404 not found error
     """
-    state = State.objects(id=stateId, status=True).first()
+    state = State.objects(id=stateId, isDeleted=False).first()
     if not state:
         raise RegisterNotFound(message="State id not found",
                                status_code=404,
@@ -138,14 +143,14 @@ def getMunicipalityOr404(stateId, municipalityId):
     state = State.objects(
         id=stateId,
         municipalities__id=municipalityId,
-        status=True,
-        municipalities__status=True).first()
+        isDeleted=False,
+        municipalities__isDeleted=False).first()
     if not state:
         raise RegisterNotFound(message="State id not found",
                                status_code=404,
                                payload={"stateId": stateId})
     municipality = state.municipalities.filter(
-        id=municipalityId, status=True).first()
+        id=municipalityId, isDeleted=False).first()
     if not municipality:
         raise RegisterNotFound(message="Municipality id not found",
                                status_code=404,

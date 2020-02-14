@@ -30,10 +30,10 @@ class GenericServices():
             filterList = []
             for f in filters:
                 filterList.append(Q(**{f['field']: f['value']}))
-            records = self.Model.objects(status=True).filter(
+            records = self.Model.objects(isDeleted=False).filter(
                 reduce(operator.and_, filterList)).all()
         else:
-            records = self.Model.objects(status=True).all()
+            records = self.Model.objects(isDeleted=False).all()
 
         return {"records": schema.dump(records, many=True)}, 200
 
@@ -62,8 +62,8 @@ class GenericServices():
             if isDuplicated:
                 for field in isDuplicated:
                     raise ValidationError(
-                        {"status": "5",
-                            "msg": "Duplicated record found: '{}'".format(field["value"])}, field["field"]
+                        {field["field"]: [{"status": "5",
+                                           "msg": "Duplicated record found: '{}'".format(field["value"])}]}
                     )
             try:
                 record.save()
@@ -110,9 +110,11 @@ class GenericServices():
                 isDuplicated = self.checkForDuplicates(
                     fieldsForCheckDuplicates)
                 if isDuplicated:
-                    return {
-                        "message": "Duplicates record found.",
-                        "data": isDuplicated}, 400
+                    for field in isDuplicated:
+                        raise ValidationError(
+                            {field["field"]: [{"status": "5",
+                                               "msg": "Duplicated record found: '{}'".format(field["value"])}]}
+                        )
 
                 record.save()
 
@@ -146,7 +148,7 @@ class GenericServices():
         if len(attributes):
             for f in attributes:
                 filterList.append(Q(**{f['field']: f['value']}))
-            filterList.append(Q(**{"status": True}))
+            filterList.append(Q(**{"isDeleted": False}))
 
             if self.Model.__base__._meta['allow_inheritance']:
                 records = self.Model.__base__.objects.filter(
@@ -171,7 +173,7 @@ class GenericServices():
         Otherwise return a 404 not found error
         """
 
-        record = self.Model.objects(id=recordId, status=True).first()
+        record = self.Model.objects(id=recordId, isDeleted=False).first()
         if not record:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -189,7 +191,7 @@ def getRecordById(model, recordId):
     if len(str(recordId)) != 24:
         return False
 
-    record = model.objects(id=str(recordId), status=True).first()
+    record = model.objects(id=str(recordId), isDeleted=False).first()
     if not record:
         return False
 

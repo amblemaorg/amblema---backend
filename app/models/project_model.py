@@ -43,7 +43,7 @@ class Project(Document):
         current_app.logger.info(kwargs)
         current_app.logger.info(document.id)
         if not document.id:
-            year = SchoolYear.objects(state="1", status=True).first()
+            year = SchoolYear.objects(state="1", isDeleted=False).first()
             if not year:
                 raise ValidationError(
                     message="There is not an active school year")

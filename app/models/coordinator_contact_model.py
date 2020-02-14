@@ -59,7 +59,7 @@ class CoordinatorContact(Document):
                         email=document.email,
                         userType='2',
                         phone=document.phone,
-                        role=Role.objects(status=True).first(),
+                        role=Role.objects(isDeleted=False).first(),
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,

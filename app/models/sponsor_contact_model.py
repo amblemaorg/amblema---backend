@@ -59,7 +59,7 @@ class SponsorContact(Document):
                         email=document.email,
                         userType='3',
                         phone=document.phone,
-                        role=Role.objects(status=True).first(),
+                        role=Role.objects(isDeleted=False).first(),
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,

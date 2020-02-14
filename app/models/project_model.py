@@ -15,6 +15,24 @@ from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.school_year_model import SchoolYear
+from app.models.step_model import File
+
+
+class Step(EmbeddedDocument):
+    id = fields.StringField(required=True)
+    name = fields.StringField(required=True)
+    type = fields.StringField(required=True, max_length=1)
+    tag = fields.StringField(required=True, max_length=1)
+    text = fields.StringField(required=True)
+    date = fields.DateTimeField()
+    file = fields.URLField()
+    uploadedFile = fields.EmbeddedDocumentField(File)
+    isStandard = fields.BooleanField(default=False)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+    def clean(self):
+        self.updatedAt = datetime.utcnow()
 
 
 class StepsProgress(EmbeddedDocument):
@@ -22,6 +40,7 @@ class StepsProgress(EmbeddedDocument):
     school = fields.IntField(default=0)
     sponsor = fields.IntField(default=0)
     coordinator = fields.IntField(default=0)
+    steps = fields.EmbeddedDocumentListField(Step)
 
 
 class Project(Document):

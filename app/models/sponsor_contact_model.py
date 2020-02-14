@@ -21,6 +21,7 @@ class SponsorContact(Document):
     email = fields.EmailField(required=True)
     rif = fields.StringField(required=True)
     companyType = fields.StringField(required=True)
+    companyOtherType = fields.StringField()
     phone = fields.StringField(required=True)
     address = fields.StringField(required=True)
     addressState = fields.ReferenceField('State', required=True)
@@ -70,6 +71,7 @@ class SponsorContact(Document):
                         cardId=document.rif,
                         companyRIF=document.rif,
                         companyType=document.companyType,
+                        companyOtherType=document.companyOtherType,
                         companyPhone=document.phone,
                         contactName=document.contactName,
                         contactPhone=document.contactPhone

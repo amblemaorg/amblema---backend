@@ -18,7 +18,13 @@ class SponsorContactSchema(Schema):
     name = fields.Str(required=True, validate=not_blank)
     email = fields.Email(required=True, validate=not_blank)
     rif = fields.Str(required=True, validate=only_numbers)
-    companyType = fields.Str(required=True)
+    companyType = fields.Str(
+        required=True,
+        validate=OneOf(
+            ('1', '2', '3', '4'),
+            ('factory', 'grocery', 'personal business', 'other')
+        ))
+    companyOtherType = fields.Str()
     phone = fields.Str(required=True, validate=only_numbers)
     address = fields.Str(required=True, validate=not_blank)
     addressState = MAReferenceField(required=True, document=State)

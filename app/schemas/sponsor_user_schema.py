@@ -34,6 +34,7 @@ class SponsorUserSchema(UserSchema):
             ('1', '2', '3', '4'),
             ('factory', 'grocery', 'personal business', 'other')
         ))
+    companyOtherType = fields.Str()
     companyPhone = fields.Str(required=True, validate=only_numbers)
     contactName = fields.Str(required=True, validate=only_letters)
     contactPhone = fields.Str(required=True, validate=only_numbers)

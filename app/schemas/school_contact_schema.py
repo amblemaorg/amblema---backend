@@ -65,7 +65,13 @@ class SchoolContactSchema(Schema):
     sponsorAddressCity = fields.Str()
     sponsorAddressStreet = fields.Str()
     sponsorPhone = fields.Str(validate=only_numbers)
-    sponsorCompanyType = fields.Str()
+    sponsorCompanyType = fields.Str(
+        required=True,
+        validate=OneOf(
+            ('1', '2', '3', '4'),
+            ('factory', 'grocery', 'personal business', 'other')
+        ))
+    sponsorCompanyOtherType = fields.Str()
     sponsorContactFirstName = fields.Str(validate=only_letters)
     sponsorContactLastName = fields.Str(validate=only_letters)
     sponsorContactPhone = fields.Str(validate=only_numbers)

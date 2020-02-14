@@ -20,13 +20,13 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'firstName': ['Field accepts only letters']})
+            {'firstName': [{'msg': 'Field accept only letters', 'status': '7'}]})
         user = {
             "firstName": "vngjhn--",
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'firstName': ['Field accepts only letters']})
+            {'firstName': [{'msg': 'Field accept only letters', 'status': '7'}]})
 
     def test_lastName_field_only_letters(self):
         userSchema = AdminUserSchema(partial=True)
@@ -39,13 +39,13 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'lastName': ['Field accepts only letters']})
+            {'lastName': [{'msg': 'Field accept only letters', 'status': '7'}]})
         user = {
             "lastName": "vngjhn--",
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'lastName': ['Field accepts only letters']})
+            {'lastName': [{'msg': 'Field accept only letters', 'status': '7'}]})
 
     def test_cardId_field_only_numbers(self):
         userSchema = AdminUserSchema(partial=True)
@@ -58,13 +58,13 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Field accepts only numbers']})
+            {'cardId': [{'msg': 'Field accept only numbers', 'status': '8'}]})
         user = {
             "cardId": "123--",
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Field accepts only numbers']})
+            {'cardId': [{'msg': 'Field accept only numbers', 'status': '8'}]})
 
     def test_cardId_V_length_field(self):
         userSchema = AdminUserSchema(partial=True)
@@ -143,13 +143,13 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'email': ['Not a valid email address.']})
+            {'email': [{'msg': 'Invalid email address', 'status': '1'}]})
         user = {
             "email": "dfghgmail.com"
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'email': ['Not a valid email address.']})
+            {'email': [{'msg': 'Invalid email address', 'status': '1'}]})
 
     def test_phone_field(self):
         userSchema = UserSchema(partial=True)
@@ -162,13 +162,13 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'phone': ['Field accepts only numbers']})
+            {'phone': [{'msg': 'Field accept only numbers', 'status': '8'}]})
         user = {
             "phone": "041456766**"
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'phone': ['Field accepts only numbers']})
+            {'phone': [{'msg': 'Field accept only numbers', 'status': '8'}]})
 
     def test_password_field(self):
         userSchema = UserSchema(partial=True)
@@ -181,7 +181,7 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'password': ['Shorter than minimum length 8.']})
+            {'password': [{'msg': 'Invalid length', 'status': '13'}]})
 
     def test_function_field(self):
         userSchema = AdminUserSchema(partial=True)
@@ -194,10 +194,10 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'function': ['Field accepts only letters']})
+            {'function': [{'msg': 'Field accept only letters', 'status': '7'}]})
         user = {
             "function": "Cargo **"
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'function': ['Field accepts only letters']})
+            {'function': [{'msg': 'Field accept only letters', 'status': '7'}]})

@@ -18,7 +18,7 @@ from mongoengine import (
     SortedListField,
     EmbeddedDocumentField,
     EmbeddedDocumentListField)
-from marshmallow import Schema, fields, pre_load, post_load, EXCLUDE
+from marshmallow import Schema, fields, pre_load, post_load, EXCLUDE, validate
 
 from app.helpers.ma_schema_validators import not_blank
 
@@ -57,6 +57,7 @@ class Permission(EmbeddedDocument):
 
 class Role(Document):
     name = StringField(unique_c=True, required=True)
+    state = StringField(max_length=1)
     status = BooleanField(default=True)
     permissions = EmbeddedDocumentListField(Permission)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -137,6 +138,10 @@ class PermissionSchema(Schema):
 class RoleSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
+    state = fields.Str(validate=validate.OneOf(
+        ('1', '2'),
+        ('active', 'inactive')
+    ))
     permissions = fields.List(fields.Nested(PermissionSchema()))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

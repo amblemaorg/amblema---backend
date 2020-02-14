@@ -62,10 +62,11 @@ class User(DynamicDocument):
         Checks all available permissions for each entity
         """
         permissions = []
-        for permission in self.role.permissions:
-            for action in permission.actions:
-                if action.allowed:
-                    permissions.append(action.name)
+        if self.role.status and self.role.state == "1":
+            for permission in self.role.permissions:
+                for action in permission.actions:
+                    if action.allowed:
+                        permissions.append(action.name)
         return permissions
 
     def sendRegistrationEmail(self, password):

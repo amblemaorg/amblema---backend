@@ -32,7 +32,7 @@ class CoordinatorContact(Document):
     homePhone = fields.StringField(required=True)
     profession = fields.StringField(required=True)
     referredName = fields.StringField(required=True)
-    state = fields.StringField(required=True, default="1")
+    status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
@@ -48,8 +48,8 @@ class CoordinatorContact(Document):
             current_app.logger.info('*** post_update ***')
             oldRequest = CoordinatorContact.objects.get(id=document.id)
             current_app.logger.info('*** post update***')
-            if document.state != oldRequest.state and document.state == '2':
-                current_app.logger.info('***state=2***')
+            if document.status != oldRequest.status and document.status == '2':
+                current_app.logger.info('***status=2***')
                 project = Project()
                 coordinatorUser = CoordinatorUser.objects(
                     email=document.email).first()
@@ -64,7 +64,7 @@ class CoordinatorContact(Document):
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
                         address="",
-                        state='1',
+                        status='1',
                         firstName=document.firstName,
                         lastName=document.lastName,
                         cardType=document.cardType,

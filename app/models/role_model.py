@@ -57,7 +57,7 @@ class Permission(EmbeddedDocument):
 
 class Role(Document):
     name = StringField(unique_c=True, required=True)
-    state = StringField(max_length=1, default='1')
+    status = StringField(max_length=1, default='1')
     isDeleted = BooleanField(default=False)
     permissions = EmbeddedDocumentListField(Permission)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -138,7 +138,7 @@ class PermissionSchema(Schema):
 class RoleSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
-    state = fields.Str(validate=validate.OneOf(
+    status = fields.Str(validate=validate.OneOf(
         ('1', '2'),
         ('active', 'inactive')
     ))

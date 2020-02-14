@@ -49,7 +49,7 @@ class CoordinatorContactSchema(Schema):
     homePhone = fields.Str(validate=only_numbers, required=True)
     profession = fields.Str(required=True, validate=not_blank)
     referredName = fields.Str(required=True, validate=not_blank)
-    state = fields.Str(
+    status = fields.Str(
         default="1",
         validate=OneOf(
             ('1', '2', '3'),

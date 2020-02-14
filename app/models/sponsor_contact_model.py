@@ -32,7 +32,7 @@ class SponsorContact(Document):
     contactPhone = fields.StringField(required=True)
     schoolContact = fields.StringField(required=True, max_length=1)
     schoolContactName = fields.StringField(required=True)
-    state = fields.StringField(required=True, default="1")
+    status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
@@ -48,8 +48,8 @@ class SponsorContact(Document):
             current_app.logger.info('*** post_update ***')
             oldRequest = SponsorContact.objects.get(id=document.id)
             current_app.logger.info('*** post update***')
-            if document.state != oldRequest.state and document.state == '2':
-                current_app.logger.info('***state=2***')
+            if document.status != oldRequest.status and document.status == '2':
+                current_app.logger.info('***status=2***')
                 project = Project()
                 sponsorUser = SponsorUser.objects(
                     email=document.email).first()
@@ -64,7 +64,7 @@ class SponsorContact(Document):
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
                         address=document.address,
-                        state='1',
+                        status='1',
                         firstName=document.contactName,
                         lastName="",
                         cardType="2",

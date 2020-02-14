@@ -19,7 +19,7 @@ class DiagnosticController(Resource):
         Schema=SchoolYearSchema)
 
     def get(self):
-        year = SchoolYear.objects(isDeleted=False, state='1').first()
+        year = SchoolYear.objects(isDeleted=False, status='1').first()
         if not year:
             raise RegisterNotFound(message="There is not an active school year",
                                    status_code=400)
@@ -28,7 +28,7 @@ class DiagnosticController(Resource):
         return yearSchema.dump(year), 200
 
     def post(self):
-        year = SchoolYear.objects(isDeleted=False, state='1').first()
+        year = SchoolYear.objects(isDeleted=False, status='1').first()
         if not year:
             raise RegisterNotFound(message="There is not an active school year",
                                    status_code=400)

@@ -75,7 +75,7 @@ class SchoolContactSchema(Schema):
     sponsorContactFirstName = fields.Str(validate=only_letters)
     sponsorContactLastName = fields.Str(validate=only_letters)
     sponsorContactPhone = fields.Str(validate=only_numbers)
-    state = fields.Str(
+    status = fields.Str(
         default="1",
         validate=OneOf(
             ('1', '2', '3'),

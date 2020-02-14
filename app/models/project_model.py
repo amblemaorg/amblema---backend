@@ -31,7 +31,7 @@ class Project(Document):
     coordinator = fields.ReferenceField('CoordinatorUser')
     schoolYear = fields.LazyReferenceField('SchoolYear')
     stepsProgress = fields.EmbeddedDocumentField(StepsProgress)
-    state = fields.StringField(default='1')
+    status = fields.StringField(default='1')
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
@@ -43,7 +43,7 @@ class Project(Document):
         current_app.logger.info(kwargs)
         current_app.logger.info(document.id)
         if not document.id:
-            year = SchoolYear.objects(state="1", isDeleted=False).first()
+            year = SchoolYear.objects(status="1", isDeleted=False).first()
             if not year:
                 raise ValidationError(
                     message="There is not an active school year")

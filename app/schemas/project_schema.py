@@ -29,7 +29,7 @@ class ProjectSchema(Schema):
     sponsor = MAReferenceField(document=SponsorUser, allow_none=True)
     coordinator = MAReferenceField(document=CoordinatorUser, allow_none=True)
     stepsProgress = fields.Nested(StepsProgressSchema, dump_only=True)
-    state = fields.Str(validate=OneOf(
+    status = fields.Str(validate=OneOf(
         ('1', '2'),
         ('in_progress', 'in_peca')
     ), dump_only=True)

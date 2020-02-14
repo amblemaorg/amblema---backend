@@ -43,7 +43,7 @@ class Step(Document):
     date = DateTimeField(required=False)
     file = EmbeddedDocumentField(File, is_file=True)
     schoolYear = ReferenceField('SchoolYear', required=True)
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'steps'}

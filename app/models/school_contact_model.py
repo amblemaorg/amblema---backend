@@ -58,8 +58,8 @@ class SchoolContact(Document):
     sponsorContactFirstName = fields.StringField()
     sponsorContactLastName = fields.StringField()
     sponsorContactPhone = fields.StringField()
-    state = fields.StringField(required=True, default="1")
-    status = fields.BooleanField(default=True)
+    status = fields.StringField(required=True, default="1")
+    isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'schools_contacts'}
@@ -74,10 +74,10 @@ class SchoolContact(Document):
         if document.id:
             oldRequest = SchoolContact.objects.get(id=document.id)
             current_app.logger.info('*** post update***')
-            current_app.logger.info(document.state)
-            current_app.logger.info(oldRequest.state)
-            if document.state != oldRequest.state and document.state == '2':
-                current_app.logger.info('***state=2***')
+            current_app.logger.info(document.status)
+            current_app.logger.info(oldRequest.status)
+            if document.status != oldRequest.status and document.status == '2':
+                current_app.logger.info('***status=2***')
                 project = Project()
                 schoolUser = SchoolUser.objects(email=document.email).first()
                 if not schoolUser:
@@ -86,12 +86,12 @@ class SchoolContact(Document):
                         email=document.email,
                         userType='4',
                         phone=document.phone,
-                        role=Role.objects(status=True).first(),
+                        role=Role.objects(isDeleted=False).first(),
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
                         address=document.address,
-                        state='1',
+                        status='1',
                         code=document.code,
                         contactFirstName=document.principalFirstName,
                         contactLastName=document.principalLastName,
@@ -115,12 +115,12 @@ class SchoolContact(Document):
                             email=document.sponsorEmail,
                             userType='3',
                             phone=document.sponsorPhone,
-                            role=Role.objects(status=True).first(),
+                            role=Role.objects(isDeleted=False).first(),
                             addressState=document.sponsorAddressState,
                             addressMunicipality=document.sponsorAddressMunicipality,
                             addressCity=document.sponsorAddressCity,
                             address=document.sponsorAddress,
-                            state='1',
+                            status='1',
                             firstName=document.sponsorContactFirstName,
                             lastName=document.sponsorContactLastName,
                             cardType='2',

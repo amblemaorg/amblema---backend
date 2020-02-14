@@ -19,7 +19,7 @@ class Post(Document):
     image = URLField(required=True)
     image2 = URLField(required=True)
     text = StringField(required=True)
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'posts'}

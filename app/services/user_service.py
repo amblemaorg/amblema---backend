@@ -36,9 +36,11 @@ class UserService(GenericServices):
                         {"field": field, "value": data[field]})
             isDuplicated = self.checkForDuplicates(fieldsForCheckDuplicates)
             if isDuplicated:
-                return {
-                    "message": "Duplicated record found.",
-                    "data": isDuplicated}, 400
+                for field in isDuplicated:
+                    raise ValidationError(
+                        {field["field"]: [{"status": "5",
+                                           "msg": "Duplicated record found: '{}'".format(field["value"])}]}
+                    )
             try:
                 record.save()
                 record.sendRegistrationEmail(password)

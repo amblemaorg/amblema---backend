@@ -13,31 +13,28 @@ from app.helpers.error_helpers import RegisterNotFound
 
 
 class DiagnosticController(Resource):
-    
+
     service = GenericServices(
         Model=SchoolYear,
         Schema=SchoolYearSchema)
 
     def get(self):
-        year = SchoolYear.objects(status=True, state='1').first()
+        year = SchoolYear.objects(isDeleted=False, status='1').first()
         if not year:
             raise RegisterNotFound(message="There is not an active school year",
-                               status_code=400)
+                                   status_code=400)
         yearSchema = SchoolYearSchema(only=["diagnosticSettings"])
-        
-        return yearSchema.dump(year),200
+
+        return yearSchema.dump(year), 200
 
     def post(self):
-        year = SchoolYear.objects(status=True, state='1').first()
+        year = SchoolYear.objects(isDeleted=False, status='1').first()
         if not year:
             raise RegisterNotFound(message="There is not an active school year",
-                               status_code=400)
+                                   status_code=400)
         jsonData = request.get_json()
         return self.service.updateRecord(
             recordId=str(year.id),
             jsonData=jsonData,
             only=["diagnosticSettings"],
             partial=True)
-
-
-

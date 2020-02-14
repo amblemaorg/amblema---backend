@@ -27,10 +27,10 @@ class User(DynamicDocument):
     addressMunicipality = fields.ReferenceField('Municipality')
     addressCity = fields.StringField()
     address = fields.StringField()
-    state = fields.StringField(default='1')
+    status = fields.StringField(default='1')
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
-    status = fields.BooleanField(default=True)
+    isDeleted = fields.BooleanField(default=False)
 
     def clean(self):
         """Initialize the user"""
@@ -62,10 +62,11 @@ class User(DynamicDocument):
         Checks all available permissions for each entity
         """
         permissions = []
-        for permission in self.role.permissions:
-            for action in permission.actions:
-                if action.allowed:
-                    permissions.append(action.name)
+        if not self.role.isDeleted and self.role.status == "1":
+            for permission in self.role.permissions:
+                for action in permission.actions:
+                    if action.allowed:
+                        permissions.append(action.name)
         return permissions
 
     def sendRegistrationEmail(self, password):

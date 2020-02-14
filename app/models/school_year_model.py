@@ -46,8 +46,8 @@ class SchoolYear(Document):
     startDate = DateField(required=True)
     endDate = DateField(required=True)
     diagnosticSettings = EmbeddedDocumentField(DiagnosticSettings)
-    state = StringField(required=True, default="1")
-    status = BooleanField(default=True)
+    status = StringField(required=True, default="1")
+    isDeleted = BooleanField(default=False)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'school_years'}
@@ -93,7 +93,7 @@ class SchoolYearSchema(Schema):
     startDate = fields.Date(required=True)
     endDate = fields.Date(required=True)
     diagnosticSettings = fields.Nested(DiagnosticSettingsSchema)
-    state = fields.Str(
+    status = fields.Str(
         validate=OneOf(
             ["1", "2"],
             ["Active", "Inactive"]

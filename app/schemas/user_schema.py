@@ -39,7 +39,7 @@ class UserSchema(Schema):
         required=True, document=Municipality)
     address = fields.Str()
     addressCity = fields.Str()
-    state = fields.Str(validate=OneOf(["1", "2"]))
+    status = fields.Str(validate=OneOf(["1", "2"]))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

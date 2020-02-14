@@ -1,4 +1,4 @@
-# /app/controllers/state_controller.py
+# /app/controllers/step_controller.py
 
 
 from flask import request
@@ -11,7 +11,7 @@ from app.helpers.handler_files import validate_files, upload_files
 
 
 class StepController(Resource):
-    
+
     service = GenericServices(
         Model=Step,
         Schema=StepSchema)
@@ -24,23 +24,23 @@ class StepController(Resource):
         jsonData = request.form.to_dict()
         return self.service.saveRecord(jsonData, request.files)
 
-    
+
 class StepHandlerController(Resource):
-    
+
     service = GenericServices(
         Model=Step,
         Schema=StepSchema)
 
     def get(self, id):
         return self.service.getRecord(id)
-    
+
     def put(self, id):
         jsonData = request.form.to_dict()
         return self.service.updateRecord(
             recordId=id,
             jsonData=jsonData,
             files=request.files,
-            partial=["name","tag","text","date","file","schoolYear"])
+            partial=["name", "tag", "text", "date", "file", "schoolYear"])
 
     def delete(self, id):
         return self.service.deleteRecord(id)

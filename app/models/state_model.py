@@ -23,7 +23,7 @@ from app.schemas import fields
 class State(Document):
     name = StringField(unique_c=True, required=True)
     polygon = PolygonField()
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'states'}
@@ -36,7 +36,7 @@ class Municipality(Document):
     name = StringField(unique_c=True, required=True)
     state = ReferenceField(State, required=True)
     polygon = PolygonField()
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'municipalities'}

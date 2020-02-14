@@ -36,7 +36,7 @@ def saveMunicipality(stateId, jsonData):
         data = municipalitySchema.load(jsonData)
     except ValidationError as err:
         return err.messages, 400
-    
+
     uniquesFields = getUniqueFields(Municipality)
     fieldsForCheckDuplicates = []
     municipality = Municipality()
@@ -44,14 +44,14 @@ def saveMunicipality(stateId, jsonData):
         municipality[field] = data[field]
         if field in uniquesFields:
             fieldsForCheckDuplicates.append(
-                {"field":field, "value":data[field]})
+                {"field": field, "value": data[field]})
 
     state = getStateOr404(stateId)
     isDuplicated = checkForDuplicates(stateId, fieldsForCheckDuplicates)
     if isDuplicated:
         return {
             "message": "Duplicated record found.",
-            "data":isDuplicated}, 400
+            "data": isDuplicated}, 400
     state.municipalities.append(municipality)
     state.save()
     return municipalitySchema.dump(municipality), 201
@@ -72,7 +72,7 @@ def updateMunicipality(stateId, municipalityId, jsonData):
     """
     municipalitySchema = MunicipalitySchema()
     try:
-        data = municipalitySchema.load(jsonData,partial=("name",))
+        data = municipalitySchema.load(jsonData, partial=("name",))
     except ValidationError as err:
         return err.messages, 400
 
@@ -86,8 +86,8 @@ def updateMunicipality(stateId, municipalityId, jsonData):
             has_changed = True
             if field in uniquesFields:
                 fieldsForCheckDuplicates.append(
-                    {"field":field, "value":data[field]})
-    
+                    {"field": field, "value": data[field]})
+
     if has_changed:
         isDuplicated = checkForDuplicates(stateId, fieldsForCheckDuplicates)
         if isDuplicated:
@@ -98,8 +98,8 @@ def updateMunicipality(stateId, municipalityId, jsonData):
         State.objects(
             id=stateId,
             municipalities__id=municipalityId
-            ).update(set__municipalities__S=municipality)
-        
+        ).update(set__municipalities__S=municipality)
+
     return municipalitySchema.dump(municipality), 200
 
 
@@ -108,12 +108,12 @@ def deleteMunicipality(stateId, municipalityId):
     Delete (change status) a municipality record
     """
     municipality = getMunicipalityOr404(stateId, municipalityId)
-    municipality.status = False
+    municipality.isDeleted = True
     municipality.updateAt = datetime.utcnow()
     State.objects(
         id=stateId,
         municipalities__id=municipalityId
-        ).update(set__municipalities__S=municipality)
+    ).update(set__municipalities__S=municipality)
     return {"message": "Municipality deleted successfully"}, 200
 
 
@@ -128,7 +128,7 @@ def getStateOr404(stateId):
                                status_code=404,
                                payload={"stateId": stateId})
     return state
-    
+
 
 def getMunicipalityOr404(stateId, municipalityId):
     """
@@ -144,7 +144,8 @@ def getMunicipalityOr404(stateId, municipalityId):
         raise RegisterNotFound(message="State id not found",
                                status_code=404,
                                payload={"stateId": stateId})
-    municipality = state.municipalities.filter(id=municipalityId, status=True).first()
+    municipality = state.municipalities.filter(
+        id=municipalityId, status=True).first()
     if not municipality:
         raise RegisterNotFound(message="Municipality id not found",
                                status_code=404,
@@ -162,15 +163,15 @@ def checkForDuplicates(stateId, attributes):
       attributes: array. example [{"field":"name", "value":"Iribarren"}]
     """
     filterList = []
-    
+
     if len(attributes):
         for f in attributes:
             filterList.append(Q(**{f['field']: f['value']}))
-        
+
         states = State.objects.filter(
             Q(id=stateId)
             & (reduce(operator.or_, attributes))
-            ).all()
+        ).all()
         if states:
             duplicates = []
             for state in states:

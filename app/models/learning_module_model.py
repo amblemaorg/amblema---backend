@@ -18,7 +18,6 @@ class Quiz(EmbeddedDocument):
     optionC = fields.StringField(required=True)
     optionD = fields.StringField(required=True)
     correctOption = fields.StringField(required=True)
-    status = fields.BooleanField(default=True)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
 
@@ -39,7 +38,7 @@ class LearningModule(Document):
     duration = fields.IntField(required=True, min_value=0)
     points = fields.IntField(required=True, min_value=0)
     quizzes = fields.EmbeddedDocumentListField(Quiz, required=True)
-    status = fields.BooleanField(default=True)
+    isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'learning_modules'}

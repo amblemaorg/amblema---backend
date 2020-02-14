@@ -33,7 +33,7 @@ class CoordinatorContact(Document):
     profession = fields.StringField(required=True)
     referredName = fields.StringField(required=True)
     state = fields.StringField(required=True, default="1")
-    status = fields.BooleanField(default=True)
+    isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'coordinators_contacts'}

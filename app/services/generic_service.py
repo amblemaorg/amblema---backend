@@ -126,7 +126,7 @@ class GenericServices():
         """
         record = self.getOr404(recordId)
         try:
-            record.status = False
+            record.isDeleted = True
             record.save()
         except Exception as e:
             return {'status': 0, 'message': str(e)}, 400

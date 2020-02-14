@@ -27,13 +27,13 @@ class Action(EmbeddedDocument):
     name = StringField(unique_c=True, required=True)
     label = StringField(required=True)
     sort = IntField()
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     meta = {'ordering': ['+sort']}
 
 
 class Entity(Document):
     name = StringField(unique_c=True, required=True)
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     actions = EmbeddedDocumentListField(Action)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
@@ -58,7 +58,7 @@ class Permission(EmbeddedDocument):
 class Role(Document):
     name = StringField(unique_c=True, required=True)
     state = StringField(max_length=1)
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     permissions = EmbeddedDocumentListField(Permission)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)

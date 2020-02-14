@@ -33,7 +33,7 @@ class SponsorContact(Document):
     schoolContact = fields.StringField(required=True, max_length=1)
     schoolContactName = fields.StringField(required=True)
     state = fields.StringField(required=True, default="1")
-    status = fields.BooleanField(default=True)
+    isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'sponsors_contacts'}

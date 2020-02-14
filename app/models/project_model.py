@@ -34,7 +34,7 @@ class Project(Document):
     state = fields.StringField(default='1')
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
-    status = fields.BooleanField(default=True)
+    isDeleted = fields.BooleanField(default=False)
     meta = {'collection': 'projects'}
 
     @classmethod

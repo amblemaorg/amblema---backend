@@ -47,7 +47,7 @@ class SchoolYear(Document):
     endDate = DateField(required=True)
     diagnosticSettings = EmbeddedDocumentField(DiagnosticSettings)
     state = StringField(required=True, default="1")
-    status = BooleanField(default=True)
+    isDeleted = BooleanField(default=False)
     createdAt = DateTimeField(default=datetime.utcnow)
     updatedAt = DateTimeField(default=datetime.utcnow)
     meta = {'collection': 'school_years'}

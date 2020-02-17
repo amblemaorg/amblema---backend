@@ -10,6 +10,16 @@ from flask import current_app
 from mongoengine import (EmbeddedDocument, Document, fields)
 
 
+class Image(EmbeddedDocument):
+    url = fields.URLField(required=True)
+    description = fields.StringField(required=True)
+
+
+class Video(EmbeddedDocument):
+    url = fields.URLField(required=True)
+    description = fields.StringField(required=True)
+
+
 class Quiz(EmbeddedDocument):
     id = fields.ObjectIdField()
     question = fields.StringField(required=True)
@@ -33,8 +43,8 @@ class LearningModule(Document):
     secondaryTitle = fields.StringField(required=True)
     secondaryDescription = fields.StringField(required=True)
     objectives = fields.ListField(fields.StringField(), required=True)
-    images = fields.ListField(fields.URLField(), required=True)
-    videos = fields.ListField(fields.URLField(), required=True)
+    images = fields.EmbeddedDocumentListField(Image, required=True)
+    videos = fields.EmbeddedDocumentListField(Video, required=True)
     duration = fields.IntField(required=True, min_value=0)
     points = fields.IntField(required=True, min_value=0)
     quizzes = fields.EmbeddedDocumentListField(Quiz, required=True)
@@ -63,7 +73,7 @@ class LearningModule(Document):
         Otherwise return false
         """
         incorrectAnswers = []
-        for quiz in self.getQuizzes():
+        for quiz in self.quizzes:
 
             if (
                 (str(quiz.id) not in answers) or

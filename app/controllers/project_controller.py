@@ -18,7 +18,16 @@ class ProjectController(Resource):
 
     def get(self):
         filters = getQueryParams(request)
-        return self.service.getAllRecords(filters=filters)
+        return self.service.getAllRecords(
+            filters=filters,
+            only=(
+                "id",
+                "code",
+                "sponsor",
+                "coordinator",
+                "school",
+                "status"
+            ))
 
     def post(self):
         jsonData = request.get_json()

@@ -14,6 +14,7 @@ from mongoengine import (
 
 
 from app.models.school_year_model import SchoolYear
+from app.models.shared_embedded_documents import Link
 
 
 class File(EmbeddedDocument):
@@ -27,8 +28,8 @@ class Step(Document):
     tag = fields.StringField(required=True, max_length=1)
     text = fields.StringField(required=True)
     date = fields.DateTimeField(required=False)
-    file = fields.EmbeddedDocumentField(File, is_file=True)
-    video = fields.EmbeddedDocumentField(File, null=True)
+    file = fields.EmbeddedDocumentField(Link, is_file=True, null=True)
+    video = fields.EmbeddedDocumentField(Link, null=True)
     schoolYear = fields.ReferenceField('SchoolYear', required=True)
     isStandard = fields.BooleanField(default=False)
     isDeleted = fields.BooleanField(default=False)

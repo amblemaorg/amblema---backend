@@ -5,9 +5,9 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.generic_service import GenericServices
-from app.models.step_model import Step, StepSchema
+from app.models.step_model import Step
+from app.schemas.step_schema import StepSchema
 from app.helpers.handler_request import getQueryParams
-from app.helpers.handler_files import validate_files, upload_files
 
 
 class StepController(Resource):

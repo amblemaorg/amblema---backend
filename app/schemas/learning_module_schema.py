@@ -5,8 +5,28 @@ from marshmallow import (
 
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
-    not_blank, validate_image, validate_video, OneOf, Range)
-from app.models.learning_module_model import Quiz
+    not_blank, validate_image, validate_video, validate_url, OneOf, Range)
+from app.models.learning_module_model import Quiz, Image, Video
+
+
+class ImageSchema(Schema):
+    url = MAImageField(
+        validate=(not_blank, validate_image),
+        folder='learningmodules')
+    description = fields.Str(required=True)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Image(**data)
+
+
+class VideoSchema(Schema):
+    url = fields.Str(required=True, validate=validate_url)
+    description = fields.Str(required=True)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Video(**data)
 
 
 class QuizSchema(Schema):
@@ -41,14 +61,11 @@ class LearningModuleSchema(Schema):
     secondaryDescription = fields.Str(required=True, validate=not_blank)
     objectives = fields.List(fields.String(validate=not_blank))
     images = fields.List(
-        MAImageField(
-            validate=(not_blank, validate_image),
-            folder='learningmodules'
-        ),
+        fields.Nested(ImageSchema),
         required=True,
         validate=not_blank)
     videos = fields.List(
-        fields.Str(validate=(not_blank, validate_video)),
+        fields.Nested(VideoSchema),
         required=True,
         validate=not_blank)
     duration = fields.Int(required=True, validate=Range(min=0))

@@ -8,7 +8,9 @@ from flask import current_app
 from mongoengine import (
     Document,
     EmbeddedDocument,
-    fields)
+    fields,
+    signals,
+    ValidationError)
 
 
 from app.models.school_year_model import SchoolYear
@@ -26,6 +28,7 @@ class Step(Document):
     text = fields.StringField(required=True)
     date = fields.DateTimeField(required=False)
     file = fields.EmbeddedDocumentField(File, is_file=True)
+    video = fields.EmbeddedDocumentField(File, null=True)
     schoolYear = fields.ReferenceField('SchoolYear', required=True)
     isStandard = fields.BooleanField(default=False)
     isDeleted = fields.BooleanField(default=False)
@@ -35,3 +38,18 @@ class Step(Document):
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
+
+    @classmethod
+    def pre_save(cls, sender, document, **kwargs):
+        current_app.logger.info('StepModel pre_save')
+        if not document.id:
+            year = SchoolYear.objects(status="1", isDeleted=False).first()
+            if not year:
+                raise ValidationError(
+                    message="There is not an active school year")
+            document.schoolYear = year
+        else:
+            current_app.logger.info('before updated')
+
+
+signals.pre_save.connect(Step.pre_save, sender=Step)

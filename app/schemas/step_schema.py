@@ -50,7 +50,8 @@ class StepSchema(Schema):
     text = fields.Str(required=True, validate=not_blank)
     date = fields.DateTime()
     file = fields.Nested(FileSchema)
-    schoolYear = MAReferenceField(required=True, document=SchoolYear)
+    video = fields.Nested(FileSchema)
+    schoolYear = MAReferenceField(document=SchoolYear, dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

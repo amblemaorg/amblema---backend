@@ -16,6 +16,7 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.school_year_model import SchoolYear
 from app.models.step_model import File
+from app.models.shared_embedded_documents import Link
 
 
 class Step(EmbeddedDocument):
@@ -25,7 +26,8 @@ class Step(EmbeddedDocument):
     tag = fields.StringField(required=True, max_length=1)
     text = fields.StringField(required=True)
     date = fields.DateTimeField()
-    file = fields.URLField()
+    file = fields.EmbeddedDocumentField(Link)
+    video = fields.EmbeddedDocumentField(Link)
     uploadedFile = fields.EmbeddedDocumentField(File)
     isStandard = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

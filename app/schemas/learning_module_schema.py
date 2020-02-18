@@ -1,5 +1,6 @@
 # app/schemas/learning_module_schema.py
 
+import time
 from marshmallow import (
     Schema, fields, pre_load, post_load, EXCLUDE, validate)
 
@@ -68,11 +69,18 @@ class LearningModuleSchema(Schema):
         fields.Nested(VideoSchema),
         required=True,
         validate=not_blank)
-    duration = fields.Int(required=True, validate=Range(min=0))
+    duration = fields.Method("get_duration", deserialize="load_duration")
     points = fields.Int(required=True, validate=Range(min=0))
     quizzes = fields.List(fields.Nested(QuizSchema, required=True))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+    def get_duration(self, obj):
+        return time.strftime('%H:%M', time.gmtime(obj.duration))
+
+    def load_duration(self, value):
+        h, m = value.split(':')
+        return int(h) * 3600 + int(m) * 60
 
     class Meta:
         unknown = EXCLUDE

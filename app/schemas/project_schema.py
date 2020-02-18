@@ -15,6 +15,7 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.school_year_model import SchoolYear
 from app.schemas.step_schema import FileSchema
+from app.schemas.shared_schemas import CheckSchema
 
 
 class StepControlSchema(Schema):
@@ -26,6 +27,7 @@ class StepControlSchema(Schema):
     date = fields.DateTime()
     file = fields.Nested(FileSchema, dump_only=True)
     video = fields.Nested(FileSchema, dump_only=True)
+    checklist = fields.List(fields.Nested(CheckSchema))
     schoolYear = MAReferenceField(document=SchoolYear, dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

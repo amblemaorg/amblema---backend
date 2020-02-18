@@ -19,6 +19,11 @@ from app.models.step_model import File, Step
 from app.models.shared_embedded_documents import Link
 
 
+class CheckElement(EmbeddedDocument):
+    name = fields.StringField()
+    checked = fields.BooleanField(default=False)
+
+
 class StepControl(EmbeddedDocument):
     id = fields.StringField(required=True)
     name = fields.StringField(required=True)
@@ -28,6 +33,7 @@ class StepControl(EmbeddedDocument):
     date = fields.DateTimeField(null=True)
     file = fields.EmbeddedDocumentField(Link, null=True)
     video = fields.EmbeddedDocumentField(Link, null=True)
+    checklist = fields.EmbeddedDocumentListField(CheckElement)
     uploadedFile = fields.EmbeddedDocumentField(File)
     isStandard = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -88,6 +94,9 @@ class Project(Document):
                     createdAt=step.createdAt,
                     updatedAt=step.updatedAt
                 )
+                if step.type == "5":
+                    for check in step.checklist:
+                        stepCtrl.checklist.append(CheckElement(name=check))
                 initialSteps.steps.append(stepCtrl)
                 current_app.logger.info('inside for')
             current_app.logger.info('outside created')

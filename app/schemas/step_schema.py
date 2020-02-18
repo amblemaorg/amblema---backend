@@ -4,7 +4,6 @@ import json
 
 from marshmallow import (
     Schema,
-    fields,
     pre_load,
     post_load,
     EXCLUDE,
@@ -12,6 +11,7 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
+from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, validate_url, OneOf
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.error_helpers import RegisterNotFound
@@ -40,7 +40,7 @@ class StepSchema(Schema):
     type = fields.Str(
         validate=OneOf(
             ["1", "2", "3", "4", "5"],
-            ["Text", "Date", "AttachedFile", "DateAttachedFile", "Form"]
+            ["Text", "Date", "AttachedFile", "DateAttachedFile", "Checklist"]
         ), required=True)
     tag = fields.Str(
         validate=OneOf(
@@ -51,6 +51,7 @@ class StepSchema(Schema):
     date = fields.DateTime()
     file = fields.Nested(FileSchema)
     video = fields.Nested(FileSchema)
+    checklist = fields.List(fields.Str())
     schoolYear = MAReferenceField(document=SchoolYear, dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
@@ -59,6 +60,8 @@ class StepSchema(Schema):
     def process_input(self, data, **kwargs):
         if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
+        if "checklist" in data and isinstance(data["checklist"], str):
+            data["checklist"] = json.loads(data["checklist"])
         return data
 
     @validates_schema
@@ -80,6 +83,11 @@ class StepSchema(Schema):
         ):
             errors["date"] = [{"status": "2", "msg": "Field is required"}]
             errors["file"] = [{"status": "2", "msg": "Field is required"}]
+        if (
+            str(data["type"]) == "5"
+            and "checklist" not in data
+        ):
+            errors["checklist"] = [{"status": "2", "msg": "Field is required"}]
         if errors:
             raise ValidationError(errors)
 

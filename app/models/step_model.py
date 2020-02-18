@@ -30,6 +30,7 @@ class Step(Document):
     date = fields.DateTimeField(required=False)
     file = fields.EmbeddedDocumentField(Link, is_file=True, null=True)
     video = fields.EmbeddedDocumentField(Link, null=True)
+    checklist = fields.ListField(fields.StringField())
     schoolYear = fields.ReferenceField('SchoolYear', required=True)
     isStandard = fields.BooleanField(default=False)
     isDeleted = fields.BooleanField(default=False)

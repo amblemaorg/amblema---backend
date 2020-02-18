@@ -1,7 +1,8 @@
 # app/schemas/shared_schemas.py
 
 
-from marshmallow import Schema, fields
+from marshmallow import Schema
+from app.schemas import fields
 
 
 class ReferenceSchema(Schema):
@@ -15,3 +16,8 @@ class ProjectReferenceSchema(Schema):
     sponsor = fields.Nested(ReferenceSchema, dump_only=True)
     coordinator = fields.Nested(ReferenceSchema, dump_only=True)
     school = fields.Nested(ReferenceSchema, dump_only=True)
+
+
+class CheckSchema(Schema):
+    name = fields.Str()
+    checked = fields.Bool()

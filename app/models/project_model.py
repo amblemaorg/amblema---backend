@@ -15,7 +15,7 @@ from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.school_year_model import SchoolYear
-from app.models.step_model import File, Step
+from app.models.step_model import Step
 from app.models.shared_embedded_documents import Link
 
 
@@ -34,7 +34,7 @@ class StepControl(EmbeddedDocument):
     file = fields.EmbeddedDocumentField(Link, null=True)
     video = fields.EmbeddedDocumentField(Link, null=True)
     checklist = fields.EmbeddedDocumentListField(CheckElement)
-    uploadedFile = fields.EmbeddedDocumentField(File)
+    uploadedFile = fields.EmbeddedDocumentField(Link)
     isStandard = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

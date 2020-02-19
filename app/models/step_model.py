@@ -53,5 +53,40 @@ class Step(Document):
         else:
             current_app.logger.info('before updated')
 
+    @classmethod
+    def post_save(cls, sender, document, **kwargs):
+        from app.models.project_model import Project, StepControl, CheckElement
+        if 'created' in kwargs and kwargs['created']:
+            current_app.logger.info('after insert')
+            projects = Project.objects(
+                schoolYear=document.schoolYear, isDeleted=False, status='1').all()
+            for project in projects:
+                stepCtrl = StepControl(
+                    id=str(document.id),
+                    name=document.name,
+                    type=document.type,
+                    tag=document.tag,
+                    text=document.text,
+                    date=document.date,
+                    file=document.file,
+                    video=document.video,
+                    createdAt=document.createdAt,
+                    updatedAt=document.updatedAt
+                )
+                if document.type == "5":
+                    for check in document.checklist:
+                        stepCtrl.checklist.append(
+                            CheckElement(name=check))
+                project.stepsProgress.steps.append(stepCtrl)
+                project.save()
+        else:
+            if document.isDeleted:
+                Project.objects(
+                    schoolYear=document.schoolYear,
+                    isDeleted=False, status='1',
+                    stepsProgress__steps__id=str(document.id)).update(
+                        pull__stepsProgress__steps__id=str(document.id))
+
 
 signals.pre_save.connect(Step.pre_save, sender=Step)
+signals.post_save.connect(Step.post_save, sender=Step)

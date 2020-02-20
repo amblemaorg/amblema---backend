@@ -3,6 +3,7 @@
 
 import unittest
 import json
+from copy import deepcopy
 
 from app import create_app, db
 
@@ -175,6 +176,41 @@ class InitialSteps(unittest.TestCase):
         )
         self.assertEqual(result["approved"], True)
         self.assertEqual(1, self.coordinator.learning[0].score)
+
+    def test_coordinator_change_instructed_new_module(self):
+        self.coordinator.instructed = True
+        self.coordinator.save()
+
+        newModule = deepcopy(self.learningModule)
+        newModule.id = None
+        newModule.title = "New module"
+        newModule.save()
+
+        self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
+
+        self.assertEqual(False, self.coordinator.instructed)
+
+    def test_coordinator_delete_progress_on_delete_module(self):
+
+        result = self.coordinator.tryAnswerLearningModule(
+            self.learningModule,
+            [
+                Answer(
+                    quizId=self.learningModule.quizzes[0].id,
+                    option="optionD"),
+                Answer(
+                    quizId=self.learningModule.quizzes[1].id,
+                    option="optionA")
+            ]
+        )
+        self.assertEqual(result["approved"], True)
+        self.assertEqual(4, self.coordinator.learning[0].score)
+
+        self.learningModule.isDeleted = True
+        self.learningModule.save()
+
+        self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
+        self.assertEqual(0, len(self.coordinator.learning))
 
     def tearDown(self):
         """teardown all initialized variables."""

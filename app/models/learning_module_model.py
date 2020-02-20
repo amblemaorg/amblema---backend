@@ -5,6 +5,7 @@ from datetime import datetime
 from bson.objectid import ObjectId
 import logging
 
+from pymongo import UpdateOne
 from mongoengine import signals
 from flask import current_app
 from mongoengine import (EmbeddedDocument, Document, fields)
@@ -58,11 +59,27 @@ class LearningModule(Document):
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
+        from app.models.coordinator_user_model import CoordinatorUser
+        from app.models.project_model import Project
         current_app.logger.info('LearningModule POST_SAVE')
         if 'created' in kwargs and kwargs['created']:
             current_app.logger.info('After created')
+            CoordinatorUser.objects(
+                isDeleted=False,
+                instructed=True, status__in=("2", "3")
+            ).update(set__instructed=False, set__status="1")
+            CoordinatorUser.objects(
+                isDeleted=False,
+                instructed=True
+            ).update(set__instructed=False)
+
         else:
             current_app.logger.info('After updated')
+            if document.isDeleted:
+                CoordinatorUser.objects(
+                    isDeleted=False,
+                    learning__moduleId=document.id
+                ).update(pull__learning__moduleId=document.id)
 
     def evaluate(self, answers):
         """

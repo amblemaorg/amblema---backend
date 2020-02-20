@@ -72,6 +72,19 @@ class CoordinatorUser(User):
             self.projects.remove(project)
             self.save()
 
+    def isInstructed(self):
+        from app.models.learning_module_model import LearningModule
+
+        modules = LearningModule.objects(isDeleted=False).only("id")
+        for module in modules:
+            approved = False
+            for my_module in self.learning:
+                if my_module.moduleId == module.id and my_module.status == "3":
+                    approved = True
+            if not approved:
+                return False
+        return True
+
     def tryAnswerLearningModule(self, module, answers):
         """
         Method for answer a learning module.
@@ -94,6 +107,8 @@ class CoordinatorUser(User):
                 if results["approved"]:
                     my_module.score = 4 - (3 if nAttempts > 2 else nAttempts)
                     my_module.status = "3"
+                    if self.isInstructed():
+                        self.instructed = True
                 else:
                     my_module.status = "2"
                 attempt = Attempt(
@@ -119,5 +134,7 @@ class CoordinatorUser(User):
             )
             my_module.attempts.append(attempt)
             self.learning.append(my_module)
+            if results["approved"] and self.isInstructed():
+                self.instructed = True
             self.save()
             return results

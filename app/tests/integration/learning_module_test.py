@@ -212,6 +212,36 @@ class InitialSteps(unittest.TestCase):
         self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
         self.assertEqual(0, len(self.coordinator.learning))
 
+    def test_coordinator_change_instructed_on_approved(self):
+
+        self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
+        self.assertEqual(False, self.coordinator.instructed)
+
+        result = self.coordinator.tryAnswerLearningModule(
+            self.learningModule,
+            [
+                Answer(
+                    quizId=self.learningModule.quizzes[0].id,
+                    option="optionD"),
+                Answer(
+                    quizId=self.learningModule.quizzes[1].id,
+                    option="optionA")
+            ]
+        )
+        self.assertEqual(result["approved"], True)
+        self.assertEqual(4, self.coordinator.learning[0].score)
+
+        self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
+        self.assertEqual(True, self.coordinator.instructed)
+
+        newModule = deepcopy(self.learningModule)
+        newModule.id = None
+        newModule.title = "New module"
+        newModule.save()
+
+        self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
+        self.assertEqual(False, self.coordinator.instructed)
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

@@ -3,18 +3,17 @@
 
 from datetime import datetime
 import json
-from flask import current_app
+from bson import ObjectId
 
+from flask import current_app
 from mongoengine import (
     Document,
     EmbeddedDocument,
     fields,
-    signals,
-    ValidationError)
+    signals)
 
-
-from app.models.school_year_model import SchoolYear
 from app.models.shared_embedded_documents import Link
+from app.services.step_service import StepsService
 
 
 class File(EmbeddedDocument):
@@ -22,16 +21,24 @@ class File(EmbeddedDocument):
     url = fields.URLField(required=True)
 
 
-class Step(Document):
+class Check(EmbeddedDocument):
+    id = fields.ObjectIdField(default=ObjectId())
     name = fields.StringField(required=True)
+
+
+class Step(Document):
+    name = fields.StringField(required=True, unique_c=True)
+    devName = fields.StringField(required=True, unique_c=True)
     type = fields.StringField(required=True, max_length=1)
     tag = fields.StringField(required=True, max_length=1)
     text = fields.StringField(required=True)
-    date = fields.DateTimeField(required=False)
-    file = fields.EmbeddedDocumentField(Link, is_file=True, null=True)
-    video = fields.EmbeddedDocumentField(Link, null=True)
-    checklist = fields.ListField(fields.StringField())
+    date = fields.DateTimeField(required=False, null=True, default=None)
+    file = fields.EmbeddedDocumentField(
+        Link, is_file=True, null=True, default=None)
+    video = fields.EmbeddedDocumentField(Link, null=True, default=None)
+    checklist = fields.EmbeddedDocumentListField(Check)
     schoolYear = fields.ReferenceField('SchoolYear', required=True)
+    status = fields.StringField(default='1', max_length=1)
     isStandard = fields.BooleanField(default=False)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -43,49 +50,21 @@ class Step(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
-        current_app.logger.info('StepModel pre_save')
+        stepsService = StepsService()
         if not document.id:
-            year = SchoolYear.objects(status="1", isDeleted=False).first()
-            if not year:
-                raise ValidationError(
-                    message="There is not an active school year")
-            document.schoolYear = year
+            current_app.logger.info('before insert')
+            stepsService.handler_steps_before_create(document)
         else:
-            current_app.logger.info('before updated')
+            current_app.logger.info('before update')
+            oldDocument = document.__class__.objects.get(id=document.id)
+            stepsService.handler_steps_before_upd(document, oldDocument)
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
-        from app.models.project_model import Project, StepControl, CheckElement
+        stepsService = StepsService()
         if 'created' in kwargs and kwargs['created']:
-            current_app.logger.info('after insert')
-            projects = Project.objects(
-                schoolYear=document.schoolYear, isDeleted=False, status='1').all()
-            for project in projects:
-                stepCtrl = StepControl(
-                    id=str(document.id),
-                    name=document.name,
-                    type=document.type,
-                    tag=document.tag,
-                    text=document.text,
-                    date=document.date,
-                    file=document.file,
-                    video=document.video,
-                    createdAt=document.createdAt,
-                    updatedAt=document.updatedAt
-                )
-                if document.type == "5":
-                    for check in document.checklist:
-                        stepCtrl.checklist.append(
-                            CheckElement(name=check))
-                project.stepsProgress.steps.append(stepCtrl)
-                project.save()
-        else:
-            if document.isDeleted:
-                Project.objects(
-                    schoolYear=document.schoolYear,
-                    isDeleted=False, status='1',
-                    stepsProgress__steps__id=str(document.id)).update(
-                        pull__stepsProgress__steps__id=str(document.id))
+            current_app.logger.info('after create')
+            stepsService.handler_steps_after_create(document)
 
 
 signals.pre_save.connect(Step.pre_save, sender=Step)

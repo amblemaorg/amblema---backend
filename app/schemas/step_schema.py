@@ -17,6 +17,7 @@ from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_year_model import SchoolYear
 from app.models.step_model import File
+from app.models.step_model import Check
 
 
 class FileSchema(Schema):
@@ -32,6 +33,21 @@ class FileSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         return File(**data)
+
+
+class CheckSchema(Schema):
+    id = fields.Str()
+    name = fields.Str(required=True)
+
+    @pre_load
+    def process_input(self, data, **kwargs):
+        if isinstance(data, str):
+            data = json.loads(data)
+        return data
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Check(**data)
 
 
 class StepSchema(Schema):
@@ -51,8 +67,15 @@ class StepSchema(Schema):
     date = fields.DateTime()
     file = fields.Nested(FileSchema)
     video = fields.Nested(FileSchema)
-    checklist = fields.List(fields.Str())
+    checklist = fields.List(fields.Nested(CheckSchema()))
     schoolYear = MAReferenceField(document=SchoolYear, dump_only=True)
+    status = fields.Str(
+        validate=OneOf(
+            ["1", "2"],
+            ["active", "inactive"]
+        )
+    )
+    isStandard = fields.Bool(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

@@ -75,10 +75,11 @@ class User(DynamicDocument):
         Params:
             password: str (user password)
         """
-        current_app.logger.info(send_email(
-            messageRegisterEmail(self.email, password),
-            'Amblema - Registro de usuario',
-            self.email))
+        if not current_app.config.get("TESTING"):
+            send_email(
+                messageRegisterEmail(self.email, password),
+                'Amblema - Registro de usuario',
+                self.email)
 
     meta = {
         'allow_inheritance': True,

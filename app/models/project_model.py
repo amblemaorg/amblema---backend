@@ -20,6 +20,7 @@ from app.models.shared_embedded_documents import Link
 
 
 class CheckElement(EmbeddedDocument):
+    id = fields.ObjectIdField()
     name = fields.StringField()
     checked = fields.BooleanField(default=False)
 
@@ -96,7 +97,8 @@ class Project(Document):
                 )
                 if step.type == "5":
                     for check in step.checklist:
-                        stepCtrl.checklist.append(CheckElement(name=check))
+                        stepCtrl.checklist.append(
+                            CheckElement(name=check.name, id=check.id))
                 initialSteps.steps.append(stepCtrl)
                 current_app.logger.info('inside for')
             current_app.logger.info('outside created')

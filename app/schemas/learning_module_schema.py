@@ -1,13 +1,35 @@
 # app/schemas/learning_module_schema.py
 
 import time
+import mimetypes
+
+from flask import current_app
 from marshmallow import (
     Schema, fields, pre_load, post_load, EXCLUDE, validate)
 
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
     not_blank, validate_image, validate_video, validate_url, OneOf, Range)
-from app.models.learning_module_model import Quiz, Image, Video
+from app.models.learning_module_model import Quiz, Image, SliderElement
+
+
+class SliderElementSchema(Schema):
+    url = MAImageField(
+        validate=(not_blank),
+        folder='learningmodules')
+    description = fields.Str(required=True)
+    type = fields.Str(dump_only=True)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        current_app.logger.info("make document")
+        current_app.logger.info(data["url"])
+        slider = SliderElement(**data)
+        if data["url"].startswith(current_app.config.get("SERVER_URL")):
+            slider.type = "1"
+        else:
+            slider.type = "2"
+        return slider
 
 
 class ImageSchema(Schema):
@@ -19,15 +41,6 @@ class ImageSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         return Image(**data)
-
-
-class VideoSchema(Schema):
-    url = fields.Str(required=True, validate=validate_url)
-    description = fields.Str(required=True)
-
-    @post_load
-    def make_document(self, data, **kwargs):
-        return Video(**data)
 
 
 class QuizSchema(Schema):
@@ -61,12 +74,9 @@ class LearningModuleSchema(Schema):
     secondaryTitle = fields.Str(required=True, validate=not_blank)
     secondaryDescription = fields.Str(required=True, validate=not_blank)
     objectives = fields.List(fields.String(validate=not_blank))
+    slider = fields.List(fields.Nested(SliderElementSchema))
     images = fields.List(
         fields.Nested(ImageSchema),
-        required=True,
-        validate=not_blank)
-    videos = fields.List(
-        fields.Nested(VideoSchema),
         required=True,
         validate=not_blank)
     duration = fields.Method("get_duration", deserialize="load_duration")

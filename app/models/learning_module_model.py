@@ -10,12 +10,13 @@ from flask import current_app
 from mongoengine import (EmbeddedDocument, Document, fields)
 
 
+class SliderElement(EmbeddedDocument):
+    url = fields.URLField()
+    description = fields.StringField()
+    type = fields.StringField(max_length=1)
+
+
 class Image(EmbeddedDocument):
-    url = fields.URLField(required=True)
-    description = fields.StringField(required=True)
-
-
-class Video(EmbeddedDocument):
     url = fields.URLField(required=True)
     description = fields.StringField(required=True)
 
@@ -43,8 +44,8 @@ class LearningModule(Document):
     secondaryTitle = fields.StringField(required=True)
     secondaryDescription = fields.StringField(required=True)
     objectives = fields.ListField(fields.StringField(), required=True)
+    slider = fields.EmbeddedDocumentListField(SliderElement, required=True)
     images = fields.EmbeddedDocumentListField(Image, required=True)
-    videos = fields.EmbeddedDocumentListField(Video, required=True)
     duration = fields.IntField(required=True, min_value=0)
     points = fields.IntField(required=True, min_value=0)
     quizzes = fields.EmbeddedDocumentListField(Quiz, required=True)

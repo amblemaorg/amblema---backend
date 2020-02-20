@@ -7,9 +7,9 @@ from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf)
-
+from app.helpers.ma_schema_fields import MAReferenceField
 from app.schemas import fields
-from app.models.coordinator_user_model import Answer, Attempt, LearningMod
+from app.models.coordinator_user_model import Answer, Attempt, LearningMod, CoordinatorUser
 
 
 class AnswerSchema(Schema):
@@ -31,10 +31,16 @@ class AttemptSchema(Schema):
     createdAt = fields.DateTime(dump_only=True)
 
 
+class TryAnswerSchema(Schema):
+    coordinator = MAReferenceField(document=CoordinatorUser, required=True)
+    answers = fields.List(fields.Nested(AnswerSchema()), required=True)
+
+
 class LearningModSchema(Schema):
     moduleId = fields.Str(dump_only=True)
     score = fields.Float(dump_only=True)
     status = fields.Str(dump_only=True)
+    attempts = fields.List(fields.Nested(AttemptSchema()))
 
 
 class CoordinatorUserSchema(UserSchema):

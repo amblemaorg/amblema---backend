@@ -23,7 +23,7 @@ class Attempt(EmbeddedDocument):
 
 
 class LearningMod(EmbeddedDocument):
-    moduleId = fields.StringField(required=True)
+    moduleId = fields.ObjectIdField(required=True)
     score = fields.FloatField()
     attempts = fields.EmbeddedDocumentListField(Attempt)
     status = fields.StringField(max_length=1, default="1")
@@ -39,6 +39,7 @@ class CoordinatorUser(User):
     homePhone = fields.StringField(required=True)
     addressHome = fields.StringField()
     learning = fields.EmbeddedDocumentListField(LearningMod)
+    instructed = fields.BooleanField(required=True, default=False)
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName
@@ -70,3 +71,53 @@ class CoordinatorUser(User):
         if project:
             self.projects.remove(project)
             self.save()
+
+    def tryAnswerLearningModule(self, module, answers):
+        """
+        Method for answer a learning module.
+
+        Params:
+           module: LearningModule()
+           answers: [{"quizId": "str", "option": "str"}]
+        The score is:
+        1st attempt 4 coins
+        2nd attempt 3 coins
+        3rd attepmt 2 coins
+        4 o more attempts 1 coin
+        """
+        found = False
+        for my_module in self.learning:
+            if my_module.moduleId == module.id:
+                found = True
+                nAttempts = len(my_module.attempts)
+                results = module.evaluate(answers)
+                if results["approved"]:
+                    my_module.score = 4 - (3 if nAttempts > 2 else nAttempts)
+                    my_module.status = "3"
+                else:
+                    my_module.status = "2"
+                attempt = Attempt(
+                    answers=answers,
+                    status="1" if results["approved"] else "2"
+                )
+                my_module.attempts.append(attempt)
+                self.save()
+                return results
+        if not found:
+            my_module = LearningMod(
+                moduleId=module.id
+            )
+            results = module.evaluate(answers)
+            if results["approved"]:
+                my_module.score = 4
+                my_module.status = "3"
+            else:
+                my_module.status = "2"
+            attempt = Attempt(
+                answers=answers,
+                status="1" if results["approved"] else "2"
+            )
+            my_module.attempts.append(attempt)
+            self.learning.append(my_module)
+            self.save()
+            return results

@@ -26,7 +26,8 @@ from app.controllers.user_controller import (
 )
 from app.controllers.learning_module_controller import (
     LearningController,
-    LearningHandlerController
+    LearningHandlerController,
+    AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
     SchoolYearController, SchoolYearHandlerController
@@ -124,6 +125,11 @@ def create_app(config_instance):
         LearningHandlerController,
         '/learningmodules/<string:id>',
         '/learningmodules/<string:id>/'
+    )
+    api.add_resource(
+        AnswerLearningModuleController,
+        '/answerlearningmodule/<string:id>',
+        '/answerlearningmodule/<string:id>/'
     )
     api.add_resource(
         StepController,

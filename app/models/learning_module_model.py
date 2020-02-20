@@ -47,7 +47,6 @@ class LearningModule(Document):
     slider = fields.EmbeddedDocumentListField(SliderElement, required=True)
     images = fields.EmbeddedDocumentListField(Image, required=True)
     duration = fields.IntField(required=True, min_value=0)
-    points = fields.IntField(required=True, default=4)
     quizzes = fields.EmbeddedDocumentListField(Quiz, required=True)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -75,16 +74,18 @@ class LearningModule(Document):
         """
         incorrectAnswers = []
         for quiz in self.quizzes:
-
-            if (
-                (str(quiz.id) not in answers) or
-                (quiz.correctOption != str(answers[str(quiz.id)]))
-            ):
+            found = False
+            for answer in answers:
+                if str(quiz.id) == str(answer.quizId):
+                    found = True
+                    if quiz.correctOption != answer.option:
+                        incorrectAnswers.append(answer.quizId)
+            if not found:
                 incorrectAnswers.append(str(quiz.id))
         if not incorrectAnswers:
-            return False
+            return {"approved": True}
         else:
-            return incorrectAnswers
+            return {"approved": False, "incorrectAnswers": incorrectAnswers}
 
 
 signals.post_save.connect(LearningModule.post_save, sender=LearningModule)

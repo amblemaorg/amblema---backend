@@ -80,7 +80,6 @@ class LearningModuleSchema(Schema):
         required=True,
         validate=not_blank)
     duration = fields.Method("get_duration", deserialize="load_duration")
-    points = fields.Int(required=True, validate=Range(min=0))
     quizzes = fields.List(fields.Nested(QuizSchema, required=True))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

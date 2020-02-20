@@ -4,11 +4,29 @@
 from datetime import datetime
 
 from flask import current_app
-from mongoengine import fields
+from mongoengine import fields, EmbeddedDocument
 
 from app.models.user_model import User
 from app.models.shared_embedded_documents import (
     DocumentReference, ProjectReference)
+
+
+class Answer(EmbeddedDocument):
+    quizId = fields.ObjectIdField(required=True)
+    option = fields.StringField(required=True)
+
+
+class Attempt(EmbeddedDocument):
+    answers = fields.EmbeddedDocumentListField(Answer, required=True)
+    status = fields.StringField(max_length=1)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+
+
+class LearningMod(EmbeddedDocument):
+    moduleId = fields.StringField(required=True)
+    score = fields.FloatField()
+    attempts = fields.EmbeddedDocumentListField(Attempt)
+    status = fields.StringField(max_length=1, default="1")
 
 
 class CoordinatorUser(User):
@@ -20,6 +38,7 @@ class CoordinatorUser(User):
     projects = fields.EmbeddedDocumentListField(ProjectReference)
     homePhone = fields.StringField(required=True)
     addressHome = fields.StringField()
+    learning = fields.EmbeddedDocumentListField(LearningMod)
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName

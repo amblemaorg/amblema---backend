@@ -39,7 +39,7 @@ class Quiz(EmbeddedDocument):
 
 
 class LearningModule(Document):
-    title = fields.StringField(required=True)
+    title = fields.StringField(required=True, unique_c=True)
     description = fields.StringField(required=True)
     secondaryTitle = fields.StringField(required=True)
     secondaryDescription = fields.StringField(required=True)
@@ -47,7 +47,7 @@ class LearningModule(Document):
     slider = fields.EmbeddedDocumentListField(SliderElement, required=True)
     images = fields.EmbeddedDocumentListField(Image, required=True)
     duration = fields.IntField(required=True, min_value=0)
-    points = fields.IntField(required=True, min_value=0)
+    points = fields.IntField(required=True, default=4)
     quizzes = fields.EmbeddedDocumentListField(Quiz, required=True)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

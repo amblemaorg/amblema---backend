@@ -8,6 +8,7 @@ from app.services.generic_service import GenericServices
 from app.models.learning_module_model import LearningModule
 from app.schemas.learning_module_schema import LearningModuleSchema
 from app.helpers.handler_request import getQueryParams
+from app.services.coordinator_service import CoordinatorService
 
 
 class LearningController(Resource):
@@ -43,3 +44,11 @@ class LearningHandlerController(Resource):
 
     def delete(self, id):
         return self.service.deleteRecord(id)
+
+
+class AnswerLearningModuleController(Resource):
+    service = CoordinatorService()
+
+    def post(self, id):
+        jsonData = request.get_json()
+        return self.service.tryAnswerModule(id, jsonData)

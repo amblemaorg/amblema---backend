@@ -46,7 +46,8 @@ from app.controllers.coordinator_contact_controller import (
     CoordinatorContactController, CoordinatorContactHandlerController
 )
 from app.controllers.project_controller import (
-    ProjectController, ProjectHandlerController
+    ProjectController, ProjectHandlerController,
+    ProjectStepsController
 )
 
 db = MongoEngine()
@@ -163,5 +164,6 @@ def create_app(config_instance):
                      '/coordinatorscontacts/<string:id>')
     api.add_resource(ProjectController, '/projects')
     api.add_resource(ProjectHandlerController, '/projects/<string:id>')
+    api.add_resource(ProjectStepsController, '/projectsteps/<string:id>')
 
     return app

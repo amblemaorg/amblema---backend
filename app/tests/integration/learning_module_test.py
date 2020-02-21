@@ -8,7 +8,7 @@ from copy import deepcopy
 from app import create_app, db
 
 from app.models.school_year_model import SchoolYear
-from app.models.step_model import Step, File, Check
+from app.models.step_model import Step, Check
 from app.models.coordinator_user_model import CoordinatorUser, Answer
 from app.models.project_model import Project
 from app.models.role_model import Role

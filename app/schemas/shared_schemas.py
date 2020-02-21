@@ -19,5 +19,6 @@ class ProjectReferenceSchema(Schema):
 
 
 class CheckSchema(Schema):
+    id = fields.Str()
     name = fields.Str()
     checked = fields.Bool()

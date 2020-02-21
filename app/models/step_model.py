@@ -16,11 +16,6 @@ from app.models.shared_embedded_documents import Link
 from app.services.step_service import StepsService
 
 
-class File(EmbeddedDocument):
-    name = fields.StringField(required=True)
-    url = fields.URLField(required=True)
-
-
 class Check(EmbeddedDocument):
     id = fields.ObjectIdField(default=ObjectId())
     name = fields.StringField(required=True)

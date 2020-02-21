@@ -35,10 +35,15 @@ class StepControl(EmbeddedDocument):
     file = fields.EmbeddedDocumentField(Link, null=True)
     video = fields.EmbeddedDocumentField(Link, null=True)
     checklist = fields.EmbeddedDocumentListField(CheckElement)
-    uploadedFile = fields.EmbeddedDocumentField(Link)
+    uploadedFile = fields.EmbeddedDocumentField(
+        Link, is_file=True, null=True, default=None)
     isStandard = fields.BooleanField(default=False)
+    status = fields.StringField(default="1", max_length=1)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+    def approve(self):
+        self.status = "2"
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
@@ -64,6 +69,42 @@ class Project(Document):
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
     meta = {'collection': 'projects'}
+
+    def updateStep(self, step):
+        for myStep in self.stepsProgress.steps:
+            if step.id == myStep.id:
+                isUpdated = False
+                if myStep.type == "1":
+                    myStep.status = step.status
+                    isUpdated = True
+                elif myStep.type == "2":
+                    if step.date:
+                        myStep.date = step.date
+                        myStep.approve()
+                        isUpdated = True
+                elif myStep.type == "3":
+                    if step.uploadedFile:
+                        myStep.uploadedFile = step.uploadedFile
+                        myStep.approve()
+                        isUpdated = True
+                elif myStep.type == "4":
+                    myStep.date = step.date
+                    myStep.uploadedFile = step.uploadedFile
+                    if myStep.date and myStep.uploadedFile:
+                        myStep.approve()
+                        isUpdated = True
+                elif myStep.type == "5":
+                    myStep.checklist = step.checklist
+                    isApproved = True
+                    isUpdated = True
+                    for check in myStep.checklist:
+                        if not check.checked:
+                            isApproved = False
+                    if isApproved:
+                        myStep.approve()
+                if isUpdated:
+                    myStep.updatedAt = datetime.utcnow()
+                    self.save()
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):

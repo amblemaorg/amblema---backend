@@ -16,7 +16,8 @@ from app.helpers.ma_schema_validators import not_blank, validate_url, OneOf
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_year_model import SchoolYear
-from app.models.step_model import File
+from app.models.shared_embedded_documents import Link
+
 from app.models.step_model import Check
 
 
@@ -32,7 +33,7 @@ class FileSchema(Schema):
 
     @post_load
     def make_document(self, data, **kwargs):
-        return File(**data)
+        return Link(**data)
 
 
 class CheckSchema(Schema):
@@ -55,13 +56,13 @@ class StepSchema(Schema):
     name = fields.Str(required=True, validate=not_blank)
     type = fields.Str(
         validate=OneOf(
-            ["1", "2", "3", "4", "5"],
-            ["Text", "Date", "AttachedFile", "DateAttachedFile", "Checklist"]
+            ["1", "2", "3", "4", "5", "6"],
+            ["Text", "Date", "AttachedFile", "DateAttachedFile", "Checklist", "Form"]
         ), required=True)
     tag = fields.Str(
         validate=OneOf(
             ["1", "2", "3", "4"],
-            ["General", "School", "Sponsor", "Coordinator"]
+            ["General", "Coordinator", "Sponsor", "School"]
         ), required=True)
     text = fields.Str(required=True, validate=not_blank)
     date = fields.DateTime()

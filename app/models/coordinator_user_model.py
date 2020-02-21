@@ -40,6 +40,7 @@ class CoordinatorUser(User):
     addressHome = fields.StringField()
     learning = fields.EmbeddedDocumentListField(LearningMod)
     instructed = fields.BooleanField(required=True, default=False)
+    curriculum = fields.URLField()
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName

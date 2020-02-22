@@ -14,9 +14,8 @@ from mongoengine import (
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
-from app.models.school_year_model import SchoolYear
-from app.models.step_model import Step
 from app.models.shared_embedded_documents import Link
+from app.services.project_service import ProjectService
 
 
 class CheckElement(EmbeddedDocument):
@@ -70,6 +69,34 @@ class Project(Document):
     isDeleted = fields.BooleanField(default=False)
     meta = {'collection': 'projects'}
 
+    def updateProgress(self):
+        nGeneralSteps = 0
+        nSchoolSteps = 0
+        nCoordinatorSteps = 0
+        nSponsorSteps = 0
+        nApprovedGeneralSteps = 0
+        nApprovedSchoolSteps = 0
+        nApprovedCoordinatorSteps = 0
+        nApprovedSponsorSteps = 0
+
+        for step in self.stepsProgress.steps:
+            if step.tag == "1":
+                nGeneralSteps += 1
+                nApprovedGeneralSteps += 1 if step.status == "2" else 0
+            if step.tag == "2":
+                nCoordinatorSteps += 1
+                nApprovedCoordinatorSteps += 1 if step.status == "2" else 0
+            if step.tag == "3":
+                nSponsorSteps += 1
+                nApprovedSponsorSteps += 1 if step.status == "2" else 0
+            if step.tag == "4":
+                nSchoolSteps += 1
+                nApprovedSchoolSteps += 1 if step.status == "2" else 0
+        self.stepsProgress.general = 100 if nGeneralSteps == 0 else nApprovedGeneralSteps/nGeneralSteps
+        self.stepsProgress.school = 100 if nSchoolSteps == 0 else nApprovedSchoolSteps/nSchoolSteps
+        self.stepsProgress.sponsor = 100 if nSponsorSteps == 0 else nApprovedSponsorSteps/nSponsorSteps
+        self.stepsProgress.coordinator = 100 if nCoordinatorSteps == 0 else nApprovedCoordinatorSteps/nCoordinatorSteps
+
     def updateStep(self, step):
         for myStep in self.stepsProgress.steps:
             if step.id == myStep.id:
@@ -108,57 +135,17 @@ class Project(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
-        current_app.logger.info('project pre_save')
-        current_app.logger.info(document.id)
+        service = ProjectService()
+        # before create
         if not document.id:
-            year = SchoolYear.objects(status="1", isDeleted=False).first()
-            if not year:
-                raise ValidationError(
-                    message="There is not an active school year")
-            current_app.logger.info('Before created')
-            if not (document.school or document.sponsor or document.coordinator):
-                raise ValidationError(
-                    message="At least an sponsor, school or coordinator is required")
-            current_app.logger.info('before for')
-            initialSteps = StepsProgress()
-            steps = Step.objects(schoolYear=str(year.id)).all()
-            current_app.logger.info('right before for')
-            for step in steps:
-                stepCtrl = StepControl(
-                    id=str(step.id),
-                    name=step.name,
-                    type=step.type,
-                    tag=step.tag,
-                    text=step.text,
-                    date=step.date,
-                    file=step.file,
-                    video=step.video,
-                    createdAt=step.createdAt,
-                    updatedAt=step.updatedAt
-                )
-                if step.type == "5":
-                    for check in step.checklist:
-                        stepCtrl.checklist.append(
-                            CheckElement(name=check.name, id=check.id))
-                initialSteps.steps.append(stepCtrl)
-                current_app.logger.info('inside for')
-            current_app.logger.info('outside created')
-            document.stepsProgress = initialSteps
-            document.schoolYear = year
-        else:
-            current_app.logger.info('before updated')
+            service.handlerProjectBeforeCreate(document)
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
-        current_app.logger.info('project post_save')
-        current_app.logger.info(kwargs)
+        service = ProjectService()
+        # after create
         if 'created' in kwargs and kwargs['created']:
-            if document.sponsor:
-                document.sponsor.addProject(document)
-            if document.coordinator:
-                document.coordinator.addProject(document)
-            if document.school:
-                document.school.addProject(document)
+            service.handlerProjectAfterCreate(document)
 
 
 signals.pre_save.connect(Project.pre_save, sender=Project)

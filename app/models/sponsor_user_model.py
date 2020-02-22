@@ -49,6 +49,18 @@ class SponsorUser(User):
         self.projects.append(projectRef)
         self.save()
 
+    def updateProject(self, project):
+        for myProject in self.projects:
+            if myProject.id == str(project.id):
+                if project.coordinator:
+                    myProject.coordinator = DocumentReference(id=str(project.coordinator.id),
+                                                              name=project.coordinator.name)
+                if project.school:
+                    myProject.school = DocumentReference(id=str(project.school.id),
+                                                         name=project.school.name)
+                self.save()
+                break
+
     def removeProject(self, project):
         project = self.findProject(str(project.id))
         if project:

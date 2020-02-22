@@ -78,18 +78,19 @@ class ProjectService():
                 for check in step.checklist:
                     stepCtrl.checklist.append(
                         CheckElement(name=check.name, id=check.id))
-            if step.type == "6" and document.school:
+            if document.school:
                 if step.devName in ("findSchool", "coordinatorFillSchoolForm", "sponsorFillSchoolForm"):
                     stepCtrl.status = "2"
-            if step.type == "6" and document.sponsor:
+            if document.sponsor:
                 if step.devName in ("findSponsor", "coordinatorFillSponsorForm", "schoolFillSponsorlForm"):
                     stepCtrl.status = "2"
-            if step.type == "6" and document.coordinator:
+            if document.coordinator:
                 if step.devName in ("findCoordinator", "sponsorFillCoordinatorForm", "schoolFillCoordinatorForm"):
                     stepCtrl.status = "2"
             initialSteps.steps.append(stepCtrl)
         document.stepsProgress = initialSteps
         document.schoolYear = year
+        document.stepsProgress.updateProgress()
 
     def handlerProjectAfterCreate(self, document):
         if document.sponsor:
@@ -143,4 +144,4 @@ class ProjectService():
                     ):
                         step.status = "2"
 
-        document.updateProgress()
+        document.stepsProgress.updateProgress()

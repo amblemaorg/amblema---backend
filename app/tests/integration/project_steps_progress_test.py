@@ -365,6 +365,12 @@ class InitialSteps(unittest.TestCase):
                 approvedSteps += 1
         self.assertEqual(6, approvedSteps)
 
+        # Check progress
+        self.assertEqual(66.67, self.project.stepsProgress.school)
+        self.assertEqual(20, self.project.stepsProgress.general)
+        self.assertEqual(0, self.project.stepsProgress.coordinator)
+        self.assertEqual(25, self.project.stepsProgress.sponsor)
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

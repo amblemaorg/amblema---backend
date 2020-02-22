@@ -55,6 +55,38 @@ class StepsProgress(EmbeddedDocument):
     coordinator = fields.IntField(default=0)
     steps = fields.EmbeddedDocumentListField(StepControl)
 
+    def updateProgress(self):
+        nGeneral = 0
+        nSchool = 0
+        nCoordinator = 0
+        nSponsor = 0
+        nApprovedGeneral = 0
+        nApprovedSchool = 0
+        nApprovedCoordinator = 0
+        nApprovedSponsor = 0
+
+        for step in self.steps:
+            if step.tag == "1":
+                nGeneral += 1
+                nApprovedGeneral += 1 if step.status == "2" else 0
+            if step.tag == "2":
+                nCoordinator += 1
+                nApprovedCoordinator += 1 if step.status == "2" else 0
+            if step.tag == "3":
+                nSponsor += 1
+                nApprovedSponsor += 1 if step.status == "2" else 0
+            if step.tag == "4":
+                nSchool += 1
+                nApprovedSchool += 1 if step.status == "2" else 0
+        self.general = 100 if nGeneral == 0 else round(
+            nApprovedGeneral/nGeneral, 4)*100
+        self.school = 100 if nSchool == 0 else round(
+            nApprovedSchool/nSchool, 4)*100
+        self.sponsor = 100 if nSponsor == 0 else round(
+            nApprovedSponsor/nSponsor, 4)*100
+        self.coordinator = 100 if nCoordinator == 0 else round(
+            nApprovedCoordinator/nCoordinator, 4)*100
+
 
 class Project(Document):
     code = fields.SequenceField(required=True, value_decorator=str)
@@ -68,34 +100,6 @@ class Project(Document):
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
     meta = {'collection': 'projects'}
-
-    def updateProgress(self):
-        nGeneralSteps = 0
-        nSchoolSteps = 0
-        nCoordinatorSteps = 0
-        nSponsorSteps = 0
-        nApprovedGeneralSteps = 0
-        nApprovedSchoolSteps = 0
-        nApprovedCoordinatorSteps = 0
-        nApprovedSponsorSteps = 0
-
-        for step in self.stepsProgress.steps:
-            if step.tag == "1":
-                nGeneralSteps += 1
-                nApprovedGeneralSteps += 1 if step.status == "2" else 0
-            if step.tag == "2":
-                nCoordinatorSteps += 1
-                nApprovedCoordinatorSteps += 1 if step.status == "2" else 0
-            if step.tag == "3":
-                nSponsorSteps += 1
-                nApprovedSponsorSteps += 1 if step.status == "2" else 0
-            if step.tag == "4":
-                nSchoolSteps += 1
-                nApprovedSchoolSteps += 1 if step.status == "2" else 0
-        self.stepsProgress.general = 100 if nGeneralSteps == 0 else nApprovedGeneralSteps/nGeneralSteps
-        self.stepsProgress.school = 100 if nSchoolSteps == 0 else nApprovedSchoolSteps/nSchoolSteps
-        self.stepsProgress.sponsor = 100 if nSponsorSteps == 0 else nApprovedSponsorSteps/nSponsorSteps
-        self.stepsProgress.coordinator = 100 if nCoordinatorSteps == 0 else nApprovedCoordinatorSteps/nCoordinatorSteps
 
     def updateStep(self, step):
         for myStep in self.stepsProgress.steps:
@@ -131,6 +135,7 @@ class Project(Document):
                         myStep.approve()
                 if isUpdated:
                     myStep.updatedAt = datetime.utcnow()
+                    self.stepsProgress.updateProgress()
                     self.save()
 
     @classmethod

@@ -358,7 +358,6 @@ class InitialSteps(unittest.TestCase):
         )
 
         # standard step is approved automatically: schoolFillCoordinatorForm
-
         approvedSteps = 0
         for step in self.project.stepsProgress.steps:
             if step.tag == "4" and step.status == "2":
@@ -370,6 +369,24 @@ class InitialSteps(unittest.TestCase):
         self.assertEqual(20, self.project.stepsProgress.general)
         self.assertEqual(0, self.project.stepsProgress.coordinator)
         self.assertEqual(25, self.project.stepsProgress.sponsor)
+
+        # Agreements steps
+        self.project.updateStep(
+            StepControl(
+                id=str(self.schoolAgreementFoundation.id),
+                uploadedFile={"name": "uploaded",
+                              "url": "https://server.com/files/asd.pdf"}
+            )
+        )
+        self.project.updateStep(
+            StepControl(
+                id=str(self.sponsorAgreementSchool.id),
+                uploadedFile={"name": "uploaded",
+                              "url": "https://server.com/files/asd.pdf"}
+            )
+        )
+        self.assertEqual(50, self.project.stepsProgress.sponsor)
+        self.assertEqual(77.78, self.project.stepsProgress.school)
 
     def tearDown(self):
         """teardown all initialized variables."""

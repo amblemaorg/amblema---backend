@@ -117,6 +117,30 @@ class Project(Document):
                     if step.uploadedFile:
                         myStep.uploadedFile = step.uploadedFile
                         myStep.approve()
+                        if myStep.name == "sponsorAgreementSchool":
+                            for agreement in self.stepsProgress.steps:
+                                if agreement.name == "schoolAgreementSponsor":
+                                    agreement.uploadedFile = step.uploadedFile
+                                    agreement.approve()
+                                    break
+                        if myStep.name == "schoolAgreementSponsor":
+                            for agreement in self.stepsProgress.steps:
+                                if agreement.name == "sponsorAgreementSchool":
+                                    agreement.uploadedFile = step.uploadedFile
+                                    agreement.approve()
+                                    break
+                        if myStep.name == "sponsorAgreementSchoolFoundation":
+                            for agreement in self.stepsProgress.steps:
+                                if agreement.name == "schoolAgreementFoundation":
+                                    agreement.uploadedFile = step.uploadedFile
+                                    agreement.approve()
+                                    break
+                        if myStep.name == "schoolAgreementFoundation":
+                            for agreement in self.stepsProgress.steps:
+                                if agreement.name == "sponsorAgreementSchoolFoundation":
+                                    agreement.uploadedFile = step.uploadedFile
+                                    agreement.approve()
+                                    break
                         isUpdated = True
                 elif myStep.type == "4":
                     myStep.date = step.date
@@ -137,6 +161,7 @@ class Project(Document):
                     myStep.updatedAt = datetime.utcnow()
                     self.stepsProgress.updateProgress()
                     self.save()
+                break
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):

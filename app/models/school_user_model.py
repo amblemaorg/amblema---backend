@@ -35,5 +35,17 @@ class SchoolUser(User):
         self.project = projectRef
         self.save()
 
+    def updateProject(self, project):
+
+        if self.project.id == str(project.id):
+            if project.coordinator:
+                self.project.coordinator = DocumentReference(id=str(project.coordinator.id),
+                                                             name=project.coordinator.name)
+            if project.sponsor:
+                self.project.sponsor = DocumentReference(id=str(project.sponsor.id),
+                                                         name=project.sponsor.name)
+            self.save()
+
     def removeProject(self):
         self.project = None
+        self.save()

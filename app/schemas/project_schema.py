@@ -18,7 +18,6 @@ from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.school_year_model import SchoolYear
-from app.models.project_model import StepControl
 from app.schemas.step_schema import FileSchema
 from app.schemas.shared_schemas import CheckSchema
 
@@ -52,6 +51,7 @@ class StepControlSchema(Schema):
 
     @post_load
     def make_document(self, data, **kwargs):
+        from app.models.project_model import StepControl
         return StepControl(**data)
 
 

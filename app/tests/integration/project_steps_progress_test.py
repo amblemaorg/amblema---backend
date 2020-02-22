@@ -357,11 +357,13 @@ class InitialSteps(unittest.TestCase):
             )
         )
 
+        # standard step is approved automatically: schoolFillCoordinatorForm
+
         approvedSteps = 0
         for step in self.project.stepsProgress.steps:
             if step.tag == "4" and step.status == "2":
                 approvedSteps += 1
-        self.assertEqual(5, approvedSteps)
+        self.assertEqual(6, approvedSteps)
 
     def tearDown(self):
         """teardown all initialized variables."""

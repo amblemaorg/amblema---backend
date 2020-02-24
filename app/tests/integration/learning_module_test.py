@@ -103,6 +103,7 @@ class InitialSteps(unittest.TestCase):
         )
         self.assertEqual(result["approved"], True)
         self.assertEqual(4, self.coordinator.learning[0].score)
+        self.assertEqual(4, self.coordinator.nCoins)
 
     def test_coordinator_answer_module_incorrectly(self):
 
@@ -119,6 +120,7 @@ class InitialSteps(unittest.TestCase):
         )
         self.assertEqual(result["approved"], False)
         self.assertEqual("2", self.coordinator.learning[0].status)
+        self.assertEqual(0, self.coordinator.nCoins)
 
     def test_coordinator_answer_module_two_attempts(self):
         result = self.coordinator.tryAnswerLearningModule(
@@ -147,6 +149,7 @@ class InitialSteps(unittest.TestCase):
         )
         self.assertEqual(result["approved"], True)
         self.assertEqual(3, self.coordinator.learning[0].score)
+        self.assertEqual(3, self.coordinator.nCoins)
 
     def test_coordinator_answer_module_four_attempts(self):
         for i in range(3):
@@ -241,6 +244,42 @@ class InitialSteps(unittest.TestCase):
 
         self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
         self.assertEqual(False, self.coordinator.instructed)
+
+    def test_coordinator_n_coins(self):
+
+        result = self.coordinator.tryAnswerLearningModule(
+            self.learningModule,
+            [
+                Answer(
+                    quizId=self.learningModule.quizzes[0].id,
+                    option="optionD"),
+                Answer(
+                    quizId=self.learningModule.quizzes[1].id,
+                    option="optionA")
+            ]
+        )
+        self.assertEqual(result["approved"], True)
+        self.assertEqual(4, self.coordinator.learning[0].score)
+
+        newModule = deepcopy(self.learningModule)
+        newModule.id = None
+        newModule.title = "New module"
+        newModule.save()
+
+        result = self.coordinator.tryAnswerLearningModule(
+            newModule,
+            [
+                Answer(
+                    quizId=newModule.quizzes[0].id,
+                    option="optionD"),
+                Answer(
+                    quizId=newModule.quizzes[1].id,
+                    option="optionA")
+            ]
+        )
+        self.coordinator = CoordinatorUser.objects.get(pk=self.coordinator.id)
+        self.assertEqual(result["approved"], True)
+        self.assertEqual(8, self.coordinator.nCoins)
 
     def tearDown(self):
         """teardown all initialized variables."""

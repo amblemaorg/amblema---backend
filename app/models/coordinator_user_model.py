@@ -40,6 +40,7 @@ class CoordinatorUser(User):
     homePhone = fields.StringField(required=True)
     addressHome = fields.StringField()
     learning = fields.EmbeddedDocumentListField(LearningMod)
+    nCoins = fields.IntField(default=0)
     instructed = fields.BooleanField(required=True, default=False)
     curriculum = fields.EmbeddedDocumentField(Link)
 
@@ -138,6 +139,7 @@ class CoordinatorUser(User):
                     if self.isInstructed():
                         self.instructed = True
                         self.updateProjectsOnceInstructed()
+                        self.nCoins += my_module.score
                 else:
                     my_module.status = "2"
                 attempt = Attempt(
@@ -155,6 +157,7 @@ class CoordinatorUser(User):
             if results["approved"]:
                 my_module.score = 4
                 my_module.status = "3"
+                self.nCoins += my_module.score
             else:
                 my_module.status = "2"
             attempt = Attempt(

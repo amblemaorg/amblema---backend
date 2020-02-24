@@ -3,6 +3,7 @@
 
 import re
 
+from flask import current_app
 from mongoengine import ValidationError
 from app.models.school_year_model import SchoolYear
 
@@ -39,6 +40,7 @@ class StepsService():
                 stepCtrl = StepControl(
                     id=str(document.id),
                     name=document.name,
+                    devName=document.devName,
                     type=document.type,
                     tag=document.tag,
                     text=document.text,
@@ -135,12 +137,14 @@ class StepsService():
             stepCtrl = StepControl(
                 id=str(document.id),
                 name=document.name,
+                devName=document.devName,
                 type=document.type,
                 tag=document.tag,
                 text=document.text,
                 date=document.date,
                 file=document.file,
                 video=document.video,
+                isStandard=document.isStandard,
                 createdAt=document.createdAt,
                 updatedAt=document.updatedAt
             )

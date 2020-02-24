@@ -27,6 +27,7 @@ class CheckElement(EmbeddedDocument):
 class StepControl(EmbeddedDocument):
     id = fields.StringField(required=True)
     name = fields.StringField(required=True)
+    devName = fields.StringField(required=True)
     type = fields.StringField(required=True, max_length=1)
     tag = fields.StringField(required=True, max_length=1)
     text = fields.StringField(required=True)
@@ -117,30 +118,33 @@ class Project(Document):
                     if step.uploadedFile:
                         myStep.uploadedFile = step.uploadedFile
                         myStep.approve()
-                        if myStep.name == "sponsorAgreementSchool":
+                        if myStep.devName == "sponsorAgreementSchool":
                             for agreement in self.stepsProgress.steps:
-                                if agreement.name == "schoolAgreementSponsor":
+                                if agreement.devName == "schoolAgreementSponsor":
                                     agreement.uploadedFile = step.uploadedFile
                                     agreement.approve()
                                     break
-                        if myStep.name == "schoolAgreementSponsor":
+                        if myStep.devName == "schoolAgreementSponsor":
                             for agreement in self.stepsProgress.steps:
-                                if agreement.name == "sponsorAgreementSchool":
+                                if agreement.devName == "sponsorAgreementSchool":
                                     agreement.uploadedFile = step.uploadedFile
                                     agreement.approve()
                                     break
-                        if myStep.name == "sponsorAgreementSchoolFoundation":
+                        if myStep.devName == "sponsorAgreementSchoolFoundation":
                             for agreement in self.stepsProgress.steps:
-                                if agreement.name == "schoolAgreementFoundation":
+                                if agreement.devName == "schoolAgreementFoundation":
                                     agreement.uploadedFile = step.uploadedFile
                                     agreement.approve()
                                     break
-                        if myStep.name == "schoolAgreementFoundation":
+                        if myStep.devName == "schoolAgreementFoundation":
                             for agreement in self.stepsProgress.steps:
-                                if agreement.name == "sponsorAgreementSchoolFoundation":
+                                if agreement.devName == "sponsorAgreementSchoolFoundation":
                                     agreement.uploadedFile = step.uploadedFile
                                     agreement.approve()
                                     break
+                        if myStep.devName == "coordinatorSendCurriculum":
+                            self.coordinator.curriculum = step.uploadedFile
+                            self.coordinator.save()
                         isUpdated = True
                 elif myStep.type == "4":
                     myStep.date = step.date

@@ -69,15 +69,9 @@ class SchoolContact(Document):
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
-        current_app.logger.info('*** SchoolContact post_save ***')
-        current_app.logger.info(kwargs)
         if document.id:
             oldRequest = SchoolContact.objects.get(id=document.id)
-            current_app.logger.info('*** post update***')
-            current_app.logger.info(document.status)
-            current_app.logger.info(oldRequest.status)
             if document.status != oldRequest.status and document.status == '2':
-                current_app.logger.info('***status=2***')
                 project = Project()
                 schoolUser = SchoolUser.objects(email=document.email).first()
                 if not schoolUser:

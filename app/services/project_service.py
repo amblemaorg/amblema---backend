@@ -65,6 +65,7 @@ class ProjectService():
             stepCtrl = StepControl(
                 id=str(step.id),
                 name=step.name,
+                devName=step.devName,
                 type=step.type,
                 tag=step.tag,
                 text=step.text,

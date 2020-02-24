@@ -22,8 +22,6 @@ class SliderElementSchema(Schema):
 
     @post_load
     def make_document(self, data, **kwargs):
-        current_app.logger.info("make document")
-        current_app.logger.info(data["url"])
         slider = SliderElement(**data)
         if data["url"].startswith(current_app.config.get("SERVER_URL")):
             slider.type = "1"

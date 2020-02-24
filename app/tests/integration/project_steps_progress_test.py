@@ -385,8 +385,22 @@ class InitialSteps(unittest.TestCase):
                               "url": "https://server.com/files/asd.pdf"}
             )
         )
-        self.assertEqual(50, self.project.stepsProgress.sponsor)
-        self.assertEqual(77.78, self.project.stepsProgress.school)
+        self.assertEqual(75, self.project.stepsProgress.sponsor)
+
+        self.assertEqual(88.89, self.project.stepsProgress.school)
+
+        # coordinatorSendCurriculum
+        self.project.updateStep(
+            StepControl(
+                id=str(self.coordinatorSendCurriculum.id),
+                uploadedFile={"name": "uploaded",
+                              "url": "https://server.com/files/asd.pdf"}
+            )
+        )
+        self.assertEqual(20, self.project.stepsProgress.coordinator)
+        self.coordinator = CoordinatorUser.objects().get(id=str(self.coordinator.id))
+        self.assertEqual("https://server.com/files/asd.pdf",
+                         self.coordinator.curriculum.url)
 
     def tearDown(self):
         """teardown all initialized variables."""

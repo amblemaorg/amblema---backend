@@ -43,13 +43,9 @@ class CoordinatorContact(Document):
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
-        current_app.logger.info('*** CoordinatorContact post_save ***')
         if document.id:
-            current_app.logger.info('*** post_update ***')
             oldRequest = CoordinatorContact.objects.get(id=document.id)
-            current_app.logger.info('*** post update***')
             if document.status != oldRequest.status and document.status == '2':
-                current_app.logger.info('***status=2***')
                 project = Project()
                 coordinatorUser = CoordinatorUser.objects(
                     email=document.email).first()
@@ -73,8 +69,6 @@ class CoordinatorContact(Document):
                         homePhone=document.homePhone,
                         addressHome=document.addressHome
                     )
-                    current_app.logger.info('homePhone')
-                    current_app.logger.info(coordinatorUser.homePhone)
                     password = coordinatorUser.generatePassword()
                     coordinatorUser.password = password
                     coordinatorUser.setHashPassword()

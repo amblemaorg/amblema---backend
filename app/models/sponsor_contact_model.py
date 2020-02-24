@@ -43,13 +43,9 @@ class SponsorContact(Document):
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
-        current_app.logger.info('*** CoordinatorContact post_save ***')
         if document.id:
-            current_app.logger.info('*** post_update ***')
             oldRequest = SponsorContact.objects.get(id=document.id)
-            current_app.logger.info('*** post update***')
             if document.status != oldRequest.status and document.status == '2':
-                current_app.logger.info('***status=2***')
                 project = Project()
                 sponsorUser = SponsorUser.objects(
                     email=document.email).first()

@@ -8,7 +8,7 @@ from mongoengine import fields, EmbeddedDocument
 
 from app.models.user_model import User
 from app.models.shared_embedded_documents import (
-    DocumentReference, ProjectReference)
+    DocumentReference, ProjectReference, Link)
 
 
 class Answer(EmbeddedDocument):
@@ -40,7 +40,7 @@ class CoordinatorUser(User):
     addressHome = fields.StringField()
     learning = fields.EmbeddedDocumentListField(LearningMod)
     instructed = fields.BooleanField(required=True, default=False)
-    curriculum = fields.URLField()
+    curriculum = fields.EmbeddedDocumentField(Link)
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName

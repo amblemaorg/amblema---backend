@@ -38,12 +38,9 @@ class RequestFindSponsor(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
-        current_app.logger.info('*** RequestFindSponsor pre_save ***')
         if document.id:
-            current_app.logger.info('*** pre_update ***')
             oldRequest = document.__class__.objects.get(id=document.id)
             if document.status != oldRequest.status and document.status == '2':
-                current_app.logger.info('***status=2***')
                 sponsorUser = SponsorUser.objects(
                     email=document.email).first()
                 if not sponsorUser:

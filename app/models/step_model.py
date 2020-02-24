@@ -47,10 +47,8 @@ class Step(Document):
     def pre_save(cls, sender, document, **kwargs):
         stepsService = StepsService()
         if not document.id:
-            current_app.logger.info('before insert')
             stepsService.handler_steps_before_create(document)
         else:
-            current_app.logger.info('before update')
             oldDocument = document.__class__.objects.get(id=document.id)
             stepsService.handler_steps_before_upd(document, oldDocument)
 
@@ -58,7 +56,6 @@ class Step(Document):
     def post_save(cls, sender, document, **kwargs):
         stepsService = StepsService()
         if 'created' in kwargs and kwargs['created']:
-            current_app.logger.info('after create')
             stepsService.handler_steps_after_create(document)
 
 

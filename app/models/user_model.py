@@ -38,9 +38,7 @@ class User(DynamicDocument):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
-        current_app.logger.info('user pre_save')
         if not document.id:
-            current_app.logger.info('Before created')
             document.setHashPassword()
 
     def setHashPassword(self):

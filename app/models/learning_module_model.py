@@ -61,9 +61,7 @@ class LearningModule(Document):
     def post_save(cls, sender, document, **kwargs):
         from app.models.coordinator_user_model import CoordinatorUser
         from app.models.project_model import Project
-        current_app.logger.info('LearningModule POST_SAVE')
         if 'created' in kwargs and kwargs['created']:
-            current_app.logger.info('After created')
             CoordinatorUser.objects(
                 isDeleted=False,
                 instructed=True, status__in=("2", "3")
@@ -74,7 +72,6 @@ class LearningModule(Document):
             ).update(set__instructed=False)
 
         else:
-            current_app.logger.info('After updated')
             if document.isDeleted:
                 CoordinatorUser.objects(
                     isDeleted=False,

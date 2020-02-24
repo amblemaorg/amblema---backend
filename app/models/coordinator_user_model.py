@@ -4,11 +4,12 @@
 from datetime import datetime
 
 from flask import current_app
-from mongoengine import fields, EmbeddedDocument
+from pymongo import UpdateOne
+from mongoengine import fields, EmbeddedDocument, signals
 
 from app.models.user_model import User
 from app.models.shared_embedded_documents import (
-    DocumentReference, ProjectReference)
+    DocumentReference, ProjectReference, Link)
 
 
 class Answer(EmbeddedDocument):
@@ -40,7 +41,7 @@ class CoordinatorUser(User):
     addressHome = fields.StringField()
     learning = fields.EmbeddedDocumentListField(LearningMod)
     instructed = fields.BooleanField(required=True, default=False)
-    curriculum = fields.URLField()
+    curriculum = fields.EmbeddedDocumentField(Link)
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName
@@ -98,6 +99,20 @@ class CoordinatorUser(User):
                 return False
         return True
 
+    def updateProjectsOnceInstructed(self):
+        from app.models.project_model import Project
+        projectIds = [project.id for project in self.projects]
+        projects = Project.objects(
+            id__in=projectIds, status="1", isDeleted=False)
+        for project in projects:
+            for step in project.stepsProgress.steps:
+                if step.devName == "corrdinatorCompleteTrainingModules":
+                    step.approve()
+                    step.updatedAt = datetime.utcnow()
+                    project.stepsProgress.updateProgress()
+                    project.save()
+                    break
+
     def tryAnswerLearningModule(self, module, answers):
         """
         Method for answer a learning module.
@@ -122,6 +137,7 @@ class CoordinatorUser(User):
                     my_module.status = "3"
                     if self.isInstructed():
                         self.instructed = True
+                        self.updateProjectsOnceInstructed()
                 else:
                     my_module.status = "2"
                 attempt = Attempt(
@@ -149,5 +165,22 @@ class CoordinatorUser(User):
             self.learning.append(my_module)
             if results["approved"] and self.isInstructed():
                 self.instructed = True
+                self.updateProjectsOnceInstructed()
             self.save()
             return results
+
+    @classmethod
+    def pre_save(cls, sender, document, **kwargs):
+        # before update
+        if document.id:
+            oldDocument = document.__class__.objects.get(id=document.id)
+            if (
+                (document.instructed != oldDocument.instructed
+                 or document.curriculum != oldDocument.curriculum)
+                and document.status != "4"
+            ):
+                if document.instructed and document.curriculum:
+                    document.status = "3"
+
+
+signals.pre_save.connect(CoordinatorUser.pre_save, sender=CoordinatorUser)

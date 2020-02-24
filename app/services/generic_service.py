@@ -88,7 +88,6 @@ class GenericServices():
         schema = self.Schema(exclude=exclude, only=only)
         try:
             documentFiles = getFileFields(self.Model)
-            current_app.logger.info(documentFiles)
             if files and documentFiles:
                 validFiles = validate_files(files, documentFiles)
                 uploadedfiles = upload_files(validFiles)

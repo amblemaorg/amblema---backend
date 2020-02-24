@@ -48,14 +48,9 @@ class RequestFindSchool(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
-        current_app.logger.info('*** RequestFindSchool pre_save ***')
         if document.id:
-            current_app.logger.info('*** pre update***')
             oldRequest = document.__class__.objects.get(id=document.id)
-            current_app.logger.info(document.status)
-            current_app.logger.info(oldRequest.status)
             if document.status != oldRequest.status and document.status == '2':
-                current_app.logger.info('***status=2***')
                 schoolUser = SchoolUser.objects(email=document.email).first()
                 if not schoolUser:
                     schoolUser = SchoolUser(

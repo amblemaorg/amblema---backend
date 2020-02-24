@@ -22,9 +22,7 @@ class UserService(GenericServices):
         """
         schema = self.Schema()
         try:
-            current_app.logger.info("ahora si")
             data = schema.load(jsonData)
-            current_app.logger.info("ahora no")
             password = data['password']
             uniquesFields = getUniqueFields(self.Model)
             fieldsForCheckDuplicates = []

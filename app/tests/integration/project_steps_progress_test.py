@@ -8,12 +8,13 @@ from app import create_app, db
 
 from app.models.school_year_model import SchoolYear
 from app.models.step_model import Step, Check
-from app.models.coordinator_user_model import CoordinatorUser
+from app.models.coordinator_user_model import CoordinatorUser, Answer
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.project_model import Project, StepControl, CheckElement
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
+from app.models.learning_module_model import LearningModule, Quiz
 
 
 class InitialSteps(unittest.TestCase):
@@ -401,6 +402,72 @@ class InitialSteps(unittest.TestCase):
         self.coordinator = CoordinatorUser.objects().get(id=str(self.coordinator.id))
         self.assertEqual("https://server.com/files/asd.pdf",
                          self.coordinator.curriculum.url)
+        self.assertEqual("1", self.coordinator.status)
+
+        self.learningModule = LearningModule(
+            title="module for test",
+            description="module description test",
+            secondaryTitle="secondaryTitle",
+            secondaryDescription="secondaryDescription",
+            objectives=["first objective", "second objective"],
+            slider=[{"url": "https://youtube.com",
+                     "description": "some description", "type": "2"}],
+            images=[{"url": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+                     "description": "some description"}],
+            duration=3600)
+        self.learningModule.quizzes.append(
+            Quiz(
+                question="cual es el lema de amblema?",
+                optionA="HQS",
+                optionB="HP",
+                optionC="HMH",
+                optionD="QAS",
+                correctOption="optionA")
+        )
+        self.learningModule.save()
+
+        # correct answer
+        result = self.coordinator.tryAnswerLearningModule(
+            self.learningModule,
+            [
+                Answer(
+                    quizId=self.learningModule.quizzes[0].id,
+                    option="optionA")
+            ]
+        )
+        self.assertEqual(result["approved"], True)
+
+        self.coordinator = CoordinatorUser.objects().get(id=str(self.coordinator.id))
+        self.assertEqual("3", self.coordinator.status)
+
+        self.project = Project.objects.get(id=self.project.id)
+        self.assertEqual(40, self.project.stepsProgress.coordinator)
+
+        sponsor = SponsorUser(
+            email="sponsoruser@test.com",
+            password="87654321",
+            firstName="Juan",
+            lastName="Padrino",
+            userType="3",
+            phone="04142223344",
+            role=self.role,
+            addressState=self.state,
+            addressMunicipality=self.municipality,
+            address="street 3",
+            cardType="1",
+            cardId="34567876",
+            companyRIF="209228272",
+            companyType="1",
+            companyPhone="02524484747",
+            contactName="Juan Contacto",
+            contactPhone="02323456789"
+        )
+        sponsor.save()
+
+        self.project.sponsor = sponsor
+        self.project.save()
+
+        self.assertEqual(60, self.project.stepsProgress.coordinator)
 
     def tearDown(self):
         """teardown all initialized variables."""

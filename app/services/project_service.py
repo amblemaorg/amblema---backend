@@ -144,5 +144,10 @@ class ProjectService():
                             "schoolFillSchoollForm")
                     ):
                         step.status = "2"
+                    if (
+                        step.devName == "corrdinatorCompleteTrainingModules"
+                        and document.coordinator.instructed
+                    ):
+                        step.status = "2"
 
         document.stepsProgress.updateProgress()

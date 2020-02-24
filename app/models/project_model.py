@@ -173,6 +173,9 @@ class Project(Document):
         # before create
         if not document.id:
             service.handlerProjectBeforeCreate(document)
+        else:
+            oldDocument = document.__class__.objects.get(id=document.id)
+            service.handlerProjectBeforeUpdate(document, oldDocument)
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):

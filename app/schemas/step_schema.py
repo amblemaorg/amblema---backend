@@ -98,9 +98,10 @@ class StepSchema(Schema):
             errors["date"] = ["Field is required"]
         if (
             str(data["type"]) == "3"
-            and "file" not in data
+            and ("file" not in data and "video" not in data)
         ):
             errors["file"] = ["Field is required"]
+            errors["video"] = ["Field is required"]
         if (
             str(data["type"]) == "4"
             and ("date" not in data or "file" not in data)

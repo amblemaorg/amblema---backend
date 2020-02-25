@@ -21,6 +21,8 @@ class SponsorUser(User):
     companyPhone = fields.StringField(required=True)
     contactName = fields.StringField(required=True)
     contactPhone = fields.StringField(required=True)
+    image = fields.URLField()
+    webSite = fields.URLField()
     projects = fields.EmbeddedDocumentListField(ProjectReference)
 
     def clean(self):

@@ -62,11 +62,12 @@ class CoordinatorUserSchema(UserSchema):
         required=True,
         validate=(not_blank, only_numbers))
     birthdate = fields.Date(required=True)
-    schools = fields.List(fields.Nested(
+    projects = fields.List(fields.Nested(
         ProjectReferenceSchema), dump_only=True)
     homePhone = fields.Str(required=True, validate=only_numbers)
     addressHome = fields.Str()
     learning = fields.List(fields.Nested(LearningModSchema()), dump_only=True)
+    nCoins = fields.Int(dump_only=True)
 
     class Meta:
         unknown = EXCLUDE

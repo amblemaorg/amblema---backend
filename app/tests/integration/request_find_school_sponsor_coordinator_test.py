@@ -99,6 +99,32 @@ class ApprovalProcess(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 201)
 
+    def test_endpoint_create_request_find_sponsor(self):
+
+        data = dict(
+            project=str(self.project.pk),
+            email="iamsponsor@test.com",
+            name="Sponsor C.A.",
+            rif="282882822",
+            companyType="1",
+            phone="02524433434",
+            address="Urb Simon Bolivar",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            addressStreet="calle 9 entre 1 y 2",
+            contactName="Contact Name",
+            contactPhone="04242772727",
+            schoolContact="1",
+            schoolContactName="Juan Jimenez"
+        )
+
+        res = self.client().post(
+            '/requestsfindsponsor',
+            data=json.dumps(data),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+
     def test_create_school_user_on_approve_request(self):
 
         request = RequestFindSchool(

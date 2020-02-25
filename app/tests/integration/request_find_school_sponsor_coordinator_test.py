@@ -25,6 +25,7 @@ class ApprovalProcess(unittest.TestCase):
         self.app.app_context().push()
         from app import db
         self.db = db
+        self.client = self.app.test_client
 
         self.schoolYear = SchoolYear(
             name="Test",
@@ -69,6 +70,34 @@ class ApprovalProcess(unittest.TestCase):
             coordinator=self.coordinator
         )
         self.project.save()
+
+    def test_endpoint_create_request_find_coordinator(self):
+
+        requestData = {
+            "project": str(self.project.pk),
+            "firstName": "Coordinator",
+            "lastName": "Last Name",
+            "name": "hola",
+            "cardType": "1",
+            "cardId": "20922842",
+            "birthdate": "1992-04-20",
+            "gender": "1",
+            "addressState": str(self.state.pk),
+            "addressMunicipality": str(self.municipality.pk),
+            "addressCity": "Barquisimeto",
+            "addressStreet": "calle 9 entre 1 y 2",
+            "addressHome": "casa 20-2",
+            "email": "coordinator@test.com",
+            "phone": "04144433434",
+            "homePhone": "02524433434",
+            "profession": "Teacher",
+            "referredName": "Juan Veriken"
+        }
+        res = self.client().post(
+            '/requestsfindcoordinator',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 201)
 
     def test_create_school_user_on_approve_request(self):
 

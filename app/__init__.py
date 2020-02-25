@@ -49,6 +49,9 @@ from app.controllers.project_controller import (
     ProjectController, ProjectHandlerController,
     ProjectStepsController
 )
+from app.controllers.request_find_coordinator_controller import (
+    ReqFindCoordController, ReqFindCoordHandlerController
+)
 
 db = MongoEngine()
 
@@ -165,5 +168,8 @@ def create_app(config_instance):
     api.add_resource(ProjectController, '/projects')
     api.add_resource(ProjectHandlerController, '/projects/<string:id>')
     api.add_resource(ProjectStepsController, '/projectsteps/<string:id>')
+    api.add_resource(ReqFindCoordController, '/requestsfindcoordinator')
+    api.add_resource(ReqFindCoordHandlerController,
+                     '/requestsfindcoordinator/<string:id>')
 
     return app

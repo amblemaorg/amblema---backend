@@ -1,4 +1,4 @@
-# /app/blueprints/web_content/about_us_page_model.py
+# /app/blueprints/web_content/models/about_us_page_model.py
 
 
 from mongoengine import (
@@ -17,8 +17,9 @@ from app.blueprints.web_content.models.templates_model import (
 class Award(EmbeddedDocument):
     title = StringField(required=True)
     image = StringField(required=True)
+    image2 = StringField(required=True)
     description = StringField(required=True)
-    description2 = StringField(required=True)
+    description2 = StringField()
 
 
 class AboutUsPage(EmbeddedDocument):
@@ -41,8 +42,12 @@ class AwardSchema(Schema):
         required=True,
         validate=(not_blank, validate_image),
         folder='webcontent')
+    image2 = MAImageField(
+        required=True,
+        validate=(not_blank, validate_image),
+        folder='webcontent')
     description = fields.Str(required=True, validate=not_blank)
-    description2 = fields.Str(required=True, validate=not_blank)
+    description2 = fields.Str()
 
     @post_load
     def make_document(self, data, **kwargs):

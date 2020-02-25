@@ -55,6 +55,9 @@ from app.controllers.request_find_coordinator_controller import (
 from app.controllers.request_find_spondor_controller import (
     ReqFindSponsorController, ReqFindSponsorHandlerController
 )
+from app.controllers.request_find_school_controller import (
+    ReqFindSchoolController, ReqFindSchoolHandlerController
+)
 
 db = MongoEngine()
 
@@ -177,5 +180,8 @@ def create_app(config_instance):
     api.add_resource(ReqFindSponsorController, '/requestsfindsponsor')
     api.add_resource(ReqFindSponsorHandlerController,
                      '/requestsfindsponsor/<string:id>')
+    api.add_resource(ReqFindSchoolController, '/requestsfindschool')
+    api.add_resource(ReqFindSchoolHandlerController,
+                     '/requestsfindschool/<string:id>')
 
     return app

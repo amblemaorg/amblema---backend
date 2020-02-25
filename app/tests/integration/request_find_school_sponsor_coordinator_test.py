@@ -125,6 +125,43 @@ class ApprovalProcess(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 201)
 
+    def test_endpoint_create_request_find_school(self):
+
+        data = dict(
+            project=str(self.project.pk),
+            name="U.E. Libertador",
+            code="315",
+            email="uelibertador@test.com",
+            address="Urb Simon Bolivar",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            addressStreet="calle 9 entre 1 y 2",
+            phone="02524433434",
+            schoolType="1",
+            principalFirstName="Marlene",
+            principalLastName="Mejia",
+            principalEmail="mmejia@test.com",
+            principalPhone="04242772727",
+            subPrincipalFirstName="Nelly",
+            subPrincipalLastName="Velazquez",
+            subPrincipalEmail="nvelazquez@test.com",
+            subPrincipalPhone="04244545454",
+            nTeachers=22,
+            nAdministrativeStaff=10,
+            nLaborStaff=3,
+            nStudents=500,
+            nGrades=6,
+            nSections=18,
+            schoolShift="3"
+        )
+
+        res = self.client().post(
+            '/requestsfindschool',
+            data=json.dumps(data),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+
     def test_create_school_user_on_approve_request(self):
 
         request = RequestFindSchool(

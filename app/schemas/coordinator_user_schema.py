@@ -67,6 +67,7 @@ class CoordinatorUserSchema(UserSchema):
     homePhone = fields.Str(required=True, validate=only_numbers)
     addressHome = fields.Str()
     learning = fields.List(fields.Nested(LearningModSchema()), dump_only=True)
+    nCoins = fields.Int(dump_only=True)
 
     class Meta:
         unknown = EXCLUDE

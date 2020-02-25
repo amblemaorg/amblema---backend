@@ -38,7 +38,7 @@ class SponsorUserSchema(UserSchema):
     companyPhone = fields.Str(required=True, validate=only_numbers)
     contactName = fields.Str(required=True, validate=only_letters)
     contactPhone = fields.Str(required=True, validate=only_numbers)
-    schools = fields.List(fields.Nested(
+    projects = fields.List(fields.Nested(
         ProjectReferenceSchema), dump_only=True)
 
     class Meta:

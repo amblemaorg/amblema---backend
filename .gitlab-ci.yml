@@ -46,11 +46,17 @@ QA-testing:
     - cd $QA_PROJECT_DIR/qa-testing
     - docker-compose -p amblema_qa up -d
     - docker exec -i amblema_testing_back bash -c "python -m unittest discover -s app/tests/unitary/ -p \"*_test.py\" -v"
+    - docker exec -i amblema_testing_back bash -c "python -m unittest discover -s app/tests/integration/ -p \"*_test.py\" -v"
     - docker exec -i amblema_testing_back bash -c "coverage erase"
-    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/unitary -p \"*_test.py\""
+    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests -p \"*_test.py\""
     - docker exec -i amblema_testing_back bash -c "coverage report"
     - docker rm -f amblema_testing_back
     - rm -rf images/*/*.png
+  
+  artifacts:
+    paths:
+    - htmlcov
+    expire_in: 1 week
 
 Drop-QA-testing:
   stage: test

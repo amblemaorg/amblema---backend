@@ -29,6 +29,7 @@ QA-testing:
     variables:
       - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qaestable*/
   script:
+    - build_dir="$PWD"
     - export INSTANCE="testing"
     - export BACK_PORT=$TESTING_BACK_PORT
     - export DB_URL=$TESTING_DB_URL
@@ -51,6 +52,7 @@ QA-testing:
     - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests -p \"*_test.py\""
     - docker exec -i amblema_testing_back bash -c "coverage report"
     - docker exec -i amblema_testing_back bash -c "coverage html"
+    - cd "$build_dir"
     - cp -a $QA_PROJECT_DIR/qa-testing/htmlcov/. ./htmlcov/
     - docker rm -f amblema_testing_back
     - rm -rf images/*/*.png

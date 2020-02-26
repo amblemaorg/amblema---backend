@@ -55,7 +55,7 @@ QA-testing:
   
   artifacts:
     paths:
-    - $QA_PROJECT_DIR/qa-testing/htmlcov
+    - $QA_PROJECT_DIR/qa-testing/htmlcov/
     expire_in: 1 week
 
 Drop-QA-testing:

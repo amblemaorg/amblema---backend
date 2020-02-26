@@ -50,6 +50,7 @@ QA-testing:
     - docker exec -i amblema_testing_back bash -c "coverage erase"
     - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests -p \"*_test.py\""
     - docker exec -i amblema_testing_back bash -c "coverage report"
+    - docker exec -i amblema_testing_back bash -c "coverage html"
     - docker rm -f amblema_testing_back
     - rm -rf images/*/*.png
   

@@ -53,10 +53,10 @@ QA-testing:
     - docker rm -f amblema_testing_back
     - rm -rf images/*/*.png
   
-    artifacts:
-      paths:
-      - htmlcov
-      expire_in: 1 week
+  artifacts:
+    paths:
+    - htmlcov
+    expire_in: 1 week
 
 Drop-QA-testing:
   stage: test

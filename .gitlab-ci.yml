@@ -54,7 +54,6 @@ QA-testing:
     - rm -rf images/*/*.png
   
     artifacts:
-      expose_as: 'reporte de cobertura de codigo'
       paths:
       - htmlcov
       expire_in: 1 week

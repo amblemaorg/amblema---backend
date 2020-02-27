@@ -18,6 +18,7 @@ class Award(EmbeddedDocument):
     title = StringField(required=True)
     image = StringField(required=True)
     image2 = StringField(required=True)
+    image3 = StringField(required=True)
     description = StringField(required=True)
     description2 = StringField()
 
@@ -43,6 +44,10 @@ class AwardSchema(Schema):
         validate=(not_blank, validate_image),
         folder='webcontent')
     image2 = MAImageField(
+        required=True,
+        validate=(not_blank, validate_image),
+        folder='webcontent')
+    image3 = MAImageField(
         required=True,
         validate=(not_blank, validate_image),
         folder='webcontent')

@@ -74,9 +74,7 @@ class LearningModuleSchema(Schema):
     objectives = fields.List(fields.String(validate=not_blank))
     slider = fields.List(fields.Nested(SliderElementSchema))
     images = fields.List(
-        fields.Nested(ImageSchema),
-        required=True,
-        validate=not_blank)
+        fields.Nested(ImageSchema))
     duration = fields.Method("get_duration", deserialize="load_duration")
     quizzes = fields.List(fields.Nested(QuizSchema, required=True))
     createdAt = fields.DateTime(dump_only=True)

@@ -5,13 +5,13 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.generic_service import GenericServices
-from app.models.school_year_model import (
-    SchoolYear, SchoolYearSchema)
+from app.models.school_year_model import SchoolYear
+from app.schemas.school_year_schema import SchoolYearSchema
 from app.helpers.handler_request import getQueryParams
 
 
 class SchoolYearController(Resource):
-    
+
     service = GenericServices(
         Model=SchoolYear,
         Schema=SchoolYearSchema)
@@ -24,16 +24,16 @@ class SchoolYearController(Resource):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
 
-    
+
 class SchoolYearHandlerController(Resource):
-    
+
     service = GenericServices(
         Model=SchoolYear,
         Schema=SchoolYearSchema)
 
     def get(self, id):
         return self.service.getRecord(id)
-    
+
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -43,4 +43,3 @@ class SchoolYearHandlerController(Resource):
 
     def delete(self, id):
         return self.service.deleteRecord(id)
-

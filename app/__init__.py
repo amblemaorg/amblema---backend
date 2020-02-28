@@ -35,7 +35,6 @@ from app.controllers.school_year_controller import (
 from app.controllers.step_controller import (
     StepController, StepHandlerController
 )
-from app.controllers.diagnosis_controller import DiagnosticController
 from app.controllers.school_contact_controller import (
     SchoolContactController, SchoolContactHandlerController
 )
@@ -57,6 +56,12 @@ from app.controllers.request_find_spondor_controller import (
 )
 from app.controllers.request_find_school_controller import (
     ReqFindSchoolController, ReqFindSchoolHandlerController
+)
+from app.controllers.peca_setting_controller import (
+    PecaSettingController
+)
+from app.controllers.initial_workshop_controller import (
+    InitialWorkshopController
 )
 
 db = MongoEngine()
@@ -161,7 +166,6 @@ def create_app(config_instance):
         '/schoolyears/<string:id>',
         '/schoolyears/<string:id>/'
     )
-    api.add_resource(DiagnosticController, '/diagnosticsettings')
     api.add_resource(SchoolContactController, '/schoolscontacts')
     api.add_resource(SchoolContactHandlerController,
                      '/schoolscontacts/<string:id>')
@@ -183,5 +187,7 @@ def create_app(config_instance):
     api.add_resource(ReqFindSchoolController, '/requestsfindschool')
     api.add_resource(ReqFindSchoolHandlerController,
                      '/requestsfindschool/<string:id>')
+    api.add_resource(PecaSettingController, '/pecasetting')
+    api.add_resource(InitialWorkshopController, '/pecasetting/initialworkshop')
 
     return app

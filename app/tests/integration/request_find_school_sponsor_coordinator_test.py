@@ -114,9 +114,7 @@ class ApprovalProcess(unittest.TestCase):
             addressCity="Barquisimeto",
             addressStreet="calle 9 entre 1 y 2",
             contactName="Contact Name",
-            contactPhone="04242772727",
-            schoolContact="1",
-            schoolContactName="Juan Jimenez"
+            contactPhone="04242772727"
         )
 
         res = self.client().post(
@@ -222,9 +220,7 @@ class ApprovalProcess(unittest.TestCase):
             addressCity="Barquisimeto",
             addressStreet="calle 9 entre 1 y 2",
             contactName="Contact Name",
-            contactPhone="04242772727",
-            schoolContact="1",
-            schoolContactName="Juan Jimenez"
+            contactPhone="04242772727"
         )
         request.save()
 

@@ -15,3 +15,6 @@ class InitialWorkshopController(Resource):
 
         jsonData = request.form.to_dict()
         return self.service.save(jsonData, request.files)
+
+    def get(self):
+        return self.service.get()

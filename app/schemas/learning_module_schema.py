@@ -81,10 +81,11 @@ class LearningModuleSchema(Schema):
     updatedAt = fields.DateTime(dump_only=True)
 
     def get_duration(self, obj):
-        return time.strftime('%H:%M', time.gmtime(obj.duration))
+        return time.strftime('%H%M', time.gmtime(obj.duration))
 
     def load_duration(self, value):
-        h, m = value.split(':')
+        h = value[:2]
+        m = value[2:]
         return int(h) * 3600 + int(m) * 60
 
     class Meta:

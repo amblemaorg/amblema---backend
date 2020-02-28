@@ -25,8 +25,6 @@ class RequestFindSponsor(Document):
     addressStreet = fields.StringField()
     contactName = fields.StringField(required=True)
     contactPhone = fields.StringField(required=True)
-    schoolContact = fields.StringField(required=True, max_length=1)
-    schoolContactName = fields.StringField(required=True)
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

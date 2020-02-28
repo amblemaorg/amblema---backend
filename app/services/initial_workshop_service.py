@@ -14,15 +14,12 @@ class InicialWorkshopService():
 
     def get(self):
         schoolYear = SchoolYear.objects(
-            isDeleted=False, status="1").only("pecaSetting"). first()
+            isDeleted=False, status="1").only("pecaSetting").first()
 
         if schoolYear:
             schema = InicialWorkShopSchema()
-            pecaSetting = schoolYear.pecaSetting
-            if pecaSetting:
-                initialWorkshop = pecaSetting.initialWorkshop
-                if initialWorkshop:
-                    return schema.dump(initialWorkshop), 200
+            initialWorkshop = schoolYear.pecaSetting.activities.initialWorkshop
+            return schema.dump(initialWorkshop), 200
 
     def save(self, jsonData, files=None):
 

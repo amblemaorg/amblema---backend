@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.generic_service import GenericServices
-from app.services.role_service import EntityService
+from app.services.role_service import EntityService, RoleService
 from app.models.role_model import (
     Entity,
     EntitySchema,
@@ -15,7 +15,7 @@ from app.helpers.handler_request import getQueryParams
 
 
 class EntityController(Resource):
-    
+
     service = EntityService(
         Model=Entity,
         Schema=EntitySchema)
@@ -28,16 +28,16 @@ class EntityController(Resource):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
 
-    
+
 class EntityHandlerController(Resource):
-    
+
     service = EntityService(
         Model=Entity,
         Schema=EntitySchema)
 
     def get(self, entityId):
         return self.service.getRecord(entityId)
-    
+
     def put(self, entityId):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -50,17 +50,18 @@ class EntityHandlerController(Resource):
 
 
 class RoleController(Resource):
-    service = GenericServices(
+    service = RoleService(
         Model=Role,
         Schema=RoleSchema)
 
     def get(self):
         filters = getQueryParams(request)
-        return self.service.getAllRecords(filters=filters,exclude=("permissions",))
+        return self.service.getAllRecords(filters=filters, exclude=("permissions",))
 
     def post(self):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
+
 
 class RoleHandlerController(Resource):
     service = GenericServices(
@@ -70,7 +71,7 @@ class RoleHandlerController(Resource):
 
     def get(self, roleId):
         return self.service.getRecord(roleId)
-    
+
     def put(self, roleId):
         jsonData = request.get_json()
         return self.service.updateRecord(

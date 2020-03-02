@@ -23,7 +23,7 @@ class User(DynamicDocument):
     userType = fields.StringField(required=True)
     phone = fields.StringField(required=True)
     role = fields.ReferenceField('Role', required=True)
-    addressState = fields.ReferenceField('State', required=True)
+    addressState = fields.ReferenceField('State')
     addressMunicipality = fields.ReferenceField('Municipality')
     addressCity = fields.StringField()
     address = fields.StringField()

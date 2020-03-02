@@ -6,7 +6,7 @@ setup(
     version='0.1',
     description='Services for amblema application',
     url='',
-    install_requires = [
+    install_requires=[
         'flask',
         'flask-cors',
         'flask-mongoengine',
@@ -16,6 +16,7 @@ setup(
         'flask-bcrypt',
         'coverage',
         'marshmallow',
-        'blinker'
+        'blinker',
+        'Flask-Script'
     ]
 )

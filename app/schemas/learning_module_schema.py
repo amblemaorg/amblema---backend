@@ -20,6 +20,10 @@ class SliderElementSchema(Schema):
     description = fields.Str(required=True)
     type = fields.Str(dump_only=True)
 
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
     @post_load
     def make_document(self, data, **kwargs):
         slider = SliderElement(**data)
@@ -35,6 +39,10 @@ class ImageSchema(Schema):
         validate=(not_blank, validate_image),
         folder='learningmodules')
     description = fields.Str(required=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
     @post_load
     def make_document(self, data, **kwargs):

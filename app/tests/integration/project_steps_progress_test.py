@@ -412,7 +412,7 @@ class InitialSteps(unittest.TestCase):
             objectives=["first objective", "second objective"],
             slider=[{"url": "https://youtube.com",
                      "description": "some description", "type": "2"}],
-            images=[{"url": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+            images=[{"image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
                      "description": "some description"}],
             duration=3600)
         self.learningModule.quizzes.append(

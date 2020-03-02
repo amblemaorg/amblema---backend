@@ -31,7 +31,7 @@ class SliderElementSchema(Schema):
 
 
 class ImageSchema(Schema):
-    url = MAImageField(
+    image = MAImageField(
         validate=(not_blank, validate_image),
         folder='learningmodules')
     description = fields.Str(required=True)

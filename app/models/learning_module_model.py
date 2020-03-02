@@ -18,7 +18,7 @@ class SliderElement(EmbeddedDocument):
 
 
 class Image(EmbeddedDocument):
-    url = fields.URLField(required=True)
+    image = fields.URLField(required=True)
     description = fields.StringField(required=True)
 
 

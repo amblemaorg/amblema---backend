@@ -13,6 +13,26 @@ from app.services.generic_service import GenericServices
 from app.models.role_model import Role, ActionHandler, Permission
 
 
+class RoleService(GenericServices):
+    def getAllRecords(self, filters=None, only=None, exclude=()):
+        """
+        get all available roles records
+        """
+        schema = self.Schema(only=only, exclude=exclude)
+
+        if filters:
+            filterList = []
+            for f in filters:
+                filterList.append(Q(**{f['field']: f['value']}))
+            records = self.Model.objects(isDeleted=False, name__ne='SuperAdmin').filter(
+                reduce(operator.and_, filterList)).all()
+        else:
+            records = self.Model.objects(
+                isDeleted=False, name__ne='SuperAdmin').all()
+
+        return {"records": schema.dump(records, many=True)}, 200
+
+
 class EntityService(GenericServices):
 
     def saveRecord(self, jsonData):

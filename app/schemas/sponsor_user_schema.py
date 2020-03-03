@@ -42,6 +42,12 @@ class SponsorUserSchema(UserSchema):
     image = MAImageField(validate=validate_image,
                          folder='sponsors')
     webSite = fields.Str(validate=validate_url)
+    status = fields.Str(
+        validate=OneOf(
+            ("1", "2", "3"),
+            ("interested", "active", "inactive")
+        )
+    )
     projects = fields.List(fields.Nested(
         ProjectReferenceSchema), dump_only=True)
 

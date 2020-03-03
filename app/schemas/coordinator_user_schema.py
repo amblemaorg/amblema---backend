@@ -68,6 +68,12 @@ class CoordinatorUserSchema(UserSchema):
     addressHome = fields.Str()
     learning = fields.List(fields.Nested(LearningModSchema()), dump_only=True)
     nCoins = fields.Int(dump_only=True)
+    status = fields.Str(
+        validate=OneOf(
+            ("1", "2", "3", "4", "5"),
+            ("interested", "instructed", "approved", "active", "inactive")
+        )
+    )
 
     class Meta:
         unknown = EXCLUDE

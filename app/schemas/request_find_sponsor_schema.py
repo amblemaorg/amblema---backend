@@ -10,7 +10,7 @@ from marshmallow import (
 from app.schemas import fields
 from app.models.request_find_sponsor_model import Project
 from app.helpers.ma_schema_fields import MAReferenceField
-from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf
+from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, only_letters
 from app.models.state_model import State, Municipality
 
 
@@ -34,7 +34,8 @@ class ReqFindSponsorSchema(Schema):
         required=True, document=Municipality)
     addressCity = fields.Str(required=True)
     addressStreet = fields.Str()
-    contactName = fields.Str(required=True, validate=not_blank)
+    contactFirstName = fields.Str(validate=(not_blank, only_letters))
+    contactLastName = fields.Str(validate=(not_blank, only_letters))
     contactPhone = fields.Str(required=True, validate=not_blank)
     status = fields.Str(
         default="1",

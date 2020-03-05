@@ -23,7 +23,8 @@ class RequestFindSponsor(Document):
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
     addressCity = fields.StringField(required=True)
     addressStreet = fields.StringField()
-    contactName = fields.StringField(required=True)
+    contactFirstName = fields.StringField()
+    contactLastName = fields.StringField()
     contactPhone = fields.StringField(required=True)
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
@@ -53,15 +54,12 @@ class RequestFindSponsor(Document):
                         addressCity=document.addressCity,
                         address=document.address,
                         status='1',
-                        firstName=document.contactName,
-                        lastName="",
-                        cardType="2",
-                        cardId=document.rif,
                         companyRIF=document.rif,
                         companyType=document.companyType,
                         companyOtherType=document.companyOtherType,
                         companyPhone=document.phone,
-                        contactName=document.contactName,
+                        contactFirstName=document.contactFirstName,
+                        contactLastName=document.contactLastName,
                         contactPhone=document.contactPhone
                     )
                     password = sponsorUser.generatePassword()

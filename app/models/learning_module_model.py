@@ -40,7 +40,8 @@ class Quiz(EmbeddedDocument):
 
 
 class LearningModule(Document):
-    title = fields.StringField(required=True, unique_c=True)
+    name = fields.StringField(required=True, unique_c=True)
+    title = fields.StringField(required=True)
     description = fields.StringField(required=True)
     secondaryTitle = fields.StringField(required=True)
     secondaryDescription = fields.StringField(required=True)

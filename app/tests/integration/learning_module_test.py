@@ -57,6 +57,7 @@ class InitialSteps(unittest.TestCase):
         self.coordinator.save()
 
         self.learningModule = LearningModule(
+            name="module for test",
             title="module for test",
             description="module description test",
             secondaryTitle="secondaryTitle",
@@ -186,6 +187,7 @@ class InitialSteps(unittest.TestCase):
 
         newModule = deepcopy(self.learningModule)
         newModule.id = None
+        newModule.name = "New module name"
         newModule.title = "New module"
         newModule.save()
 
@@ -239,6 +241,7 @@ class InitialSteps(unittest.TestCase):
 
         newModule = deepcopy(self.learningModule)
         newModule.id = None
+        newModule.name = "New module name"
         newModule.title = "New module"
         newModule.save()
 
@@ -263,6 +266,7 @@ class InitialSteps(unittest.TestCase):
 
         newModule = deepcopy(self.learningModule)
         newModule.id = None
+        newModule.name = "New module name"
         newModule.title = "New module"
         newModule.save()
 

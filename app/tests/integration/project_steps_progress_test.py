@@ -405,6 +405,7 @@ class InitialSteps(unittest.TestCase):
         self.assertEqual("1", self.coordinator.status)
 
         self.learningModule = LearningModule(
+            name="module name",
             title="module for test",
             description="module description test",
             secondaryTitle="secondaryTitle",

@@ -61,6 +61,12 @@ class CoordinatorUserSchema(UserSchema):
     cardId = fields.Str(
         required=True,
         validate=(not_blank, only_numbers))
+    gender = fields.Str(
+        required=True,
+        validate=OneOf(
+            ('1', '2'),
+            ('female', 'male')
+        ))
     birthdate = fields.Date(required=True)
     projects = fields.List(fields.Nested(
         ProjectReferenceSchema), dump_only=True)

@@ -14,7 +14,7 @@ class SponsorUser(User):
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)
-    cardId = fields.StringField(required=True)
+    cardId = fields.StringField(required=True, unique_c=True)
     companyRIF = fields.StringField(required=True)
     companyType = fields.StringField(required=True)
     companyOtherType = fields.StringField(required=False)

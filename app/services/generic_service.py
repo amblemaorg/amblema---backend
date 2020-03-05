@@ -63,7 +63,7 @@ class GenericServices():
                 for field in isDuplicated:
                     raise ValidationError(
                         {field["field"]: [{"status": "5",
-                                           "msg": "Duplicated record found: '{}'".format(field["value"])}]}
+                                           "msg": "Duplicated record found: {}".format(field["value"])}]}
                     )
             try:
                 record.save()
@@ -147,15 +147,16 @@ class GenericServices():
         if len(attributes):
             for f in attributes:
                 filterList.append(Q(**{f['field']: f['value']}))
-            filterList.append(Q(**{"isDeleted": False}))
 
             if self.Model.__base__._meta['allow_inheritance']:
                 records = self.Model.__base__.objects.filter(
-                    reduce(operator.and_, filterList)
+                    reduce(operator.or_, filterList),
+                    isDeleted=False
                 ).all()
             else:
                 records = self.Model.objects.filter(
-                    reduce(operator.and_, filterList)
+                    reduce(operator.or_, filterList),
+                    isDeleted=False
                 ).all()
             if records:
                 duplicates = []

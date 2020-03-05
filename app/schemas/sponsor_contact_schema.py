@@ -32,15 +32,9 @@ class SponsorContactSchema(Schema):
         required=True, document=Municipality)
     addressCity = fields.Str(required=True)
     addressStreet = fields.Str()
-    contactName = fields.Str(required=True, validate=not_blank)
+    contactFirstName = fields.Str(validate=not_blank)
+    contactLastName = fields.Str(validate=not_blank)
     contactPhone = fields.Str(required=True, validate=not_blank)
-    schoolContact = fields.Str(
-        required=True,
-        validate=OneOf(
-            ('1', '2', '3', '4'),
-            ('director', 'teacher', 'parent', 'neighbor')
-        ))
-    schoolContactName = fields.Str(required=True, validate=not_blank)
     status = fields.Str(
         default="1",
         validate=OneOf(

@@ -20,7 +20,7 @@ class RequestFindCoordinator(Document):
     gender = fields.StringField(required=True, max_length=1)
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
-    addressCity = fields.StringField(required=True)
+    addressCity = fields.StringField()
     addressStreet = fields.StringField()
     addressHome = fields.StringField()
     email = fields.EmailField(required=True)

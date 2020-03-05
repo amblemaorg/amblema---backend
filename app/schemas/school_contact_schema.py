@@ -21,11 +21,11 @@ class SchoolContactSchema(Schema):
     name = fields.Str(required=True, validate=not_blank)
     code = fields.Str(required=True, validate=not_blank)
     email = fields.Email(required=True)
-    address = fields.Str(required=True, validate=not_blank)
+    address = fields.Str()
     addressState = MAReferenceField(document=State, required=True)
     addressMunicipality = MAReferenceField(
         document=Municipality, required=True)
-    addressCity = fields.Str(required=True)
+    addressCity = fields.Str()
     addressStreet = fields.Str()
     phone = fields.Str(required=True, validate=(not_blank, only_numbers))
     schoolType = fields.Str(

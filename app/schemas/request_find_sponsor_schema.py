@@ -28,11 +28,11 @@ class ReqFindSponsorSchema(Schema):
         ))
     companyOtherType = fields.Str()
     phone = fields.Str(required=True, validate=only_numbers)
-    address = fields.Str(required=True, validate=not_blank)
+    address = fields.Str()
     addressState = MAReferenceField(required=True, document=State)
     addressMunicipality = MAReferenceField(
         required=True, document=Municipality)
-    addressCity = fields.Str(required=True)
+    addressCity = fields.Str()
     addressStreet = fields.Str()
     contactFirstName = fields.Str(validate=(not_blank, only_letters))
     contactLastName = fields.Str(validate=(not_blank, only_letters))

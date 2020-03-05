@@ -41,7 +41,7 @@ class CoordinatorContactSchema(Schema):
     addressState = MAReferenceField(document=State, required=True)
     addressMunicipality = MAReferenceField(
         document=Municipality, required=True)
-    addressCity = fields.Str(required=True, validate=not_blank)
+    addressCity = fields.Str()
     addressStreet = fields.Str()
     addressHome = fields.Str()
     email = fields.Email(required=True, validate=not_blank)

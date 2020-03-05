@@ -64,6 +64,7 @@ class CoordinatorContact(Document):
                         lastName=document.lastName,
                         cardType=document.cardType,
                         cardId=document.cardId,
+                        gender=document.gender,
                         birthdate=document.birthdate,
                         homePhone=document.homePhone,
                         addressHome=document.addressHome

@@ -24,7 +24,7 @@ class CoordinatorContact(Document):
     gender = fields.StringField(required=True, max_length=1)
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
-    addressCity = fields.StringField(required=True)
+    addressCity = fields.StringField()
     addressStreet = fields.StringField()
     addressHome = fields.StringField()
     email = fields.EmailField(required=True)
@@ -59,7 +59,6 @@ class CoordinatorContact(Document):
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
-                        address="",
                         status='1',
                         firstName=document.firstName,
                         lastName=document.lastName,

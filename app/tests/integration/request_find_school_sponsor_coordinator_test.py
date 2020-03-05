@@ -113,7 +113,8 @@ class ApprovalProcess(unittest.TestCase):
             addressMunicipality=str(self.municipality.pk),
             addressCity="Barquisimeto",
             addressStreet="calle 9 entre 1 y 2",
-            contactName="Contact Name",
+            contactFirstName="Contact FirstName",
+            contactLastName="Contact Lastname",
             contactPhone="04242772727"
         )
 
@@ -219,7 +220,8 @@ class ApprovalProcess(unittest.TestCase):
             addressMunicipality=self.municipality,
             addressCity="Barquisimeto",
             addressStreet="calle 9 entre 1 y 2",
-            contactName="Contact Name",
+            contactFirstName="Contact",
+            contactLastName="Name",
             contactPhone="04242772727"
         )
         request.save()
@@ -240,14 +242,12 @@ class ApprovalProcess(unittest.TestCase):
     def test_create_coordinator_user_on_approve_request(self):
 
         sponsor = SponsorUser(
-            firstName="Test",
-            lastName="Test",
-            cardType="1",
-            cardId="20922842",
+            name="Test",
             companyRIF="303993833",
             companyType="2",
             companyPhone="02343432323",
-            contactName="Danel Rodriguez",
+            contactFirstName="Danel",
+            contactLastName="Ortega",
             contactPhone="04244664646",
             addressHome="House 34A",
             email="testemail@test.com",

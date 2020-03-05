@@ -11,23 +11,9 @@ from app.helpers.ma_schema_fields import MAImageField
 
 
 class SponsorUserSchema(UserSchema):
-    firstName = fields.Str(
+    name = fields.Str(
         required=True,
         validate=(not_blank, only_letters))
-    lastName = fields.Str(
-        required=True,
-        validate=(not_blank, only_letters))
-    cardType = fields.Str(
-        required=True,
-        validate=(
-            not_blank,
-            OneOf(
-                ["1", "2", "3"],
-                ["v", "j", "e"]
-            )))
-    cardId = fields.Str(
-        required=True,
-        validate=(not_blank, only_numbers))
     companyRIF = fields.Str(required=True, validate=only_numbers)
     companyType = fields.Str(
         required=True,
@@ -37,11 +23,18 @@ class SponsorUserSchema(UserSchema):
         ))
     companyOtherType = fields.Str()
     companyPhone = fields.Str(required=True, validate=only_numbers)
-    contactName = fields.Str(required=True, validate=only_letters)
+    contactFirstName = fields.Str(validate=only_letters)
+    contactLastName = fields.Str(validate=only_letters)
     contactPhone = fields.Str(required=True, validate=only_numbers)
     image = MAImageField(validate=validate_image,
                          folder='sponsors')
     webSite = fields.Str(validate=validate_url)
+    status = fields.Str(
+        validate=OneOf(
+            ("1", "2", "3"),
+            ("interested", "active", "inactive")
+        )
+    )
     projects = fields.List(fields.Nested(
         ProjectReferenceSchema), dump_only=True)
 

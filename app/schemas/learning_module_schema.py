@@ -75,6 +75,7 @@ class QuizSchema(Schema):
 
 class LearningModuleSchema(Schema):
     id = fields.Str(dump_only=True)
+    name = fields.Str(required=True, validate=not_blank)
     title = fields.Str(required=True, validate=not_blank)
     description = fields.Str(required=True, validate=not_blank)
     secondaryTitle = fields.Str(required=True, validate=not_blank)

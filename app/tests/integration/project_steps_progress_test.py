@@ -405,6 +405,7 @@ class InitialSteps(unittest.TestCase):
         self.assertEqual("1", self.coordinator.status)
 
         self.learningModule = LearningModule(
+            name="module name",
             title="module for test",
             description="module description test",
             secondaryTitle="secondaryTitle",
@@ -444,22 +445,20 @@ class InitialSteps(unittest.TestCase):
         self.assertEqual(40, self.project.stepsProgress.coordinator)
 
         sponsor = SponsorUser(
+            name="sponsor company name",
             email="sponsoruser@test.com",
             password="87654321",
-            firstName="Juan",
-            lastName="Padrino",
             userType="3",
             phone="04142223344",
             role=self.role,
             addressState=self.state,
             addressMunicipality=self.municipality,
             address="street 3",
-            cardType="1",
-            cardId="34567876",
             companyRIF="209228272",
             companyType="1",
             companyPhone="02524484747",
-            contactName="Juan Contacto",
+            contactFirstName="Juan",
+            contactLastName="Contact",
             contactPhone="02323456789"
         )
         sponsor.save()

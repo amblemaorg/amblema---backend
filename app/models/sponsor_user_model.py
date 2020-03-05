@@ -11,22 +11,16 @@ from app.models.shared_embedded_documents import (
 
 
 class SponsorUser(User):
-    firstName = fields.StringField(required=True)
-    lastName = fields.StringField(required=True)
-    cardType = fields.StringField(required=True)
-    cardId = fields.StringField(required=True)
     companyRIF = fields.StringField(required=True)
     companyType = fields.StringField(required=True)
-    companyOtherType = fields.StringField(required=False)
+    companyOtherType = fields.StringField()
     companyPhone = fields.StringField(required=True)
-    contactName = fields.StringField(required=True)
-    contactPhone = fields.StringField(required=True)
+    contactFirstName = fields.StringField()
+    contactLastName = fields.StringField()
+    contactPhone = fields.StringField()
     image = fields.URLField()
     webSite = fields.URLField()
     projects = fields.EmbeddedDocumentListField(ProjectReference)
-
-    def clean(self):
-        self.name = self.firstName + ' ' + self.lastName
 
     def findProject(self, projectId):
         project = self.projects.filter(id=projectId).first()

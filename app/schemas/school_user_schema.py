@@ -1,12 +1,13 @@
 # app/schemas/school_user_schema.py
 
 
-from marshmallow import fields, validate, EXCLUDE
+from marshmallow import validate, EXCLUDE
 
 from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema
+from app.schemas import fields
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers)
+    not_blank, only_letters, only_numbers, OneOf)
 
 
 class SchoolUserSchema(UserSchema):
@@ -27,6 +28,12 @@ class SchoolUserSchema(UserSchema):
         required=True,
         validate=(not_blank, only_numbers))
     contactFunction = fields.Str(required=True)
+    status = fields.Str(
+        validate=OneOf(
+            ("1", "2", "3"),
+            ("interested", "active", "inactive")
+        )
+    )
     project = fields.Nested(ProjectReferenceSchema, dump_only=True)
 
     class Meta:

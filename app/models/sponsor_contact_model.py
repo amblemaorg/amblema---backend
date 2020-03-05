@@ -23,15 +23,14 @@ class SponsorContact(Document):
     companyType = fields.StringField(required=True)
     companyOtherType = fields.StringField()
     phone = fields.StringField(required=True)
-    address = fields.StringField(required=True)
+    address = fields.StringField()
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
-    addressCity = fields.StringField(required=True)
+    addressCity = fields.StringField()
     addressStreet = fields.StringField()
-    contactName = fields.StringField(required=True)
-    contactPhone = fields.StringField(required=True)
-    schoolContact = fields.StringField(required=True, max_length=1)
-    schoolContactName = fields.StringField(required=True)
+    contactFirstName = fields.StringField()
+    contactLastName = fields.StringField()
+    contactPhone = fields.StringField()
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -61,15 +60,12 @@ class SponsorContact(Document):
                         addressCity=document.addressCity,
                         address=document.address,
                         status='1',
-                        firstName=document.contactName,
-                        lastName="",
-                        cardType="2",
-                        cardId=document.rif,
                         companyRIF=document.rif,
                         companyType=document.companyType,
                         companyOtherType=document.companyOtherType,
                         companyPhone=document.phone,
-                        contactName=document.contactName,
+                        contactFirstName=document.contactFirstName,
+                        contactLastName=document.contactLastName,
                         contactPhone=document.contactPhone
                     )
                     password = sponsorUser.generatePassword()

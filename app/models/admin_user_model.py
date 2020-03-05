@@ -13,7 +13,7 @@ class AdminUser(User):
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)
-    cardId = fields.StringField(required=True)
+    cardId = fields.StringField(required=True, unique_c=True)
     function = fields.StringField(required=True)
 
     def clean(self):

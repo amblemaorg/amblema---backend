@@ -13,6 +13,7 @@ from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_emails import send_email
 from resources.email_templates.register_email import messageRegisterEmail
+from resources.email_templates.changed_password_email import changedPasswordEmail
 
 
 class User(DynamicDocument):
@@ -31,15 +32,13 @@ class User(DynamicDocument):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
+    meta = {
+        'allow_inheritance': True,
+        'collection': 'users'}
 
     def clean(self):
         """Initialize the user"""
         self.updatedAt = datetime.utcnow()
-
-    @classmethod
-    def pre_save(cls, sender, document, **kwargs):
-        if not document.id:
-            document.setHashPassword()
 
     def setHashPassword(self):
         """Set a hashed password"""
@@ -74,14 +73,19 @@ class User(DynamicDocument):
             password: str (user password)
         """
         if not current_app.config.get("TESTING"):
-            send_email(
+            current_app.logger.info(send_email(
                 messageRegisterEmail(self.email, password),
                 'Amblema - Registro de usuario',
-                self.email)
+                self.email))
 
-    meta = {
-        'allow_inheritance': True,
-        'collection': 'users'}
-
-
-signals.pre_save.connect(User.pre_save, sender=User)
+    def sendChangePasswordEmail(self, password):
+        """
+        Send email when update password
+        Params:
+            password: str (user password)
+        """
+        if not current_app.config.get("TESTING"):
+            current_app.logger.info(send_email(
+                changedPasswordEmail(self.email, password),
+                'Amblema - Cambio de contraseña',
+                self.email))

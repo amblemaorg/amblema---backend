@@ -3,6 +3,7 @@
 
 import unittest
 import json
+from datetime import datetime
 
 from app import create_app, db
 
@@ -85,7 +86,7 @@ class InitialSteps(unittest.TestCase):
             cardType="1",
             cardId="20922842",
             gender="1",
-            birthdate="1993-09-08",
+            birthdate=datetime.utcnow(),
             homePhone="02343432323",
             addressHome="House 34A",
             email="testemail@test.com",

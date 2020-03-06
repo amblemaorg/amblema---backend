@@ -67,7 +67,7 @@ class CoordinatorUserSchema(UserSchema):
             ('1', '2'),
             ('female', 'male')
         ))
-    birthdate = fields.Date(required=True)
+    birthdate = fields.DateTime(required=True)
     projects = fields.List(fields.Nested(
         ProjectReferenceSchema), dump_only=True)
     homePhone = fields.Str(required=True, validate=only_numbers)

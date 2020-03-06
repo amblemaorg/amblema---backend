@@ -16,7 +16,7 @@ class RequestFindCoordinator(Document):
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)
     cardId = fields.StringField(required=True)
-    birthdate = fields.DateField(required=True)
+    birthdate = fields.DateTimeField(required=True)
     gender = fields.StringField(required=True, max_length=1)
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)

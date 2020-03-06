@@ -1,7 +1,6 @@
 # manage.py
 
 
-from datetime import datetime
 from app import db
 import os
 from flask import Flask
@@ -40,8 +39,9 @@ def create_super_user(email, password):
             password=str(password),
             cardType="1",
             cardId="00000000",
-            birthdate=datetime.utcnow(),
+            birthdate="1993-09-08",
             homePhone="07000000000",
+            addressHome="",
             userType="0",
             phone="02322322323",
             role=role)

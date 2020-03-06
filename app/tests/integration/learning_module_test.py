@@ -1,7 +1,6 @@
 # app/tests/integration/learning_module_test.py
 
 
-from datetime import datetime
 import unittest
 import json
 from copy import deepcopy
@@ -44,7 +43,7 @@ class InitialSteps(unittest.TestCase):
             lastName="Test",
             cardType="1",
             cardId="20922842",
-            birthdate=datetime.utcnow(),
+            birthdate="1993-09-08",
             gender="1",
             homePhone="02343432323",
             addressHome="House 34A",

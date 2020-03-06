@@ -31,7 +31,7 @@ class CoordinatorContactSchema(Schema):
     cardId = fields.Str(
         required=True,
         validate=(not_blank, only_numbers))
-    birthdate = fields.DateTime(required=True)
+    birthdate = fields.Date(required=True)
     gender = fields.Str(
         required=True,
         validate=OneOf(

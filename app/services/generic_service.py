@@ -112,7 +112,7 @@ class GenericServices():
                     for field in isDuplicated:
                         raise ValidationError(
                             {field["field"]: [{"status": "5",
-                                               "msg": "Duplicated record found: {}".format(field["value"])}]}
+                                               "msg": "Duplicated record found: '{}'".format(field["value"])}]}
                         )
 
                 record.save()

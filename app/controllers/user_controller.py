@@ -43,7 +43,8 @@ class UserHandlerController(Resource):
         return service.updateRecord(
             recordId=userId,
             jsonData=jsonData,
-            partial=(True))
+            partial=(True),
+            exclude=("password",))
 
     def delete(self, userId):
         service = getService(request)

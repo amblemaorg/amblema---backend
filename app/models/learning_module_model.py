@@ -94,7 +94,7 @@ class LearningModule(Document):
                 if str(quiz.id) == str(answer.quizId):
                     found = True
                     if quiz.correctOption != answer.option:
-                        incorrectAnswers.append(answer.quizId)
+                        incorrectAnswers.append(str(answer.quizId))
             if not found:
                 incorrectAnswers.append(str(quiz.id))
         if not incorrectAnswers:

@@ -1,7 +1,7 @@
 # app/schemas/user_schema.py
 
 from marshmallow import (
-    fields, validate, EXCLUDE, pre_load, validates_schema, Schema)
+    validate, EXCLUDE, pre_load, validates_schema, Schema)
 
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, validate_email, OneOf, Length)

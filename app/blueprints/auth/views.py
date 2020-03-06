@@ -1,7 +1,7 @@
 # /app/auth/views.py
 
 
-from flask import jsonify
+from flask import jsonify, request
 from flask_restful import Resource, reqparse
 from flask.views import MethodView
 from flask_jwt_extended import (
@@ -12,6 +12,8 @@ from flask_jwt_extended import (
 from app.blueprints.auth import auth_blueprint
 from app.models.user_model import User
 from app.schemas.user_schema import UserSchema
+from .schemas import RecoverySchema
+from app.helpers.ma_schema_validators import ValidationError
 
 
 class LoginView(MethodView):
@@ -80,9 +82,32 @@ class TokenRefreshView(MethodView):
         return {"msg": "Refresh token revoked"}, 200
 
 
+class RecoveryPasswordView(MethodView):
+    """This class-based view handles user recovery password function."""
+
+    def post(self):
+        schema = RecoverySchema()
+        try:
+            jsonData = request.get_json()
+            data = schema.load(jsonData)
+            user = User.objects(email=data['email']).first()
+            if not user:
+                return {"email": [{"status": "5", "msg": "Record not found"}]}, 400
+            password = user.generatePassword()
+            user.password = password
+            user.setHashPassword()
+            user.save()
+            user.sendChangePasswordEmail(password)
+            return {"msg": "Password changed successfully"}, 200
+
+        except ValidationError as err:
+            return err.normalized_messages(), 400
+
+
 # Define the API resource
 login_view = LoginView.as_view('login_view')
 refresh_view = TokenRefreshView.as_view('refresh_view')
+recovery_view = RecoveryPasswordView.as_view('recovery_view')
 
 
 # Define the rule for the registration url --->  /auth/login
@@ -99,4 +124,10 @@ auth_blueprint.add_url_rule(
     '/auth/refresh',
     view_func=refresh_view,
     methods=['POST', 'DELETE']
+)
+
+auth_blueprint.add_url_rule(
+    '/auth/passwordrecovery',
+    view_func=recovery_view,
+    methods=['POST']
 )

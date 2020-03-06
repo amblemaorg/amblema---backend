@@ -41,6 +41,7 @@ class UserService(GenericServices):
                                            "msg": "Duplicated record found: {}".format(field["value"])}]}
                     )
             try:
+                record.setHashPassword()
                 record.save()
                 record.sendRegistrationEmail(password)
                 return schema.dump(record), 201

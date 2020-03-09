@@ -63,19 +63,19 @@ class UserSchema(Schema):
             and str(data["cardType"]) == "1"
             and (len(data["cardId"]) < 7 or len(data["cardId"]) > 8)
         ):
-            errors["cardId"] = ["Invalid field length"]
+            errors["cardId"] = [{"status": "13", "msg": "Invalid length"}]
         if (
             "cardType" in data
             and str(data["cardType"]) == "2"
             and (len(data["cardId"]) < 8 or len(data["cardId"]) > 9)
         ):
-            errors["cardId"] = ["Invalid field length"]
+            errors["cardId"] = [{"status": "13", "msg": "Invalid length"}]
         if (
             "cardType" in data
             and str(data["cardType"]) == "3"
             and (len(data["cardId"]) != 10)
         ):
-            errors["cardId"] = ["Invalid field length"]
+            errors["cardId"] = [{"status": "13", "msg": "Invalid length"}]
         if errors:
             raise ValidationError(errors)
 

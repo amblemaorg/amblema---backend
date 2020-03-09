@@ -95,7 +95,8 @@ class InitialSteps(unittest.TestCase):
             phone="02322322323",
             role=self.role,
             addressState=self.state,
-            addressMunicipality=self.municipality
+            addressMunicipality=self.municipality,
+            isReferred=False
         )
         self.coordinator.save()
 

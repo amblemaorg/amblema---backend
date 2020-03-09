@@ -31,7 +31,8 @@ class CoordinatorContact(Document):
     phone = fields.StringField(required=True)
     homePhone = fields.StringField(required=True)
     profession = fields.StringField(required=True)
-    referredName = fields.StringField(required=True)
+    isReferred = fields.BooleanField(required=True)
+    referredName = fields.StringField()
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -67,7 +68,10 @@ class CoordinatorContact(Document):
                         gender=document.gender,
                         birthdate=document.birthdate,
                         homePhone=document.homePhone,
-                        addressHome=document.addressHome
+                        addressHome=document.addressHome,
+                        profession=document.profession,
+                        isReferred=document.isReferred,
+                        referredName=document.referredName
                     )
                     password = coordinatorUser.generatePassword()
                     coordinatorUser.password = password

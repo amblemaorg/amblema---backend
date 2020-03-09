@@ -91,7 +91,23 @@ class SchoolContact(Document):
                         contactLastName=document.principalLastName,
                         contactEmail=document.principalEmail,
                         contactPhone=document.principalPhone,
-                        contactFunction="Director"
+                        contactFunction="Director",
+                        schoolType=document.schoolType,
+                        principalFirstName=document.principalFirstName,
+                        principalLastName=document.principalLastName,
+                        principalEmail=document.principalEmail,
+                        principalPhone=document.principalPhone,
+                        subPrincipalFirstName=document.subPrincipalFirstName,
+                        subPrincipalLastName=document.subPrincipalLastName,
+                        subPrincipalEmail=document.subPrincipalEmail,
+                        subPrincipalPhone=document.subPrincipalPhone,
+                        nTeachers=document.nTeachers,
+                        nAdministrativeStaff=document.nAdministrativeStaff,
+                        nLaborStaff=document.nLaborStaff,
+                        nStudents=document.nStudents,
+                        nGrades=document.nGrades,
+                        nSections=document.nSections,
+                        schoolShift=document.schoolShift
                     )
                     password = schoolUser.generatePassword()
                     schoolUser.password = password

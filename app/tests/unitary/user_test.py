@@ -79,14 +79,14 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Invalid field length']})
+            {'cardId': [{'msg': 'Invalid length', 'status': '13'}]})
         user = {
             "cardType": "1",
             "cardId": "209228423",
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Invalid field length']})
+            {'cardId': [{'msg': 'Invalid length', 'status': '13'}]})
 
     def test_cardId_J_length_field(self):
         userSchema = AdminUserSchema(partial=True)
@@ -101,14 +101,14 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Invalid field length']})
+            {'cardId': [{'msg': 'Invalid length', 'status': '13'}]})
         user = {
             "cardType": "2",
             "cardId": "2092284232",
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Invalid field length']})
+            {'cardId': [{'msg': 'Invalid length', 'status': '13'}]})
 
     def test_cardId_E_length_field(self):
         userSchema = AdminUserSchema(partial=True)
@@ -123,14 +123,14 @@ class UserTestCase(unittest.TestCase):
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Invalid field length']})
+            {'cardId': [{'msg': 'Invalid length', 'status': '13'}]})
         user = {
             "cardType": "3",
             "cardId": "20922842324",
         }
         self.assertEqual(
             userSchema.validate(user),
-            {'cardId': ['Invalid field length']})
+            {'cardId': [{'msg': 'Invalid length', 'status': '13'}]})
 
     def test_email_field(self):
         userSchema = UserSchema(partial=True)

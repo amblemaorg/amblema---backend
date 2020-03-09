@@ -1,7 +1,7 @@
 # app/schemas/user_schema.py
 
 from marshmallow import (
-    fields, validate, EXCLUDE, pre_load, validates_schema, Schema)
+    validate, EXCLUDE, pre_load, validates_schema, Schema)
 
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, validate_email, OneOf, Length)
@@ -63,19 +63,19 @@ class UserSchema(Schema):
             and str(data["cardType"]) == "1"
             and (len(data["cardId"]) < 7 or len(data["cardId"]) > 8)
         ):
-            errors["cardId"] = ["Invalid field length"]
+            errors["cardId"] = [{"status": "13", "msg": "Invalid length"}]
         if (
             "cardType" in data
             and str(data["cardType"]) == "2"
             and (len(data["cardId"]) < 8 or len(data["cardId"]) > 9)
         ):
-            errors["cardId"] = ["Invalid field length"]
+            errors["cardId"] = [{"status": "13", "msg": "Invalid length"}]
         if (
             "cardType" in data
             and str(data["cardType"]) == "3"
             and (len(data["cardId"]) != 10)
         ):
-            errors["cardId"] = ["Invalid field length"]
+            errors["cardId"] = [{"status": "13", "msg": "Invalid length"}]
         if errors:
             raise ValidationError(errors)
 

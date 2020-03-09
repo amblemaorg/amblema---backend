@@ -63,7 +63,8 @@ class ApprovalProcess(unittest.TestCase):
             phone="02322322323",
             role=self.role,
             addressState=self.state,
-            addressMunicipality=self.municipality
+            addressMunicipality=self.municipality,
+            isReferred=False
         )
         self.coordinator.save()
 
@@ -93,6 +94,7 @@ class ApprovalProcess(unittest.TestCase):
             "phone": "04144433434",
             "homePhone": "02524433434",
             "profession": "Teacher",
+            "isReferred": True,
             "referredName": "Juan Veriken"
         }
         res = self.client().post(
@@ -285,6 +287,7 @@ class ApprovalProcess(unittest.TestCase):
             phone="04144433434",
             homePhone="02524433434",
             profession="Teacher",
+            isReferred=True,
             referredName="Juan Veriken"
         )
         request.save()

@@ -11,8 +11,9 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
-from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf
-from app.helpers.ma_schema_fields import MAReferenceField
+from app.helpers.ma_schema_validators import (
+    not_blank, only_numbers, OneOf, validate_image)
+from app.helpers.ma_schema_fields import MAReferenceField, MAImageField
 from app.models.state_model import State, Municipality
 
 
@@ -48,7 +49,8 @@ class CoordinatorContactSchema(Schema):
     phone = fields.Str(required=True, validate=(not_blank, only_numbers))
     homePhone = fields.Str(validate=only_numbers, required=True)
     profession = fields.Str(required=True, validate=not_blank)
-    referredName = fields.Str(required=True, validate=not_blank)
+    isReferred = fields.Bool(required=True)
+    referredName = fields.Str(validate=not_blank)
     status = fields.Str(
         default="1",
         validate=OneOf(

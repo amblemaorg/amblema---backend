@@ -6,8 +6,8 @@ from marshmallow import Schema, validate, EXCLUDE, post_load
 from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers, OneOf)
-from app.helpers.ma_schema_fields import MAReferenceField
+    not_blank, only_letters, only_numbers, OneOf, validate_image)
+from app.helpers.ma_schema_fields import MAReferenceField, MAImageField
 from app.schemas import fields
 from app.models.coordinator_user_model import Answer, Attempt, LearningMod, CoordinatorUser
 
@@ -72,6 +72,11 @@ class CoordinatorUserSchema(UserSchema):
         ProjectReferenceSchema), dump_only=True)
     homePhone = fields.Str(required=True, validate=only_numbers)
     addressHome = fields.Str()
+    profession = fields.Str()
+    isReferred = fields.Bool(required=True)
+    referredName = fields.Str()
+    image = MAImageField(validate=validate_image,
+                         folder='coordinators')
     learning = fields.List(fields.Nested(LearningModSchema()), dump_only=True)
     nCoins = fields.Int(dump_only=True)
     status = fields.Str(

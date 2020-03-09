@@ -73,7 +73,7 @@ class CoordinatorUserSchema(UserSchema):
     homePhone = fields.Str(required=True, validate=only_numbers)
     addressHome = fields.Str()
     profession = fields.Str()
-    isReferred = fields.Bool(required=True)
+    isReferred = fields.Bool()
     referredName = fields.Str()
     image = MAImageField(validate=validate_image,
                          folder='coordinators')

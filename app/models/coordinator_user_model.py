@@ -41,7 +41,7 @@ class CoordinatorUser(User):
     homePhone = fields.StringField(required=True)
     addressHome = fields.StringField()
     profession = fields.StringField()
-    isReferred = fields.BooleanField(required=True)
+    isReferred = fields.BooleanField()
     referredName = fields.StringField()
     image = fields.URLField()
     learning = fields.EmbeddedDocumentListField(LearningMod)

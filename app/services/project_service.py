@@ -66,16 +66,20 @@ class ProjectService():
                 id=str(step.id),
                 name=step.name,
                 devName=step.devName,
-                type=step.type,
                 tag=step.tag,
+                approvalType=step.approvalType,
+                hasText=step.hasText,
+                hasFile=step.hasFile,
+                hasDate=step.hasDate,
+                hasVideo=step.hasVideo,
+                hasChecklist=step.hasChecklist,
                 text=step.text,
-                date=step.date,
                 file=step.file,
                 video=step.video,
                 createdAt=step.createdAt,
                 updatedAt=step.updatedAt
             )
-            if step.type == "5":
+            if step.hasChecklist:
                 for check in step.checklist:
                     stepCtrl.checklist.append(
                         CheckElement(name=check.name, id=check.id))

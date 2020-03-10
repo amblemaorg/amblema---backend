@@ -31,7 +31,7 @@ class Step(Document):
     hasVideo = fields.BooleanField(required=True, default=False)
     hasChecklist = fields.BooleanField(required=True, default=False)
     hasUpload = fields.BooleanField(required=True, default=False)
-    text = fields.StringField(required=True)
+    text = fields.StringField()
     file = fields.EmbeddedDocumentField(
         Link, is_file=True, null=True, default=None)
     video = fields.EmbeddedDocumentField(Link, null=True, default=None)

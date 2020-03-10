@@ -8,90 +8,113 @@ from app.schemas.step_schema import StepSchema
 class UserTestCase(unittest.TestCase):
     """Test case for user validations."""
 
-    def test_step_type_1_text(self):
+    def test_step_with_text(self):
         stepSchema = StepSchema(partial=True)
         step = {
             "name": "some step type 1",
-            "type": "1",
             "tag": "1",
+            "hasText": True,
+            "status": "1"
+        }
+        self.assertEqual(stepSchema.validate(step), {
+                         'text': [{"status": "2", "msg": "Field is required"}]})
+        step = {
+            "name": "some step type 1",
+            "tag": "1",
+            "hasText": True,
             "text": "some text for step",
             "status": "1"
         }
         self.assertEqual(stepSchema.validate(step), {})
 
-        step["type"] = None
-        self.assertEqual(stepSchema.validate(step), {
-                         'type': [{'msg': 'Not allowed null', 'status': '3'}]})
-
-    def test_step_type_2_date(self):
+    def test_step_with_date(self):
         stepSchema = StepSchema(partial=True)
         step = {
             "name": "some step type 1",
-            "type": "2",
             "tag": "1",
-            "text": "some text for step",
+            "hasDate": True,
             "date": "2020-02-25 00:00:00",
             "status": "1"
         }
         self.assertEqual(stepSchema.validate(step), {})
 
-    def test_step_type_3_file_or_video(self):
+    def test_step_with_file(self):
         stepSchema = StepSchema(partial=True)
         step = {
             "name": "some step type 1",
-            "type": "3",
             "tag": "1",
-            "text": "some text for step",
+            "hasFile": True,
             "status": "1"
         }
         self.assertEqual(stepSchema.validate(step), {
-                         'file': ['Field is required'], 'video': ['Field is required']})
+                         'file': [{"status": "2", "msg": "Field is required"}]})
 
         step = {
             "name": "some step type 1",
-            "type": "3",
             "tag": "1",
-            "text": "some text for step",
             "status": "1",
+            "hasFile": True,
             "file": {"name": "some name",
                      "url": "http://somedomain.com/somefile.pdf"}
         }
         self.assertEqual(stepSchema.validate(step), {})
 
-        step = {
-            "name": "some step type 1",
-            "type": "3",
-            "tag": "1",
-            "text": "some text for step",
-            "status": "1",
-            "video": {"name": "some name",
-                      "url": "https://youtube.com/somefileid"}
-        }
-        self.assertEqual(stepSchema.validate(step), {})
-
-    def test_step_type_4_date_file(self):
+    def test_step_with_video(self):
         stepSchema = StepSchema(partial=True)
         step = {
             "name": "some step type 1",
-            "type": "4",
             "tag": "1",
-            "text": "some text for step",
+            "hasVideo": True,
+            "status": "1"
+        }
+        self.assertEqual(stepSchema.validate(step), {
+                         'video': [{"status": "2", "msg": "Field is required"}]})
+
+        step = {
+            "name": "some step type 1",
+            "tag": "1",
             "status": "1",
+            "hasVideo": True,
+            "video": {"name": "some name",
+                      "url": "http://somedomain.com/somevideourl"}
+        }
+        self.assertEqual(stepSchema.validate(step), {})
+
+    def test_step_with_video_date_file(self):
+        stepSchema = StepSchema(partial=True)
+        step = {
+            "name": "some step type 1",
+            "tag": "1",
+            "status": "1",
+            "hasVideo": True,
+            "hasDate": True,
+            "hasFile": True,
+            "video": {
+                "name": "some name",
+                "url": "http://somedomain.com/somevideourl"
+            },
             "file": {
                 "name": "some name",
                 "url": "http://somedomain.com/somefile.pdf"
-            },
-            "date": "2020-02-25 00:00:00"
+            }
         }
         self.assertEqual(stepSchema.validate(step), {})
 
     def test_step_type_5_checklist(self):
         stepSchema = StepSchema(partial=True)
+
         step = {
             "name": "some step type 1",
-            "type": "5",
             "tag": "1",
-            "text": "some text for step",
+            "hasChecklist": True,
+            "status": "1"
+        }
+        self.assertEqual(stepSchema.validate(step), {
+                         'checklist': [{"status": "2", "msg": "Field is required"}]})
+        step = {
+            "name": "some step type 1",
+            "tag": "1",
+            "hasChecklist": True,
             "status": "1",
             "checklist": [
                 {"name": "to do 1"},

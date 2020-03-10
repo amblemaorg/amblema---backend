@@ -35,20 +35,22 @@ class InitialSteps(unittest.TestCase):
         self.findSchool = Step(
             name="Encontrar Escuela",
             devName="findSchool",
-            type="1",
             tag="1",
-            text="some description",
-            isStandard=True
+            hasText=True,
+            isStandard=True,
+            approvalType="3",
+            text="some description"
         )
         self.findSchool.save()
 
         self.findSponsor = Step(
             name="Encontrar Padrino",
             devName="findSponsor",
-            type="1",
             tag="1",
-            text="some description",
-            isStandard=True
+            hasText=True,
+            isStandard=True,
+            approvalType="3",
+            text="some description"
         )
         self.findSponsor.save()
 
@@ -57,77 +59,73 @@ class InitialSteps(unittest.TestCase):
             devName="findCoordinator",
             type="1",
             tag="1",
-            text="some description",
-            isStandard=True
+            hasText=True,
+            isStandard=True,
+            approvalType="3",
+            text="some description"
         )
         self.findCoordinator.save()
-
-        self.initialWorkshopPlanning = Step(
-            name="Planificacion taller inicial",
-            type="4",
-            tag="1",
-            text="some description",
-            date="2020-02-20",
-            file={"url": "http://somefile.com/file.pdf",
-                  "name": "Planificacion inicial"}
-        )
-        self.initialWorkshopPlanning.save()
 
         self.amblemaConfirmation = Step(
             name="Confirmacion de AmbLeMa",
             devName="amblemaConfirmation",
-            type="1",
             tag="1",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="1",
+            hasText=True,
+            text="some description"
         )
         self.amblemaConfirmation.save()
 
         self.coordinatorFillSchoolForm = Step(
             name="Rellenar planilla de escuela",
             devName="coordinatorFillSchoolForm",
-            type="6",
             tag="2",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            text="some description"
         )
         self.coordinatorFillSchoolForm.save()
 
         self.coordinatorFillSponsorForm = Step(
             name="Rellenar planilla de padrino",
             devName="coordinatorFillSponsorForm",
-            type="6",
             tag="2",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            text="some description"
         )
         self.coordinatorFillSponsorForm.save()
 
         self.coordinatorSendCurriculum = Step(
             name="Enviar curriculo Vitae",
             devName="coordinatorSendCurriculum",
-            type="3",
             tag="2",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="3",
+            hasUpload=True,
+            hasText=True,
+            text="some description"
+
         )
         self.coordinatorSendCurriculum.save()
 
         self.corrdinatorCompleteTrainingModules = Step(
             name="Completar modulos de formacion",
             devName="corrdinatorCompleteTrainingModules",
-            type="1",
             tag="2",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="2"
         )
         self.corrdinatorCompleteTrainingModules.save()
 
         self.checklistInitialWorkshop = Step(
-            name="Completar modulos de formacion",
-            devName="corrdinatorCompleteTrainingModules",
-            type="5",
+            name="Taller inicial",
             tag="2",
+            hasText=True,
+            hasChecklist=True,
             text="some description",
             checklist=[{"name": "Reunion con la escuela"},
                        {"name": "reunion con el padrino"}]
@@ -137,30 +135,35 @@ class InitialSteps(unittest.TestCase):
         self.sponsorFillSchoolForm = Step(
             name="Rellenar planilla de escuela",
             devName="sponsorFillSchoolForm",
-            type="6",
             tag="3",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            text="some description"
         )
         self.sponsorFillSchoolForm.save()
 
         self.sponsorFillCoordinatorForm = Step(
             name="Rellenar planilla de coordinador",
             devName="sponsorFillCoordinatorForm",
-            type="6",
             tag="3",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            text="some description"
         )
         self.sponsorFillCoordinatorForm.save()
 
         self.sponsorAgreementSchool = Step(
             name="Convenio Padrino - Escuela",
             devName="sponsorAgreementSchool",
-            type="3",
             tag="3",
-            text="some description",
             isStandard=True,
+            approvalType="3",
+            hasText=True,
+            hasFile=True,
+            hasUpload=True,
+            text="some description",
             file={"name": "Agreement name",
                   "url": "https://urlserver.com/files/asd.pdf"}
         )
@@ -169,10 +172,13 @@ class InitialSteps(unittest.TestCase):
         self.sponsorAgreementSchoolFoundation = Step(
             name="Convenio Escuela - Fundacion",
             devName="sponsorAgreementSchoolFoundation",
-            type="3",
             tag="3",
-            text="some description",
             isStandard=True,
+            approvalType="3",
+            hasText=True,
+            hasFile=True,
+            hasUpload=True,
+            text="some description",
             file={"name": "Agreement name",
                   "url": "https://urlserver.com/files/asd.pdf"}
         )
@@ -181,30 +187,35 @@ class InitialSteps(unittest.TestCase):
         self.schoolFillSponsorlForm = Step(
             name="Rellenar planilla de padrino",
             devName="schoolFillSponsorlForm",
-            type="6",
             tag="4",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            text="some description"
         )
         self.schoolFillSponsorlForm.save()
 
         self.schoolFillCoordinatorForm = Step(
             name="Rellenar planilla de coordinador",
             devName="schoolFillCoordinatorForm",
-            type="6",
             tag="4",
-            text="some description",
-            isStandard=True
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            text="some description"
         )
         self.schoolFillCoordinatorForm.save()
 
         self.schoolAgreementSponsor = Step(
             name="Convenio Escuela - Padrino",
             devName="schoolAgreementSponsor",
-            type="3",
             tag="4",
-            text="some description",
             isStandard=True,
+            approvalType="3",
+            hasText=True,
+            hasFile=True,
+            hasUpload=True,
+            text="some description",
             file={"name": "Agreement name",
                   "url": "https://urlserver.com/files/asd.pdf"}
         )
@@ -213,58 +224,63 @@ class InitialSteps(unittest.TestCase):
         self.schoolAgreementFoundation = Step(
             name="Convenio Escuela - Fundacion",
             devName="schoolAgreementFoundation",
-            type="3",
             tag="4",
-            text="some description",
             isStandard=True,
+            approvalType="3",
+            hasText=True,
+            hasFile=True,
+            hasUpload=True,
+            text="some description",
             file={"name": "Agreement name",
                   "url": "https://urlserver.com/files/asd.pdf"}
         )
         self.schoolAgreementFoundation.save()
 
-        self.schoolStepType1 = Step(
-            name="School Step type 1",
-            type="1",
+        self.schoolStepText = Step(
+            name="School Step only text",
             tag="4",
+            hasText=True,
+            approvalType="1",
             text="some description"
         )
-        self.schoolStepType1.save()
+        self.schoolStepText.save()
 
-        self.schoolStepType2 = Step(
-            name="School Step type 2",
-            type="2",
+        self.schoolStepDate = Step(
+            name="School Step with date",
             tag="4",
-            text="some description"
+            approvalType="2",
+            hasDate=True
         )
-        self.schoolStepType2.save()
+        self.schoolStepDate.save()
 
-        self.schoolStepType3 = Step(
-            name="School Step type 3",
-            type="3",
+        self.schoolStepFile = Step(
+            name="School Step with file",
             tag="4",
-            text="some description",
+            approvalType="2",
+            hasFile=True,
             file={"name": "filename", "url": "https://somedomainname.com/file.pdf"}
         )
-        self.schoolStepType3.save()
+        self.schoolStepFile.save()
 
-        self.schoolStepType4 = Step(
-            name="School Step type 4",
-            type="4",
+        self.schoolStepDateFile = Step(
+            name="School Step Date file",
             tag="4",
-            text="some description",
+            approvalType="3",
+            hasFile=True,
+            hasDate=True,
             file={"name": "filename", "url": "https://somedomainname.com/file.pdf"}
         )
-        self.schoolStepType4.save()
+        self.schoolStepDateFile.save()
 
-        self.schoolStepType5 = Step(
-            name="School Step type 5",
-            type="5",
+        self.schoolStepChecklist = Step(
+            name="School Step checklist",
             tag="4",
-            text="some description",
+            approvalType="2",
+            hasChecklist=True,
             checklist=[{"name": "find lema"}, {
                 "name": "meeting with teachers"}]
         )
-        self.schoolStepType5.save()
+        self.schoolStepChecklist.save()
 
         self.role = Role(name="test")
         self.role.save()

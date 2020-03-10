@@ -60,12 +60,12 @@ class StepSchema(Schema):
             ["1", "2", "3", "4"],
             ["General", "Coordinator", "Sponsor", "School"]
         ), required=True)
-    hasText = fields.Bool(required=True, default=0)
-    hasDate = fields.Bool(required=True, default=0)
-    hasFile = fields.Bool(required=True, default=0)
-    hasVideo = fields.Bool(required=True, default=0)
-    hasChecklist = fields.Bool(required=True, default=0)
-    hasUpload = fields.Bool(required=True, default=0)
+    hasText = fields.Bool(required=True, default=False)
+    hasDate = fields.Bool(required=True, default=False)
+    hasFile = fields.Bool(required=True, default=False)
+    hasVideo = fields.Bool(required=True, default=False)
+    hasChecklist = fields.Bool(required=True, default=False)
+    hasUpload = fields.Bool(required=True, default=False)
     text = fields.Str(validate=not_blank)
     file = fields.Nested(FileSchema)
     video = fields.Nested(FileSchema)
@@ -102,22 +102,22 @@ class StepSchema(Schema):
     def validate_schema(self, data, **kwargs):
         errors = {}
         if (
-            data["hasText"]
+            "hasText" in data and data["hasText"]
             and "text" not in data
         ):
             errors["text"] = [{"status": "2", "msg": "Field is required"}]
         if (
-            data["hasFile"]
+            "hasFile" in data and data["hasFile"]
             and "file" not in data
         ):
             errors["file"] = [{"status": "2", "msg": "Field is required"}]
         if (
-            data["hasVideo"]
+            "hasVideo" in data and data["hasVideo"]
             and "video" not in data
         ):
             errors["video"] = [{"status": "2", "msg": "Field is required"}]
         if (
-            data["hasChecklist"]
+            "hasChecklist" in data and data["hasChecklist"]
             and "checklist" not in data
         ):
             errors["checklist"] = [{"status": "2", "msg": "Field is required"}]

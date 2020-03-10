@@ -41,16 +41,22 @@ class StepsService():
                     id=str(document.id),
                     name=document.name,
                     devName=document.devName,
-                    type=document.type,
                     tag=document.tag,
+                    hasText=document.hasText,
+                    hasDate=document.hasDate,
+                    hasFile=document.hasFile,
+                    hasVideo=document.hasVideo,
+                    hasChecklist=document.hasChecklist,
+                    hasUpload=document.hasText,
                     text=document.text,
-                    date=document.date,
                     file=document.file,
                     video=document.video,
+                    approvalType=document.approvalType,
+                    isStandard=document.isStandard,
                     createdAt=document.createdAt,
                     updatedAt=document.updatedAt
                 )
-                if document.type == "5":
+                if document.hasChecklist:
                     for check in document.checklist:
                         stepCtrl.checklist.append(
                             CheckElement(name=check.name, id=check.id))
@@ -80,26 +86,36 @@ class StepsService():
             and document.status == "1"
             and (
                 document.name != oldDocument.name
+                or document.hasText != oldDocument.hasText
+                or document.hasDate != oldDocument.hasDate
+                or document.hasFile != oldDocument.hasFile
+                or document.hasVideo != oldDocument.hasVideo
+                or document.hasChecklist != oldDocument.hasChecklist
+                or document.hasUpload != oldDocument.hasUpload
                 or document.text != oldDocument.text
-                or document.date != oldDocument.date
                 or document.file != oldDocument.file
                 or document.video != oldDocument.video
                 or document.checklist != oldDocument.checklist
             )
         ):
-            if document.type != "5":
+            if document.checklist == oldDocument.checklist:
                 Project.objects(
                     schoolYear=document.schoolYear,
                     isDeleted=False, status='1',
                     stepsProgress__steps__id=str(document.id)
                 ).update(
+                    set__stepsProgress__steps__S__hasText=document.hasText,
+                    set__stepsProgress__steps__S__hasDate=document.hasDate,
+                    set__stepsProgress__steps__S__hasFile=document.hasFile,
+                    set__stepsProgress__steps__S__hasVideo=document.hasVideo,
+                    set__stepsProgress__steps__S__hasChecklist=document.hasChecklist,
+                    set__stepsProgress__steps__S__hasUpload=document.hasUpload,
                     set__stepsProgress__steps__S__name=document.name,
                     set__stepsProgress__steps__S__text=document.text,
-                    set__stepsProgress__steps__S__date=document.date,
                     set__stepsProgress__steps__S__file=document.file,
                     set__stepsProgress__steps__S__video=document.video
                 )
-            if document.type == "5":
+            if document.checklist != oldDocument.checklist:
                 projects = Project.objects(
                     schoolYear=document.schoolYear,
                     isDeleted=False, status='1',
@@ -138,17 +154,22 @@ class StepsService():
                 id=str(document.id),
                 name=document.name,
                 devName=document.devName,
-                type=document.type,
                 tag=document.tag,
+                hasText=document.hasText,
+                hasDate=document.hasDate,
+                hasFile=document.hasFile,
+                hasVideo=document.hasVideo,
+                hasChecklist=document.hasChecklist,
+                hasUpload=document.hasText,
                 text=document.text,
-                date=document.date,
                 file=document.file,
                 video=document.video,
+                approvalType=document.approvalType,
                 isStandard=document.isStandard,
                 createdAt=document.createdAt,
                 updatedAt=document.updatedAt
             )
-            if document.type == "5":
+            if document.hasChecklist:
                 for check in document.checklist:
                     stepCtrl.checklist.append(
                         CheckElement(name=check.name, id=check.id))

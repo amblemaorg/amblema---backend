@@ -24,7 +24,7 @@ class CheckElement(EmbeddedDocument):
     checked = fields.BooleanField(default=False)
 
 
-class StepControl(EmbeddedDocument):
+class StepFields(EmbeddedDocument):
     id = fields.StringField(required=True)
     name = fields.StringField(required=True)
     devName = fields.StringField(required=True)
@@ -47,6 +47,19 @@ class StepControl(EmbeddedDocument):
     status = fields.StringField(default="1", max_length=1)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+    meta = {'allow_inheritance': True}
+
+
+class Approval(EmbeddedDocument):
+    id = fields.StringField()
+    comments = fields.StringField()
+    status = fields.StringField(max_length=1)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+
+class StepControl(StepFields):
+    approvalHistory = fields.EmbeddedDocumentListField(Approval)
 
     def approve(self):
         self.status = "2"

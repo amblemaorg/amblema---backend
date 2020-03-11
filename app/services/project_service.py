@@ -73,6 +73,7 @@ class ProjectService():
                 hasDate=step.hasDate,
                 hasVideo=step.hasVideo,
                 hasChecklist=step.hasChecklist,
+                hasUpload=step.hasUpload,
                 text=step.text,
                 file=step.file,
                 video=step.video,

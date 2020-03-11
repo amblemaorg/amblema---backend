@@ -151,7 +151,7 @@ class StepsService():
             schoolYear=document.schoolYear, isDeleted=False, status='1').all()
         for project in projects:
             stepCtrl = StepControl(
-                id=str(document.id),
+                id=str(document.pk),
                 name=document.name,
                 devName=document.devName,
                 tag=document.tag,

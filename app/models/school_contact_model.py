@@ -54,6 +54,7 @@ class SchoolContact(Document):
     sponsorAddressStreet = fields.StringField()
     sponsorCompanyType = fields.StringField()
     sponsorCompanyOtherType = fields.StringField()
+    sponsorCompanyPhone = fields.StringField()
     sponsorContactFirstName = fields.StringField()
     sponsorContactLastName = fields.StringField()
     sponsorContactPhone = fields.StringField()
@@ -131,7 +132,7 @@ class SchoolContact(Document):
                             companyRIF=document.sponsorRIF,
                             companyType=document.sponsorCompanyType,
                             companyOtherType=document.sponsorCompanyOtherType,
-                            companyPhone=document.sponsorContactPhone,
+                            companyPhone=document.sponsorCompanyPhone,
                             contactName=document.sponsorContactFirstName,
                             contactPhone=document.sponsorContactPhone
                         )

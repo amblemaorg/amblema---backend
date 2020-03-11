@@ -26,6 +26,7 @@ class AdminUserSchema(UserSchema):
     cardId = fields.Str(
         required=True,
         validate=(not_blank, only_numbers))
+    phone = fields.Str(validate=only_numbers)
     function = fields.Str(
         required=True,
         validate=(not_blank, only_letters))

@@ -64,7 +64,6 @@ class SchoolContactSchema(Schema):
     sponsorAddressMunicipality = MAReferenceField(document=Municipality)
     sponsorAddressCity = fields.Str()
     sponsorAddressStreet = fields.Str()
-    sponsorPhone = fields.Str(validate=only_numbers)
     sponsorCompanyType = fields.Str(
         required=True,
         validate=OneOf(

@@ -152,7 +152,7 @@ class UserTestCase(unittest.TestCase):
             {'email': [{'msg': 'Invalid email address', 'status': '1'}]})
 
     def test_phone_field(self):
-        userSchema = UserSchema(partial=True)
+        userSchema = AdminUserSchema(partial=True)
         user = {
             "phone": "04245687571"
         }

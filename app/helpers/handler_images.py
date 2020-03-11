@@ -43,6 +43,7 @@ def upload_image(imageBase64, folder):
                                  status_code=400)
 
     except Exception as e:
+        current_app.logger.info(e)
         raise CSTM_Exception(message="An error ocurred on uploading image",
                              status_code=400,
                              payload={"error": str(e)})

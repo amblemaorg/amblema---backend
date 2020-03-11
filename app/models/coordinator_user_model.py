@@ -35,6 +35,7 @@ class CoordinatorUser(User):
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)
     cardId = fields.StringField(required=True, unique_c=True)
+    phone = fields.StringField(required=True)
     gender = fields.StringField(max_length=1)
     birthdate = fields.DateTimeField(required=True)
     projects = fields.EmbeddedDocumentListField(ProjectReference)
@@ -48,6 +49,7 @@ class CoordinatorUser(User):
     nCoins = fields.IntField(default=0)
     instructed = fields.BooleanField(required=True, default=False)
     curriculum = fields.EmbeddedDocumentField(Link)
+    phase = fields.StringField(max_length=1, default="1")
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName

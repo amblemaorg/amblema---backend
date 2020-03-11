@@ -21,6 +21,7 @@ class SponsorUser(User):
     image = fields.URLField()
     webSite = fields.URLField()
     projects = fields.EmbeddedDocumentListField(ProjectReference)
+    phase = fields.StringField(max_length=1, default="1")
 
     def findProject(self, projectId):
         project = self.projects.filter(id=projectId).first()

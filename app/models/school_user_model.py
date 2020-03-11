@@ -11,11 +11,7 @@ from app.models.shared_embedded_documents import ProjectReference, DocumentRefer
 
 class SchoolUser(User):
     code = fields.StringField(required=True)
-    contactFirstName = fields.StringField(required=True)
-    contactLastName = fields.StringField(required=True)
-    contactEmail = fields.StringField(required=True)
-    contactPhone = fields.StringField(required=True)
-    contactFunction = fields.StringField(required=True)
+    phone = fields.StringField(required=True)
     image = fields.URLField()
     schoolType = fields.StringField(max_length=1)
     principalFirstName = fields.StringField()
@@ -34,6 +30,7 @@ class SchoolUser(User):
     nSections = fields.IntField()
     schoolShift = fields.StringField(max_length=1)
     project = fields.EmbeddedDocumentField(ProjectReference)
+    phase = fields.StringField(max_length=1, default="1")
 
     def addProject(self, project):
 

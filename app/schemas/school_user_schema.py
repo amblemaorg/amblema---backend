@@ -18,17 +18,7 @@ class SchoolUserSchema(UserSchema):
     name = fields.Str(
         required=True,
         validate=(not_blank))
-    contactFirstName = fields.Str(
-        required=True,
-        validate=(not_blank, only_letters))
-    contactLastName = fields.Str(
-        required=True,
-        validate=(not_blank, only_letters))
-    contactEmail = fields.Email(required=True)
-    contactPhone = fields.Str(
-        required=True,
-        validate=(not_blank, only_numbers))
-    contactFunction = fields.Str(required=True)
+    phone = fields.Str(validate=only_numbers)
     image = MAImageField(validate=validate_image,
                          folder='schools')
     schoolType = fields.Str(
@@ -58,8 +48,14 @@ class SchoolUserSchema(UserSchema):
         ))
     status = fields.Str(
         validate=OneOf(
+            ("1", "2"),
+            ("active", "inactive")
+        )
+    )
+    phase = fields.Str(
+        validate=OneOf(
             ("1", "2", "3"),
-            ("interested", "active", "inactive")
+            ("initial", "interested", "peca")
         )
     )
     project = fields.Nested(ProjectReferenceSchema, dump_only=True)

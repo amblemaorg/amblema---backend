@@ -61,6 +61,7 @@ class CoordinatorUserSchema(UserSchema):
     cardId = fields.Str(
         required=True,
         validate=(not_blank, only_numbers))
+    phone = fields.Str(validate=only_numbers)
     gender = fields.Str(
         required=True,
         validate=OneOf(
@@ -81,8 +82,14 @@ class CoordinatorUserSchema(UserSchema):
     nCoins = fields.Int(dump_only=True)
     status = fields.Str(
         validate=OneOf(
+            ("1", "2"),
+            ("active", "inactive")
+        )
+    )
+    phase = fields.Str(
+        validate=OneOf(
             ("1", "2", "3", "4", "5"),
-            ("interested", "instructed", "approved", "active", "inactive")
+            ("initial", "interested", "instructed", "approved", "peca")
         )
     )
 

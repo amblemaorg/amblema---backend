@@ -32,7 +32,6 @@ class UserSchema(Schema):
                 ["admin", "coordinator", "sponsor", "school"]
 
             )))
-    phone = fields.Str(validate=only_numbers)
     role = MAReferenceField(required=True, document=Role)
     addressState = MAReferenceField(required=True, document=State)
     addressMunicipality = MAReferenceField(

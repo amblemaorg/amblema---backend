@@ -57,7 +57,6 @@ class InitialSteps(unittest.TestCase):
         self.findCoordinator = Step(
             name="Encontrar Coordinador",
             devName="findCoordinator",
-            type="1",
             tag="1",
             hasText=True,
             isStandard=True,
@@ -128,7 +127,8 @@ class InitialSteps(unittest.TestCase):
             hasChecklist=True,
             text="some description",
             checklist=[{"name": "Reunion con la escuela"},
-                       {"name": "reunion con el padrino"}]
+                       {"name": "reunion con el padrino"}],
+            approvalType="2"
         )
         self.checklistInitialWorkshop.save()
 
@@ -323,7 +323,9 @@ class InitialSteps(unittest.TestCase):
             coordinator=self.coordinator
         )
         self.project.save()
-        self.assertEqual(23, len(self.project.stepsProgress.steps))
+        for step in self.project.stepsProgress.steps:
+            self.app.logger.info(step.name)
+        self.assertEqual(22, len(self.project.stepsProgress.steps))
 
         # update step type 1
         self.project.updateStep(

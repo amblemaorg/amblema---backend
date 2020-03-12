@@ -17,7 +17,7 @@ def upload_image(imageBase64, folder):
       imageBase64: string  
       folder: string, folder into resource/images
     """
-    # try:
+
     validExtensions = [".jpe", ".jpg", ".jpeg", ".png", ".svg"]
     ext = guess_extension(guess_type(imageBase64)[0])
 
@@ -41,9 +41,3 @@ def upload_image(imageBase64, folder):
     else:
         raise CSTM_Exception(message="Invalid image format",
                              status_code=400)
-
-    # except Exception as e:
-    #    current_app.logger.info(e)
-    #    raise CSTM_Exception(message="An error ocurred on uploading image",
-    #                         status_code=400,
-    #                         payload={"error": str(e)})

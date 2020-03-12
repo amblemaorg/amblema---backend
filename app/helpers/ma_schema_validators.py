@@ -32,9 +32,11 @@ def only_numbers(data):
 
 
 def validate_image(data):
-    mimetype, encoding = mimetypes.guess_type(data)
-    if not (mimetype and mimetype.startswith('image')):
-        raise ValidationError({"status": "9", "msg": "Invalid image field"})
+    if data:
+        mimetype, encoding = mimetypes.guess_type(data)
+        if not (mimetype and mimetype.startswith('image')):
+            raise ValidationError(
+                {"status": "9", "msg": "Invalid image field"})
 
 
 def validate_video(data):
@@ -88,9 +90,11 @@ class OneOf(Validator):
         self.error = error or self.default_message  # type: str
 
     def __call__(self, value) -> str:
-        if value not in self.choices:
+        if value and value not in self.choices:
             raise ValidationError(
                 {"status": "11", "msg": "Not a valid choice"})
+        if not value:
+            value = None
         return value
 
 
@@ -127,12 +131,12 @@ class Range(Validator):
         self.max_inclusive = max_inclusive
 
     def __call__(self, value) -> typing.Any:
-        if self.min is not None and (
+        if value and self.min is not None and (
             value < self.min if self.min_inclusive else value <= self.min
         ):
             raise ValidationError({"status": "12", "msg": "Out of range"})
 
-        if self.max is not None and (
+        if value and self.max is not None and (
             value > self.max if self.max_inclusive else value >= self.max
         ):
             raise ValidationError({"status": "12", "msg": "Out of range"})

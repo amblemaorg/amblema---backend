@@ -19,7 +19,7 @@ class SchoolUserSchema(UserSchema):
         required=True,
         validate=(not_blank))
     phone = fields.Str(validate=only_numbers)
-    image = MAImageField(validate=validate_image,
+    image = MAImageField(allow_none=True, validate=validate_image,
                          folder='schools')
     schoolType = fields.Str(
         validate=OneOf(
@@ -34,14 +34,15 @@ class SchoolUserSchema(UserSchema):
     subPrincipalLastName = fields.Str()
     subPrincipalEmail = fields.Email()
     subPrincipalPhone = fields.Str(validate=only_numbers)
-    nTeachers = fields.Int(validate=Range(min=0))
-    nAdministrativeStaff = fields.Int(
-        validate=Range(min=0))
-    nLaborStaff = fields.Int(validate=Range(min=0))
-    nStudents = fields.Int(validate=Range(min=0))
-    nGrades = fields.Int(validate=Range(min=0))
-    nSections = fields.Int(validate=Range(min=0))
+    nTeachers = fields.Int(allow_none=True, validate=Range(min=0))
+    nAdministrativeStaff = fields.Int(allow_none=True,
+                                      validate=Range(min=0))
+    nLaborStaff = fields.Int(allow_none=True, validate=Range(min=0))
+    nStudents = fields.Int(allow_none=True, validate=Range(min=0))
+    nGrades = fields.Int(allow_none=True, validate=Range(min=0))
+    nSections = fields.Int(allow_none=True, validate=Range(min=0))
     schoolShift = fields.Str(
+        allow_none=True,
         validate=OneOf(
             ('1', '2', '3'),
             ('morning', 'afternoon', 'both')
@@ -53,6 +54,7 @@ class SchoolUserSchema(UserSchema):
         )
     )
     phase = fields.Str(
+        default="1",
         validate=OneOf(
             ("1", "2", "3"),
             ("initial", "interested", "peca")

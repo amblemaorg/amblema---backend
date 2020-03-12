@@ -18,7 +18,7 @@ def not_blank(data):
 def only_letters(data):
     """Custom marshmallow validator for only letters
     """
-    if not re.match("^[a-zA-ZñÑáéíóúÁÉÍÓÚ ]*$", data):
+    if data and not re.match("^[a-zA-ZñÑáéíóúÁÉÍÓÚ ]*$", data):
         raise ValidationError(
             {"status": "7", "msg": "Field accept only letters"})
 
@@ -26,7 +26,7 @@ def only_letters(data):
 def only_numbers(data):
     """Custom marshmallow validator for only numbers
     """
-    if not re.match("^[0-9]*$", data):
+    if data and not re.match("^[0-9]*$", data):
         raise ValidationError(
             {"status": "8", "msg": "Field accept only numbers"})
 
@@ -48,7 +48,7 @@ def validate_video(data):
 
 
 def validate_email(data):
-    if not re.search(r'[^@]+@[^@]+\.[^@]+', data):
+    if data and not re.search(r'[^@]+@[^@]+\.[^@]+', data):
         raise ValidationError({"status": "1", "msg": "Invalid email address"})
 
 
@@ -63,7 +63,7 @@ def validate_url(data):
         r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-    if not re.match(regex, data):
+    if data and not re.match(regex, data):
         raise ValidationError({"status": "10", "msg": "Invalid url address"})
 
 

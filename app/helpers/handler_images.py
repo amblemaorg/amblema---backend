@@ -17,32 +17,27 @@ def upload_image(imageBase64, folder):
       imageBase64: string  
       folder: string, folder into resource/images
     """
-    try:
-        validExtensions = [".jpe", ".jpg", ".jpeg", ".png", ".svg"]
-        ext = guess_extension(guess_type(imageBase64)[0])
 
-        if ext in validExtensions:
-            imageBase64 = imageBase64.replace(" ", "+")
-            if ext in [".jpe", ".jpeg"]:
-                ext = '.jpg'
-                dataImage = imageBase64.lstrip('data:image/jpeg;base64')
-            elif ext == ".png":
-                dataImage = imageBase64.lstrip('data:image/png;base64')
-            else:
-                dataImage = imageBase64.lstrip('data:image/svg+xml;base64')
-            pathImage = path_images + '/' + folder + '/'
-            nameImage = str(ObjectId())
-            urlImage = '/resources/images/' + folder + '/' + nameImage + ext
+    validExtensions = [".jpe", ".jpg", ".jpeg", ".png", ".svg"]
+    ext = guess_extension(guess_type(imageBase64)[0])
 
-            upload(dataImage, nameImage, pathImage, ext)
-
-            return current_app.config.get('SERVER_URL') + urlImage
-
+    if ext in validExtensions:
+        imageBase64 = imageBase64.replace(" ", "+")
+        if ext in [".jpe", ".jpeg"]:
+            ext = '.jpg'
+            dataImage = imageBase64.lstrip('data:image/jpeg;base64')
+        elif ext == ".png":
+            dataImage = imageBase64.lstrip('data:image/png;base64')
         else:
-            raise CSTM_Exception(message="Invalid image format",
-                                 status_code=400)
+            dataImage = imageBase64.lstrip('data:image/svg+xml;base64')
+        pathImage = path_images + '/' + folder + '/'
+        nameImage = str(ObjectId())
+        urlImage = '/resources/images/' + folder + '/' + nameImage + ext
 
-    except Exception as e:
-        raise CSTM_Exception(message="An error ocurred on uploading image",
-                             status_code=400,
-                             payload={"error": str(e)})
+        upload(dataImage, nameImage, pathImage, ext)
+
+        return current_app.config.get('SERVER_URL') + urlImage
+
+    else:
+        raise CSTM_Exception(message="Invalid image format",
+                             status_code=400)

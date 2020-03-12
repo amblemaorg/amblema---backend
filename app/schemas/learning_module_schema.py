@@ -86,6 +86,7 @@ class LearningModuleSchema(Schema):
         fields.Nested(ImageSchema))
     duration = fields.Method("get_duration", deserialize="load_duration")
     quizzes = fields.List(fields.Nested(QuizSchema, required=True))
+    priority = fields.Int(allow_none=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

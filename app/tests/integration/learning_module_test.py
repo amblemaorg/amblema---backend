@@ -17,7 +17,7 @@ from app.models.state_model import State, Municipality
 from app.models.learning_module_model import LearningModule, Quiz
 
 
-class InitialSteps(unittest.TestCase):
+class LearningModuleTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -70,7 +70,8 @@ class InitialSteps(unittest.TestCase):
                      "description": "some description", "type": "2"}],
             images=[{"image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
                      "description": "some description"}],
-            duration=3600)
+            duration=3600,
+            priority=1)
         self.learningModule.quizzes.append(
             Quiz(
                 question="cuantos anios vivio Matusalem?",
@@ -90,6 +91,70 @@ class InitialSteps(unittest.TestCase):
                 correctOption="optionA")
         )
         self.learningModule.save()
+
+    def test_change_priority(self):
+        learningModule2 = LearningModule(
+            name="module for test",
+            title="module for test",
+            description="module description test",
+            secondaryTitle="secondaryTitle",
+            secondaryDescription="secondaryDescription",
+            objectives=["first objective", "second objective"],
+            slider=[{"url": "https://youtube.com",
+                     "description": "some description", "type": "2"}],
+            images=[{"image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+                     "description": "some description"}],
+            duration=3600,
+            priority=1)
+        learningModule2.quizzes.append(
+            Quiz(
+                question="cuantos anios vivio Matusalem?",
+                optionA="120",
+                optionB="100",
+                optionC="700",
+                optionD="960",
+                correctOption="optionD")
+        )
+        learningModule2.save()
+
+        module = LearningModule.objects.get(id=self.learningModule.id)
+        self.assertEqual(2, module.priority)
+
+        learningModule3 = LearningModule(
+            name="module for test3",
+            title="module for test3",
+            description="module description test",
+            secondaryTitle="secondaryTitle",
+            secondaryDescription="secondaryDescription",
+            objectives=["first objective", "second objective"],
+            slider=[{"url": "https://youtube.com",
+                     "description": "some description", "type": "2"}],
+            images=[{"image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+                     "description": "some description"}],
+            duration=3600,
+            priority=2)
+        learningModule3.quizzes.append(
+            Quiz(
+                question="cuantos anios vivio Matusalem?",
+                optionA="120",
+                optionB="100",
+                optionC="700",
+                optionD="960",
+                correctOption="optionD")
+        )
+        learningModule3.save()
+        module = LearningModule.objects.get(id=self.learningModule.id)
+        self.assertEqual(3, module.priority)
+
+        learningModule2.isDeleted = True
+        learningModule2.save()
+        module = LearningModule.objects.get(id=self.learningModule.id)
+        self.assertEqual(2, module.priority)
+
+        self.learningModule.priority = 1
+        self.learningModule.save()
+        module = LearningModule.objects.get(id=learningModule3.id)
+        self.assertEqual(2, module.priority)
 
     def test_coordinator_answer_module_correctly(self):
 

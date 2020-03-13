@@ -327,44 +327,44 @@ class InitialSteps(unittest.TestCase):
             self.app.logger.info(step.name)
         self.assertEqual(22, len(self.project.stepsProgress.steps))
 
-        # update step type 1
+        # update step text
         self.project.updateStep(
             StepControl(
-                id=str(self.schoolStepType1.id),
+                id=str(self.schoolStepText.id),
                 status="2"
             )
         )
 
-        # update step type 2
+        # update step date
         self.project.updateStep(
             StepControl(
-                id=str(self.schoolStepType2.id),
+                id=str(self.schoolStepDate.id),
                 date="2020-02-20"
             )
         )
 
-        # update step type 3
+        # update step file
         self.project.updateStep(
             StepControl(
-                id=str(self.schoolStepType3.id),
+                id=str(self.schoolStepFile.id),
                 uploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"}
             )
         )
 
-        # update step type 4
+        # update step date file
         self.project.updateStep(
             StepControl(
-                id=str(self.schoolStepType4.id),
+                id=str(self.schoolStepDateFile.id),
                 uploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"},
                 date="2020-02-20"
             )
         )
 
-        # update step type 5
+        # update step checklist
         checklist = []
-        for check in self.schoolStepType5.checklist:
+        for check in self.schoolStepChecklist.checklist:
             checklist.append(
                 CheckElement(
                     id=str(check.id),
@@ -374,7 +374,7 @@ class InitialSteps(unittest.TestCase):
             )
         self.project.updateStep(
             StepControl(
-                id=str(self.schoolStepType5.id),
+                id=str(self.schoolStepChecklist.id),
                 checklist=checklist
             )
         )

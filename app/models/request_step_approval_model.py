@@ -96,6 +96,22 @@ class RequestStepApproval(Document):
                                 approval.status = "2"  # approved
                                 approval.updatedAt = datetime.utcnow()
                                 break
+                        reciprocalFields = {
+                            "sponsorAgreementSchool": "schoolAgreementSponsor",
+                            "schoolAgreementSponsor": "sponsorAgreementSchool",
+                            "sponsorAgreementSchoolFoundation": "schoolAgreementFoundation",
+                            "schoolAgreementFoundation": "sponsorAgreementSchoolFoundation"
+                        }
+                        if document.stepDevName in reciprocalFields:
+                            for step in document.project.stepsProgress.steps:
+                                if step.devName == reciprocalFields[document.stepDevName]:
+                                    step.uploadedFile = document.stepUploadedFile
+                                    step.approve()
+                                    break
+                        if document.stepDevName == "coordinatorSendCurriculum":
+                            document.project.coordinator.curriculum = step.uploadedFile
+                            document.project.coordinator.save()
+
                         document.project.save()
                         break
             else:

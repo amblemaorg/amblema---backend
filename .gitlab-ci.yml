@@ -55,7 +55,7 @@ QA-testing:
     - cd "$build_dir"
     - cp -a $QA_PROJECT_DIR/qa-testing/htmlcov/. ./htmlcov/
     - docker rm -f amblema_testing_back
-    - rm -rf images/*/*.png
+    - rm -rf $QA_PROJECT_DIR/qa-testing/resources/images/*/*.png
   
   artifacts:
     paths:

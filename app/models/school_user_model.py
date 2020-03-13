@@ -13,7 +13,7 @@ class SchoolUser(User):
     code = fields.StringField(required=True)
     phone = fields.StringField(required=True)
     image = fields.URLField(null=True)
-    schoolType = fields.StringField(max_length=1)
+    schoolType = fields.StringField(null=True, max_length=1)
     principalFirstName = fields.StringField()
     principalLastName = fields.StringField()
     principalEmail = fields.EmailField()

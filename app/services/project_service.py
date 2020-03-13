@@ -86,13 +86,13 @@ class ProjectService():
                         CheckElement(name=check.name, id=check.id))
             if document.school:
                 if step.devName in ("findSchool", "coordinatorFillSchoolForm", "sponsorFillSchoolForm"):
-                    stepCtrl.status = "2"
+                    stepCtrl.status = "3"
             if document.sponsor:
                 if step.devName in ("findSponsor", "coordinatorFillSponsorForm", "schoolFillSponsorlForm"):
-                    stepCtrl.status = "2"
+                    stepCtrl.status = "3"
             if document.coordinator:
                 if step.devName in ("findCoordinator", "sponsorFillCoordinatorForm", "schoolFillCoordinatorForm"):
-                    stepCtrl.status = "2"
+                    stepCtrl.status = "3"
             initialSteps.steps.append(stepCtrl)
         document.stepsProgress = initialSteps
         document.schoolYear = year
@@ -120,7 +120,7 @@ class ProjectService():
                             "coordinatorFillSponsorForm",
                             "schoolFillSponsorlForm")
                     ):
-                        step.status = "2"
+                        step.status = "3"
 
         if document.school != oldDocument.school:
             if oldDocument.school:
@@ -134,7 +134,7 @@ class ProjectService():
                             "coordinatorFillSchoolForm",
                             "sponsorFillSchoollForm")
                     ):
-                        step.status = "2"
+                        step.status = "3"
 
         if document.coordinator != oldDocument.coordinator:
             if oldDocument.coordinator:
@@ -148,11 +148,11 @@ class ProjectService():
                             "coordinatorFillSchoolForm",
                             "schoolFillSchoollForm")
                     ):
-                        step.status = "2"
+                        step.status = "3"
                     if (
                         step.devName == "corrdinatorCompleteTrainingModules"
                         and document.coordinator.instructed
                     ):
-                        step.status = "2"
+                        step.status = "3"
 
         document.stepsProgress.updateProgress()

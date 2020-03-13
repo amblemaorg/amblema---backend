@@ -111,7 +111,7 @@ class RequestStepApproval(Document):
                         if document.stepDevName == "coordinatorSendCurriculum":
                             document.project.coordinator.curriculum = step.uploadedFile
                             document.project.coordinator.save()
-
+                        document.project.stepsProgress.updateProgress()
                         document.project.save()
                         break
             else:

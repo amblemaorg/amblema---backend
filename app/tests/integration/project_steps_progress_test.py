@@ -16,6 +16,7 @@ from app.models.project_model import Project, StepControl, CheckElement
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.models.learning_module_model import LearningModule, Quiz
+from app.models.request_step_approval_model import RequestStepApproval
 
 
 class InitialSteps(unittest.TestCase):
@@ -258,7 +259,8 @@ class InitialSteps(unittest.TestCase):
             tag="4",
             approvalType="2",
             hasFile=True,
-            file={"name": "filename", "url": "https://somedomainname.com/file.pdf"}
+            file={"name": "filename", "url": "https://somedomainname.com/file.pdf"},
+            hasUpload=True
         )
         self.schoolStepFile.save()
 
@@ -323,15 +325,13 @@ class InitialSteps(unittest.TestCase):
             coordinator=self.coordinator
         )
         self.project.save()
-        for step in self.project.stepsProgress.steps:
-            self.app.logger.info(step.name)
         self.assertEqual(22, len(self.project.stepsProgress.steps))
 
         # update step text
         self.project.updateStep(
             StepControl(
                 id=str(self.schoolStepText.id),
-                status="2"
+                status="3"  # approved
             )
         )
 
@@ -352,7 +352,17 @@ class InitialSteps(unittest.TestCase):
             )
         )
 
-        # update step date file
+        # update step date file (approval process)
+        approvalRequest = RequestStepApproval(
+            stepId=str(self.schoolStepDateFile.id),
+            project=self.project,
+            stepUploadedFile={"name": "uploaded",
+                              "url": "https://server.com/files/asd.pdf"},
+            stepDate="2020-02-20"
+        )
+        approvalRequest.save()
+        approvalRequest.status = "2"
+        approvalRequest.save()
         self.project.updateStep(
             StepControl(
                 id=str(self.schoolStepDateFile.id),
@@ -382,43 +392,55 @@ class InitialSteps(unittest.TestCase):
         # standard step is approved automatically: schoolFillCoordinatorForm
         approvedSteps = 0
         for step in self.project.stepsProgress.steps:
-            if step.tag == "4" and step.status == "2":
+            if step.tag == "4" and step.status == "3":
                 approvedSteps += 1
         self.assertEqual(6, approvedSteps)
 
         # Check progress
         self.assertEqual(66.67, self.project.stepsProgress.school)
-        self.assertEqual(20, self.project.stepsProgress.general)
+        self.assertEqual(25, self.project.stepsProgress.general)
         self.assertEqual(0, self.project.stepsProgress.coordinator)
         self.assertEqual(25, self.project.stepsProgress.sponsor)
 
         # Agreements steps
-        self.project.updateStep(
-            StepControl(
-                id=str(self.schoolAgreementFoundation.id),
-                uploadedFile={"name": "uploaded",
+        # update step date file (approval process)
+        approvalRequest = RequestStepApproval(
+            stepId=str(self.schoolAgreementFoundation.id),
+            project=self.project,
+            stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"}
-            )
         )
-        self.project.updateStep(
-            StepControl(
-                id=str(self.sponsorAgreementSchool.id),
-                uploadedFile={"name": "uploaded",
+        approvalRequest.save()
+        approvalRequest.status = "2"
+        approvalRequest.save()
+
+        approvalRequest = RequestStepApproval(
+            stepId=str(self.sponsorAgreementSchool.id),
+            project=self.project,
+            stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"}
-            )
         )
+        approvalRequest.save()
+        approvalRequest.status = "2"
+        approvalRequest.save()
+
+        self.project = Project.objects.get(id=self.project.id)
         self.assertEqual(75, self.project.stepsProgress.sponsor)
 
         self.assertEqual(88.89, self.project.stepsProgress.school)
 
         # coordinatorSendCurriculum
-        self.project.updateStep(
-            StepControl(
-                id=str(self.coordinatorSendCurriculum.id),
-                uploadedFile={"name": "uploaded",
+        approvalRequest = RequestStepApproval(
+            stepId=str(self.coordinatorSendCurriculum.id),
+            project=self.project,
+            stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"}
-            )
         )
+        approvalRequest.save()
+        approvalRequest.status = "2"
+        approvalRequest.save()
+
+        self.project = Project.objects.get(id=self.project.id)
         self.assertEqual(20, self.project.stepsProgress.coordinator)
         self.coordinator = CoordinatorUser.objects().get(id=str(self.coordinator.id))
         self.assertEqual("https://server.com/files/asd.pdf",

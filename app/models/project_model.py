@@ -62,17 +62,17 @@ class StepControl(StepFields):
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
 
     def approve(self):
-        self.status = "2"
+        self.status = "3"
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
 
 
 class StepsProgress(EmbeddedDocument):
-    general = fields.IntField(default=0)
-    school = fields.IntField(default=0)
-    sponsor = fields.IntField(default=0)
-    coordinator = fields.IntField(default=0)
+    general = fields.FloatField(default=0)
+    school = fields.FloatField(default=0)
+    sponsor = fields.FloatField(default=0)
+    coordinator = fields.FloatField(default=0)
     steps = fields.EmbeddedDocumentListField(StepControl)
 
     def updateProgress(self):
@@ -88,16 +88,16 @@ class StepsProgress(EmbeddedDocument):
         for step in self.steps:
             if step.tag == "1":
                 nGeneral += 1
-                nApprovedGeneral += 1 if step.status == "2" else 0
+                nApprovedGeneral += 1 if step.status == "3" else 0
             if step.tag == "2":
                 nCoordinator += 1
-                nApprovedCoordinator += 1 if step.status == "2" else 0
+                nApprovedCoordinator += 1 if step.status == "3" else 0
             if step.tag == "3":
                 nSponsor += 1
-                nApprovedSponsor += 1 if step.status == "2" else 0
+                nApprovedSponsor += 1 if step.status == "3" else 0
             if step.tag == "4":
                 nSchool += 1
-                nApprovedSchool += 1 if step.status == "2" else 0
+                nApprovedSchool += 1 if step.status == "3" else 0
         self.general = 100 if nGeneral == 0 else round(
             nApprovedGeneral/nGeneral, 4)*100
         self.school = 100 if nSchool == 0 else round(
@@ -139,7 +139,7 @@ class Project(Document):
             if step.id == myStep.id:
                 isUpdated = False
                 if myStep.hasUpload:
-                    myStep.uploadedFile != step.uploadedFile:
+                    if myStep.uploadedFile != step.uploadedFile:
                         myStep.uploadedFile = step.uploadedFile
                         isUpdated = True
                 if myStep.hasChecklist:

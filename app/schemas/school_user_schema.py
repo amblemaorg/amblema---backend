@@ -22,6 +22,7 @@ class SchoolUserSchema(UserSchema):
     image = MAImageField(allow_none=True, validate=validate_image,
                          folder='schools')
     schoolType = fields.Str(
+        allow_none=True,
         validate=OneOf(
             ('1', '2', '3'),
             ('national', 'statal', 'municipal')

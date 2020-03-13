@@ -96,7 +96,10 @@ class LearningModule(Document):
         if not document.priority:
             lastModule = document.__class__.objects(isDeleted=False).only(
                 'priority').order_by('-priority').first()
-            document.priority = lastModule.priority + 1
+            if lastModule:
+                document.priority = lastModule.priority + 1
+            else:
+                document.priority = 1
         if document.id:
             oldDocument = document.__class__.objects.get(id=document.id)
             if document.priority != oldDocument.priority and not document.isDeleted:

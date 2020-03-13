@@ -93,6 +93,10 @@ class LearningModule(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
+        if not document.priority:
+            lastModule = document.__class__.objects(isDeleted=False).only(
+                'priority').order_by('-priority').first()
+            document.priority = lastModule.priority + 1
         if document.id:
             oldDocument = document.__class__.objects.get(id=document.id)
             if document.priority != oldDocument.priority and not document.isDeleted:

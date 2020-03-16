@@ -14,6 +14,7 @@ class AdminUser(User):
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)
     cardId = fields.StringField(required=True, unique_c=True)
+    phone = fields.StringField(required=True)
     function = fields.StringField(required=True)
 
     def clean(self):

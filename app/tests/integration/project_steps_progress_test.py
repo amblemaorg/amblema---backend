@@ -492,7 +492,6 @@ class InitialSteps(unittest.TestCase):
             email="sponsoruser@test.com",
             password="87654321",
             userType="3",
-            phone="04142223344",
             role=self.role,
             addressState=self.state,
             addressMunicipality=self.municipality,

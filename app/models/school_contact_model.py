@@ -52,9 +52,9 @@ class SchoolContact(Document):
     sponsorAddressMunicipality = fields.ReferenceField('Municipality')
     sponsorAddressCity = fields.StringField()
     sponsorAddressStreet = fields.StringField()
-    sponsorPhone = fields.StringField()
     sponsorCompanyType = fields.StringField()
     sponsorCompanyOtherType = fields.StringField()
+    sponsorCompanyPhone = fields.StringField()
     sponsorContactFirstName = fields.StringField()
     sponsorContactLastName = fields.StringField()
     sponsorContactPhone = fields.StringField()
@@ -87,11 +87,6 @@ class SchoolContact(Document):
                         address=document.address,
                         status='1',
                         code=document.code,
-                        contactFirstName=document.principalFirstName,
-                        contactLastName=document.principalLastName,
-                        contactEmail=document.principalEmail,
-                        contactPhone=document.principalPhone,
-                        contactFunction="Director",
                         schoolType=document.schoolType,
                         principalFirstName=document.principalFirstName,
                         principalLastName=document.principalLastName,
@@ -124,7 +119,6 @@ class SchoolContact(Document):
                             name=document.sponsorName,
                             email=document.sponsorEmail,
                             userType='3',
-                            phone=document.sponsorPhone,
                             role=Role.objects(isDeleted=False).first(),
                             addressState=document.sponsorAddressState,
                             addressMunicipality=document.sponsorAddressMunicipality,
@@ -138,7 +132,7 @@ class SchoolContact(Document):
                             companyRIF=document.sponsorRIF,
                             companyType=document.sponsorCompanyType,
                             companyOtherType=document.sponsorCompanyOtherType,
-                            companyPhone=document.sponsorContactPhone,
+                            companyPhone=document.sponsorCompanyPhone,
                             contactName=document.sponsorContactFirstName,
                             contactPhone=document.sponsorContactPhone
                         )

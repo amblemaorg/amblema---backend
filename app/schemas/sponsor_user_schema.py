@@ -31,8 +31,14 @@ class SponsorUserSchema(UserSchema):
     webSite = fields.Str(validate=validate_url)
     status = fields.Str(
         validate=OneOf(
+            ("1", "2"),
+            ("active", "inactive")
+        )
+    )
+    phase = fields.Str(
+        validate=OneOf(
             ("1", "2", "3"),
-            ("interested", "active", "inactive")
+            ("initial", "interested", "peca")
         )
     )
     projects = fields.List(fields.Nested(

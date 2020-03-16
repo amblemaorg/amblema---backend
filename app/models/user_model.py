@@ -22,7 +22,6 @@ class User(DynamicDocument):
     email = fields.EmailField(unique_c=True, required=True)
     password = fields.StringField(required=True)
     userType = fields.StringField(required=True)
-    phone = fields.StringField(required=True)
     role = fields.ReferenceField('Role', required=True)
     addressState = fields.ReferenceField('State')
     addressMunicipality = fields.ReferenceField('Municipality')

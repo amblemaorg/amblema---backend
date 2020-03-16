@@ -18,20 +18,11 @@ class SchoolUserSchema(UserSchema):
     name = fields.Str(
         required=True,
         validate=(not_blank))
-    contactFirstName = fields.Str(
-        required=True,
-        validate=(not_blank, only_letters))
-    contactLastName = fields.Str(
-        required=True,
-        validate=(not_blank, only_letters))
-    contactEmail = fields.Email(required=True)
-    contactPhone = fields.Str(
-        required=True,
-        validate=(not_blank, only_numbers))
-    contactFunction = fields.Str(required=True)
-    image = MAImageField(validate=validate_image,
+    phone = fields.Str(validate=only_numbers)
+    image = MAImageField(allow_none=True, validate=validate_image,
                          folder='schools')
     schoolType = fields.Str(
+        allow_none=True,
         validate=OneOf(
             ('1', '2', '3'),
             ('national', 'statal', 'municipal')
@@ -40,26 +31,34 @@ class SchoolUserSchema(UserSchema):
     principalLastName = fields.Str()
     principalEmail = fields.Email()
     principalPhone = fields.Str(validate=only_numbers)
-    subPrincipalFirstName = fields.Str()
-    subPrincipalLastName = fields.Str()
-    subPrincipalEmail = fields.Email()
-    subPrincipalPhone = fields.Str(validate=only_numbers)
-    nTeachers = fields.Int(validate=Range(min=0))
-    nAdministrativeStaff = fields.Int(
-        validate=Range(min=0))
-    nLaborStaff = fields.Int(validate=Range(min=0))
-    nStudents = fields.Int(validate=Range(min=0))
-    nGrades = fields.Int(validate=Range(min=0))
-    nSections = fields.Int(validate=Range(min=0))
+    subPrincipalFirstName = fields.Str(allow_none=True)
+    subPrincipalLastName = fields.Str(allow_none=True)
+    subPrincipalEmail = fields.Email(allow_none=True)
+    subPrincipalPhone = fields.Str(allow_none=True, validate=only_numbers)
+    nTeachers = fields.Int(allow_none=True, validate=Range(min=0))
+    nAdministrativeStaff = fields.Int(allow_none=True,
+                                      validate=Range(min=0))
+    nLaborStaff = fields.Int(allow_none=True, validate=Range(min=0))
+    nStudents = fields.Int(allow_none=True, validate=Range(min=0))
+    nGrades = fields.Int(allow_none=True, validate=Range(min=0))
+    nSections = fields.Int(allow_none=True, validate=Range(min=0))
     schoolShift = fields.Str(
+        allow_none=True,
         validate=OneOf(
             ('1', '2', '3'),
             ('morning', 'afternoon', 'both')
         ))
     status = fields.Str(
         validate=OneOf(
+            ("1", "2"),
+            ("active", "inactive")
+        )
+    )
+    phase = fields.Str(
+        default="1",
+        validate=OneOf(
             ("1", "2", "3"),
-            ("interested", "active", "inactive")
+            ("initial", "interested", "peca")
         )
     )
     project = fields.Nested(ProjectReferenceSchema, dump_only=True)

@@ -22,7 +22,7 @@ class SponsorContact(Document):
     rif = fields.StringField(required=True)
     companyType = fields.StringField(required=True)
     companyOtherType = fields.StringField()
-    phone = fields.StringField(required=True)
+    companyPhone = fields.StringField(required=True)
     address = fields.StringField()
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
@@ -53,7 +53,6 @@ class SponsorContact(Document):
                         name=document.name,
                         email=document.email,
                         userType='3',
-                        phone=document.phone,
                         role=Role.objects(isDeleted=False).first(),
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
@@ -63,7 +62,7 @@ class SponsorContact(Document):
                         companyRIF=document.rif,
                         companyType=document.companyType,
                         companyOtherType=document.companyOtherType,
-                        companyPhone=document.phone,
+                        companyPhone=document.companyPhone,
                         contactFirstName=document.contactFirstName,
                         contactLastName=document.contactLastName,
                         contactPhone=document.contactPhone

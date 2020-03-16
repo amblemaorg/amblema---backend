@@ -13,7 +13,8 @@ from marshmallow import (
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf
 from app.schemas.shared_schemas import FileSchema
-from app.models.peca_setting_model import InitialWorshop, Activities, PecaSetting
+from app.models.peca_setting_model import (
+    LapsePlanning, InitialWorshop, Lapse1, Lapse2, Lapse3, PecaSetting)
 
 
 class InicialWorkShopSchema(Schema):
@@ -29,16 +30,45 @@ class InicialWorkShopSchema(Schema):
         return InitialWorshop(**data)
 
 
-class ActivitiesSchema(Schema):
-    initialWorkshop = fields.Nested(InicialWorkShopSchema())
+class LapsePlanningSchema(Schema):
+    proposalFundationFile = fields.Nested(FileSchema())
+    proposalFundationDescription = fields.Str()
+    meetingDescription = fields.Str()
 
     @post_load
     def make_document(self, data, **kwargs):
-        return Activities(**data)
+        return LapsePlanning(**data)
+
+
+class Lapse1Schema(Schema):
+    initialWorshop = fields.Nested(InitialWorshop)
+    lapsePlanning = fields.Nested(LapsePlanning)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Lapse1(**data)
+
+
+class Lapse2Schema(Schema):
+    lapsePlanning = fields.Nested(LapsePlanning)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Lapse2(**data)
+
+
+class Lapse3Schema(Schema):
+    lapsePlanning = fields.Nested(LapsePlanning)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Lapse3(**data)
 
 
 class PecaSettingSchema(Schema):
-    activities = fields.Nested(ActivitiesSchema)
+    lapse1 = fields.Nested(Lapse1Schema)
+    lapse2 = fields.Nested(Lapse2Schema)
+    lapse3 = fields.Nested(Lapse3Schema)
 
     @post_load
     def make_document(self, data, **kwargs):

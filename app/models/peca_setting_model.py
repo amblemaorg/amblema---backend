@@ -7,14 +7,21 @@ from app.models.shared_embedded_documents import Link
 
 class InitialWorshop(EmbeddedDocument):
     agreementFile = fields.EmbeddedDocumentField(
-        Link, is_file=True, required=True)
-    agreementDescription = fields.StringField(required=True)
+        Link, is_file=True)
+    agreementDescription = fields.StringField()
     planningMeetingFile = fields.EmbeddedDocumentField(
-        Link, is_file=True, required=True)
-    planningMeetingDescription = fields.StringField(required=True)
+        Link, is_file=True)
+    planningMeetingDescription = fields.StringField()
     teachersMeetingFile = fields.EmbeddedDocumentField(
-        Link, is_file=True, required=True)
-    teachersMeetingDescription = fields.StringField(required=True)
+        Link, is_file=True)
+    teachersMeetingDescription = fields.StringField()
+
+
+class LapsePlanning(EmbeddedDocument):
+    proposalFundationFile = fields.EmbeddedDocumentField(
+        Link, is_file=True)
+    proposalFundationDescription = fields.StringField()
+    meetingDescription = fields.StringField()
 
 
 """class CustomActivity(EmbeddedDocument):
@@ -27,10 +34,20 @@ class InitialWorshop(EmbeddedDocument):
 """
 
 
-class Activities(EmbeddedDocument):
+class Lapse1(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
-    #customActivities = fields.EmbeddedDocumentListField(CustomActivity)
+    lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
+
+
+class Lapse2(EmbeddedDocument):
+    lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
+
+
+class Lapse3(EmbeddedDocument):
+    lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
 
 
 class PecaSetting(EmbeddedDocument):
-    activities = fields.EmbeddedDocumentField(Activities)
+    lapse1 = fields.EmbeddedDocumentField(Lapse1)
+    lapse2 = fields.EmbeddedDocumentField(Lapse2)
+    lapse3 = fields.EmbeddedDocumentField(Lapse3)

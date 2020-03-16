@@ -8,7 +8,8 @@ from mongoengine import (
     Document,
     EmbeddedDocument)
 
-from app.models.peca_setting_model import PecaSetting, Activities, InitialWorshop
+from app.models.peca_setting_model import (
+    PecaSetting, Lapse1, Lapse2, Lapse3, InitialWorshop, LapsePlanning)
 
 
 class SchoolYear(Document):
@@ -26,11 +27,19 @@ class SchoolYear(Document):
         self.updatedAt = datetime.utcnow()
 
     def initFirstPecaSetting(self):
-        initialWorkshop = InitialWorshop()
-        activities = Activities(
-            initialWorkshop=initialWorkshop
+        lapse1 = Lapse1(
+            initialWorkshop=InitialWorshop(),
+            lapsePlanning=LapsePlanning()
+        )
+        lapse2 = Lapse2(
+            lapsePlanning=LapsePlanning()
+        )
+        lapse3 = Lapse3(
+            lapsePlanning=LapsePlanning()
         )
         pecaSetting = PecaSetting(
-            activities=activities
+            lapse1=lapse1,
+            lapse2=lapse2,
+            lapse3=lapse3
         )
         self.pecaSetting = pecaSetting

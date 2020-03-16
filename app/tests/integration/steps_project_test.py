@@ -35,34 +35,38 @@ class InitialSteps(unittest.TestCase):
         for i in range(2):
             generalStep = Step(
                 name="step {}".format(str(i)),
+                hasText=True,
                 text="step description {}".format(str(i)),
-                type="1",
-                tag="1"
+                tag="1",
+                approvalType="1"
             )
             generalStep.save()
             self.generalSteps.append(generalStep)
         for i in range(5):
             schoolStep = Step(
                 name="step {}".format(str(i)),
+                hasText=True,
                 text="step description {}".format(str(i)),
-                type="1",
-                tag="2"
+                tag="2",
+                approvalType="1"
             )
             schoolStep.save()
         for i in range(4):
             sponsorStep = Step(
                 name="step {}".format(str(i)),
+                hasText=True,
                 text="step description {}".format(str(i)),
-                type="1",
-                tag="3"
+                tag="3",
+                approvalType="1"
             )
             sponsorStep.save()
         for i in range(5):
             coordinatorStep = Step(
                 name="step {}".format(str(i)),
+                hasText=True,
                 text="step description {}".format(str(i)),
-                type="1",
-                tag="4"
+                tag="4",
+                approvalType="1"
             )
             coordinatorStep.save()
 
@@ -120,9 +124,10 @@ class InitialSteps(unittest.TestCase):
 
         generalStep = Step(
             name="new step",
+            hasText=True,
             text="new step description",
-            type="1",
-            tag="1"
+            tag="1",
+            approvalType="1"
         )
         generalStep.save()
 
@@ -203,7 +208,9 @@ class InitialSteps(unittest.TestCase):
         generalStep = Step(
             name="new step",
             text="new step description",
-            type="5",
+            hasText=True,
+            hasChecklist=True,
+            approvalType="1",
             tag="1"
         )
         generalStep.checklist.append(check1)

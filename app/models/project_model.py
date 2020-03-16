@@ -24,36 +24,55 @@ class CheckElement(EmbeddedDocument):
     checked = fields.BooleanField(default=False)
 
 
-class StepControl(EmbeddedDocument):
+class StepFields(EmbeddedDocument):
     id = fields.StringField(required=True)
     name = fields.StringField(required=True)
     devName = fields.StringField(required=True)
-    type = fields.StringField(required=True, max_length=1)
     tag = fields.StringField(required=True, max_length=1)
-    text = fields.StringField(required=True)
-    date = fields.DateTimeField(null=True)
-    file = fields.EmbeddedDocumentField(Link, null=True)
-    video = fields.EmbeddedDocumentField(Link, null=True)
+    hasText = fields.BooleanField(required=True, default=False)
+    hasDate = fields.BooleanField(required=True, default=False)
+    hasFile = fields.BooleanField(required=True, default=False)
+    hasVideo = fields.BooleanField(required=True, default=False)
+    hasChecklist = fields.BooleanField(required=True, default=False)
+    hasUpload = fields.BooleanField(required=True, default=False)
+    text = fields.StringField()
+    file = fields.EmbeddedDocumentField(Link)
+    video = fields.EmbeddedDocumentField(Link)
     checklist = fields.EmbeddedDocumentListField(CheckElement)
+    approvalType = fields.StringField(required=True, max_length=1)
+    date = fields.DateTimeField(null=True)
     uploadedFile = fields.EmbeddedDocumentField(
         Link, is_file=True, null=True, default=None)
     isStandard = fields.BooleanField(default=False)
     status = fields.StringField(default="1", max_length=1)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+    meta = {'allow_inheritance': True}
+
+
+class Approval(EmbeddedDocument):
+    id = fields.StringField()
+    comments = fields.StringField()
+    status = fields.StringField(max_length=1)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+
+class StepControl(StepFields):
+    approvalHistory = fields.EmbeddedDocumentListField(Approval)
 
     def approve(self):
-        self.status = "2"
+        self.status = "3"
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
 
 
 class StepsProgress(EmbeddedDocument):
-    general = fields.IntField(default=0)
-    school = fields.IntField(default=0)
-    sponsor = fields.IntField(default=0)
-    coordinator = fields.IntField(default=0)
+    general = fields.FloatField(default=0)
+    school = fields.FloatField(default=0)
+    sponsor = fields.FloatField(default=0)
+    coordinator = fields.FloatField(default=0)
     steps = fields.EmbeddedDocumentListField(StepControl)
 
     def updateProgress(self):
@@ -69,16 +88,16 @@ class StepsProgress(EmbeddedDocument):
         for step in self.steps:
             if step.tag == "1":
                 nGeneral += 1
-                nApprovedGeneral += 1 if step.status == "2" else 0
+                nApprovedGeneral += 1 if step.status == "3" else 0
             if step.tag == "2":
                 nCoordinator += 1
-                nApprovedCoordinator += 1 if step.status == "2" else 0
+                nApprovedCoordinator += 1 if step.status == "3" else 0
             if step.tag == "3":
                 nSponsor += 1
-                nApprovedSponsor += 1 if step.status == "2" else 0
+                nApprovedSponsor += 1 if step.status == "3" else 0
             if step.tag == "4":
                 nSchool += 1
-                nApprovedSchool += 1 if step.status == "2" else 0
+                nApprovedSchool += 1 if step.status == "3" else 0
         self.general = 100 if nGeneral == 0 else round(
             nApprovedGeneral/nGeneral, 4)*100
         self.school = 100 if nSchool == 0 else round(
@@ -102,66 +121,42 @@ class Project(Document):
     isDeleted = fields.BooleanField(default=False)
     meta = {'collection': 'projects'}
 
+    def checkStepApproval(self, step):
+        if step.hasDate and not step.date:
+            return False
+        if step.hasUpload and not step.uploadedFile:
+            return False
+        if step.hasChecklist:
+            for check in step.checklist:
+                if not check.checked:
+                    return False
+        if step.approvalType == "1" and step.status != "3":
+            return False
+        return True
+
     def updateStep(self, step):
         for myStep in self.stepsProgress.steps:
             if step.id == myStep.id:
                 isUpdated = False
-                if myStep.type == "1":
-                    myStep.status = step.status
-                    isUpdated = True
-                elif myStep.type == "2":
-                    if step.date:
-                        myStep.date = step.date
-                        myStep.approve()
-                        isUpdated = True
-                elif myStep.type == "3":
-                    if step.uploadedFile:
+                if myStep.hasUpload:
+                    if myStep.uploadedFile != step.uploadedFile:
                         myStep.uploadedFile = step.uploadedFile
-                        myStep.approve()
-                        if myStep.devName == "sponsorAgreementSchool":
-                            for agreement in self.stepsProgress.steps:
-                                if agreement.devName == "schoolAgreementSponsor":
-                                    agreement.uploadedFile = step.uploadedFile
-                                    agreement.approve()
-                                    break
-                        if myStep.devName == "schoolAgreementSponsor":
-                            for agreement in self.stepsProgress.steps:
-                                if agreement.devName == "sponsorAgreementSchool":
-                                    agreement.uploadedFile = step.uploadedFile
-                                    agreement.approve()
-                                    break
-                        if myStep.devName == "sponsorAgreementSchoolFoundation":
-                            for agreement in self.stepsProgress.steps:
-                                if agreement.devName == "schoolAgreementFoundation":
-                                    agreement.uploadedFile = step.uploadedFile
-                                    agreement.approve()
-                                    break
-                        if myStep.devName == "schoolAgreementFoundation":
-                            for agreement in self.stepsProgress.steps:
-                                if agreement.devName == "sponsorAgreementSchoolFoundation":
-                                    agreement.uploadedFile = step.uploadedFile
-                                    agreement.approve()
-                                    break
-                        if myStep.devName == "coordinatorSendCurriculum":
-                            self.coordinator.curriculum = step.uploadedFile
-                            self.coordinator.save()
                         isUpdated = True
-                elif myStep.type == "4":
-                    myStep.date = step.date
-                    myStep.uploadedFile = step.uploadedFile
-                    if myStep.date and myStep.uploadedFile:
-                        myStep.approve()
+                if myStep.hasChecklist:
+                    if myStep.checklist != step.checklist:
+                        myStep.checklist = step.checklist
                         isUpdated = True
-                elif myStep.type == "5":
-                    myStep.checklist = step.checklist
-                    isApproved = True
-                    isUpdated = True
-                    for check in myStep.checklist:
-                        if not check.checked:
-                            isApproved = False
-                    if isApproved:
-                        myStep.approve()
-                if isUpdated:
+                if myStep.hasDate:
+                    if myStep.date != step.date:
+                        myStep.date = step.date
+                        isUpdated = True
+                if myStep.approvalType == "1":
+                    if myStep.status != step.status:
+                        myStep.status = step.status
+                        isUpdated = True
+
+                if isUpdated and self.checkStepApproval(myStep):
+                    myStep.approve()
                     myStep.updatedAt = datetime.utcnow()
                     self.stepsProgress.updateProgress()
                     self.save()

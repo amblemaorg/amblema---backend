@@ -65,11 +65,10 @@ class GenericServices():
                         {field["field"]: [{"status": "5",
                                            "msg": "Duplicated record found: {}".format(field["value"])}]}
                     )
-            try:
-                record.save()
-                return schema.dump(record), 201
-            except Exception as e:
-                return {'status': 0, 'message': str(e)}, 400
+
+            record.save()
+            return schema.dump(record), 201
+
         except ValidationError as err:
             return err.normalized_messages(), 400
 

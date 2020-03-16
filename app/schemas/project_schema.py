@@ -5,12 +5,12 @@ import json
 
 from marshmallow import (
     Schema,
-    fields,
     validate,
     pre_load,
     post_load,
     EXCLUDE)
 
+from app.schemas import fields
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf)
 from app.helpers.ma_schema_fields import MAReferenceField
@@ -22,16 +22,27 @@ from app.schemas.step_schema import FileSchema
 from app.schemas.shared_schemas import CheckSchema
 
 
-class StepControlSchema(Schema):
+class StepFieldsSchema(Schema):
     id = fields.Str()
     name = fields.Str(dump_only=True)
-    type = fields.Str(dump_only=True)
     tag = fields.Str(dump_only=True)
+    hasText = fields.Bool(required=True)
+    hasDate = fields.Bool(required=True)
+    hasFile = fields.Bool(required=True)
+    hasVideo = fields.Bool(required=True)
+    hasChecklist = fields.Bool(required=True)
+    hasUpload = fields.Bool(required=True)
     text = fields.Str(dump_only=True)
-    date = fields.DateTime()
     file = fields.Nested(FileSchema, dump_only=True)
     video = fields.Nested(FileSchema, dump_only=True)
     checklist = fields.List(fields.Nested(CheckSchema))
+    approvalType = fields.Str(
+        validate=OneOf(
+            ["1", "2", "3"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest"]
+        ),
+        required=True)
+    date = fields.DateTime()
     uploadedFile = fields.Nested(FileSchema)
     isStandard = fields.Bool(dump_only=True)
     status = fields.Str(
@@ -53,6 +64,18 @@ class StepControlSchema(Schema):
     def make_document(self, data, **kwargs):
         from app.models.project_model import StepControl
         return StepControl(**data)
+
+
+class ApprovalSchema(Schema):
+    id = fields.Str(dump_only=True)
+    comments = fields.Str(dump_only=True)
+    status = fields.Str(dump_only=True)
+    createdAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime(dump_only=True)
+
+
+class StepControlSchema(StepFieldsSchema):
+    approvalHistory = fields.List(fields.Nested(ApprovalSchema()))
 
 
 class StepsProgressSchema(Schema):

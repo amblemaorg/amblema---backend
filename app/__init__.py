@@ -63,6 +63,9 @@ from app.controllers.peca_setting_controller import (
 from app.controllers.initial_workshop_controller import (
     InitialWorkshopController
 )
+from app.controllers.request_step_approval_controller import (
+    ReqStepApprovalController, ReqStepApprovalHandlerController
+)
 
 db = MongoEngine()
 
@@ -189,5 +192,8 @@ def create_app(config_instance):
                      '/requestsfindschool/<string:id>')
     api.add_resource(PecaSettingController, '/pecasetting')
     api.add_resource(InitialWorkshopController, '/pecasetting/initialworkshop')
+    api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
+    api.add_resource(ReqStepApprovalHandlerController,
+                     '/requestsstepapproval/<string:id>')
 
     return app

@@ -54,21 +54,27 @@ class CheckSchema(Schema):
 class StepSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
-    type = fields.Str(
-        validate=OneOf(
-            ["1", "2", "3", "4", "5", "6"],
-            ["Text", "Date", "AttachedFile", "DateAttachedFile", "Checklist", "Form"]
-        ), required=True)
+    devName = fields.Str(dump_only=True)
     tag = fields.Str(
         validate=OneOf(
             ["1", "2", "3", "4"],
             ["General", "Coordinator", "Sponsor", "School"]
         ), required=True)
-    text = fields.Str(required=True, validate=not_blank)
-    date = fields.DateTime()
+    hasText = fields.Bool(required=True, default=False)
+    hasDate = fields.Bool(required=True, default=False)
+    hasFile = fields.Bool(required=True, default=False)
+    hasVideo = fields.Bool(required=True, default=False)
+    hasChecklist = fields.Bool(required=True, default=False)
+    hasUpload = fields.Bool(required=True, default=False)
+    text = fields.Str(validate=not_blank)
     file = fields.Nested(FileSchema)
     video = fields.Nested(FileSchema)
     checklist = fields.List(fields.Nested(CheckSchema()))
+    approvalType = fields.Str(
+        validate=OneOf(
+            ["1", "2", "3"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest"]
+        ), required=True)
     schoolYear = MAReferenceField(document=SchoolYear, dump_only=True)
     status = fields.Str(
         validate=OneOf(
@@ -79,6 +85,10 @@ class StepSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
     @pre_load
     def process_input(self, data, **kwargs):
@@ -92,30 +102,24 @@ class StepSchema(Schema):
     def validate_schema(self, data, **kwargs):
         errors = {}
         if (
-            str(data["type"]) == "2"
-            and "date" not in data
+            "hasText" in data and data["hasText"]
+            and "text" not in data
         ):
-            errors["date"] = ["Field is required"]
+            errors["text"] = [{"status": "2", "msg": "Field is required"}]
         if (
-            str(data["type"]) == "3"
-            and ("file" not in data and "video" not in data)
+            "hasFile" in data and data["hasFile"]
+            and "file" not in data
         ):
-            errors["file"] = ["Field is required"]
-            errors["video"] = ["Field is required"]
-        if (
-            str(data["type"]) == "4"
-            and ("date" not in data or "file" not in data)
-        ):
-            errors["date"] = [{"status": "2", "msg": "Field is required"}]
             errors["file"] = [{"status": "2", "msg": "Field is required"}]
         if (
-            str(data["type"]) == "5"
+            "hasVideo" in data and data["hasVideo"]
+            and "video" not in data
+        ):
+            errors["video"] = [{"status": "2", "msg": "Field is required"}]
+        if (
+            "hasChecklist" in data and data["hasChecklist"]
             and "checklist" not in data
         ):
             errors["checklist"] = [{"status": "2", "msg": "Field is required"}]
         if errors:
             raise ValidationError(errors)
-
-    class Meta:
-        unknown = EXCLUDE
-        ordered = True

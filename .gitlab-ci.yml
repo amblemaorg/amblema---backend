@@ -224,3 +224,15 @@ staging-turn-down:
     - if docker images -a | grep -w "amblema_staging_python" &> /dev/null; then
     - docker rmi amblema_staging_python
     - fi
+
+production-testing:
+  stage: production
+  tags:
+    - amblema-back
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^master*/
+  script:
+    - export TEST="empty job"

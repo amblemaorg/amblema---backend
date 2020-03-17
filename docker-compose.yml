@@ -1,0 +1,29 @@
+version: '3'
+services:
+  python:
+    image: devbinaural/flask-mongo:1.1.1
+    container_name: amblema_${INSTANCE}_back
+    ports:
+      - $BACK_PORT:5000
+    environment:
+      INSTANCE: $INSTANCE
+      DB_URL: $DB_URL
+      SERVER_URL: $SERVER_URL
+      TESTING_DB_URL: $TESTING_DB_URL
+      JWT_SECRET_KEY: $JWT_SECRET_KEY
+      SMTP_USERNAME: $SMTP_USERNAME
+      SMTP_PASSWORD: $SMTP_PASSWORD
+      SMTP_FROM: $SMTP_FROM
+      SMTP_HOST: $SMTP_HOST
+      SMTP_PORT: $SMTP_PORT
+    volumes:
+      - .:/home
+    networks:
+      - back_network
+      - db_network
+networks:
+  back_network:
+    driver: bridge
+  db_network:
+    external:
+      name: $DB_NETWORK

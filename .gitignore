@@ -1,0 +1,16 @@
+*.pyc
+__pycache__
+.idea/
+.vscode
+venv
+resources/images/*/*.png
+resources/images/*/*.jpg
+resources/images/*/*.svg
+resources/images/*.png
+resources/images/*.jpg
+resources/images/*.svg
+resources/files/*.pdf
+resources/files/*.docx
+resources/files/*.pptx
+.coverage
+htmlcov/

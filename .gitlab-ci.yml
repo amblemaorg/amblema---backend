@@ -1,25 +1,8 @@
 stages:
-  - prebuild
-  - build
-  - join
   - test
-  - qa
-  - staging
-  - production
+  - deploy
 
-integracion-testing:
-  stage: join
-  tags:
-    - amblema-back
-  only:
-    refs:
-      - merge_requests
-    variables:
-      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^integracion*/
-  script:
-    - export TEST="empty job"
-
-QA-testing:
+testing:
   stage: test
   tags:
     - amblema-back
@@ -27,7 +10,7 @@ QA-testing:
     refs:
       - merge_requests
     variables:
-      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^qaestable*/
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^master*/
   script:
     - build_dir="$PWD"
     - export INSTANCE="testing"
@@ -39,7 +22,7 @@ QA-testing:
       mkdir -p $QA_PROJECT_DIR
     - fi
     - cd $QA_PROJECT_DIR
-    - git clone -b qaestable --single-branch $CI_REPOSITORY_URL qa-testing
+    - git clone -b master --single-branch $CI_REPOSITORY_URL qa-testing
     - else
     - cd $QA_PROJECT_DIR/qa-testing
     - git pull $CI_REPOSITORY_URL $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
@@ -62,7 +45,7 @@ QA-testing:
     - htmlcov/
     expire_in: 1 week
 
-Drop-QA-testing:
+Drop-testing:
   stage: test
   tags:
     - amblema-back
@@ -78,62 +61,13 @@ Drop-QA-testing:
     - docker rmi amblema_qa_testing_python
     - fi
 
-Staging-testing:
-  stage: test
+staging-deploy:
+  stage: deploy
   tags:
     - amblema-back
   only:
     refs:
-      - merge_requests
-    variables:
-      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^staging*/
-  script:
-    - export INSTANCE="testing"
-    - export BACK_PORT=$TESTING_BACK_PORT
-    - export DB_URL=$TESTING_DB_URL
-    - export SERVER_URL=$TESTING_SERVER_URL
-    - if ! [ -d $STAGING_PROJECT_DIR/staging-testing ]; then
-    - if ! [ -d $STAGING_PROJECT_DIR ]; then
-      mkdir -p $STAGING_PROJECT_DIR
-    - fi
-    - cd $STAGING_PROJECT_DIR
-    - git clone -b staging --single-branch $CI_REPOSITORY_URL staging-testing
-    - else
-    - cd $STAGING_PROJECT_DIR/staging-testing
-    - git pull $CI_REPOSITORY_URL staging
-    - fi
-    - cd $STAGING_PROJECT_DIR/staging-testing
-    - docker-compose -p amblema_staging_testing up -d
-    - docker exec -i amblema_testing_back bash -c "python -m unittest discover -s app/tests/unitary/ -p \"*_test.py\" -v"
-    - docker exec -i amblema_testing_back bash -c "coverage erase"
-    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/unitary -p \"*_test.py\""
-    #- docker exec -i amblema_testing_back bash -c "coverage report"
-    - docker-compose -p amblema_staging_testing down
-    - rm -rf images/*/*.png
-
-Drop-Staging-testing:
-  stage: test
-  tags:
-    - amblema-back
-  only:
-    refs:
-      - staging
-  when: manual
-  script:
-    - if docker ps --format '{{.Names}}' | grep -w amblema_testing_back &> /dev/null; then
-    - docker rm -f amblema_testing_back
-    - fi
-    - if docker images -a | grep -w "amblema_staging_testing_python" &> /dev/null; then
-    - docker rmi amblema_staging_testing_python
-    - fi
-
-qa-deploy:
-  stage: qa
-  tags:
-    - amblema-back
-  only:
-    refs:
-      - qaestable
+      - master
   script:
     - export INSTANCE="qa"
     - export BACK_PORT=$QA_BACK_PORT
@@ -154,8 +88,8 @@ qa-deploy:
     - docker restart $QA_CONTAINER_NAME
     - fi
 
-qa-turn-down:
-  stage: qa
+staging-turn-down:
+  stage: deploy
   tags:
     - amblema-back
   only:
@@ -175,64 +109,3 @@ qa-turn-down:
     - if docker images -a | grep -w "amblema_qa_python" &> /dev/null; then
     - docker rmi amblema_qa_python
     - fi
-
-staging-deploy:
-  stage: staging
-  tags:
-    - amblema-back
-  only:
-    refs:
-      - staging
-  script:
-    - export INSTANCE="staging"
-    - export BACK_PORT=$STAGING_BACK_PORT
-    - export DB_URL=$STAGING_DB_URL
-    - export SERVER_URL=$STAGING_SERVER_URL
-    - if ! [ -d $STAGING_PROJECT_DIR/$CI_PROJECT_NAME ]; then
-    - mkdir -p $STAGING_PROJECT_DIR
-    - cd $STAGING_PROJECT_DIR
-    - git clone -b staging --single-branch $CI_REPOSITORY_URL $CI_PROJECT_NAME
-    - else
-    - cd $STAGING_PROJECT_DIR/$CI_PROJECT_NAME
-    - git pull $CI_REPOSITORY_URL staging
-    - fi
-    - if ! docker ps --format '{{.Names}}' | grep -w $STAGING_CONTAINER_NAME &> /dev/null; then
-    - cd $STAGING_PROJECT_DIR/$CI_PROJECT_NAME
-    - docker-compose -p amblema_staging up -d
-    - else
-    - docker restart $STAGING_CONTAINER_NAME
-    - fi
-
-staging-turn-down:
-  stage: staging
-  tags:
-    - amblema-back
-  only:
-    refs:
-      - staging
-  when: manual
-  script:
-    - export INSTANCE="staging"
-    - export BACK_PORT=$STAGING_BACK_PORT
-    - export DB_URL=$STAGING_DB_URL
-    - if docker ps --format '{{.Names}}' | grep -w $STAGING_CONTAINER_NAME &> /dev/null; then
-    - if [ -d $STAGING_PROJECT_DIR/$CI_PROJECT_NAME ]; then
-    - cd $STAGING_PROJECT_DIR/$CI_PROJECT_NAME
-    - docker-compose -p amblema_staging down
-    - fi
-    - fi
-    - if docker images -a | grep -w "amblema_staging_python" &> /dev/null; then
-    - docker rmi amblema_staging_python
-    - fi
-
-production-testing:
-  stage: production
-  tags:
-    - amblema-back
-  only:
-    refs:
-      - merge_requests
-    variables:
-      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^master*/
-  script:
-    - export TEST="empty job"

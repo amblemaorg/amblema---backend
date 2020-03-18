@@ -12,6 +12,7 @@ from mongoengine import (
     signals)
 
 from app.models.sponsor_user_model import SponsorUser
+from app.models.school_user_model import SchoolUser
 from app.models.project_model import Project
 from app.models.role_model import Role
 
@@ -31,6 +32,32 @@ class SponsorContact(Document):
     contactFirstName = fields.StringField()
     contactLastName = fields.StringField()
     contactPhone = fields.StringField()
+    hasSchool = fields.BooleanField(required=True)
+    schoolName = fields.StringField()
+    schoolCode = fields.StringField()
+    schoolEmail = fields.EmailField()
+    schoolAddress = fields.StringField()
+    schoolAddressState = fields.ReferenceField('State')
+    schoolAddressMunicipality = fields.ReferenceField('Municipality')
+    schoolAddressCity = fields.StringField()
+    schoolAddressStreet = fields.StringField()
+    schoolPhone = fields.StringField()
+    schoolType = fields.StringField(max_length=1)
+    schoolPrincipalFirstName = fields.StringField()
+    schoolPrincipalLastName = fields.StringField()
+    schoolPrincipalEmail = fields.EmailField()
+    schoolPrincipalPhone = fields.StringField()
+    schoolSubPrincipalFirstName = fields.StringField()
+    schoolSubPrincipalLastName = fields.StringField()
+    schoolSubPrincipalEmail = fields.EmailField()
+    schoolSubPrincipalPhone = fields.StringField()
+    schoolNTeachers = fields.IntField()
+    schoolNAdministrativeStaff = fields.IntField()
+    schoolNLaborStaff = fields.IntField()
+    schoolNStudents = fields.IntField()
+    schoolNGrades = fields.IntField()
+    schoolNSections = fields.IntField()
+    schoolShift = fields.StringField(max_length=1)
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -73,6 +100,47 @@ class SponsorContact(Document):
                     sponsorUser.save()
                     sponsorUser.sendRegistrationEmail(password)
                 project.sponsor = sponsorUser
+
+                if document.hasSchool:
+                    schoolUser = SchoolUser.objects(
+                        email=document.schoolEmail,
+                        isDeleted=False).first()
+                    if not schoolUser:
+                        schoolUser = SchoolUser(
+                            name=document.schoolName,
+                            email=document.schoolEmail,
+                            userType='4',
+                            phone=document.schoolPhone,
+                            role=Role.objects(isDeleted=False).first(),
+                            addressState=document.schoolAddressState,
+                            addressMunicipality=document.schoolAddressMunicipality,
+                            addressCity=document.schoolAddressCity,
+                            address=document.schoolAddress,
+                            status='1',
+                            code=document.schoolCode,
+                            schoolType=document.schoolType,
+                            principalFirstName=document.schoolPrincipalFirstName,
+                            principalLastName=document.schoolPrincipalLastName,
+                            principalEmail=document.schoolPrincipalEmail,
+                            principalPhone=document.schoolPrincipalPhone,
+                            subPrincipalFirstName=document.schoolSubPrincipalFirstName,
+                            subPrincipalLastName=document.schoolSubPrincipalLastName,
+                            subPrincipalEmail=document.schoolSubPrincipalEmail,
+                            subPrincipalPhone=document.schoolSubPrincipalPhone,
+                            nTeachers=document.schoolNTeachers,
+                            nAdministrativeStaff=document.schoolNAdministrativeStaff,
+                            nLaborStaff=document.schoolNLaborStaff,
+                            nStudents=document.schoolNStudents,
+                            nGrades=document.schoolNGrades,
+                            nSections=document.schoolNSections,
+                            schoolShift=document.schoolShift
+                        )
+                        password = schoolUser.generatePassword()
+                        schoolUser.password = password
+                        schoolUser.setHashPassword()
+                        schoolUser.save()
+                        schoolUser.sendRegistrationEmail(password)
+                    project.school = schoolUser
                 project.save()
 
 

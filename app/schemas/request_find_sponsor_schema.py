@@ -41,7 +41,7 @@ class ReqFindSponsorSchema(Schema):
         default="1",
         validate=OneOf(
             ('1', '2', '3'),
-            ('pending', 'acepted', 'rejected')
+            ('pending', 'accepted', 'rejected')
         ))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

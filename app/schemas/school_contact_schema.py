@@ -65,7 +65,6 @@ class SchoolContactSchema(Schema):
     sponsorAddressCity = fields.Str()
     sponsorAddressStreet = fields.Str()
     sponsorCompanyType = fields.Str(
-        required=True,
         validate=OneOf(
             ('1', '2', '3', '4'),
             ('factory', 'grocery', 'personal business', 'other')
@@ -79,7 +78,7 @@ class SchoolContactSchema(Schema):
         default="1",
         validate=OneOf(
             ('1', '2', '3'),
-            ('pending', 'acepted', 'rejected')
+            ('pending', 'accepted', 'rejected')
         ))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

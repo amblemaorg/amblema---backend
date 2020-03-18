@@ -76,6 +76,8 @@ staging-deploy:
     - if ! [ -d $QA_PROJECT_DIR/$CI_PROJECT_NAME ]; then
     - mkdir -p $QA_PROJECT_DIR
     - cd $QA_PROJECT_DIR
+    - git config --global user.email "greudys@binauraldev.com"
+    - git config --global user.name "Greudys Godoy"
     - git clone -b master --single-branch $CI_REPOSITORY_URL $CI_PROJECT_NAME
     - else
     - cd $QA_PROJECT_DIR/$CI_PROJECT_NAME

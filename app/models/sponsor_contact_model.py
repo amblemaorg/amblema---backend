@@ -80,7 +80,8 @@ class SponsorContact(Document):
                         name=document.name,
                         email=document.email,
                         userType='3',
-                        role=Role.objects(isDeleted=False).first(),
+                        role=Role.objects(
+                            isDeleted=False, devName="sponsor").first(),
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
@@ -111,7 +112,8 @@ class SponsorContact(Document):
                             email=document.schoolEmail,
                             userType='4',
                             phone=document.schoolPhone,
-                            role=Role.objects(isDeleted=False).first(),
+                            role=Role.objects(
+                                isDeleted=False, devName="school").first(),
                             addressState=document.schoolAddressState,
                             addressMunicipality=document.schoolAddressMunicipality,
                             addressCity=document.schoolAddressCity,

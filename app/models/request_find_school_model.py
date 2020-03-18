@@ -58,7 +58,8 @@ class RequestFindSchool(Document):
                         email=document.email,
                         userType='4',
                         phone=document.phone,
-                        role=Role.objects(isDeleted=False).first(),
+                        role=Role.objects(
+                            isDeleted=False, devName="school").first(),
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,

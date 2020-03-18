@@ -47,7 +47,8 @@ class RequestFindSponsor(Document):
                         name=document.name,
                         email=document.email,
                         userType='3',
-                        role=Role.objects(isDeleted=False).first(),
+                        role=Role.objects(
+                            isDeleted=False, devName="sponsor").first(),
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,

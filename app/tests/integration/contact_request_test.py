@@ -13,6 +13,7 @@ from app.models.user_model import User
 from app.models.school_contact_model import SchoolContact
 from app.models.sponsor_contact_model import SponsorContact
 from app.models.coordinator_contact_model import CoordinatorContact
+from app.helpers.handler_seeds import create_standard_roles
 
 
 class ContactRequestTest(unittest.TestCase):
@@ -24,6 +25,8 @@ class ContactRequestTest(unittest.TestCase):
         from app import db
         self.db = db
         self.client = self.app.test_client
+
+        create_standard_roles()
 
         self.schoolYear = SchoolYear(
             name="Test",

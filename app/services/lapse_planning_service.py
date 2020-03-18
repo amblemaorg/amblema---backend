@@ -63,7 +63,6 @@ class LapsePlanningService():
                         elif lapse == "3":
                             schoolYear.pecaSetting.lapse3.lapsePlanning = lapsePlanning
                         schoolYear.save()
-                        current_app.logger.info(schoolYear.name)
                         return schema.dump(lapsePlanning), 200
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400

@@ -1,6 +1,7 @@
 # /app/auth/views.py
 
 
+from flask import current_app
 from flask import jsonify, request
 from flask_restful import Resource, reqparse
 from flask.views import MethodView
@@ -34,6 +35,9 @@ class LoginView(MethodView):
                 }, 400
             if not user.password_is_valid(data['password']):
                 return {"password": [{"status": "14", "msg": "Password doesn't match"}]}, 400
+
+            if user.role.status == "2":
+                return {"role": [{"status": "15", "msg": "No authorized"}]}, 400
 
             userSchema = UserSchema(only=("id", "email", "name", "userType"))
             userJson = userSchema.dump(user)

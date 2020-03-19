@@ -110,6 +110,24 @@ class AuthTestCase(unittest.TestCase):
         user = User.objects.get(id=self.user.pk)
         self.assertEqual(True, user.password_is_valid(data['password']))
 
+    def test_inactive_rol(self):
+        role = Role.objects.first()
+        role.status = "2"
+        role.save()
+        data = {
+            "email": "testemail@test.com",
+            "password": "password"
+        }
+        res = self.client().post(
+            '/auth/login',
+            content_type='application/json',
+            data=json.dumps(data))
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(
+            {'role': [{'msg': 'No authorized', 'status': '15'}]}, result)
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

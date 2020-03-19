@@ -17,6 +17,7 @@ from app.models.state_model import State, Municipality
 from app.models.request_find_school_model import RequestFindSchool
 from app.models.request_find_sponsor_model import RequestFindSponsor
 from app.models.request_find_coordinator_model import RequestFindCoordinator
+from app.helpers.handler_seeds import create_standard_roles
 
 
 class ApprovalProcess(unittest.TestCase):
@@ -27,6 +28,8 @@ class ApprovalProcess(unittest.TestCase):
         from app import db
         self.db = db
         self.client = self.app.test_client
+
+        create_standard_roles()
 
         self.schoolYear = SchoolYear(
             name="Test",

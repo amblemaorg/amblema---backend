@@ -16,10 +16,10 @@ from app.controllers.state_controller import (
 from app.controllers.municipality_controller import (
     MunicipalityController, MunicipalityHandlerController)
 from app.controllers.role_controller import (
-    EntityController,
-    EntityHandlerController,
-    RoleController,
-    RoleHandlerController
+    RoleController, RoleHandlerController
+)
+from app.controllers.entity_controller import (
+    EntityController, EntityHandlerController
 )
 from app.controllers.user_controller import (
     UserController, UserHandlerController

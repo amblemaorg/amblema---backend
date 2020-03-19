@@ -3,6 +3,7 @@
 
 from mongoengine import EmbeddedDocument, fields
 from app.models.shared_embedded_documents import Link
+from app.models.learning_module_model import Image
 
 
 class InitialWorshop(EmbeddedDocument):
@@ -24,6 +25,14 @@ class LapsePlanning(EmbeddedDocument):
     meetingDescription = fields.StringField()
 
 
+class AmbleCoins(EmbeddedDocument):
+    teachersMeetingFile = fields.EmbeddedDocumentField(
+        Link, is_file=True)
+    teachersMeetingDescription = fields.StringField()
+    piggyBankDescription = fields.StringField()
+    piggyBankSlider = fields.EmbeddedDocumentListField(Image)
+
+
 """class CustomActivity(EmbeddedDocument):
     name = fields.StringField()
     subtitle = fields.StringField()
@@ -36,6 +45,7 @@ class LapsePlanning(EmbeddedDocument):
 
 class Lapse1(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
+    ambleCoins = fields.EmbeddedDocumentField(AmbleCoins)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
 
 

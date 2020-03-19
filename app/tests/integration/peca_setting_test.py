@@ -101,10 +101,69 @@ class PecaSettings(unittest.TestCase):
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
-        schoolYear = SchoolYear.objects.get(id=self.schoolYear.id)
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
         self.assertEqual(
             "proposalFundationFile3.pdf",
             schoolYear.pecaSetting.lapse3.lapsePlanning.proposalFundationFile.name)
+
+    def test_endpoint_amblecoins(self):
+
+        requestData = dict(
+            teachersMeetingFile=(io.BytesIO(b'hi everyone'),
+                                 'teachersMeetingFile.pdf'),
+            teachersMeetingDescription="Some description",
+            piggyBankDescription="Some description",
+            piggyBankSlider=json.dumps(
+                [{"image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+                  "description": "some description"}]
+            )
+        )
+        res = self.client().post(
+            '/pecasetting/amblecoins',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(
+            "teachersMeetingFile.pdf",
+            schoolYear.pecaSetting.lapse1.ambleCoins.teachersMeetingFile.name)
+
+        res = self.client().get(
+            '/pecasetting/amblecoins')
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('some description',
+                         result['piggyBankSlider'][0]['description'])
+
+        requestData = dict(
+            teachersMeetingFile=(io.BytesIO(b'hi everyone'),
+                                 'teachersMeetingFile.pdf'),
+            teachersMeetingDescription="Some description",
+            piggyBankDescription="Some description",
+            piggyBankSlider=json.dumps(
+                [
+                    {
+                        "image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+                        "description": "some description"
+                    },
+                    {
+                        "image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+                        "description": "some description2"
+                    }
+                ]
+            )
+        )
+        res = self.client().post(
+            '/pecasetting/amblecoins',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(
+            "some description2",
+            schoolYear.pecaSetting.lapse1.ambleCoins.piggyBankSlider[1].description)
 
     def tearDown(self):
         """teardown all initialized variables."""

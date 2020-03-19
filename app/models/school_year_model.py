@@ -9,7 +9,7 @@ from mongoengine import (
     EmbeddedDocument)
 
 from app.models.peca_setting_model import (
-    PecaSetting, Lapse1, Lapse2, Lapse3, InitialWorshop, LapsePlanning)
+    PecaSetting, Lapse1, Lapse2, Lapse3, InitialWorshop, LapsePlanning, AmbleCoins)
 
 
 class SchoolYear(Document):
@@ -29,7 +29,8 @@ class SchoolYear(Document):
     def initFirstPecaSetting(self):
         lapse1 = Lapse1(
             initialWorkshop=InitialWorshop(),
-            lapsePlanning=LapsePlanning()
+            lapsePlanning=LapsePlanning(),
+            ambleCoins=AmbleCoins()
         )
         lapse2 = Lapse2(
             lapsePlanning=LapsePlanning()

@@ -1,25 +1,25 @@
-# app/services/initial_workshop_service.py
+# app/services/amblecoin_service.py
 
 from flask import current_app
 from marshmallow import ValidationError
 
 from app.models.school_year_model import SchoolYear
-from app.models.peca_setting_model import InitialWorshop
-from app.schemas.peca_setting_schema import InicialWorkshopSchema
+from app.models.peca_setting_model import AmbleCoins
+from app.schemas.peca_setting_schema import AmbleCoinsSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 
 
-class InicialWorkshopService():
+class AmbleCoinService():
 
     def get(self):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
 
         if schoolYear:
-            schema = InicialWorkshopSchema()
-            initialWorkshop = schoolYear.pecaSetting.lapse1.initialWorkshop
-            return schema.dump(initialWorkshop), 200
+            schema = AmbleCoinsSchema()
+            ambleCoins = schoolYear.pecaSetting.lapse1.ambleCoins
+            return schema.dump(ambleCoins), 200
 
     def save(self, jsonData, files=None):
 
@@ -28,8 +28,8 @@ class InicialWorkshopService():
 
         if schoolYear:
             try:
-                schema = InicialWorkshopSchema()
-                documentFiles = getFileFields(InitialWorshop)
+                schema = AmbleCoinsSchema()
+                documentFiles = getFileFields(AmbleCoins)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles)
@@ -42,13 +42,13 @@ class InicialWorkshopService():
                 if schoolYear:
                     if not schoolYear.pecaSetting:
                         schoolYear.initFirstPecaSetting()
-                    initialWorkshop = schoolYear.pecaSetting.lapse1.initialWorkshop
+                    ambleCoins = schoolYear.pecaSetting.lapse1.ambleCoins
                     for field in schema.dump(data).keys():
-                        initialWorkshop[field] = data[field]
+                        ambleCoins[field] = data[field]
                     try:
-                        schoolYear.pecaSetting.lapse1.initialWorkshop = initialWorkshop
+                        schoolYear.pecaSetting.lapse1.ambleCoins = ambleCoins
                         schoolYear.save()
-                        return schema.dump(initialWorkshop), 200
+                        return schema.dump(ambleCoins), 200
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
 

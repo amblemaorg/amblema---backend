@@ -69,6 +69,9 @@ from app.controllers.lapse_planning_controller import (
 from app.controllers.amblecoin_controller import (
     AmbleCoinController
 )
+from app.controllers.annual_convention_controller import (
+    AnnualConventionController
+)
 from app.controllers.request_step_approval_controller import (
     ReqStepApprovalController, ReqStepApprovalHandlerController
 )
@@ -201,6 +204,8 @@ def create_app(config_instance):
     api.add_resource(LapsePlanningController,
                      '/pecasetting/lapseplanning/<string:lapse>')
     api.add_resource(AmbleCoinController, '/pecasetting/amblecoins')
+    api.add_resource(AnnualConventionController,
+                     '/pecasetting/annualconvention')
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
     api.add_resource(ReqStepApprovalHandlerController,
                      '/requestsstepapproval/<string:id>')

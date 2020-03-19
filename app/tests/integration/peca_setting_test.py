@@ -165,6 +165,58 @@ class PecaSettings(unittest.TestCase):
             "some description2",
             schoolYear.pecaSetting.lapse1.ambleCoins.piggyBankSlider[1].description)
 
+    def test_endpoint_annual_convention(self):
+
+        requestData = dict(
+            step1Description="Some 1 description",
+            step2Description="Some 2 description",
+            step3Description="Some 3 description",
+            step4Description="Some 4 description"
+        )
+        res = self.client().post(
+            '/pecasetting/annualconvention',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(
+            "Some 1 description",
+            schoolYear.pecaSetting.lapse1.annualConvention.step1Description)
+        self.assertEqual(
+            "Some 2 description",
+            schoolYear.pecaSetting.lapse1.annualConvention.step2Description)
+        self.assertEqual(
+            "Some 3 description",
+            schoolYear.pecaSetting.lapse1.annualConvention.step3Description)
+        self.assertEqual(
+            "Some 4 description",
+            schoolYear.pecaSetting.lapse1.annualConvention.step4Description)
+
+        res = self.client().get(
+            '/pecasetting/annualconvention')
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('Some 1 description',
+                         result['step1Description'])
+
+        requestData = dict(
+            step1Description="Some 1 description updated",
+            step2Description="Some 2 description",
+            step3Description="Some 3 description",
+            step4Description="Some 4 description"
+        )
+        res = self.client().post(
+            '/pecasetting/annualconvention',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(
+            "Some 1 description updated",
+            schoolYear.pecaSetting.lapse1.annualConvention.step1Description)
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

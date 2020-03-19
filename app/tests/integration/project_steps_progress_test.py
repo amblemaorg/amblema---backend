@@ -496,7 +496,7 @@ class InitialSteps(unittest.TestCase):
             addressState=self.state,
             addressMunicipality=self.municipality,
             address="street 3",
-            companyRIF="209228272",
+            companyRif="209228272",
             companyType="1",
             companyPhone="02524484747",
             contactFirstName="Juan",

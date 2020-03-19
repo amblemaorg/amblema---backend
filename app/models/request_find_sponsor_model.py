@@ -54,7 +54,7 @@ class RequestFindSponsor(Document):
                         addressCity=document.addressCity,
                         address=document.address,
                         status='1',
-                        companyRIF=document.rif,
+                        companyRif=document.rif,
                         companyType=document.companyType,
                         companyOtherType=document.companyOtherType,
                         companyPhone=document.companyPhone,

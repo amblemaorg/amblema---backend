@@ -46,7 +46,7 @@ class SchoolContact(Document):
     hasSponsor = fields.BooleanField(required=True)
     sponsorName = fields.StringField()
     sponsorEmail = fields.EmailField()
-    sponsorRIF = fields.StringField()
+    sponsorRif = fields.StringField()
     sponsorAddress = fields.StringField()
     sponsorAddressState = fields.ReferenceField('State')
     sponsorAddressMunicipality = fields.ReferenceField('Municipality')
@@ -127,9 +127,7 @@ class SchoolContact(Document):
                             status='1',
                             firstName=document.sponsorContactFirstName,
                             lastName=document.sponsorContactLastName,
-                            cardType='2',
-                            cardId=document.sponsorRIF,
-                            companyRIF=document.sponsorRIF,
+                            companyRif=document.sponsorRif,
                             companyType=document.sponsorCompanyType,
                             companyOtherType=document.sponsorCompanyOtherType,
                             companyPhone=document.sponsorCompanyPhone,

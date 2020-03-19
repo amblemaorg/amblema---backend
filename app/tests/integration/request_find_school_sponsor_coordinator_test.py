@@ -247,7 +247,7 @@ class ApprovalProcess(unittest.TestCase):
 
         sponsor = SponsorUser(
             name="Test",
-            companyRIF="303993833",
+            companyRif="303993833",
             companyType="2",
             companyPhone="02343432323",
             contactFirstName="Danel",

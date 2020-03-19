@@ -14,7 +14,7 @@ class SponsorUserSchema(UserSchema):
     name = fields.Str(
         required=True,
         validate=(not_blank, only_letters))
-    companyRIF = fields.Str(required=True, validate=only_numbers)
+    companyRif = fields.Str(required=True, validate=only_numbers)
     companyType = fields.Str(
         required=True,
         validate=OneOf(

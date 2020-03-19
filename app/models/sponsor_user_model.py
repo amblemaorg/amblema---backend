@@ -11,7 +11,7 @@ from app.models.shared_embedded_documents import (
 
 
 class SponsorUser(User):
-    companyRIF = fields.StringField(required=True)
+    companyRif = fields.StringField(required=True)
     companyType = fields.StringField(required=True)
     companyOtherType = fields.StringField()
     companyPhone = fields.StringField(required=True)

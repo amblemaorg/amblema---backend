@@ -77,7 +77,7 @@ class ContactRequestTest(unittest.TestCase):
             hasSponsor=True,
             sponsorEmail="iamsponsor@test.com",
             sponsorName="Sponsor C.A.",
-            sponsorRIF="282882822",
+            sponsorRif="282882822",
             sponsorCompanyType="1",
             sponsorCompanyPhone="02524433434",
             sponsorAddress="Urb Simon Bolivar",

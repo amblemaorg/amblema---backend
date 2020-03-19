@@ -58,7 +58,7 @@ class SchoolContactSchema(Schema):
     hasSponsor = fields.Bool(required=True)
     sponsorName = fields.Str()
     sponsorEmail = fields.Email()
-    sponsorRIF = fields.Str()
+    sponsorRif = fields.Str()
     sponsorAddress = fields.Str()
     sponsorAddressState = MAReferenceField(document=State)
     sponsorAddressMunicipality = MAReferenceField(document=Municipality)
@@ -109,7 +109,7 @@ class SchoolContactSchema(Schema):
             requiredSponsor = (
                 'sponsorName',
                 'sponsorEmail',
-                'sponsorRIF',
+                'sponsorRif',
                 'sponsorAddress',
                 'sponsorAddressState',
                 'sponsorAddressMunicipality',

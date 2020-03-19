@@ -9,7 +9,7 @@ from mongoengine import (
     EmbeddedDocument)
 
 from app.models.peca_setting_model import (
-    PecaSetting, Lapse1, Lapse2, Lapse3, InitialWorshop, LapsePlanning, AmbleCoins)
+    PecaSetting, Lapse1, Lapse2, Lapse3, InitialWorshop, LapsePlanning, AmbleCoins, AnnualConvention)
 
 
 class SchoolYear(Document):
@@ -30,7 +30,8 @@ class SchoolYear(Document):
         lapse1 = Lapse1(
             initialWorkshop=InitialWorshop(),
             lapsePlanning=LapsePlanning(),
-            ambleCoins=AmbleCoins()
+            ambleCoins=AmbleCoins(),
+            annualConvention=AnnualConvention()
         )
         lapse2 = Lapse2(
             lapsePlanning=LapsePlanning()

@@ -33,6 +33,13 @@ class AmbleCoins(EmbeddedDocument):
     piggyBankSlider = fields.EmbeddedDocumentListField(Image)
 
 
+class AnnualConvention(EmbeddedDocument):
+    step1Description = fields.StringField()
+    step2Description = fields.StringField()
+    step3Description = fields.StringField()
+    step4Description = fields.StringField()
+
+
 """class CustomActivity(EmbeddedDocument):
     name = fields.StringField()
     subtitle = fields.StringField()
@@ -47,6 +54,7 @@ class Lapse1(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
     ambleCoins = fields.EmbeddedDocumentField(AmbleCoins)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
+    annualConvention = fields.EmbeddedDocumentField(AnnualConvention)
 
 
 class Lapse2(EmbeddedDocument):

@@ -16,7 +16,7 @@ from app.helpers.ma_schema_validators import not_blank, OneOf, validate_image
 from app.helpers.ma_schema_fields import MAImageField
 from app.schemas.shared_schemas import FileSchema
 from app.models.peca_setting_model import (
-    LapsePlanning, InitialWorshop, AmbleCoins, Lapse1, Lapse2, Lapse3, PecaSetting)
+    LapsePlanning, InitialWorshop, Lapse1, Lapse2, Lapse3, PecaSetting)
 from app.schemas.learning_module_schema import ImageSchema
 
 
@@ -61,10 +61,18 @@ class AmbleCoinsSchema(Schema):
         return data
 
 
+class AnnualConventionSchema(Schema):
+    step1Description = fields.Str()
+    step2Description = fields.Str()
+    step3Description = fields.Str()
+    step4Description = fields.Str()
+
+
 class Lapse1Schema(Schema):
     initialWorshop = fields.Nested(InicialWorkshopSchema)
     lapsePlanning = fields.Nested(LapsePlanningSchema)
     ambleCoins = fields.Nested(AmbleCoinsSchema)
+    annualConvention = fields.Nested(AnnualConventionSchema)
 
     @post_load
     def make_document(self, data, **kwargs):

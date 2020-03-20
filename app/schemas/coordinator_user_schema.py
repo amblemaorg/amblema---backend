@@ -73,11 +73,12 @@ class CoordinatorUserSchema(UserSchema):
         ProjectReferenceSchema), dump_only=True)
     homePhone = fields.Str(required=True, validate=only_numbers)
     addressHome = fields.Str()
-    profession = fields.Str()
+    profession = fields.Str(allow_none=True)
     isReferred = fields.Bool()
-    referredName = fields.Str()
+    referredName = fields.Str(allow_none=True)
     image = MAImageField(validate=validate_image,
-                         folder='coordinators')
+                         folder='coordinators',
+                         allow_none=True)
     learning = fields.List(fields.Nested(LearningModSchema()), dump_only=True)
     nCoins = fields.Int(dump_only=True)
     status = fields.Str(

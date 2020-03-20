@@ -3,8 +3,8 @@ from flask import current_app
 
 def messageRegisterEmail(email, password):
     return """
-                <!DOCTYPE html
-  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html
+PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -13,13 +13,7 @@ def messageRegisterEmail(email, password):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title></title>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
   <style>
-    *,
-    ::after,
-    ::before {
-      box-sizing: border-box;
-    }
 
     .row {
       display: -webkit-box;
@@ -31,38 +25,26 @@ def messageRegisterEmail(email, password):
       margin-left: -15px;
     }
 
-    u + #body a {
-      color: inherit !important;
-      text-decoration: none !important;
-      font-size: inherit !important;
-      font-family: inherit !important;
-      font-weight: inherit !important;
-      line-height: inherit !important;
-    }
-    
     body {
       font-family: 'Montserrat', sans-serif !important;
-      Margin: 0;
+      margin: 0;
       padding: 0;
       min-width: 100%;
       background-color: #ffffff;
     }
-    
 
     table {
       border-spacing: 0;
+      padding-right: 0 !important;
+      padding-left: 0 !important;
     }
 
     td {
       padding: 0;
     }
 
-    .position-relative {
-      position: relative;
-    }
-
     .outer {
-      Margin: 0 auto;
+      margin: 0 auto;
       width: 100%;
       padding-top: 4rem;
       padding-bottom: 4rem;
@@ -70,211 +52,232 @@ def messageRegisterEmail(email, password):
       padding-left: 2rem;
     }
 
-    .d-flex {
-      display: flex;
-    }
-
     .justify-content-center {
       justify-content: center;
-    }
-
-    .justify-content-end {
-      justify-content: flex-end;
     }
 
     .main-bg {
       background-position: center;
       background-repeat: no-repeat;
-      background-size: cover;
-      background-image: url("""+current_app.config.get('SERVER_URL')+"""/resources/images/mailing/register-background.jpg);
+      background-size: contain;
+      background-image: url(http://157.245.131.248:10506/resources/images/mailing/register-background.png);
     }
 
-    .shadow {
-      box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+    .title-welcome {
+      font-size: 1.3rem !important;
+      color: #008096;
+      width: 100%;
+      font-weight: 700 !important;
+      margin-top: 1.5rem;
+      margin-bottom: 1.2rem;
+      text-align: center;
     }
 
-    .d-block-inline {
-      display: inline-block;
+    .wrapper {
+      padding-top: : 0rem;
+      position: relative;
+    }
+    .title-wrapper {
+      margin: 0rem 0rem 0rem 0rem;
     }
 
-    .follow-us {
-      font-weight: normal;
-      font-size: 3rem;
-      margin-top: 0rem;
-      margin-bottom: 1rem;
+    .credentials-wrapper {
+      margin: 2rem 0rem 2rem 0rem;
+    }
+    .middle-wrapper {
+      margin: 1rem 0.5rem 1rem 0.5rem;
+    }
+    .bottom-wrapper {
+      margin: 1rem 3rem 1rem 3rem;
     }
 
-    .align-items-end {
-      -ms-flex-align: end;
-      align-items: flex-end;
-      color: #122749;
+    .center {
+      margin: 0;
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+    }
+
+    .text {
+      color: #008096;
+      font-size: 0.7rem !important;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .text-2 {
+      color: #008096;
+      font-size: 0.9rem !important;
+      text-align: center;
+      font-weight: 700;
+      margin-top: 0px;
+      margin-bottom: 0px;
+    }
+
+    .text-3 {
+      color: #008096;
+      font-size: 0.7rem !important;
+      text-align: center;
+      font-weight: 700;
+      margin-top: 0px;
+      margin-bottom: 0px;
     }
 
     @media (min-width: 0px) {
-      .columns {
-        width: 100%;
-        /*padding-right: 15px;
-          padding-left:  15px;
-          -webkit-box-flex: 0;
-          -ms-flex: 0 0 100%;
-          flex: 0 0 100%;
-          max-width: 100%;*/
-      }
-
-      .hand-paint {
-        position: absolute;
-        bottom: 80px;
-        left: 0;
-        display: none;
-      }
-
-      .container {
-        position: relative;
-        max-width: 1200px;
-        padding-right: 15px;
-        padding-left: 15px;
-        width: 100%;
-        padding-top: 4rem;
-        padding-bottom: 4rem;
-      }
-
-      .title-welcome {
-        font-size: 2rem;
-        color: #FFF;
-        width: 100%;
-        font-weight: bold;
-        margin-top: 0px;
-        margin-bottom: 1.5rem;
-        text-align: center;
-      }
-
-      .btn {
-        border: 1px solid #FFF;
-        font-size: 1.3rem;
-        padding: 1rem 2rem 1rem 2rem;
-        background-color: transparent;
-        color: #FFF;
-        font-weight: normal;
-      }
-
-      .wrapper {
-        background-color: rgba(0, 127, 159, 0.9019607843137255);
-        padding: 1rem 2rem 5rem 1rem;
-        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
-      }
-
-      .text {
-        color: #FFF;
-        font-size: 1.3rem;
-        text-align: center;
-      }
-
-      .text-2 {
-        color: #FFF;
-        font-size: 1.3rem;
-        text-align: left;
-      }
-
-      .wrapper-btn {
-        width: 100%;
-        text-align: center;
-        margin-top: 3rem;
-      }
-
-      .social-wrapper {
-        margin-top: 2rem;
-        width: 100%;
-        text-align: center;
-      }
-
-      ul {
-        list-style: none;
-        padding: 0px;
-        text-align: center;
-      }
-
-      ul li img {
-        width: 3rem;
-      }
-    }
-
-    @media (min-width: 320px) {
       .outer {
         max-width: auto;
+      }
+      .main-bg {
+        background-size: contain;
+        min-height: 20em !important;
+      }
+      .wrapper {
+        margin-top: 2rem;
+      }
+      .bottom-wrapper {
+        margin: 1rem 0.5rem 1rem 0.5rem;
       }
     }
 
     @media (min-width: 576px) {
-      .outer {
-        max-width: auto;
+
+      .main-bg {
+        background-size: contain;
+        min-height: 30em !important;
+      }
+      .text-3 {
+        font-size: 1rem !important;
+      }
+      .text-2 {
+        font-size: 1.2rem !important;
+      }
+      .text {
+        font-size: 1rem !important;
       }
     }
 
-    @media (min-width: 720px) {
+    @media (min-width: 768px) {
+
       .outer {
-        max-width: 720px;
+        max-width: auto !important;
       }
+
+      .main-bg {
+        background-size: contain;
+        max-width: 100% !important;
+        height: auto !important;
+        width: 100%
+      }
+      .text-3 {
+        font-size: 1rem !important;
+      }
+      .text-2 {
+        font-size: 1.1rem !important;
+      }
+      .text {
+        font-size: 1rem !important;
+      }
+
+      .center {
+        top: 40%;
+        left: 45%;
+        -ms-transform: translate(-40%, -50%);
+        transform: translate(-40%, -50%);
+
+      }
+
+      .title-welcome {
+        font-size: 1.5rem !important;
+      }
+      
     }
 
     @media (min-width: 992px) {
       .outer {
-        max-width: 800px;
+        max-width: 992px;
       }
 
-      .columns {}
-
-      .social-wrapper {
-        order: 0;
-        width: auto;
+      .main-bg {
+        background-size: contain;
+        min-height: 40em !important;
+        max-width: 992px !important;
+      }
+      .text-3 {
+        font-size: 1rem !important;
+      }
+      .text-2 {
+        font-size: 1.1rem !important;
+      }
+      .text {
+        font-size: 1rem !important;
       }
 
-      .hand-paint {
-        display: inherit;
-        width: auto;
+      .center {
+        top: 47%;
+        left: 45%;
+        -ms-transform: translate(-40%, -50%);
+        transform: translate(-40%, -50%);
+
       }
 
       .title-welcome {
-        font-size: 2.5rem;
-      }
-
-      .container {
-        padding-right: 3rem;
-      }
-
-      .btn {
-        padding: 1rem 2rem 1rem 2rem;
-      }
-
-      .wrapper {
-        padding: 3rem 3rem 10rem 2rem;
+        font-size: 2rem !important;
       }
     }
 
-    @media (min-width: 1200px) {
-      .hand-paint {
-        width: 20rem;
-      }
+    @media (min-width: 0px) and (max-width: 767px) {
+      #mobile-content { display: block; }
+      #desktop-content { display: none; }
+      #main-bg-desktop { background-image: none; }
+    }
+
+    @media (min-width: 768px){
+      #mobile-content { display: none; }
+      #desktop-content { display: block; }
+      #main-bg-mobile { background-image: none; }
     }
   </style>
 </head>
 
-<body id="body">
+<body>
   <center>
-    <table class="outer main-bg shadow" width="100%">
+    <table id="main-bg-desktop" class="outer main-bg" width="100%">
       <tr>
         <td style="width: 100%;">
           <div class="columns">
-            <div class="wrapper">
-              <h3 class="title-welcome">Bienvenido<br> a AmbLeMa</h3>
-              <p class="text">Inicia sesión usando las siguientes credenciales:
+            <div id="mobile-content">
+              <h3 id="title-mobile" class="title-welcome title-wrapper">¡Bienvenido a AmbLeMa!</h3>
+              <p class="text middle-wrapper">Estamos emocionados de que hayas decidido formar parte de Fundación AmbLeMa.
+                  Inicia la experiencia de ser parte de AmbLema completando algunos pasos.
+                  Para ello ingresa a nuestra página con las siguientes credenciales:
               </p>
-              <div class="justify-content-left">
-                <p class="text-2"><b>Email: </b>"""+email+"""</p>
-                <p class="text-2"><b>Password: </b>"""+password+"""</p>
+              <div class="justify-content-center credentials-wrapper">
+                <p class="text-2">Usuario: """+email+"""</p>
+                <p class="text-2">Contraseña: """+password+"""</p>
               </div>
-
-              <div class="wrapper-btn">
-                <button class="btn">Ir a AmbLeMa</button>
+            </div>
+            <div id="main-bg-mobile" class="wrapper main-bg">
+              <div class="center">
+                <div id="desktop-content">
+                  <h3 id="title-mobile" class="title-welcome title-wrapper">¡Bienvenido a AmbLeMa!</h3>
+                  <p class="text middle-wrapper">Estamos emocionados de que hayas decidido formar parte de Fundación AmbLeMa.
+                      Inicia la experiencia de ser parte de AmbLema completando algunos pasos.
+                      Para ello ingresa a nuestra página con las siguientes credenciales:
+                  </p>
+                  <div class="justify-content-center credentials-wrapper">
+                    <p class="text-2">Usuario: """+email+"""</p>
+                    <p class="text-2">Contraseña: """+password+"""</p>
+                  </div>
+                </div>
+                <div class="justify-content-center bottom-wrapper">
+                  <p class="text">Si quieres contactar con nuestro equipo, no dudes en hacerlo a través de info@amblema.org</p>
+                </div>
+                <div class="justify-content-center">
+                  <p class="text-3">Ten un excelente día</p>
+                  <p class="text-3">Fundación AmbLeMa</p> 
+                </div>
               </div>
             </div>
           </div>

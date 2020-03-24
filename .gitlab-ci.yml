@@ -83,6 +83,7 @@ staging-deploy:
     - cd $QA_PROJECT_DIR/$CI_PROJECT_NAME
     - git config --global user.email "greudys@binauraldev.com"
     - git config --global user.name "Greudys Godoy"
+    - git reset --hard
     - git pull $CI_REPOSITORY_URL master
     - fi
     - if ! docker ps --format '{{.Names}}' | grep -w $QA_CONTAINER_NAME &> /dev/null; then

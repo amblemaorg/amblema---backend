@@ -12,7 +12,7 @@ from mongoengine import Document, fields, signals, QuerySetManager, DynamicDocum
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_emails import send_email
-from resources.email_templates.register_email import messageRegisterEmail
+from resources.email_templates.register_email import messageRegisterEmail, messageRegisterEmailPlainText
 from resources.email_templates.changed_password_email import changedPasswordEmail
 
 
@@ -74,6 +74,7 @@ class User(DynamicDocument):
         if not current_app.config.get("TESTING"):
             current_app.logger.info(send_email(
                 messageRegisterEmail(self.email, password),
+                messageRegisterEmailPlainText(self.email, password),
                 'Amblema - Registro de usuario',
                 self.email))
 
@@ -86,5 +87,6 @@ class User(DynamicDocument):
         if not current_app.config.get("TESTING"):
             current_app.logger.info(send_email(
                 changedPasswordEmail(self.email, password),
+                messageRegisterEmailPlainText(self.email, password),
                 'Amblema - Cambio de contraseña',
                 self.email))

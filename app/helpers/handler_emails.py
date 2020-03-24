@@ -8,10 +8,11 @@ import smtplib
 import ssl
 
 
-def send_email(body, subject, to):
+def send_email(body, plainTextBody, subject, to):
     """
     Params:  
     -  body: string html
+    -  plainTextBody: string 
     -  subject: string
     -  to: string list separated by ',' 
     """
@@ -27,12 +28,9 @@ def send_email(body, subject, to):
     msg['Subject'] = Header(subject, 'utf-8')
     msg['From'] = SMTP_FROM
     msg['To'] = to
-    text = """\
-    Hi,
-    How are you?
-    Real Python has many great tutorials:
-    www.realpython.com"""
+    text = plainTextBody
     html = body
+
     partPlain = MIMEText(text, "plain")
     part = MIMEText(html, "html")
     msg.attach(partPlain)

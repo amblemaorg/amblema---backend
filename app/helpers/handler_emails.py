@@ -4,13 +4,15 @@ from flask import current_app
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
-from smtplib import SMTP
+import smtplib
+import ssl
 
 
-def send_email(body, subject, to):
+def send_email(body, plainTextBody, subject, to):
     """
     Params:  
     -  body: string html
+    -  plainTextBody: string 
     -  subject: string
     -  to: string list separated by ',' 
     """
@@ -21,21 +23,26 @@ def send_email(body, subject, to):
     SMTP_HOST = current_app.config.get('SMTP_HOST')
     SMTP_PORT = current_app.config.get('SMTP_PORT')
 
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("alternative")
     to = to
     msg['Subject'] = Header(subject, 'utf-8')
     msg['From'] = SMTP_FROM
     msg['To'] = to
+    text = plainTextBody
     html = body
-    part = MIMEText(html, 'html')
+
+    partPlain = MIMEText(text, "plain")
+    part = MIMEText(html, "html")
+    msg.attach(partPlain)
     msg.attach(part)
+    # Create secure connection with server and send email
+    context = ssl.create_default_context()
     try:
-        server = SMTP(SMTP_HOST, SMTP_PORT)
-        server.ehlo()
-        server.starttls()
-        server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        server.sendmail(msg['From'], to.split(','), msg.as_string())
-        server.close()
-        return True
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.sendmail(
+                SMTP_FROM, to, msg.as_string()
+            )
+            return True
     except Exception as e:
         return {'msg': str(e), 'to': str(to.split())}, 400

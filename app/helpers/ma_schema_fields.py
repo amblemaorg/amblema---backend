@@ -1,6 +1,7 @@
 # /app/helpers/ma_schema_fields.py
 
 
+from flask import current_app
 from marshmallow import fields, validate, ValidationError
 
 from app.helpers.handler_images import upload_image
@@ -59,6 +60,13 @@ class MAImageField(fields.Field):
     """
 
     def _deserialize(self, value, attr, data, **kwargs):
+        """
+        custom metadata:
+          folder: folder name into image resource path
+          size: optional size limit of image, in MB
+        """
         if str(value).startswith('data'):
-            return upload_image(value, self.metadata['folder'])
+
+            size = None if not 'size' in self.metadata else self.metadata['size']
+            return upload_image(value, self.metadata['folder'], size)
         return value

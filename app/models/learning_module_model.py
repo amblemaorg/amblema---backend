@@ -13,22 +13,22 @@ from mongoengine import (EmbeddedDocument, Document, fields)
 
 class SliderElement(EmbeddedDocument):
     url = fields.URLField()
-    description = fields.StringField()
+    description = fields.StringField(max_length=71)
     type = fields.StringField(max_length=1)
 
 
 class Image(EmbeddedDocument):
     image = fields.URLField(required=True)
-    description = fields.StringField(required=True)
+    description = fields.StringField(required=True, max_length=56)
 
 
 class Quiz(EmbeddedDocument):
     id = fields.ObjectIdField()
-    question = fields.StringField(required=True)
-    optionA = fields.StringField(required=True)
-    optionB = fields.StringField(required=True)
-    optionC = fields.StringField(required=True)
-    optionD = fields.StringField(required=True)
+    question = fields.StringField(required=True, max_length=116)
+    optionA = fields.StringField(required=True, max_length=132)
+    optionB = fields.StringField(required=True, max_length=132)
+    optionC = fields.StringField(required=True, max_length=132)
+    optionD = fields.StringField(required=True, max_length=132)
     correctOption = fields.StringField(required=True)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
@@ -40,14 +40,15 @@ class Quiz(EmbeddedDocument):
 
 
 class LearningModule(Document):
-    name = fields.StringField(required=True, unique_c=True)
-    title = fields.StringField(required=True)
-    description = fields.StringField(required=True)
-    secondaryTitle = fields.StringField(required=True)
-    secondaryDescription = fields.StringField(required=True)
-    objectives = fields.ListField(fields.StringField(), required=True)
-    slider = fields.EmbeddedDocumentListField(SliderElement)
-    images = fields.EmbeddedDocumentListField(Image)
+    name = fields.StringField(required=True, unique_c=True, max_length=60)
+    title = fields.StringField(required=True, max_length=140)
+    description = fields.StringField(required=True, max_length=2800)
+    secondaryTitle = fields.StringField(required=True, max_length=140)
+    secondaryDescription = fields.StringField(required=True, max_length=4970)
+    objectives = fields.ListField(
+        fields.StringField(max_length=60), required=True)
+    slider = fields.EmbeddedDocumentListField(SliderElement, max_length=4)
+    images = fields.EmbeddedDocumentListField(Image, max_length=6)
     duration = fields.IntField(required=True, min_value=0)
     quizzes = fields.EmbeddedDocumentListField(Quiz, required=True)
     priority = fields.IntField(null=True)

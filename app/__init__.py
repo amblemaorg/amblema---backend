@@ -75,6 +75,9 @@ from app.controllers.annual_convention_controller import (
 from app.controllers.request_step_approval_controller import (
     ReqStepApprovalController, ReqStepApprovalHandlerController
 )
+from app.controllers.request_all_controller import (
+    ReqContactAllController
+)
 
 db = MongoEngine()
 
@@ -209,5 +212,6 @@ def create_app(config_instance):
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
     api.add_resource(ReqStepApprovalHandlerController,
                      '/requestsstepapproval/<string:id>')
+    api.add_resource(ReqContactAllController, '/contactrequests')
 
     return app

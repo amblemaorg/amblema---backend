@@ -19,6 +19,7 @@ from app.models.state_model import State, Municipality
 
 class CoordinatorContactSchema(Schema):
     id = fields.Str(dump_only=True)
+    requestCode = fields.Function(lambda obj: obj.requestCode.zfill(7))
     firstName = fields.Str(required=True, validate=not_blank)
     lastName = fields.Str(required=True, validate=not_blank)
     cardType = fields.Str(

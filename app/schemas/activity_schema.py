@@ -1,4 +1,4 @@
-# app/schemas/step_schema.py
+# app/schemas/activity_schema.py
 
 import json
 
@@ -12,38 +12,13 @@ from marshmallow import (
     ValidationError)
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, validate_url, OneOf
-from app.helpers.ma_schema_fields import MAReferenceField
-from app.helpers.error_helpers import RegisterNotFound
-from app.models.school_year_model import SchoolYear
-from app.models.shared_embedded_documents import Link
-from app.schemas.shared_schemas import CheckTemplateSchema
+from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 
 
-class FileSchema(Schema):
-    name = fields.Str(validate=not_blank)
-    url = fields.Str(validate=(not_blank, validate_url))
-
-    @pre_load
-    def process_input(self, data, **kwargs):
-        if isinstance(data, str):
-            data = json.loads(data)
-        return data
-
-    @post_load
-    def make_document(self, data, **kwargs):
-        return Link(**data)
-
-
-class StepSchema(Schema):
+class ActivitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
-    devName = fields.Str(dump_only=True)
-    tag = fields.Str(
-        validate=OneOf(
-            ["1", "2", "3", "4"],
-            ["General", "Coordinator", "Sponsor", "School"]
-        ), required=True)
     hasText = fields.Bool(required=True, default=False)
     hasDate = fields.Bool(required=True, default=False)
     hasFile = fields.Bool(required=True, default=False)
@@ -56,17 +31,15 @@ class StepSchema(Schema):
     checklist = fields.List(fields.Nested(CheckTemplateSchema()))
     approvalType = fields.Str(
         validate=OneOf(
-            ["1", "2", "3"],
-            ["onlyAdmin", "fillAllFields", "approvalRequest"]
+            ["1", "2"],
+            ["onlyAdmin", "approvalRequest"]
         ), required=True)
-    schoolYear = MAReferenceField(document=SchoolYear, dump_only=True)
     status = fields.Str(
         validate=OneOf(
             ["1", "2"],
             ["active", "inactive"]
         )
     )
-    isStandard = fields.Bool(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

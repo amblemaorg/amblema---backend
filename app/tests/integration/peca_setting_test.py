@@ -217,6 +217,72 @@ class PecaSettings(unittest.TestCase):
             "Some 1 description updated",
             schoolYear.pecaSetting.lapse1.annualConvention.step1Description)
 
+    def test_endpoint_activities(self):
+
+        # save
+        requestData = dict(
+            name="some name",
+            hasText=True,
+            hasDate=True,
+            hasFile=True,
+            hasVideo=True,
+            hasChecklist=True,
+            hasUpload=True,
+            text="some text",
+            file=(io.BytesIO(
+                b'hi everyone'), 'activityFile.pdf'),
+            video=json.dumps(
+                {"name": "somename", "url": "https://youtube.com"}),
+            checklist=json.dumps([{"name": "objectve 1"}]),
+            approvalType="2",
+            status="1"
+        )
+        res = self.client().post(
+            '/pecasetting/activities/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(
+            "activityFile.pdf",
+            schoolYear.pecaSetting.lapse1.activities[0].file.name)
+
+        # update
+        requestData['file'] = (io.BytesIO(
+            b'hi everyone'), 'activityFileUpdated.pdf')
+
+        res = self.client().put(
+            '/pecasetting/activities/1/' +
+            str(schoolYear.pecaSetting.lapse1.activities[0].id),
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(
+            "activityFileUpdated.pdf",
+            schoolYear.pecaSetting.lapse1.activities[0].file.name)
+
+        # get
+        res = self.client().get(
+            '/pecasetting/activities/1/'+str(schoolYear.pecaSetting.lapse1.activities[0].id))
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('activityFileUpdated.pdf',
+                         result['file']['name'])
+
+        # delete
+        res = self.client().delete(
+            '/pecasetting/activities/1/'+str(schoolYear.pecaSetting.lapse1.activities[0].id))
+        self.assertEqual(res.status_code, 200)
+
+        # get deleted
+        res = self.client().get(
+            '/pecasetting/activities/1/'+str(schoolYear.pecaSetting.lapse1.activities[0].id))
+        self.assertEqual(res.status_code, 404)
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

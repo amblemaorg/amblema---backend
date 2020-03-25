@@ -1,5 +1,6 @@
 # app/models/shared_embedded_documents.py
 
+from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
@@ -20,3 +21,8 @@ class ProjectReference(EmbeddedDocument):
 class Link(EmbeddedDocument):
     name = fields.StringField()
     url = fields.URLField(required=True)
+
+
+class CheckTemplate(EmbeddedDocument):
+    id = fields.ObjectIdField(default=ObjectId())
+    name = fields.StringField(required=True)

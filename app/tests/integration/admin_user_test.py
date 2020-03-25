@@ -7,7 +7,6 @@ from copy import deepcopy
 
 from app import create_app, db
 
-from app.models.step_model import Step, Check
 from app.models.admin_user_model import AdminUser
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality

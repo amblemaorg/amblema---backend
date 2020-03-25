@@ -31,13 +31,16 @@ class SchoolYear(Document):
             initialWorkshop=InitialWorshop(),
             lapsePlanning=LapsePlanning(),
             ambleCoins=AmbleCoins(),
-            annualConvention=AnnualConvention()
+            annualConvention=AnnualConvention(),
+            activities=[]
         )
         lapse2 = Lapse2(
-            lapsePlanning=LapsePlanning()
+            lapsePlanning=LapsePlanning(),
+            activities=[]
         )
         lapse3 = Lapse3(
-            lapsePlanning=LapsePlanning()
+            lapsePlanning=LapsePlanning(),
+            activities=[]
         )
         pecaSetting = PecaSetting(
             lapse1=lapse1,

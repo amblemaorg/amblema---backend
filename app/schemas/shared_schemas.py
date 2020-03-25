@@ -7,7 +7,7 @@ from marshmallow import Schema, post_load, pre_load
 from app.schemas import fields
 
 from app.helpers.ma_schema_validators import validate_url, not_blank
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, CheckTemplate
 
 
 class ReferenceSchema(Schema):
@@ -42,3 +42,18 @@ class FileSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         return Link(**data)
+
+
+class CheckTemplateSchema(Schema):
+    id = fields.Str()
+    name = fields.Str(required=True)
+
+    @pre_load
+    def process_input(self, data, **kwargs):
+        if isinstance(data, str):
+            data = json.loads(data)
+        return data
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return CheckTemplate(**data)

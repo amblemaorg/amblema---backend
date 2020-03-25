@@ -2,8 +2,9 @@
 
 
 from mongoengine import EmbeddedDocument, fields
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, CheckTemplate
 from app.models.learning_module_model import Image
+from app.models.activity_model import Activity
 
 
 class InitialWorshop(EmbeddedDocument):
@@ -40,29 +41,22 @@ class AnnualConvention(EmbeddedDocument):
     step4Description = fields.StringField()
 
 
-"""class CustomActivity(EmbeddedDocument):
-    name = fields.StringField()
-    subtitle = fields.StringField()
-    text = fields.StringField()
-    slider = fields.EmbeddedDocumentField(Link)
-    date = fields.DateTimeField()
-    file = fields.EmbeddedDocumentField(Link, is_file=True)
-"""
-
-
 class Lapse1(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
     ambleCoins = fields.EmbeddedDocumentField(AmbleCoins)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
     annualConvention = fields.EmbeddedDocumentField(AnnualConvention)
+    activities = fields.EmbeddedDocumentListField(Activity)
 
 
 class Lapse2(EmbeddedDocument):
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
+    activities = fields.EmbeddedDocumentListField(Activity)
 
 
 class Lapse3(EmbeddedDocument):
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
+    activities = fields.EmbeddedDocumentListField(Activity)
 
 
 class PecaSetting(EmbeddedDocument):

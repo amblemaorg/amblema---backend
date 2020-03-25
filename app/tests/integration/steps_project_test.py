@@ -8,13 +8,14 @@ from datetime import datetime
 from app import create_app, db
 
 from app.models.school_year_model import SchoolYear
-from app.models.step_model import Step, Check
+from app.models.step_model import Step
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.project_model import Project
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
+from app.models.shared_embedded_documents import CheckTemplate
 
 
 class InitialSteps(unittest.TestCase):
@@ -203,8 +204,8 @@ class InitialSteps(unittest.TestCase):
         project.save()
         self.assertEqual(16, len(project.stepsProgress.steps))
 
-        check1 = Check(name="check1")
-        check2 = Check(name="check2")
+        check1 = CheckTemplate(name="check1")
+        check2 = CheckTemplate(name="check2")
         generalStep = Step(
             name="new step",
             text="new step description",

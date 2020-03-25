@@ -9,7 +9,7 @@ from datetime import datetime
 from app import create_app, db
 
 from app.models.school_year_model import SchoolYear
-from app.models.step_model import Step, Check
+from app.models.step_model import Step
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.project_model import Project
 from app.models.role_model import Role

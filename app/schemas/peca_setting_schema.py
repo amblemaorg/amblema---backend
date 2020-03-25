@@ -14,10 +14,11 @@ from marshmallow import (
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf, validate_image
 from app.helpers.ma_schema_fields import MAImageField
-from app.schemas.shared_schemas import FileSchema
+from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 from app.models.peca_setting_model import (
     LapsePlanning, InitialWorshop, Lapse1, Lapse2, Lapse3, PecaSetting)
 from app.schemas.learning_module_schema import ImageSchema
+from app.schemas.activity_schema import ActivitySchema
 
 
 ImageSchema.image = MAImageField(
@@ -73,6 +74,7 @@ class Lapse1Schema(Schema):
     lapsePlanning = fields.Nested(LapsePlanningSchema)
     ambleCoins = fields.Nested(AmbleCoinsSchema)
     annualConvention = fields.Nested(AnnualConventionSchema)
+    activities = fields.List(fields.Nested(ActivitySchema))
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -81,6 +83,7 @@ class Lapse1Schema(Schema):
 
 class Lapse2Schema(Schema):
     lapsePlanning = fields.Nested(LapsePlanningSchema)
+    activities = fields.List(fields.Nested(ActivitySchema))
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -89,6 +92,7 @@ class Lapse2Schema(Schema):
 
 class Lapse3Schema(Schema):
     lapsePlanning = fields.Nested(LapsePlanningSchema)
+    activities = fields.List(fields.Nested(ActivitySchema))
 
     @post_load
     def make_document(self, data, **kwargs):

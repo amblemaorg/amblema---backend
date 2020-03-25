@@ -12,13 +12,8 @@ from mongoengine import (
     fields,
     signals)
 
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, CheckTemplate
 from app.services.step_service import StepsService
-
-
-class Check(EmbeddedDocument):
-    id = fields.ObjectIdField(default=ObjectId())
-    name = fields.StringField(required=True)
 
 
 class Step(Document):
@@ -35,7 +30,7 @@ class Step(Document):
     file = fields.EmbeddedDocumentField(
         Link, is_file=True, null=True, default=None)
     video = fields.EmbeddedDocumentField(Link, null=True, default=None)
-    checklist = fields.EmbeddedDocumentListField(Check)
+    checklist = fields.EmbeddedDocumentListField(CheckTemplate)
     approvalType = fields.StringField(required=True, max_length=1)
     schoolYear = fields.ReferenceField('SchoolYear', required=True)
     status = fields.StringField(default='1', max_length=1)

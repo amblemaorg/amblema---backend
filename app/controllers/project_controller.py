@@ -21,13 +21,8 @@ class ProjectController(Resource):
         filters = getQueryParams(request)
         return self.service.getAllRecords(
             filters=filters,
-            only=(
-                "id",
-                "code",
-                "sponsor",
-                "coordinator",
-                "school",
-                "status"
+            exclude=(
+                "stepsProgress",
             ))
 
     def post(self):

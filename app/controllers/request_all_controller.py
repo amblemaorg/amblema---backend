@@ -13,3 +13,10 @@ class ReqContactAllController(Resource):
 
     def get(self):
         return self.service.getAllContactsRequest()
+
+
+class ReqFindAllController(Resource):
+    service = RequestsAll()
+
+    def get(self):
+        return self.service.getAllFindRequest()

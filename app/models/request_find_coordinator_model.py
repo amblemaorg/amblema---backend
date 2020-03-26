@@ -12,6 +12,8 @@ from app.models.role_model import Role
 
 class RequestFindCoordinator(Document):
     project = fields.ReferenceField(Project, required=True)
+    requestCode = fields.SequenceField(
+        sequence_name="find_requests", value_decorator=str)
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)

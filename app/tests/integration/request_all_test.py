@@ -14,6 +14,8 @@ from app.models.sponsor_contact_model import SponsorContact
 from app.models.coordinator_contact_model import CoordinatorContact
 from app.helpers.handler_seeds import create_standard_roles
 from app.services.request_all_service import RequestsAll
+from app.models.coordinator_user_model import CoordinatorUser
+from app.models.project_model import Project
 
 
 class ContactRequestTest(unittest.TestCase):
@@ -159,6 +161,153 @@ class ContactRequestTest(unittest.TestCase):
         self.assertEqual("Coordinator Last Name",
                          result['records'][0]['name'])
         self.assertEqual('0000003', result['records'][0]['requestCode'])
+
+    def test_get_all_contact_requests(self):
+
+        coordinator = CoordinatorUser(
+            firstName="Test",
+            lastName="Test",
+            cardType="1",
+            cardId="20922842",
+            birthdate=datetime.utcnow(),
+            gender="1",
+            homePhone="02343432323",
+            addressHome="House 34A",
+            email="testemail@test.com",
+            password="12345678",
+            userType="2",
+            phone="02322322323",
+            role=self.role,
+            addressState=self.state,
+            addressMunicipality=self.municipality,
+            isReferred=False
+        )
+        coordinator.save()
+
+        project = Project(
+            schoolYear=self.schoolYear,
+            coordinator=coordinator
+        )
+        project.save()
+
+        data = dict(
+            project=str(project.pk),
+            email="iamsponsor@test.com",
+            name="Sponsor C.A.",
+            rif="282882822",
+            companyType="1",
+            companyPhone="02524433434",
+            address="Urb Simon Bolivar",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            addressStreet="calle 9 entre 1 y 2",
+            contactFirstName="Contact FirstName",
+            contactLastName="Contact Lastname",
+            contactPhone="04242772727"
+        )
+
+        res = self.client().post(
+            '/requestsfindsponsor',
+            data=json.dumps(data),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+
+        data = dict(
+            project=str(project.pk),
+            name="U.E. Libertador",
+            code="315",
+            email="uelibertador@test.com",
+            address="Urb Simon Bolivar",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            addressStreet="calle 9 entre 1 y 2",
+            phone="02524433434",
+            schoolType="1",
+            principalFirstName="Marlene",
+            principalLastName="Mejia",
+            principalEmail="mmejia@test.com",
+            principalPhone="04242772727",
+            subPrincipalFirstName="Nelly",
+            subPrincipalLastName="Velazquez",
+            subPrincipalEmail="nvelazquez@test.com",
+            subPrincipalPhone="04244545454",
+            nTeachers=22,
+            nAdministrativeStaff=10,
+            nLaborStaff=3,
+            nStudents=500,
+            nGrades=6,
+            nSections=18,
+            schoolShift="3"
+        )
+
+        res = self.client().post(
+            '/requestsfindschool',
+            data=json.dumps(data),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+
+        secondProject = Project(
+            schoolYear=self.schoolYear,
+            coordinator=coordinator
+        )
+        secondProject.save()
+
+        data = dict(
+            project=str(secondProject.pk),
+            email="iamsponsor@test.com",
+            name="Sponsor C.A.",
+            rif="282882822",
+            companyType="1",
+            companyPhone="02524433434",
+            address="Urb Simon Bolivar",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            addressStreet="calle 9 entre 1 y 2",
+            contactFirstName="Contact FirstName",
+            contactLastName="Contact Lastname",
+            contactPhone="04242772727"
+        )
+
+        res = self.client().post(
+            '/requestsfindsponsor',
+            data=json.dumps(data),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+
+        data = dict(
+            project=str(project.pk),
+            email="iamsponsor@test.com",
+            name="Sponsor C.A.",
+            rif="282882822",
+            companyType="1",
+            companyPhone="02524433434",
+            address="Urb Simon Bolivar",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            addressStreet="calle 9 entre 1 y 2",
+            contactFirstName="Contact FirstName",
+            contactLastName="Contact Lastname",
+            contactPhone="04242772727"
+        )
+
+        res = self.client().post(
+            '/requestsfindsponsor',
+            data=json.dumps(data),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+
+        res = self.client().get(
+            '/findrequests')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual("Sponsor C.A.",
+                         result['records'][0]['name'])
+        self.assertEqual('0000004', result['records'][0]['requestCode'])
 
     def tearDown(self):
         """teardown all initialized variables."""

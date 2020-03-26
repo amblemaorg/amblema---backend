@@ -115,6 +115,7 @@ class Project(Document):
     coordinator = fields.ReferenceField('CoordinatorUser')
     schoolYear = fields.LazyReferenceField('SchoolYear')
     stepsProgress = fields.EmbeddedDocumentField(StepsProgress)
+    phase = fields.StringField(max_length=1, default="1")
     status = fields.StringField(default='1')
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

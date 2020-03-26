@@ -76,7 +76,9 @@ from app.controllers.request_step_approval_controller import (
     ReqStepApprovalController, ReqStepApprovalHandlerController
 )
 from app.controllers.request_all_controller import (
-    ReqContactAllController, ReqFindAllController
+    ReqContactAllController, ReqFindAllController)
+from app.controllers.activity_controller import (
+    ActivityController, ActivityHandlerController
 )
 
 db = MongoEngine()
@@ -209,6 +211,10 @@ def create_app(config_instance):
     api.add_resource(AmbleCoinController, '/pecasetting/amblecoins')
     api.add_resource(AnnualConventionController,
                      '/pecasetting/annualconvention')
+    api.add_resource(ActivityController,
+                     '/pecasetting/activities/<string:lapse>')
+    api.add_resource(ActivityHandlerController,
+                     '/pecasetting/activities/<string:lapse>/<string:id>')
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
     api.add_resource(ReqStepApprovalHandlerController,
                      '/requestsstepapproval/<string:id>')

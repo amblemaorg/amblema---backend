@@ -16,6 +16,7 @@ from app.models.state_model import State, Municipality
 
 class ReqFindSponsorSchema(Schema):
     id = fields.Str(dump_only=True)
+    requestCode = fields.Function(lambda obj: obj.requestCode.zfill(7))
     project = MAReferenceField(required=True, document=Project, field="code")
     name = fields.Str(required=True, validate=not_blank)
     email = fields.Email(required=True, validate=not_blank)

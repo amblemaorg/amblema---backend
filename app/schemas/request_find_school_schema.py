@@ -12,6 +12,7 @@ from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Ran
 class ReqFindSchoolSchema(Schema):
     project = MAReferenceField(required=True, document=Project, field="code")
     id = fields.Str(dump_only=True)
+    requestCode = fields.Function(lambda obj: obj.requestCode.zfill(7))
     name = fields.Str(required=True, validate=not_blank)
     code = fields.Str(required=True, validate=not_blank)
     email = fields.Email(required=True)

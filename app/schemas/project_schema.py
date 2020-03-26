@@ -93,10 +93,14 @@ class ProjectSchema(Schema):
     sponsor = MAReferenceField(document=SponsorUser, allow_none=True)
     coordinator = MAReferenceField(document=CoordinatorUser, allow_none=True)
     stepsProgress = fields.Nested(StepsProgressSchema, dump_only=True)
+    phase = fields.Str(validate=OneOf(
+        ('1', '2'),
+        ('in_steps', 'in_peca')
+    ), dump_only=True)
     status = fields.Str(validate=OneOf(
         ('1', '2'),
-        ('in_progress', 'in_peca')
-    ), dump_only=True)
+        ('active', 'inactive')
+    ))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

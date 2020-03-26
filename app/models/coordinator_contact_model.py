@@ -16,6 +16,8 @@ from app.models.role_model import Role
 
 
 class CoordinatorContact(Document):
+    requestCode = fields.SequenceField(
+        sequence_name="contact_requests", value_decorator=str)
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)

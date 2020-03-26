@@ -12,6 +12,8 @@ from app.models.role_model import Role
 
 class RequestFindSponsor(Document):
     project = fields.ReferenceField(Project, required=True)
+    requestCode = fields.SequenceField(
+        sequence_name="find_requests", value_decorator=str)
     name = fields.StringField(required=True)
     email = fields.EmailField(required=True)
     rif = fields.StringField(required=True)

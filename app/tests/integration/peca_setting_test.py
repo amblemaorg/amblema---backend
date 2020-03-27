@@ -283,6 +283,29 @@ class PecaSettings(unittest.TestCase):
             '/pecasetting/activities/1/'+str(schoolYear.pecaSetting.lapse1.activities[0].id))
         self.assertEqual(res.status_code, 404)
 
+    def test_endpoint_goal_setting(self):
+        requestData = dict()
+        for i in range(6):
+            requestData['grade'+str(i+1)] = {
+                "multitplicationsPerMin": (i+1)*10,
+                "operationsPerMin": (i+1)*10,
+                "wordsPerMin": (i+1)*10
+            }
+
+        res = self.client().post(
+            '/pecasetting/goalsetting',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client().get(
+            '/pecasetting/goalsetting')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(30,
+                         result['grade3']['wordsPerMin'])
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

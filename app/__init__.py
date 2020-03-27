@@ -80,7 +80,9 @@ from app.controllers.request_all_controller import (
 from app.controllers.activity_controller import (
     ActivityController, ActivityHandlerController
 )
-
+from app.controllers.goal_setting_controller import (
+    GoalSettingController
+)
 db = MongoEngine()
 
 
@@ -215,6 +217,7 @@ def create_app(config_instance):
                      '/pecasetting/activities/<string:lapse>')
     api.add_resource(ActivityHandlerController,
                      '/pecasetting/activities/<string:lapse>/<string:id>')
+    api.add_resource(GoalSettingController, '/pecasetting/goalsetting')
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
     api.add_resource(ReqStepApprovalHandlerController,
                      '/requestsstepapproval/<string:id>')

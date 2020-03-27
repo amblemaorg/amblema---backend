@@ -9,7 +9,16 @@ from mongoengine import (
     EmbeddedDocument)
 
 from app.models.peca_setting_model import (
-    PecaSetting, Lapse1, Lapse2, Lapse3, InitialWorshop, LapsePlanning, AmbleCoins, AnnualConvention)
+    PecaSetting,
+    Lapse1,
+    Lapse2,
+    Lapse3,
+    InitialWorshop,
+    LapsePlanning,
+    AmbleCoins,
+    AnnualConvention)
+
+from app.models.goal_setting_model import GoalSetting, GradeSetting
 
 
 class SchoolYear(Document):
@@ -42,9 +51,19 @@ class SchoolYear(Document):
             lapsePlanning=LapsePlanning(),
             activities=[]
         )
+
+        goalSetting = GoalSetting()
+        for i in range(6):
+            goalSetting['grade'+str(i+1)] = GradeSetting(
+                multitplicationsPerMin=0,
+                operationsPerMin=0,
+                wordsPerMin=0
+            )
+
         pecaSetting = PecaSetting(
             lapse1=lapse1,
             lapse2=lapse2,
-            lapse3=lapse3
+            lapse3=lapse3,
+            goalSetting=goalSetting
         )
         self.pecaSetting = pecaSetting

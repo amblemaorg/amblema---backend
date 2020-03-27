@@ -5,6 +5,7 @@ from mongoengine import EmbeddedDocument, fields
 from app.models.shared_embedded_documents import Link, CheckTemplate
 from app.models.learning_module_model import Image
 from app.models.activity_model import Activity
+from app.models.goal_setting_model import GoalSetting
 
 
 class InitialWorshop(EmbeddedDocument):
@@ -63,3 +64,4 @@ class PecaSetting(EmbeddedDocument):
     lapse1 = fields.EmbeddedDocumentField(Lapse1)
     lapse2 = fields.EmbeddedDocumentField(Lapse2)
     lapse3 = fields.EmbeddedDocumentField(Lapse3)
+    goalSetting = fields.EmbeddedDocumentField(GoalSetting)

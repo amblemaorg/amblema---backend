@@ -83,6 +83,11 @@ from app.controllers.activity_controller import (
 from app.controllers.goal_setting_controller import (
     GoalSettingController
 )
+from app.controllers.peca_project_controller import (
+    PecaProjectController,
+    PecaProjectHandlerController,
+    SchoolController
+)
 db = MongoEngine()
 
 
@@ -223,5 +228,8 @@ def create_app(config_instance):
                      '/requestsstepapproval/<string:id>')
     api.add_resource(ReqContactAllController, '/contactrequests')
     api.add_resource(ReqFindAllController, '/findrequests')
+    api.add_resource(PecaProjectController, '/pecaprojects')
+    api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
+    api.add_resource(SchoolController, '/pecaprojects/school/<string:id>')
 
     return app

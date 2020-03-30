@@ -143,10 +143,10 @@ class CoordinatorUser(User):
                 my_module.score = 4 - (3 if nAttempts > 2 else nAttempts)
                 if results["approved"]:
                     my_module.status = "3"
+                    self.nCoins += my_module.score
                     if self.isInstructed():
                         self.instructed = True
                         self.updateProjectsOnceInstructed()
-                        self.nCoins += my_module.score
                 else:
                     my_module.status = "2"
                 attempt = Attempt(

@@ -80,6 +80,17 @@ class StepSchema(Schema):
             data["name"] = data["name"].title()
         if "checklist" in data and isinstance(data["checklist"], str):
             data["checklist"] = json.loads(data["checklist"])
+        convertBool = [
+            "hasText",
+            "hasDate",
+            "hasFile",
+            "hasVideo",
+            "hasChecklist",
+            "hasUpload"
+        ]
+        for boolField in convertBool:
+            if boolField in data and isinstance(data[boolField], str):
+                data[boolField] = json.loads(data[boolField])
         return data
 
     @validates_schema

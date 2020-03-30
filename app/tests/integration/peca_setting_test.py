@@ -222,12 +222,12 @@ class PecaSettings(unittest.TestCase):
         # save
         requestData = dict(
             name="some name",
-            hasText=True,
-            hasDate=True,
-            hasFile=True,
-            hasVideo=True,
-            hasChecklist=True,
-            hasUpload=True,
+            hasText="true",
+            hasDate="true",
+            hasFile="true",
+            hasVideo="true",
+            hasChecklist="true",
+            hasUpload="true",
             text="some text",
             file=(io.BytesIO(
                 b'hi everyone'), 'activityFile.pdf'),

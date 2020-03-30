@@ -155,4 +155,15 @@ class ProjectService():
                     ):
                         step.status = "3"
 
+        if document.stepsProgress.steps != oldDocument.stepsProgress.steps:
+            reciprocalFields = {
+                "sponsorPresentationSchool": "schoolPresentationSponsor",
+                "schoolPresentationSponsor": "sponsorPresentationSchool"
+            }
+            for step in document.stepsProgress.steps:
+                if step.devName in reciprocalFields and step.status == "3":
+                    for recipStep in document.stepsProgress.steps:
+                        if recipStep.devName == reciprocalFields[step.devName]:
+                            recipStep.status = "3"
+
         document.stepsProgress.updateProgress()

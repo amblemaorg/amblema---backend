@@ -155,6 +155,19 @@ class InitialSteps(unittest.TestCase):
         )
         self.sponsorFillCoordinatorForm.save()
 
+        self.sponsorPresentationSchool = Step(
+            name="Presentación a la escuela",
+            devName="sponsorPresentationSchool",
+            tag="3",
+            isStandard=True,
+            approvalType="1",
+            hasText=True,
+            hasFile=True,
+            text="some description",
+            file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
+        )
+        self.sponsorPresentationSchool.save()
+
         self.sponsorAgreementSchool = Step(
             name="Convenio Padrino - Escuela",
             devName="sponsorAgreementSchool",
@@ -206,6 +219,19 @@ class InitialSteps(unittest.TestCase):
             text="some description"
         )
         self.schoolFillCoordinatorForm.save()
+
+        self.schoolPresentationSponsor = Step(
+            name="Presentación al padrino",
+            devName="schoolPresentationSponsor",
+            tag="4",
+            isStandard=True,
+            approvalType="1",
+            hasText=True,
+            hasFile=True,
+            text="some description",
+            file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
+        )
+        self.schoolPresentationSponsor.save()
 
         self.schoolAgreementSponsor = Step(
             name="Convenio Escuela - Padrino",
@@ -325,7 +351,7 @@ class InitialSteps(unittest.TestCase):
             coordinator=self.coordinator
         )
         self.project.save()
-        self.assertEqual(22, len(self.project.stepsProgress.steps))
+        self.assertEqual(24, len(self.project.stepsProgress.steps))
 
         # update step text
         self.project.updateStep(
@@ -372,6 +398,14 @@ class InitialSteps(unittest.TestCase):
             )
         )
 
+        # update sponsor presentation to school step
+        self.project.updateStep(
+            StepControl(
+                id=str(self.sponsorPresentationSchool.id),
+                status="3"
+            )
+        )
+
         # update step checklist
         checklist = []
         for check in self.schoolStepChecklist.checklist:
@@ -394,13 +428,13 @@ class InitialSteps(unittest.TestCase):
         for step in self.project.stepsProgress.steps:
             if step.tag == "4" and step.status == "3":
                 approvedSteps += 1
-        self.assertEqual(6, approvedSteps)
+        self.assertEqual(7, approvedSteps)
 
         # Check progress
-        self.assertEqual(66.67, self.project.stepsProgress.school)
+        self.assertEqual(70, self.project.stepsProgress.school)
         self.assertEqual(25, self.project.stepsProgress.general)
         self.assertEqual(0, self.project.stepsProgress.coordinator)
-        self.assertEqual(25, self.project.stepsProgress.sponsor)
+        self.assertEqual(40, self.project.stepsProgress.sponsor)
 
         # Agreements steps
         # update step date file (approval process)
@@ -425,9 +459,9 @@ class InitialSteps(unittest.TestCase):
         approvalRequest.save()
 
         self.project = Project.objects.get(id=self.project.id)
-        self.assertEqual(75, self.project.stepsProgress.sponsor)
+        self.assertEqual(80, self.project.stepsProgress.sponsor)
 
-        self.assertEqual(88.89, self.project.stepsProgress.school)
+        self.assertEqual(90, self.project.stepsProgress.school)
 
         # coordinatorSendCurriculum
         approvalRequest = RequestStepApproval(

@@ -556,7 +556,7 @@ def create_initial_steps():
         isStandard=True,
         approvalType="1",
         text="Descripción de la planificación inicial",
-        video="https://youtube.com"
+        video={"name": "some video", "url": "https://youtube.com"}
     )
     initialWorkshopPlanning.save()
 

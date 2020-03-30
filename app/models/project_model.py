@@ -8,8 +8,7 @@ from mongoengine import (
     Document,
     EmbeddedDocument,
     fields,
-    signals,
-    ValidationError)
+    signals)
 
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser

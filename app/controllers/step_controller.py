@@ -3,6 +3,7 @@
 
 from flask import request
 from flask_restful import Resource
+from flask import current_app
 
 from app.services.generic_service import GenericServices
 from app.models.step_model import Step

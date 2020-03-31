@@ -10,11 +10,21 @@ from mongoengine import fields, Document, EmbeddedDocument, signals
 from app.models.shared_embedded_documents import ProjectReference
 
 
+class Student(EmbeddedDocument):
+    id = fields.ObjectIdField(default=ObjectId())
+    firstName = fields.StringField()
+    lastName = fields.StringField()
+    birthdate = fields.DateTimeField()
+    gender = fields.StringField(max_length=1)
+    isDeleted = fields.BooleanField(default=False)
+
+
 class Section(EmbeddedDocument):
     id = fields.ObjectIdField(default=ObjectId())
     grade = fields.StringField(max_length=1)
     name = fields.StringField()
     isDeleted = fields.BooleanField(default=False)
+    students = fields.EmbeddedDocumentListField(Student)
 
 
 class School(EmbeddedDocument):

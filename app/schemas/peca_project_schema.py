@@ -18,6 +18,19 @@ from app.models.state_model import State, Municipality
 from app.schemas.shared_schemas import ProjectReferenceSchema
 
 
+class StudentSchema(Schema):
+    id = fields.Str(dump_only=True)
+    firstName = fields.Str(required=True)
+    lastName = fields.Str(required=True)
+    birthdate = fields.DateTime(required=True)
+    gender = fields.Str(
+        required=True,
+        validate=OneOf(
+            ('1', '2'),
+            ('female', 'male')
+        ))
+
+
 class SectionSchema(Schema):
     id = fields.Str(dump_only=True)
     grade = fields.Str(
@@ -26,6 +39,7 @@ class SectionSchema(Schema):
             OneOf(('1', '2', '3', '4', '5', '6'))
         ))
     name = fields.Str(required=True)
+    students = fields.List(fields.Nested(StudentSchema()), dump_only=True)
 
 
 class SchoolSchema(Schema):

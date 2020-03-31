@@ -87,7 +87,6 @@ class StepSchema(Schema):
                 data["checklist"] = None
             else:
                 data["checklist"] = json.loads(data["checklist"])
-            current_app.logger.info(data["checklist"])
         convertBool = [
             "hasText",
             "hasDate",

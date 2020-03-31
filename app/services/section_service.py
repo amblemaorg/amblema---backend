@@ -1,4 +1,4 @@
-# app/services/activity_service.py
+# app/services/section_service.py
 
 
 from flask import current_app

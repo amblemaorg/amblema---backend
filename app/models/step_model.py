@@ -30,7 +30,7 @@ class Step(Document):
     file = fields.EmbeddedDocumentField(
         Link, is_file=True, null=True, default=None)
     video = fields.EmbeddedDocumentField(Link, null=True, default=None)
-    checklist = fields.EmbeddedDocumentListField(CheckTemplate)
+    checklist = fields.EmbeddedDocumentListField(CheckTemplate, null=True)
     approvalType = fields.StringField(required=True, max_length=1)
     schoolYear = fields.ReferenceField('SchoolYear', required=True)
     status = fields.StringField(default='1', max_length=1)

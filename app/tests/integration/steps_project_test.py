@@ -212,7 +212,8 @@ class InitialSteps(unittest.TestCase):
             hasText=True,
             hasChecklist=True,
             approvalType="1",
-            tag="1"
+            tag="1",
+            checklist=[]
         )
         generalStep.checklist.append(check1)
         generalStep.checklist.append(check2)

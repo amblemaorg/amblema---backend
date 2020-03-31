@@ -1,6 +1,7 @@
 # app/schemas/step_schema.py
 
 import json
+from flask import current_app
 
 from marshmallow import (
     Schema,
@@ -53,7 +54,10 @@ class StepSchema(Schema):
     text = fields.Str(validate=not_blank)
     file = fields.Nested(FileSchema)
     video = fields.Nested(FileSchema)
-    checklist = fields.List(fields.Nested(CheckTemplateSchema()))
+    checklist = fields.List(
+        fields.Nested(
+            CheckTemplateSchema()),
+        allow_none=True)
     approvalType = fields.Str(
         validate=OneOf(
             ["1", "2", "3"],
@@ -79,7 +83,10 @@ class StepSchema(Schema):
         if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].title()
         if "checklist" in data and isinstance(data["checklist"], str):
-            data["checklist"] = json.loads(data["checklist"])
+            if not data["checklist"]:
+                data["checklist"] = None
+            else:
+                data["checklist"] = json.loads(data["checklist"])
         convertBool = [
             "hasText",
             "hasDate",
@@ -116,5 +123,10 @@ class StepSchema(Schema):
             and "checklist" not in data
         ):
             errors["checklist"] = [{"status": "2", "msg": "Field is required"}]
+        if (
+            "hasChecklist" in data and data["hasChecklist"]
+            and "checklist" in data and data["checklist"] == []
+        ):
+            errors["checklist"] = [{"status": "12", "msg": "Out of range"}]
         if errors:
             raise ValidationError(errors)

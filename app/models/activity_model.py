@@ -20,7 +20,8 @@ class Activity(EmbeddedDocument):
     file = fields.EmbeddedDocumentField(
         Link, is_file=True, null=True, default=None)
     video = fields.EmbeddedDocumentField(Link, null=True, default=None)
-    checklist = fields.EmbeddedDocumentListField(CheckTemplate)
+    checklist = fields.EmbeddedDocumentListField(
+        CheckTemplate, null=True, default=None)
     approvalType = fields.StringField(required=True, max_length=1)
     status = fields.StringField(default='1', max_length=1)
     isDeleted = fields.BooleanField(default=False)

@@ -18,7 +18,7 @@ def messageRegisterEmail(email, password):
 <body>
     <center>
         <div style="margin:0;padding:0">
-            <table width="100%" border="0" bgcolor="#008096" cellpadding="0" cellspacing="0" style="font-family:'Montserrat',font-size:12px;">
+            <table width="100%" border="0" bgcolor="white" cellpadding="0" cellspacing="0" style="font-family:'Montserrat',font-size:12px;">
                 <tbody>
                     <tr>
                         <td></td>

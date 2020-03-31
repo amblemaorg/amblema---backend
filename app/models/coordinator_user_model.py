@@ -140,14 +140,14 @@ class CoordinatorUser(User):
                 found = True
                 nAttempts = len(my_module.attempts)
                 results = module.evaluate(answers)
-                my_module.score = 4 - (3 if nAttempts > 2 else nAttempts)
                 if results["approved"]:
                     my_module.status = "3"
+                    self.nCoins += my_module.score
                     if self.isInstructed():
                         self.instructed = True
                         self.updateProjectsOnceInstructed()
-                        self.nCoins += my_module.score
                 else:
+                    my_module.score = 1 if nAttempts > 2 else my_module.score - 1
                     my_module.status = "2"
                 attempt = Attempt(
                     answers=answers,

@@ -2,11 +2,19 @@
 
 
 from datetime import datetime
+from bson import ObjectId
 
 from flask import current_app
 from mongoengine import fields, Document, EmbeddedDocument, signals
 
 from app.models.shared_embedded_documents import ProjectReference
+
+
+class Section(EmbeddedDocument):
+    id = fields.ObjectIdField(default=ObjectId())
+    grade = fields.StringField(max_length=1)
+    name = fields.StringField()
+    isDeleted = fields.BooleanField(default=False)
 
 
 class School(EmbeddedDocument):
@@ -32,6 +40,7 @@ class School(EmbeddedDocument):
     facebook = fields.URLField()
     instagram = fields.StringField()
     twitter = fields.StringField()
+    sections = fields.EmbeddedDocumentListField(Section)
 
 
 class PecaProject(Document):

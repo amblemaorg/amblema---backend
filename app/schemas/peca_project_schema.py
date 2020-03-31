@@ -18,6 +18,16 @@ from app.models.state_model import State, Municipality
 from app.schemas.shared_schemas import ProjectReferenceSchema
 
 
+class SectionSchema(Schema):
+    id = fields.Str(dump_only=True)
+    grade = fields.Str(
+        required=True,
+        validate=(
+            OneOf(('1', '2', '3', '4', '5', '6'))
+        ))
+    name = fields.Str(required=True)
+
+
 class SchoolSchema(Schema):
     name = fields.Str(dump_only=True)
     code = fields.Str(dump_only=True)
@@ -43,6 +53,7 @@ class SchoolSchema(Schema):
     facebook = fields.Str(validate=validate_url)
     instagram = fields.Str()
     twitter = fields.Str()
+    sections = fields.List(fields.Nested(SectionSchema()), dump_only=True)
 
 
 class PecaProjectSchema(Schema):

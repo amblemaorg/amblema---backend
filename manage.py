@@ -41,6 +41,7 @@ def create_super_user(email, password):
             userType="0",
             phone="02322322323",
             role=role)
+        user.setHashPassword()
         user.save()
 
 

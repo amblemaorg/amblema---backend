@@ -14,6 +14,7 @@ class Section(EmbeddedDocument):
     id = fields.ObjectIdField(default=ObjectId())
     grade = fields.StringField(max_length=1)
     name = fields.StringField()
+    isDeleted = fields.BooleanField(default=False)
 
 
 class School(EmbeddedDocument):

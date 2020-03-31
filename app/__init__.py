@@ -88,6 +88,9 @@ from app.controllers.peca_project_controller import (
     PecaProjectHandlerController,
     SchoolController
 )
+from app.controllers.section_controller import(
+    SectionController, SectionHandlerController
+)
 db = MongoEngine()
 
 
@@ -231,5 +234,9 @@ def create_app(config_instance):
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(SchoolController, '/pecaprojects/school/<string:id>')
+    api.add_resource(SectionController,
+                     '/pecaprojects/sections/<string:pecaId>')
+    api.add_resource(SectionHandlerController,
+                     '/pecaprojects/sections/<string:pecaId>/<string:sectionId>')
 
     return app

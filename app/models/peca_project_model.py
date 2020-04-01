@@ -10,12 +10,23 @@ from mongoengine import fields, Document, EmbeddedDocument, signals
 from app.models.shared_embedded_documents import ProjectReference
 
 
+class Diagnostic(EmbeddedDocument):
+    multitplicationsPerMin = fields.IntField()
+    operationsPerMin = fields.IntField()
+    wordsPerMin = fields.IntField()
+    mathDate = fields.DateTimeField()
+    readingDate = fields.DateTimeField()
+
+
 class Student(EmbeddedDocument):
-    id = fields.ObjectIdField(default=ObjectId())
+    id = fields.ObjectIdField(default=fields.ObjectId)
     firstName = fields.StringField()
     lastName = fields.StringField()
     birthdate = fields.DateTimeField()
     gender = fields.StringField(max_length=1)
+    lapse1 = fields.EmbeddedDocumentField(Diagnostic)
+    lapse2 = fields.EmbeddedDocumentField(Diagnostic)
+    lapse3 = fields.EmbeddedDocumentField(Diagnostic)
     isDeleted = fields.BooleanField(default=False)
 
 

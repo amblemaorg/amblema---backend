@@ -1,6 +1,8 @@
 # app/services/diagnostic_service.py
 
 
+from datetime import datetime
+
 from flask import current_app
 from marshmallow import ValidationError
 
@@ -25,10 +27,11 @@ class DiagnosticService():
         if peca:
             try:
                 if diagnosticType == "reading":
-                    schema = DiagnosticSchema(only=('wordsPerMin',))
+                    schema = DiagnosticSchema(
+                        only=('wordsPerMin', 'readingDate'))
                 elif diagnosticType == "math":
                     schema = DiagnosticSchema(
-                        only=('multitplicationsPerMin', 'operationsPerMin'))
+                        only=('multitplicationsPerMin', 'operationsPerMin', 'mathDate'))
                 data = schema.load(jsonData)
 
                 if lapse == "1":
@@ -49,6 +52,10 @@ class DiagnosticService():
 
                 for field in schema.dump(data).keys():
                     diagnostic[field] = data[field]
+                if diagnosticType == "reading":
+                    diagnostic.readingDate = datetime.utcnow()
+                elif diagnosticType == "math":
+                    diagnostic.mathDate = datetime.utcnow()
 
                 try:
                     for section in peca.school.sections:

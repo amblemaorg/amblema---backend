@@ -22,6 +22,8 @@ class DiagnosticSchema(Schema):
     multitplicationsPerMin = fields.Int(min=0)
     operationsPerMin = fields.Int(min=0)
     wordsPerMin = fields.Int(min=0)
+    readingDate = fields.DateTime(dump_only=True)
+    mathDate = fields.DateTime(dump_only=True)
 
 
 class StudentSchema(Schema):

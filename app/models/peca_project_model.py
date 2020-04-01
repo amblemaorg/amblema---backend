@@ -14,6 +14,8 @@ class Diagnostic(EmbeddedDocument):
     multitplicationsPerMin = fields.IntField()
     operationsPerMin = fields.IntField()
     wordsPerMin = fields.IntField()
+    mathDate = fields.DateTimeField()
+    readingDate = fields.DateTimeField()
 
 
 class Student(EmbeddedDocument):

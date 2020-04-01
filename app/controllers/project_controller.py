@@ -57,3 +57,15 @@ class ProjectStepsController(Resource):
     def post(self, id):
         jsonData = request.form.to_dict()
         return self.service.updateStep(id, jsonData, request.files)
+
+
+class ProjectPecaController(Resource):
+    service = ProjectService()
+
+    def get(self, id):
+        """
+        create a peca for a project  
+        params : id -> projectId
+        """
+
+        return self.service.handlerCreatePeca(id)

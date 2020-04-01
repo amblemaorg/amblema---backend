@@ -86,12 +86,25 @@ class StepsProgressSchema(Schema):
     steps = fields.List(fields.Nested(StepControlSchema))
 
 
+class ResumeSchoolYearSchema(Schema):
+    id = fields.Str()
+    name = fields.Str()
+    status = fields.Str()
+
+
+class ResumePecaSchema(Schema):
+    pecaId = fields.Str()
+    schoolYear = fields.Nested(ResumeSchoolYearSchema)
+    createAt = fields.DateTime()
+
+
 class ProjectSchema(Schema):
     id = fields.Str(dump_only=True)
     code = fields.Function(lambda obj: str(obj.code).zfill(7))
     school = MAReferenceField(document=SchoolUser, allow_none=True)
     sponsor = MAReferenceField(document=SponsorUser, allow_none=True)
     coordinator = MAReferenceField(document=CoordinatorUser, allow_none=True)
+    schoolYears = fields.List(fields.Nested(ResumePecaSchema()))
     stepsProgress = fields.Nested(StepsProgressSchema, dump_only=True)
     phase = fields.Str(validate=OneOf(
         ('1', '2'),

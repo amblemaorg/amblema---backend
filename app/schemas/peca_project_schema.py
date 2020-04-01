@@ -18,6 +18,12 @@ from app.models.state_model import State, Municipality
 from app.schemas.shared_schemas import ProjectReferenceSchema
 
 
+class DiagnosticSchema(Schema):
+    multitplicationsPerMin = fields.Int(min=0)
+    operationsPerMin = fields.Int(min=0)
+    wordsPerMin = fields.Int(min=0)
+
+
 class StudentSchema(Schema):
     id = fields.Str(dump_only=True)
     firstName = fields.Str(required=True)
@@ -29,6 +35,9 @@ class StudentSchema(Schema):
             ('1', '2'),
             ('female', 'male')
         ))
+    lapse1 = fields.Nested(DiagnosticSchema(), dump_only=True)
+    lapse2 = fields.Nested(DiagnosticSchema(), dump_only=True)
+    lapse3 = fields.Nested(DiagnosticSchema(), dump_only=True)
 
 
 class SectionSchema(Schema):

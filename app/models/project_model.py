@@ -107,12 +107,25 @@ class StepsProgress(EmbeddedDocument):
             nApprovedCoordinator/nCoordinator, 4)*100
 
 
+class ResumeSchoolYear(EmbeddedDocument):
+    id = fields.StringField()
+    name = fields.StringField()
+    status = fields.StringField(max_length=1)
+
+
+class ResumePeca(EmbeddedDocument):
+    pecaId = fields.StringField()
+    schoolYear = fields.EmbeddedDocumentField(ResumeSchoolYear)
+    createAt = fields.DateTimeField(default=datetime.utcnow)
+
+
 class Project(Document):
     code = fields.SequenceField(required=True, value_decorator=str)
     school = fields.ReferenceField('SchoolUser')
     sponsor = fields.ReferenceField('SponsorUser')
     coordinator = fields.ReferenceField('CoordinatorUser')
     schoolYear = fields.LazyReferenceField('SchoolYear')
+    schoolYears = fields.EmbeddedDocumentListField(ResumePeca)
     stepsProgress = fields.EmbeddedDocumentField(StepsProgress)
     phase = fields.StringField(max_length=1, default="1")
     status = fields.StringField(default='1')
@@ -161,6 +174,10 @@ class Project(Document):
                     self.stepsProgress.updateProgress()
                     self.save()
                 break
+
+    def createPeca(self):
+        service = ProjectService()
+        return service.createPeca(self)
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):

@@ -1,6 +1,8 @@
 # app/services/project_service.py
 
 
+from datetime import datetime
+
 from flask import current_app
 from marshmallow import ValidationError
 
@@ -47,6 +49,88 @@ class ProjectService():
             return projectSchema.dump(project)
         except ValidationError as err:
             return err.normalized_messages(), 400
+
+    def handlerCreatePeca(self, projectId):
+        from app.models.project_model import Project
+        from app.helpers.error_helpers import RegisterNotFound
+        from app.schemas.project_schema import ResumePecaSchema
+
+        try:
+            project = Project.objects(id=projectId).first()
+            if project:
+                peca = project.createPeca()
+
+                return ResumePecaSchema().dump(peca), 200
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"recordId": projectId})
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400
+
+    def createPeca(self, project):
+        from app.models.peca_project_model import PecaProject
+        from app.models.school_year_model import SchoolYear
+        from app.models.project_model import ResumePeca, ResumeSchoolYear
+
+        # create peca project
+
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+
+        for peca in project.schoolYears:
+            if peca.schoolYear.id == str(schoolYear.id):
+                return peca
+
+        pecaProject = PecaProject(
+            schoolYear=schoolYear,
+            schoolYearName=schoolYear.name,
+            project={
+                "id": str(project.id),
+                "code": str(project.code),
+                "coordinator": {
+                    "id": str(project.coordinator.id),
+                    "name": project.coordinator.firstName + " " + project.coordinator.lastName
+                },
+                "sponsor": {
+                    "id": str(project.sponsor.id),
+                    "name": project.sponsor.name
+                },
+                "school": {
+                    "id": str(project.school.id),
+                    "name": project.school.name
+                }
+            },
+            school={
+                "name": project.school.name,
+                "code": project.school.code,
+                "addressState": str(project.school.addressState.id),
+                "addressMunicipality": str(project.school.addressMunicipality.id),
+                "principalFirstName": project.school.principalFirstName,
+                "principalLastName": project.school.principalLastName,
+                "principalEmail": project.school.principalEmail,
+                "principalPhone": project.school.principalPhone,
+                "nTeachers": project.school.nTeachers,
+                "nGrades": project.school.nGrades,
+                "nStudents": project.school.nStudents,
+                "nAdministrativeStaff": project.school.nAdministrativeStaff,
+                "nLaborStaff": project.school.nLaborStaff,
+                "sections": [
+                ]
+            }
+
+        )
+        pecaProject.save()
+        peca = ResumePeca(
+            pecaId=str(pecaProject.pk),
+            schoolYear=ResumeSchoolYear(
+                id=str(schoolYear.id),
+                name=schoolYear.name,
+                status=schoolYear.status
+            )
+        )
+        project.schoolYears.append(peca)
+        project.save()
+        return peca
 
     def handlerProjectBeforeCreate(self, document):
 

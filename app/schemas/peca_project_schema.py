@@ -30,6 +30,12 @@ class StudentSchema(Schema):
     id = fields.Str(dump_only=True)
     firstName = fields.Str(required=True)
     lastName = fields.Str(required=True)
+    cardId = fields.Str(validate=only_numbers)
+    cardType = fields.Str(
+        validate=OneOf(
+            ('1', '2'),
+            ('V', 'E')
+        ))
     birthdate = fields.DateTime(required=True)
     gender = fields.Str(
         required=True,

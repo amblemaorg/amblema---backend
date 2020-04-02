@@ -81,7 +81,7 @@ class StepSchema(Schema):
     @pre_load
     def process_input(self, data, **kwargs):
         if "name" in data and isinstance(data["name"], str):
-            data["name"] = data["name"].title()
+            data["name"] = data["name"].strip()
         if "checklist" in data and isinstance(data["checklist"], str):
             if not data["checklist"]:
                 data["checklist"] = None

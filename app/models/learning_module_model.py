@@ -46,11 +46,12 @@ class LearningModule(Document):
     secondaryTitle = fields.StringField(required=True, max_length=140)
     secondaryDescription = fields.StringField(required=True, max_length=4970)
     objectives = fields.ListField(
-        fields.StringField(max_length=60), required=True)
+        fields.StringField(max_length=873), required=True)
     slider = fields.EmbeddedDocumentListField(SliderElement, max_length=4)
     images = fields.EmbeddedDocumentListField(Image, max_length=6)
     duration = fields.IntField(required=True, min_value=0)
-    quizzes = fields.EmbeddedDocumentListField(Quiz, required=True)
+    quizzes = fields.EmbeddedDocumentListField(
+        Quiz, required=True, max_length=15)
     priority = fields.IntField(null=True)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

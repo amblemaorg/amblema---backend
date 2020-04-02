@@ -55,9 +55,9 @@ class SchoolYear(Document):
         goalSetting = GoalSetting()
         for i in range(6):
             goalSetting['grade'+str(i+1)] = GradeSetting(
-                multitplicationsPerMin=0,
-                operationsPerMin=0,
-                wordsPerMin=0
+                multitplicationsPerMin=1,
+                operationsPerMin=1,
+                wordsPerMin=1
             )
 
         pecaSetting = PecaSetting(

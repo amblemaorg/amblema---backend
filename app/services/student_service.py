@@ -8,6 +8,7 @@ from app.models.peca_project_model import PecaProject
 from app.models.peca_project_model import Student
 from app.schemas.peca_project_schema import StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
+from mongoengine.queryset.visitor import Q
 
 
 class StudentService():
@@ -124,15 +125,19 @@ class StudentService():
                                    payload={"pecaId": pecaId, "sectionId": sectionId, "studentId": studentId})
 
     def checkForDuplicated(self, pecaId, sectionId, newStudent):
-        student = PecaProject.objects.filter(
-            id=pecaId,
-            school__sections__isDeleted=False,
-            school__sections__id=sectionId,
-            school__sections__students__firstName=newStudent.firstName,
-            school__sections__students__lastName=newStudent.lastName,
-            school__sections__students__birthdate=newStudent.birthdate,
-            school__sections__students__gender=newStudent.gender
-        ).only('id').first()
+        student = PecaProject.objects((
+            Q(id=pecaId)
+            & Q(school__sections__isDeleted=False)
+            & Q(school__sections__id=sectionId)
+            & Q(school__sections__students__firstName=newStudent.firstName)
+            & Q(school__sections__students__lastName=newStudent.lastName)
+            & Q(school__sections__students__birthdate=newStudent.birthdate)
+            & Q(school__sections__students__gender=newStudent.gender)
+        ) |
+            (
+            Q(school__sections__students__cardId__exists=True)
+            & Q(school__sections__students__cardId=newStudent.cardId)
+        )).only('id').first()
         if student:
             return True
         return False

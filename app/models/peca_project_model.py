@@ -22,6 +22,8 @@ class Student(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
     firstName = fields.StringField()
     lastName = fields.StringField()
+    cardId = fields.StringField()
+    cardType = fields.StringField()
     birthdate = fields.DateTimeField()
     gender = fields.StringField(max_length=1)
     lapse1 = fields.EmbeddedDocumentField(Diagnostic)

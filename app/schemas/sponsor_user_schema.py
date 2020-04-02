@@ -13,7 +13,7 @@ from app.helpers.ma_schema_fields import MAImageField
 class SponsorUserSchema(UserSchema):
     name = fields.Str(
         required=True,
-        validate=(not_blank, only_letters))
+        validate=(not_blank))
     companyRif = fields.Str(required=True, validate=only_numbers)
     companyType = fields.Str(
         required=True,

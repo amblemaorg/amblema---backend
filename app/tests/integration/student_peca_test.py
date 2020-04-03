@@ -168,7 +168,8 @@ class SchoolPecaTest(unittest.TestCase):
             "firstName": "Danel",
             "lastName": "Rodriguez",
             "birthdate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
-            "gender": "1"
+            "gender": "1",
+            "cardId": "20922842"
         }
         res = self.client().post(
             '/pecaprojects/students/{}/{}'.format(
@@ -204,6 +205,21 @@ class SchoolPecaTest(unittest.TestCase):
             "lastName": "Rodriguez",
             "birthdate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
             "gender": "1"
+        }
+        res = self.client().post(
+            '/pecaprojects/students/{}/{}'.format(
+                self.pecaProject.id, self.pecaProject.school.sections[0].id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 400)
+
+        # create duplicated
+        requestData = {
+            "firstName": "Dember",
+            "lastName": "Rodriguez",
+            "birthdate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+            "gender": "2",
+            "cardId": "20922842"
         }
         res = self.client().post(
             '/pecaprojects/students/{}/{}'.format(

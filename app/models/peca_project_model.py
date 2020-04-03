@@ -12,10 +12,22 @@ from app.models.shared_embedded_documents import ProjectReference
 
 class Diagnostic(EmbeddedDocument):
     multitplicationsPerMin = fields.IntField()
+    multitplicationsPerMinIndex = fields.FloatField()
     operationsPerMin = fields.IntField()
+    operationsPerMinIndex = fields.FloatField()
     wordsPerMin = fields.IntField()
+    wordsPerMinIndex = fields.FloatField()
     mathDate = fields.DateTimeField()
     readingDate = fields.DateTimeField()
+
+    def calculateIndex(self, setting):
+        if self.multitplicationsPerMin:
+            self.multitplicationsPerMinIndex = self.multitplicationsPerMin / \
+                setting.multitplicationsPerMin
+        if self.operationsPerMin:
+            self.operationsPerMinIndex = self.operationsPerMin / setting.operationsPerMin
+        if self.wordsPerMin:
+            self.wordsPerMinIndex = self.wordsPerMin / setting.wordsPerMin
 
 
 class Student(EmbeddedDocument):

@@ -287,3 +287,11 @@ class ContactRequestTest(unittest.TestCase):
         json_res = json.loads(
             res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(res.status_code, 201)
+
+    def tearDown(self):
+        """teardown all initialized variables."""
+        self.db.connection.drop_database('amblema_testing')
+
+
+if __name__ == "__main__":
+    unittest.main()

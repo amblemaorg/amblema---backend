@@ -6,6 +6,7 @@ from datetime import datetime
 from flask import current_app
 from marshmallow import ValidationError
 
+from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
 from app.models.peca_project_model import Diagnostic
 from app.schemas.peca_project_schema import DiagnosticSchema
@@ -15,6 +16,8 @@ from app.helpers.error_helpers import RegisterNotFound
 class DiagnosticService():
 
     def save(self, diagnosticType, lapse, pecaId, sectionId, studentId, jsonData):
+
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
 
         peca = PecaProject.objects(
             isDeleted=False,
@@ -28,11 +31,23 @@ class DiagnosticService():
             try:
                 if diagnosticType == "reading":
                     schema = DiagnosticSchema(
-                        only=('wordsPerMin', 'readingDate'))
+                        only=('wordsPerMin', 'wordsPerMinIndex', 'readingDate'))
                 elif diagnosticType == "math":
                     schema = DiagnosticSchema(
-                        only=('multitplicationsPerMin', 'operationsPerMin', 'mathDate'))
+                        only=(
+                            'multitplicationsPerMin',
+                            'multitplicationsPerMinIndex',
+                            'operationsPerMin',
+                            'operationsPerMinIndex',
+                            'mathDate'))
                 data = schema.load(jsonData)
+
+                grade = peca.school.sections.filter(
+                    id=sectionId, isDeleted=False).first().grade
+                current_app.logger.info(schoolYear.name)
+                current_app.logger.info(schoolYear.pecaSetting)
+                setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(
+                    grade)]
 
                 if lapse == "1":
                     diagnostic = peca.school.sections.filter(
@@ -52,10 +67,12 @@ class DiagnosticService():
 
                 for field in schema.dump(data).keys():
                     diagnostic[field] = data[field]
+
                 if diagnosticType == "reading":
                     diagnostic.readingDate = datetime.utcnow()
                 elif diagnosticType == "math":
                     diagnostic.mathDate = datetime.utcnow()
+                diagnostic.calculateIndex(setting)
 
                 try:
                     for section in peca.school.sections:
@@ -103,21 +120,30 @@ class DiagnosticService():
                                 if lapse == "1":
                                     if diagnosticType == "reading":
                                         student.lapse1.wordsPerMin = None
+                                        student.lapse1.wordsPerMinIndex = None
                                     elif diagnosticType == "math":
                                         student.lapse1.multitplicationsPerMin = None
+                                        student.lapse1.multitplicationsPerMinIndex = None
                                         student.lapse1.operationsPerMin = None
+                                        student.lapse1.operationsPerMinIndex = None
                                 elif lapse == "2":
                                     if diagnosticType == "reading":
                                         student.lapse2.wordsPerMin = None
+                                        student.lapse2.wordsPerMinIndex = None
                                     elif diagnosticType == "math":
                                         student.lapse2.multitplicationsPerMin = None
+                                        student.lapse2.multitplicationsPerMinIndex = None
                                         student.lapse2.operationsPerMin = None
+                                        student.lapse2.operationsPerMinIndex = None
                                 elif lapse == "3":
                                     if diagnosticType == "reading":
                                         student.lapse3.wordsPerMin = None
+                                        student.lapse3.wordsPerMinIndex = None
                                     elif diagnosticType == "math":
                                         student.lapse3.multitplicationsPerMin = None
+                                        student.lapse3.multitplicationsPerMinIndex = None
                                         student.lapse3.operationsPerMin = None
+                                        student.lapse3.operationsPerMinIndex = None
                                 peca.save()
                                 return "Record deleted successfully", 200
             except Exception as e:

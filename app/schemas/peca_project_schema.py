@@ -20,8 +20,11 @@ from app.schemas.shared_schemas import ProjectReferenceSchema
 
 class DiagnosticSchema(Schema):
     multitplicationsPerMin = fields.Int(min=0)
+    multitplicationsPerMinIndex = fields.Float(dump_only=True)
     operationsPerMin = fields.Int(min=0)
+    operationsPerMinIndex = fields.Float(dump_only=True)
     wordsPerMin = fields.Int(min=0)
+    wordsPerMinIndex = fields.Float(dump_only=True)
     readingDate = fields.DateTime(dump_only=True)
     mathDate = fields.DateTime(dump_only=True)
 

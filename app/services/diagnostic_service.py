@@ -44,8 +44,6 @@ class DiagnosticService():
 
                 grade = peca.school.sections.filter(
                     id=sectionId, isDeleted=False).first().grade
-                current_app.logger.info(schoolYear.name)
-                current_app.logger.info(schoolYear.pecaSetting)
                 setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(
                     grade)]
 

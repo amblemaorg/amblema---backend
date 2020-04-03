@@ -12,7 +12,7 @@ from marshmallow import (
 
 from app.schemas import fields
 from app.helpers.ma_schema_validators import (
-    not_blank, only_numbers, OneOf, Range, validate_url)
+    not_blank, only_numbers, OneOf, Range, validate_url, validate_email)
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 from app.schemas.shared_schemas import ProjectReferenceSchema
@@ -51,6 +51,45 @@ class StudentSchema(Schema):
     lapse3 = fields.Nested(DiagnosticSchema(), dump_only=True)
 
 
+class TeacherSchema(Schema):
+    id = fields.Str(dump_only=True)
+    firstName = fields.Str()
+    lastName = fields.Str()
+    cardId = fields.Str(validate=only_numbers)
+    cardType = fields.Str(
+        validate=OneOf(
+            ('1', '2'),
+            ('V', 'E')
+        ))
+    gender = fields.Str(
+        required=True,
+        validate=OneOf(
+            ('1', '2'),
+            ('female', 'male')
+        ))
+    email = fields.Str(required=True, validate=validate_email)
+    phone = fields.Str(validate=only_numbers)
+    addressState = MAReferenceField(document=State)
+    addressMunicipality = MAReferenceField(
+        document=Municipality)
+    addressStreet = fields.Str()
+    addressCity = fields.Str()
+    status = fields.Str(
+        required=True,
+        validate=OneOf(
+            ('1', '2'),
+            ('active', 'inactive')
+        ))
+    createdAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime(dump_only=True)
+
+
+class TeacherLinkSchema(Schema):
+    id = fields.Str(dump_only=True)
+    firstName = fields.Str()
+    lastName = fields.Str()
+
+
 class SectionSchema(Schema):
     id = fields.Str(dump_only=True)
     grade = fields.Str(
@@ -60,6 +99,7 @@ class SectionSchema(Schema):
         ))
     name = fields.Str(required=True)
     students = fields.List(fields.Nested(StudentSchema()), dump_only=True)
+    teacher = fields.Nested(TeacherLinkSchema())
 
 
 class SchoolSchema(Schema):
@@ -72,11 +112,11 @@ class SchoolSchema(Schema):
     addressCity = fields.Str(dump_only=True)
     principalFirstName = fields.Str(required=True)
     principalLastName = fields.Str(required=True)
-    principalEmail = fields.Email(required=True)
+    principalEmail = fields.Str(required=True, validate=validate_email)
     principalPhone = fields.Str(required=True, validate=only_numbers)
     subPrincipalFirstName = fields.Str()
     subPrincipalLastName = fields.Str()
-    subPrincipalEmail = fields.Email()
+    subPrincipalEmail = fields.Str(validate=validate_email)
     subPrincipalPhone = fields.Str(validate=only_numbers)
     nTeachers = fields.Int(validate=Range(min=0))
     nGrades = fields.Int(validate=Range(min=0))
@@ -88,6 +128,7 @@ class SchoolSchema(Schema):
     instagram = fields.Str()
     twitter = fields.Str()
     sections = fields.List(fields.Nested(SectionSchema()), dump_only=True)
+    teachers = fields.List(fields.Nested(TeacherSchema()), dump_only=True)
 
 
 class PecaProjectSchema(Schema):

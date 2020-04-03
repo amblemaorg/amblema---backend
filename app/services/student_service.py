@@ -3,12 +3,12 @@
 
 from flask import current_app
 from marshmallow import ValidationError
+from mongoengine.queryset.visitor import Q
 
 from app.models.peca_project_model import PecaProject
 from app.models.peca_project_model import Student
 from app.schemas.peca_project_schema import StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
-from mongoengine.queryset.visitor import Q
 
 
 class StudentService():

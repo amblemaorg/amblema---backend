@@ -44,12 +44,38 @@ class Student(EmbeddedDocument):
     isDeleted = fields.BooleanField(default=False)
 
 
+class Teacher(EmbeddedDocument):
+    id = fields.ObjectIdField(default=fields.ObjectId)
+    firstName = fields.StringField()
+    lastName = fields.StringField()
+    cardType = fields.StringField(max_length=1)
+    cardId = fields.StringField()
+    gender = fields.StringField(max_length=1)
+    email = fields.StringField()
+    phone = fields.StringField()
+    addressState = fields.ReferenceField('State')
+    addressMunicipality = fields.ReferenceField('Municipality')
+    addressStreet = fields.StringField()
+    addressCity = fields.StringField()
+    status = fields.StringField(max_length=1, default=1)
+    isDeleted = fields.BooleanField(default=False)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+
+class TeacherLink(EmbeddedDocument):
+    id = fields.ObjectIdField(default=fields.ObjectId)
+    firstName = fields.StringField()
+    lastName = fields.StringField()
+
+
 class Section(EmbeddedDocument):
     id = fields.ObjectIdField(default=ObjectId())
     grade = fields.StringField(max_length=1)
     name = fields.StringField()
     isDeleted = fields.BooleanField(default=False)
     students = fields.EmbeddedDocumentListField(Student)
+    teacher = fields.EmbeddedDocumentField(TeacherLink)
 
 
 class School(EmbeddedDocument):
@@ -76,6 +102,7 @@ class School(EmbeddedDocument):
     instagram = fields.StringField()
     twitter = fields.StringField()
     sections = fields.EmbeddedDocumentListField(Section)
+    teachers = fields.EmbeddedDocumentListField(Teacher)
 
 
 class PecaProject(Document):

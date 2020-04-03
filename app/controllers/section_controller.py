@@ -1,4 +1,4 @@
-# app/controllers/peca_project_controller.py
+# app/controllers/section_controller.py
 
 
 from flask import request

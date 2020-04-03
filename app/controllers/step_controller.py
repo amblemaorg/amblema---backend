@@ -5,7 +5,7 @@ from flask import request
 from flask_restful import Resource
 from flask import current_app
 
-from app.services.generic_service import GenericServices
+from app.services.step_handler_service import StepHandlerService
 from app.models.step_model import Step
 from app.schemas.step_schema import StepSchema
 from app.helpers.handler_request import getQueryParams
@@ -13,7 +13,7 @@ from app.helpers.handler_request import getQueryParams
 
 class StepController(Resource):
 
-    service = GenericServices(
+    service = StepHandlerService(
         Model=Step,
         Schema=StepSchema)
 
@@ -28,7 +28,7 @@ class StepController(Resource):
 
 class StepHandlerController(Resource):
 
-    service = GenericServices(
+    service = StepHandlerService(
         Model=Step,
         Schema=StepSchema)
 

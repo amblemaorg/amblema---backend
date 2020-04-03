@@ -25,6 +25,7 @@ from app.schemas.shared_schemas import CheckSchema
 class StepFieldsSchema(Schema):
     id = fields.Str()
     name = fields.Str(dump_only=True)
+    devName = fields.Str(dump_only=True)
     tag = fields.Str(dump_only=True)
     hasText = fields.Bool(required=True)
     hasDate = fields.Bool(required=True)

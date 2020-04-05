@@ -7,7 +7,8 @@ from marshmallow import (
     pre_load,
     EXCLUDE,
     validate,
-    validates_schema)
+    validates_schema,
+    ValidationError)
 
 from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range
 from app.helpers.ma_schema_fields import MAReferenceField
@@ -91,7 +92,6 @@ class SponsorContactSchema(Schema):
 
         toTitle = (
             'name'
-            'schoolAddress',
             'schoolAddressCity',
             'schoolAddressStreet',
             'schoolPrincipalFirstName',
@@ -111,7 +111,6 @@ class SponsorContactSchema(Schema):
                 'schoolName',
                 'schoolCode',
                 'schoolEmail',
-                'schoolAddress',
                 'schoolAddressState',
                 'schoolAddressMunicipality',
                 'schoolAddressCity',

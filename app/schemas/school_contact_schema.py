@@ -93,7 +93,6 @@ class SchoolContactSchema(Schema):
         toTitle = (
             'name'
             'sponsorName',
-            'sponsorAddress',
             'sponsorAddressCity',
             'sponsorAddressStreet',
             'sponsorContactFirstName',
@@ -111,7 +110,6 @@ class SchoolContactSchema(Schema):
                 'sponsorName',
                 'sponsorEmail',
                 'sponsorRif',
-                'sponsorAddress',
                 'sponsorAddressState',
                 'sponsorAddressMunicipality',
                 'sponsorAddressCity',

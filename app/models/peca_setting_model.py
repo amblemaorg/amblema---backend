@@ -18,6 +18,7 @@ class InitialWorshop(EmbeddedDocument):
     teachersMeetingFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     teachersMeetingDescription = fields.StringField()
+    status = fields.StringField(max_length=1, default="2")
 
 
 class LapsePlanning(EmbeddedDocument):
@@ -25,6 +26,7 @@ class LapsePlanning(EmbeddedDocument):
         Link, is_file=True)
     proposalFundationDescription = fields.StringField()
     meetingDescription = fields.StringField()
+    status = fields.StringField(max_length=1, default="2")
 
 
 class AmbleCoins(EmbeddedDocument):
@@ -33,6 +35,7 @@ class AmbleCoins(EmbeddedDocument):
     teachersMeetingDescription = fields.StringField()
     piggyBankDescription = fields.StringField()
     piggyBankSlider = fields.EmbeddedDocumentListField(Image)
+    status = fields.StringField(max_length=1, default="2")
 
 
 class AnnualConvention(EmbeddedDocument):
@@ -40,9 +43,10 @@ class AnnualConvention(EmbeddedDocument):
     step2Description = fields.StringField()
     step3Description = fields.StringField()
     step4Description = fields.StringField()
+    status = fields.StringField(max_length=1, default="2")
 
 
-class Lapse1(EmbeddedDocument):
+class Lapse(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
     ambleCoins = fields.EmbeddedDocumentField(AmbleCoins)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
@@ -50,18 +54,8 @@ class Lapse1(EmbeddedDocument):
     activities = fields.EmbeddedDocumentListField(Activity)
 
 
-class Lapse2(EmbeddedDocument):
-    lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
-    activities = fields.EmbeddedDocumentListField(Activity)
-
-
-class Lapse3(EmbeddedDocument):
-    lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
-    activities = fields.EmbeddedDocumentListField(Activity)
-
-
 class PecaSetting(EmbeddedDocument):
-    lapse1 = fields.EmbeddedDocumentField(Lapse1)
-    lapse2 = fields.EmbeddedDocumentField(Lapse2)
-    lapse3 = fields.EmbeddedDocumentField(Lapse3)
+    lapse1 = fields.EmbeddedDocumentField(Lapse)
+    lapse2 = fields.EmbeddedDocumentField(Lapse)
+    lapse3 = fields.EmbeddedDocumentField(Lapse)
     goalSetting = fields.EmbeddedDocumentField(GoalSetting)

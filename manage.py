@@ -80,5 +80,15 @@ def create_initial_schoolyear(startDate, endDate):
     schoolYear.save()
 
 
+@manager.command
+def create_peca_setting():
+    from app.models.school_year_model import SchoolYear
+    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+    if schoolYear:
+        if not schoolYear.pecaSetting:
+            schoolYear.initFirstPecaSetting()
+            schoolYear.save()
+
+
 if __name__ == "__main__":
     manager.run()

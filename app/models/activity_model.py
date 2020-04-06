@@ -8,8 +8,9 @@ from app.models.shared_embedded_documents import Link, CheckTemplate
 
 
 class Activity(EmbeddedDocument):
-    id = fields.ObjectIdField(default=ObjectId())
+    id = fields.ObjectIdField(default=fields.ObjectId)
     name = fields.StringField()
+    devName = fields.StringField()
     hasText = fields.BooleanField(required=True, default=False)
     hasDate = fields.BooleanField(required=True, default=False)
     hasFile = fields.BooleanField(required=True, default=False)
@@ -23,7 +24,7 @@ class Activity(EmbeddedDocument):
     checklist = fields.EmbeddedDocumentListField(
         CheckTemplate, null=True, default=None)
     approvalType = fields.StringField(required=True, max_length=1)
-    status = fields.StringField(default='1', max_length=1)
+    status = fields.StringField(default='2', max_length=1)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

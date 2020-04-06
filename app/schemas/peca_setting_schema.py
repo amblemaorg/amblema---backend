@@ -16,7 +16,7 @@ from app.helpers.ma_schema_validators import not_blank, OneOf, validate_image
 from app.helpers.ma_schema_fields import MAImageField
 from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 from app.models.peca_setting_model import (
-    LapsePlanning, InitialWorshop, Lapse1, Lapse2, Lapse3, PecaSetting)
+    LapsePlanning, InitialWorshop, Lapse, PecaSetting)
 from app.schemas.learning_module_schema import ImageSchema
 from app.schemas.activity_schema import ActivitySchema
 from app.schemas.goal_setting_schema import GoalSettingSchema
@@ -70,7 +70,7 @@ class AnnualConventionSchema(Schema):
     step4Description = fields.Str()
 
 
-class Lapse1Schema(Schema):
+class LapseSchema(Schema):
     initialWorshop = fields.Nested(InicialWorkshopSchema)
     lapsePlanning = fields.Nested(LapsePlanningSchema)
     ambleCoins = fields.Nested(AmbleCoinsSchema)
@@ -79,31 +79,13 @@ class Lapse1Schema(Schema):
 
     @post_load
     def make_document(self, data, **kwargs):
-        return Lapse1(**data)
-
-
-class Lapse2Schema(Schema):
-    lapsePlanning = fields.Nested(LapsePlanningSchema)
-    activities = fields.List(fields.Nested(ActivitySchema))
-
-    @post_load
-    def make_document(self, data, **kwargs):
-        return Lapse2(**data)
-
-
-class Lapse3Schema(Schema):
-    lapsePlanning = fields.Nested(LapsePlanningSchema)
-    activities = fields.List(fields.Nested(ActivitySchema))
-
-    @post_load
-    def make_document(self, data, **kwargs):
-        return Lapse3(**data)
+        return Lapse(**data)
 
 
 class PecaSettingSchema(Schema):
-    lapse1 = fields.Nested(Lapse1Schema)
-    lapse2 = fields.Nested(Lapse2Schema)
-    lapse3 = fields.Nested(Lapse3Schema)
+    lapse1 = fields.Nested(LapseSchema)
+    lapse2 = fields.Nested(LapseSchema)
+    lapse3 = fields.Nested(LapseSchema)
     goalSetting = fields.Nested(GoalSettingSchema)
 
     @post_load

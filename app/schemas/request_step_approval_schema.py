@@ -51,6 +51,6 @@ class RequestStepApprovalSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if "checklist" in data and isinstance(data["checklist"], str):
-            data["checklist"] = json.loads(data["checklist"])
+        if "stepChecklist" in data and isinstance(data["stepChecklist"], str):
+            data["stepChecklist"] = json.loads(data["stepChecklist"])
         return data

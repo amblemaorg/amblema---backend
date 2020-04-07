@@ -5,6 +5,7 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.generic_service import GenericServices
+from app.services.coordinator_contact_service import CoordinatorContactService
 from app.models.coordinator_contact_model import CoordinatorContact
 from app.schemas.coordinator_contact_schema import CoordinatorContactSchema
 from app.helpers.handler_request import getQueryParams
@@ -27,7 +28,7 @@ class CoordinatorContactController(Resource):
 
 class CoordinatorContactHandlerController(Resource):
 
-    service = GenericServices(
+    service = CoordinatorContactService(
         Model=CoordinatorContact,
         Schema=CoordinatorContactSchema)
 

@@ -78,7 +78,7 @@ from app.controllers.request_step_approval_controller import (
 from app.controllers.request_all_controller import (
     ReqContactAllController, ReqFindAllController)
 from app.controllers.activity_controller import (
-    ActivityController, ActivityHandlerController
+    ActivityController, ActivityHandlerController, ActivitySummaryController
 )
 from app.controllers.goal_setting_controller import (
     GoalSettingController
@@ -229,6 +229,8 @@ def create_app(config_instance):
     api.add_resource(AmbleCoinController, '/pecasetting/amblecoins')
     api.add_resource(AnnualConventionController,
                      '/pecasetting/annualconvention')
+    api.add_resource(ActivitySummaryController,
+                     '/pecasetting/activities')
     api.add_resource(ActivityController,
                      '/pecasetting/activities/<string:lapse>')
     api.add_resource(ActivityHandlerController,

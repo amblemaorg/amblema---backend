@@ -5,6 +5,7 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.activity_service import ActivityService, Activity, ActivitySchema
+from app.helpers.handler_request import getQueryParams
 
 
 class ActivityController(Resource):
@@ -33,3 +34,18 @@ class ActivityHandlerController(Resource):
 
     def delete(self, lapse, id):
         return self.service.delete(lapse, id)
+
+
+class ActivitySummaryController(Resource):
+    service = ActivityService()
+
+    def get(self):
+        filters = None
+        if 'status' in request.args:
+            filters = {'status': request.args['status']}
+
+        return self.service.getSumary(filters=filters)
+
+    def post(self):
+        jsonData = request.get_json()
+        return self.service.handleEnable(jsonData)

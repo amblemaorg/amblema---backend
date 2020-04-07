@@ -10,9 +10,7 @@ from mongoengine import (
 
 from app.models.peca_setting_model import (
     PecaSetting,
-    Lapse1,
-    Lapse2,
-    Lapse3,
+    Lapse,
     InitialWorshop,
     LapsePlanning,
     AmbleCoins,
@@ -36,19 +34,25 @@ class SchoolYear(Document):
         self.updatedAt = datetime.utcnow()
 
     def initFirstPecaSetting(self):
-        lapse1 = Lapse1(
+        lapse1 = Lapse(
             initialWorkshop=InitialWorshop(),
             lapsePlanning=LapsePlanning(),
             ambleCoins=AmbleCoins(),
             annualConvention=AnnualConvention(),
             activities=[]
         )
-        lapse2 = Lapse2(
+        lapse2 = Lapse(
+            initialWorkshop=InitialWorshop(),
             lapsePlanning=LapsePlanning(),
+            ambleCoins=AmbleCoins(),
+            annualConvention=AnnualConvention(),
             activities=[]
         )
-        lapse3 = Lapse3(
+        lapse3 = Lapse(
+            initialWorkshop=InitialWorshop(),
             lapsePlanning=LapsePlanning(),
+            ambleCoins=AmbleCoins(),
+            annualConvention=AnnualConvention(),
             activities=[]
         )
 

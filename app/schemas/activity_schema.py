@@ -19,6 +19,7 @@ from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 class ActivitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
+    devName = fields.Str(dump_only=True)
     hasText = fields.Bool(required=True, default=False)
     hasDate = fields.Bool(required=True, default=False)
     hasFile = fields.Bool(required=True, default=False)
@@ -101,3 +102,34 @@ class ActivitySchema(Schema):
             errors["checklist"] = [{"status": "12", "msg": "Out of range"}]
         if errors:
             raise ValidationError(errors)
+
+
+class ActivitySummarySchema(Schema):
+    id = fields.Str(dump_only=True)
+    name = fields.Str(dump_only=True)
+    devName = fields.Str(dump_only=True)
+    isStandard = fields.Bool(default=False, dump_only=True)
+    status = fields.Str(
+        validate=OneOf(
+            ["1", "2"],
+            ["active", "inactive"]
+        ), default="1")
+
+
+class ActivityHandleStatus(Schema):
+    id = fields.Str(required=True)
+    lapse = fields.Str(
+        validate=OneOf(
+            ('1', '2', '3'),
+            ('1', '2', '3')
+        ),
+        required=True
+    )
+    isStandard = fields.Bool(required=True)
+    status = fields.Str(
+        validate=OneOf(
+            ('1', '2'),
+            ('active', 'inactive')
+        ),
+        required=True
+    )

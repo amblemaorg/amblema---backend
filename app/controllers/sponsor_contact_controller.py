@@ -5,6 +5,7 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.generic_service import GenericServices
+from app.services.sponsor_contact_service import SponsorContactService
 from app.models.sponsor_contact_model import SponsorContact
 from app.schemas.sponsor_contact_schema import SponsorContactSchema
 from app.helpers.handler_request import getQueryParams
@@ -27,7 +28,7 @@ class SponsorContactController(Resource):
 
 class SponsorContactHandlerController(Resource):
 
-    service = GenericServices(
+    service = SponsorContactService(
         Model=SponsorContact,
         Schema=SponsorContactSchema)
 

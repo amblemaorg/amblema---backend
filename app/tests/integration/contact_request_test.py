@@ -211,9 +211,15 @@ class ContactRequestTest(unittest.TestCase):
             res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(res.status_code, 201)
 
-        contactReq = SponsorContact.objects.get(id=json_res['id'])
-        contactReq.status = "2"
-        contactReq.save()
+        res = self.client().put(
+            '/sponsorscontacts/{}'.format(json_res['id']),
+            data=json.dumps({'status': '2'}),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+        json_res = json.loads(
+            res.data.decode('utf8').replace("'", '"'))
+
+        self.assertEqual('uelibertador@test.com', json_res['school']['email'])
 
         schoolUser = User.objects(
             email="uelibertador@test.com").only('email').first()
@@ -287,6 +293,15 @@ class ContactRequestTest(unittest.TestCase):
         json_res = json.loads(
             res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(res.status_code, 201)
+
+        res = self.client().put(
+            '/coordinatorscontacts/{}'.format(json_res['id']),
+            data=json.dumps({'status': '2'}),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+        json_res = json.loads(
+            res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(reqData['email'], json_res['coordinator']['email'])
 
     def tearDown(self):
         """teardown all initialized variables."""

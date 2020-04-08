@@ -39,8 +39,9 @@ class PecaSettings(unittest.TestCase):
                                  'teachersMeetingFile.pdf'),
             teachersMeetingDescription="Some description"
         )
+        # lapse 1
         res = self.client().post(
-            '/pecasetting/initialworkshop',
+            '/pecasetting/initialworkshop/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -49,6 +50,52 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual(
             "agreementFile.pdf",
             schoolYear.pecaSetting.lapse1.initialWorkshop.agreementFile.name)
+
+        # lapse 2
+        requestData = dict(
+            agreementFile=(io.BytesIO(b'hi everyone'), 'agreementFile2.pdf'),
+            agreementDescription="Some description",
+            planningMeetingFile=(io.BytesIO(b'hi everyone'),
+                                 'planningMeetingFile2.pdf'),
+            planningMeetingDescription="Some description",
+            teachersMeetingFile=(io.BytesIO(b'hi everyone'),
+                                 'teachersMeetingFile.pdf'),
+            teachersMeetingDescription="Some description"
+        )
+        res = self.client().post(
+            '/pecasetting/initialworkshop/2',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.id)
+        self.assertEqual(
+            "agreementFile2.pdf",
+            schoolYear.pecaSetting.lapse2.initialWorkshop.agreementFile.name)
+
+        # lapse 3
+        requestData = dict(
+            agreementFile=(io.BytesIO(b'hi everyone'), 'agreementFile3.pdf'),
+            agreementDescription="Some description",
+            planningMeetingFile=(io.BytesIO(b'hi everyone'),
+                                 'planningMeetingFile3.pdf'),
+            planningMeetingDescription="Some description",
+            teachersMeetingFile=(io.BytesIO(b'hi everyone'),
+                                 'teachersMeetingFile3.pdf'),
+            teachersMeetingDescription="Some description"
+        )
+        res = self.client().post(
+            '/pecasetting/initialworkshop/3',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client().get(
+            '/pecasetting/initialworkshop/3')
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(
+            "agreementFile3.pdf",
+            result['agreementFile']['name'])
 
     def test_endpoint_lapse_planning(self):
 

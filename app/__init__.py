@@ -230,7 +230,7 @@ def create_app(config_instance):
     api.add_resource(AmbleCoinController,
                      '/pecasetting/amblecoins/<string:lapse>')
     api.add_resource(AnnualConventionController,
-                     '/pecasetting/annualconvention')
+                     '/pecasetting/annualconvention/<string:lapse>')
     api.add_resource(ActivitySummaryController,
                      '/pecasetting/activities')
     api.add_resource(ActivityController,

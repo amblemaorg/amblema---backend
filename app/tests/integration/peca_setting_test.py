@@ -247,7 +247,7 @@ class PecaSettings(unittest.TestCase):
             step4Description="Some 4 description"
         )
         res = self.client().post(
-            '/pecasetting/annualconvention',
+            '/pecasetting/annualconvention/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -267,12 +267,13 @@ class PecaSettings(unittest.TestCase):
             schoolYear.pecaSetting.lapse1.annualConvention.step4Description)
 
         res = self.client().get(
-            '/pecasetting/annualconvention')
+            '/pecasetting/annualconvention/1')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('Some 1 description',
                          result['step1Description'])
 
+        # lapse 2
         requestData = dict(
             step1Description="Some 1 description updated",
             step2Description="Some 2 description",
@@ -280,7 +281,7 @@ class PecaSettings(unittest.TestCase):
             step4Description="Some 4 description"
         )
         res = self.client().post(
-            '/pecasetting/annualconvention',
+            '/pecasetting/annualconvention/2',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -288,7 +289,7 @@ class PecaSettings(unittest.TestCase):
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
         self.assertEqual(
             "Some 1 description updated",
-            schoolYear.pecaSetting.lapse1.annualConvention.step1Description)
+            schoolYear.pecaSetting.lapse2.annualConvention.step1Description)
 
     def test_endpoint_activities(self):
 

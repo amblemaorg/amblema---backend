@@ -11,10 +11,9 @@ class AmbleCoinController(Resource):
 
     service = AmbleCoinService()
 
-    def post(self):
-
+    def post(self, lapse):
         jsonData = request.form.to_dict()
-        return self.service.save(jsonData, request.files)
+        return self.service.save(lapse, jsonData, request.files)
 
-    def get(self):
-        return self.service.get()
+    def get(self, lapse):
+        return self.service.get(lapse)

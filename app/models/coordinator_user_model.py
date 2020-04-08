@@ -10,6 +10,7 @@ from mongoengine import fields, EmbeddedDocument, signals
 from app.models.user_model import User
 from app.models.shared_embedded_documents import (
     DocumentReference, ProjectReference, Link)
+from app.helpers.error_helpers import RegisterNotFound
 
 
 class Answer(EmbeddedDocument):
@@ -134,6 +135,12 @@ class CoordinatorUser(User):
         3rd attepmt 2 coins
         4 o more attempts 1 coin
         """
+
+        if not self.curriculum:
+            raise RegisterNotFound(
+                message="Curriculum not found, coordinator must complete this step",
+                status_code=404,
+                payload={})
         found = False
         for my_module in self.learning:
             if my_module.moduleId == module.id:

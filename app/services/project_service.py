@@ -28,7 +28,7 @@ class ProjectService():
         """
         from app.models.project_model import Project, StepControl
 
-        schema = StepControlSchema()
+        schema = StepControlSchema(partial=True)
         projectSchema = ProjectSchema()
 
         try:

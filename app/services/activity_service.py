@@ -168,6 +168,7 @@ class ActivityService():
                      == '1' and initialWorkshop.status == '1')
                 ):
                     data = {
+                        "id": 'initialWorkshop',
                         "name": "Taller inicial",
                         "devName": "initialWorkshop",
                         "isStandard": True,
@@ -184,6 +185,7 @@ class ActivityService():
                 ):
 
                     data = {
+                        "id": "amblecoins",
                         "name": "AmbLeMonedas",
                         "devName": "ambleCoins",
                         "isStandard": True,
@@ -199,6 +201,7 @@ class ActivityService():
                      == '1' and lapsePlanning.status == '1')
                 ):
                     data = {
+                        "id": "lapseplanning",
                         "name": "Planificación de lapso",
                         "devName": "lapsePlanning",
                         "isStandard": True,
@@ -216,6 +219,7 @@ class ActivityService():
                 ):
 
                     data = {
+                        "id": "annualconvention",
                         "name": "Convención anual",
                         "devName": "annualConvention",
                         "isStandard": True,

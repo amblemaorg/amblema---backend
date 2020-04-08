@@ -5,6 +5,10 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.activity_service import ActivityService, Activity, ActivitySchema
+from app.services.amblecoin_service import AmbleCoinService
+from app.services.initial_workshop_service import InicialWorkshopService
+from app.services.lapse_planning_service import LapsePlanningService
+from app.services.annual_convention_service import AnnualConventionService
 from app.helpers.handler_request import getQueryParams
 
 
@@ -20,12 +24,23 @@ class ActivityController(Resource):
 class ActivityHandlerController(Resource):
 
     service = ActivityService()
+    standards = {
+        'initialworkshop': InicialWorkshopService(),
+        'lapseplanning': LapsePlanningService(),
+        'amblecoins': AmbleCoinService(),
+        'annualconvention': AnnualConventionService()
+    }
 
     def get(self, id, lapse):
+
+        if id in self.standards:
+            return self.standards[id].get(lapse)
         return self.service.get(lapse, id)
 
     def put(self, id, lapse):
         jsonData = request.form.to_dict()
+        if id in self.standards:
+            return self.standards[id].save(lapse=lapse, jsonData=jsonData, files=request.files)
         return self.service.update(
             lapse=lapse,
             id=id,

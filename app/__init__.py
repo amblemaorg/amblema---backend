@@ -226,12 +226,14 @@ def create_app(config_instance):
     api.add_resource(ReqFindSchoolHandlerController,
                      '/requestsfindschool/<string:id>')
     api.add_resource(PecaSettingController, '/pecasetting')
-    api.add_resource(InitialWorkshopController, '/pecasetting/initialworkshop')
+    api.add_resource(InitialWorkshopController,
+                     '/pecasetting/initialworkshop/<string:lapse>')
     api.add_resource(LapsePlanningController,
                      '/pecasetting/lapseplanning/<string:lapse>')
-    api.add_resource(AmbleCoinController, '/pecasetting/amblecoins')
+    api.add_resource(AmbleCoinController,
+                     '/pecasetting/amblecoins/<string:lapse>')
     api.add_resource(AnnualConventionController,
-                     '/pecasetting/annualconvention')
+                     '/pecasetting/annualconvention/<string:lapse>')
     api.add_resource(ActivitySummaryController,
                      '/pecasetting/activities')
     api.add_resource(ActivityController,

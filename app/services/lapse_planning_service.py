@@ -19,18 +19,14 @@ class LapsePlanningService():
 
         if schoolYear:
             schema = LapsePlanningSchema()
-            if lapse == "1":
-                lapsePlanning = schoolYear.pecaSetting.lapse1.lapsePlanning
-            elif lapse == "2":
-                lapsePlanning = schoolYear.pecaSetting.lapse2.lapsePlanning
-            elif lapse == "3":
-                lapsePlanning = schoolYear.pecaSetting.lapse3.lapsePlanning
+            lapsePlanning = schoolYear.pecaSetting['lapse{}'.format(
+                lapse)].lapsePlanning
             return schema.dump(lapsePlanning), 200
 
     def save(self, jsonData, lapse, files=None):
 
         schoolYear = SchoolYear.objects(
-            isDeleted=False, status="1")
+            isDeleted=False, status="1").first()
 
         if schoolYear:
             try:
@@ -42,30 +38,22 @@ class LapsePlanningService():
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 
-                schoolYear = SchoolYear.objects(
-                    isDeleted=False, status="1").first()
-                if schoolYear:
-                    if not schoolYear.pecaSetting:
-                        schoolYear.initFirstPecaSetting()
-                    if lapse == "1":
-                        lapsePlanning = schoolYear.pecaSetting.lapse1.lapsePlanning
-                    elif lapse == "2":
-                        lapsePlanning = schoolYear.pecaSetting.lapse2.lapsePlanning
-                    elif lapse == "3":
-                        lapsePlanning = schoolYear.pecaSetting.lapse3.lapsePlanning
-                    for field in schema.dump(data).keys():
-                        lapsePlanning[field] = data[field]
-                    try:
-                        if lapse == "1":
-                            schoolYear.pecaSetting.lapse1.lapsePlanning = lapsePlanning
-                        elif lapse == "2":
-                            schoolYear.pecaSetting.lapse2.lapsePlanning = lapsePlanning
-                        elif lapse == "3":
-                            schoolYear.pecaSetting.lapse3.lapsePlanning = lapsePlanning
-                        schoolYear.save()
-                        return schema.dump(lapsePlanning), 200
-                    except Exception as e:
-                        return {'status': 0, 'message': str(e)}, 400
+                if not schoolYear.pecaSetting:
+                    schoolYear.initFirstPecaSetting()
+
+                lapsePlanning = schoolYear.pecaSetting['lapse{}'.format(
+                    lapse)].lapsePlanning
+
+                for field in schema.dump(data).keys():
+                    lapsePlanning[field] = data[field]
+                try:
+
+                    schoolYear.pecaSetting['lapse{}'.format(
+                        lapse)].lapsePlanning = lapsePlanning
+                    schoolYear.save()
+                    return schema.dump(lapsePlanning), 200
+                except Exception as e:
+                    return {'status': 0, 'message': str(e)}, 400
 
             except ValidationError as err:
                 return err.normalized_messages(), 400

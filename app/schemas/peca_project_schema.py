@@ -94,8 +94,9 @@ class SectionSchema(Schema):
     id = fields.Str(dump_only=True)
     grade = fields.Str(
         required=True,
-        validate=(
-            OneOf(('1', '2', '3', '4', '5', '6'))
+        validate=OneOf(
+            ('0', '1', '2', '3', '4', '5', '6'),
+            ('preschool', '1', '2', '3', '4', '5', '6')
         ))
     name = fields.Str(required=True)
     students = fields.List(fields.Nested(StudentSchema()), dump_only=True)

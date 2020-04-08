@@ -21,10 +21,10 @@ class ActivityHandlerController(Resource):
 
     service = ActivityService()
 
-    def get(self, lapse, id):
+    def get(self, id, lapse):
         return self.service.get(lapse, id)
 
-    def put(self, lapse, id):
+    def put(self, id, lapse):
         jsonData = request.form.to_dict()
         return self.service.update(
             lapse=lapse,
@@ -32,7 +32,7 @@ class ActivityHandlerController(Resource):
             jsonData=jsonData,
             files=request.files)
 
-    def delete(self, lapse, id):
+    def delete(self, id, lapse):
         return self.service.delete(lapse, id)
 
 

@@ -12,19 +12,20 @@ from app.helpers.document_metadata import getFileFields
 
 class InicialWorkshopService():
 
-    def get(self):
+    def get(self, lapse):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
 
         if schoolYear:
             schema = InicialWorkshopSchema()
-            initialWorkshop = schoolYear.pecaSetting.lapse1.initialWorkshop
+            initialWorkshop = schoolYear.pecaSetting["lapse{}".format(
+                lapse)].initialWorkshop
             return schema.dump(initialWorkshop), 200
 
-    def save(self, jsonData, files=None):
+    def save(self, lapse, jsonData, files=None):
 
         schoolYear = SchoolYear.objects(
-            isDeleted=False, status="1")
+            isDeleted=False, status="1").first()
 
         if schoolYear:
             try:
@@ -36,21 +37,19 @@ class InicialWorkshopService():
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 
-                schoolYear = SchoolYear.objects(
-                    isDeleted=False, status="1").first()
-
-                if schoolYear:
-                    if not schoolYear.pecaSetting:
-                        schoolYear.initFirstPecaSetting()
-                    initialWorkshop = schoolYear.pecaSetting.lapse1.initialWorkshop
-                    for field in schema.dump(data).keys():
-                        initialWorkshop[field] = data[field]
-                    try:
-                        schoolYear.pecaSetting.lapse1.initialWorkshop = initialWorkshop
-                        schoolYear.save()
-                        return schema.dump(initialWorkshop), 200
-                    except Exception as e:
-                        return {'status': 0, 'message': str(e)}, 400
+                if not schoolYear.pecaSetting:
+                    schoolYear.initFirstPecaSetting()
+                initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
+                    lapse)].initialWorkshop
+                for field in schema.dump(data).keys():
+                    initialWorkshop[field] = data[field]
+                try:
+                    schoolYear.pecaSetting['lapse{}'.format(
+                        lapse)].initialWorkshop = initialWorkshop
+                    schoolYear.save()
+                    return schema.dump(initialWorkshop), 200
+                except Exception as e:
+                    return {'status': 0, 'message': str(e)}, 400
 
             except ValidationError as err:
                 return err.normalized_messages(), 400

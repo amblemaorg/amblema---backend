@@ -23,12 +23,8 @@ class ActivityService():
 
         if schoolYear:
             schema = ActivitySchema()
-            if lapse == "1":
-                activities = schoolYear.pecaSetting.lapse1.activities
-            elif lapse == "2":
-                activities = schoolYear.pecaSetting.lapse2.activities
-            elif lapse == "3":
-                activities = schoolYear.pecaSetting.lapse3.activities
+            activities = schoolYear.pecaSetting['lapse{}'.format(
+                lapse)].activities
 
             for activity in activities:
                 if str(activity.id) == str(id) and not activity.isDeleted:
@@ -61,15 +57,9 @@ class ActivityService():
                 activity.devName = re.sub(
                     r'[\W_]', '_', activity.name.strip().lower())
                 try:
-                    if lapse == "1":
-                        schoolYear.pecaSetting.lapse1.activities.append(
-                            activity)
-                    elif lapse == "2":
-                        schoolYear.pecaSetting.lapse2.activities.append(
-                            activity)
-                    elif lapse == "3":
-                        schoolYear.pecaSetting.lapse3.activities.append(
-                            activity)
+
+                    schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.append(
+                        activity)
                     schoolYear.save()
                     return schema.dump(activity), 200
                 except Exception as e:
@@ -93,12 +83,8 @@ class ActivityService():
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData, partial=True)
 
-                if lapse == "1":
-                    activities = schoolYear.pecaSetting.lapse1.activities
-                elif lapse == "2":
-                    activities = schoolYear.pecaSetting.lapse2.activities
-                elif lapse == "3":
-                    activities = schoolYear.pecaSetting.lapse3.activities
+                activities = schoolYear.pecaSetting['lapse{}'.format(
+                    lapse)].activities
 
                 found = False
                 hasChanged = False
@@ -116,12 +102,9 @@ class ActivityService():
 
                 if hasChanged:
                     try:
-                        if lapse == "1":
-                            schoolYear.pecaSetting.lapse1.activities = activities
-                        elif lapse == "2":
-                            schoolYear.pecaSetting.lapse2.activities = activities
-                        elif lapse == "3":
-                            schoolYear.pecaSetting.lapse3.activities = activities
+
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            lapse)].activities = activities
                         schoolYear.save()
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
@@ -140,12 +123,9 @@ class ActivityService():
             isDeleted=False, status="1").first()
 
         if schoolYear:
-            if lapse == "1":
-                activities = schoolYear.pecaSetting.lapse1.activities
-            elif lapse == "2":
-                activities = schoolYear.pecaSetting.lapse2.activities
-            elif lapse == "3":
-                activities = schoolYear.pecaSetting.lapse3.activities
+
+            activities = schoolYear.pecaSetting['lapse{}'.format(
+                lapse)].activities
 
             found = False
             for activity in activities:
@@ -153,12 +133,8 @@ class ActivityService():
                     found = True
                     try:
                         activity.isDeleted = True
-                        if lapse == "1":
-                            schoolYear.pecaSetting.lapse1.activities = activities
-                        elif lapse == "2":
-                            schoolYear.pecaSetting.lapse2.activities = activities
-                        elif lapse == "3":
-                            schoolYear.pecaSetting.lapse3.activities = activities
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            lapse)].activities = activities
                         schoolYear.save()
                         return {"message": "Record deleted successfully"}, 200
                     except Exception as e:

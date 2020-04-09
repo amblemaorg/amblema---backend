@@ -47,21 +47,10 @@ class DiagnosticService():
                 setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(
                     grade)]
 
-                if lapse == "1":
-                    diagnostic = peca.school.sections.filter(
-                        id=sectionId, isDeleted=False).first().students.filter(
-                            id=studentId, isDeleted=False
-                    ).first().lapse1
-                elif lapse == "2":
-                    diagnostic = peca.school.sections.filter(
-                        id=sectionId, isDeleted=False).first().students.filter(
-                            id=studentId, isDeleted=False
-                    ).first().lapse2
-                elif lapse == "3":
-                    diagnostic = peca.school.sections.filter(
-                        id=sectionId, isDeleted=False).first().students.filter(
-                            id=studentId, isDeleted=False
-                    ).first().lapse3
+                diagnostic = peca.school.sections.filter(
+                    id=sectionId, isDeleted=False).first().students.filter(
+                    id=studentId, isDeleted=False
+                ).first()['lapse{}'.format(lapse)]
 
                 for field in schema.dump(data).keys():
                     diagnostic[field] = data[field]
@@ -77,13 +66,8 @@ class DiagnosticService():
                         if str(section.id) == sectionId and not section.isDeleted:
                             for student in section.students:
                                 if str(student.id) == studentId and not student.isDeleted:
-                                    if lapse == "1":
-                                        student.lapse1 = diagnostic
-                                    elif lapse == "2":
-                                        student.lapse2 = diagnostic
-                                    elif lapse == "3":
-                                        student.lapse3 = diagnostic
-
+                                    student['lapse{}'.format(
+                                        lapse)] = diagnostic
                                     peca.save()
                                     return schema.dump(diagnostic), 200
                 except Exception as e:
@@ -106,42 +90,28 @@ class DiagnosticService():
             school__sections__isDeleted=False,
             school__sections__students__id=studentId,
             school__sections__students__isDeleted=False
-        ).only('school__sections__students').first()
+        ).only('school__sections').first()
 
         if peca:
-
             try:
                 for section in peca.school.sections:
                     if str(section.id) == sectionId and not section.isDeleted:
                         for student in section.students:
                             if str(student.id) == studentId and not student.isDeleted:
-                                if lapse == "1":
-                                    if diagnosticType == "reading":
-                                        student.lapse1.wordsPerMin = None
-                                        student.lapse1.wordsPerMinIndex = None
-                                    elif diagnosticType == "math":
-                                        student.lapse1.multitplicationsPerMin = None
-                                        student.lapse1.multitplicationsPerMinIndex = None
-                                        student.lapse1.operationsPerMin = None
-                                        student.lapse1.operationsPerMinIndex = None
-                                elif lapse == "2":
-                                    if diagnosticType == "reading":
-                                        student.lapse2.wordsPerMin = None
-                                        student.lapse2.wordsPerMinIndex = None
-                                    elif diagnosticType == "math":
-                                        student.lapse2.multitplicationsPerMin = None
-                                        student.lapse2.multitplicationsPerMinIndex = None
-                                        student.lapse2.operationsPerMin = None
-                                        student.lapse2.operationsPerMinIndex = None
-                                elif lapse == "3":
-                                    if diagnosticType == "reading":
-                                        student.lapse3.wordsPerMin = None
-                                        student.lapse3.wordsPerMinIndex = None
-                                    elif diagnosticType == "math":
-                                        student.lapse3.multitplicationsPerMin = None
-                                        student.lapse3.multitplicationsPerMinIndex = None
-                                        student.lapse3.operationsPerMin = None
-                                        student.lapse3.operationsPerMinIndex = None
+                                if diagnosticType == "reading":
+                                    student['lapse{}'.format(
+                                        lapse)].wordsPerMin = None
+                                    student['lapse{}'.format(
+                                        lapse)].wordsPerMinIndex = None
+                                elif diagnosticType == "math":
+                                    student['lapse{}'.format(
+                                        lapse)].multitplicationsPerMin = None
+                                    student['lapse{}'.format(
+                                        lapse)].multitplicationsPerMinIndex = None
+                                    student['lapse{}'.format(
+                                        lapse)].operationsPerMin = None
+                                    student['lapse{}'.format(
+                                        lapse)].operationsPerMinIndex = None
                                 peca.save()
                                 return "Record deleted successfully", 200
             except Exception as e:

@@ -327,8 +327,8 @@ class PecaSettings(unittest.TestCase):
             b'hi everyone'), 'activityFileUpdated.pdf')
 
         res = self.client().put(
-            '/pecasetting/activities/1/' +
-            str(schoolYear.pecaSetting.lapse1.activities[0].id),
+            '/pecasetting/activities/{}/{}'.format(
+                schoolYear.pecaSetting.lapse1.activities[0].id, '1'),
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -340,7 +340,7 @@ class PecaSettings(unittest.TestCase):
 
         # get
         res = self.client().get(
-            '/pecasetting/activities/1/'+str(schoolYear.pecaSetting.lapse1.activities[0].id))
+            '/pecasetting/activities/{}/{}'.format(schoolYear.pecaSetting.lapse1.activities[0].id, '1'))
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
@@ -349,12 +349,12 @@ class PecaSettings(unittest.TestCase):
 
         # delete
         res = self.client().delete(
-            '/pecasetting/activities/1/'+str(schoolYear.pecaSetting.lapse1.activities[0].id))
+            '/pecasetting/activities/{}/{}'.format(schoolYear.pecaSetting.lapse1.activities[0].id, '1'))
         self.assertEqual(res.status_code, 200)
 
         # get deleted
         res = self.client().get(
-            '/pecasetting/activities/1/'+str(schoolYear.pecaSetting.lapse1.activities[0].id))
+            '/pecasetting/activities/{}/{}'.format(schoolYear.pecaSetting.lapse1.activities[0].id, '1'))
         self.assertEqual(res.status_code, 404)
 
     def test_endpoint_goal_setting(self):

@@ -232,7 +232,7 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual(
             None, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMinIndex)
 
-    def test_smath_diagnostics(self):
+    def test_math_diagnostics(self):
 
         requestData = {
             "multitplicationsPerMin": 80,

@@ -178,10 +178,11 @@ class Project(Document):
                         myStep.status = step.status
                         isUpdated = True
 
-                if isUpdated and self.checkStepApproval(myStep):
-                    myStep.approve()
+                if isUpdated:
+                    if self.checkStepApproval(myStep):
+                        myStep.approve()
+                        self.stepsProgress.updateProgress()
                     myStep.updatedAt = datetime.utcnow()
-                    self.stepsProgress.updateProgress()
                     self.save()
                     if self.checkConfirm():
                         self.createPeca()

@@ -239,7 +239,7 @@ def create_app(config_instance):
     api.add_resource(ActivityController,
                      '/pecasetting/activities/<string:lapse>')
     api.add_resource(ActivityHandlerController,
-                     '/pecasetting/activities/<string:lapse>/<string:id>')
+                     '/pecasetting/activities/<string:id>/<string:lapse>')
     api.add_resource(GoalSettingController, '/pecasetting/goalsetting')
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
     api.add_resource(ReqStepApprovalHandlerController,

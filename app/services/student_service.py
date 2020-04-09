@@ -57,7 +57,7 @@ class StudentService():
             school__sections__isDeleted=False,
             school__sections__students__id=studentId,
             school__sections__students__isDeleted=False
-        ).only('school__sections__students').first()
+        ).only('school__sections').first()
 
         if peca:
             try:
@@ -104,7 +104,7 @@ class StudentService():
             school__sections__isDeleted=False,
             school__sections__students__id=studentId,
             school__sections__students__isDeleted=False
-        ).only('school__sections__students').first()
+        ).only('school__sections').first()
 
         if peca:
 

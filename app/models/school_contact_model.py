@@ -129,13 +129,12 @@ class SchoolContact(Document):
                             addressCity=document.sponsorAddressCity,
                             address=document.sponsorAddress,
                             status='1',
-                            firstName=document.sponsorContactFirstName,
-                            lastName=document.sponsorContactLastName,
                             companyRif=document.sponsorRif,
                             companyType=document.sponsorCompanyType,
                             companyOtherType=document.sponsorCompanyOtherType,
                             companyPhone=document.sponsorCompanyPhone,
-                            contactName=document.sponsorContactFirstName,
+                            contactFirstName=document.sponsorContactFirstName,
+                            contactLastName=document.sponsorContactLastName,
                             contactPhone=document.sponsorContactPhone
                         )
                         password = sponsorUser.generatePassword()

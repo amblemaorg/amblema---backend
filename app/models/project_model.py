@@ -147,6 +147,16 @@ class Project(Document):
             return False
         return True
 
+    def checkConfirm(self):
+        if (
+            self.stepsProgress.general == 100
+            and self.stepsProgress.sponsor == 100
+            and self.stepsProgress.coordinator == 100
+            and self.stepsProgress.school == 100
+        ):
+            return True
+        return False
+
     def updateStep(self, step):
         for myStep in self.stepsProgress.steps:
             if step.id == myStep.id:
@@ -173,6 +183,8 @@ class Project(Document):
                     myStep.updatedAt = datetime.utcnow()
                     self.stepsProgress.updateProgress()
                     self.save()
+                    if self.checkConfirm():
+                        self.createPeca()
                 break
 
     def createPeca(self):

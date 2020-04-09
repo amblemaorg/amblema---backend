@@ -14,6 +14,7 @@ from app.models.project_model import Project
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.models.learning_module_model import LearningModule, Quiz
+from app.models.shared_embedded_documents import Link
 
 
 class LearningModuleTest(unittest.TestCase):
@@ -54,7 +55,8 @@ class LearningModuleTest(unittest.TestCase):
             role=self.role,
             addressState=self.state,
             addressMunicipality=self.municipality,
-            isReferred=False
+            isReferred=False,
+            curriculum=Link(name="somename.pdf", url="https://someurl.pdf")
         )
         self.coordinator.save()
 

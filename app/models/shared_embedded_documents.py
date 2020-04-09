@@ -1,7 +1,5 @@
 # app/models/shared_embedded_documents.py
 
-from bson import ObjectId
-
 from mongoengine import EmbeddedDocument, fields
 
 
@@ -24,5 +22,5 @@ class Link(EmbeddedDocument):
 
 
 class CheckTemplate(EmbeddedDocument):
-    id = fields.ObjectIdField(default=ObjectId())
+    id = fields.ObjectIdField(default=fields.ObjectId)
     name = fields.StringField(required=True)

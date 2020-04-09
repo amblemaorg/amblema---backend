@@ -151,7 +151,6 @@ class ActivityService():
             isDeleted=False, status="1").first()
 
         if schoolYear:
-            current_app.logger.info(filters)
             records = {
                 'lapse1': [],
                 'lapse2': [],
@@ -267,7 +266,6 @@ class ActivityService():
             schema = ActivityHandleStatus()
             try:
                 data = schema.load(jsonData)
-                current_app.logger.info(data)
                 found = False
                 if data['isStandard']:
                     if data['id'] == "initialWorkshop":
@@ -296,13 +294,8 @@ class ActivityService():
                             activity.status = data['status']
                             break
                 if found:
-                    current_app.logger.info(
-                        schoolYear.pecaSetting.lapse1.ambleCoins.status)
                     schoolYear.save()
                     schoolYear = SchoolYear.objects.get(id=schoolYear.id)
-                    current_app.logger.info(
-                        schoolYear.pecaSetting.lapse1.ambleCoins.status)
-                    current_app.logger.info(schoolYear.id)
                     return {"msg": "Record updated"}, 200
                 else:
                     raise RegisterNotFound(message="Record not found",

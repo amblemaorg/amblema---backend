@@ -70,7 +70,7 @@ class TeacherLink(EmbeddedDocument):
 
 
 class Section(EmbeddedDocument):
-    id = fields.ObjectIdField(default=ObjectId())
+    id = fields.ObjectIdField(default=fields.ObjectId)
     grade = fields.StringField(max_length=1)
     name = fields.StringField()
     isDeleted = fields.BooleanField(default=False)

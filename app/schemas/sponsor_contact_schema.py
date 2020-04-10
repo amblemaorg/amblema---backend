@@ -34,7 +34,6 @@ class SponsorContactSchema(Schema):
     addressMunicipality = MAReferenceField(
         required=True, document=Municipality)
     addressCity = fields.Str()
-    addressStreet = fields.Str()
     contactFirstName = fields.Str(validate=not_blank)
     contactLastName = fields.Str(validate=not_blank)
     contactPhone = fields.Str(required=True, validate=not_blank)
@@ -47,7 +46,6 @@ class SponsorContactSchema(Schema):
     schoolAddressMunicipality = MAReferenceField(
         document=Municipality)
     schoolAddressCity = fields.Str()
-    schoolAddressStreet = fields.Str()
     schoolPhone = fields.Str(validate=(not_blank, only_numbers))
     schoolType = fields.Str(
         validate=OneOf(
@@ -93,7 +91,6 @@ class SponsorContactSchema(Schema):
         toTitle = (
             'name'
             'schoolAddressCity',
-            'schoolAddressStreet',
             'schoolPrincipalFirstName',
             'schoolPrincipalLastName',
             'schoolSubPrincipalFirstName',
@@ -114,7 +111,6 @@ class SponsorContactSchema(Schema):
                 'schoolAddressState',
                 'schoolAddressMunicipality',
                 'schoolAddressCity',
-                'schoolAddressStreet',
                 'schoolPhone',
                 'schoolType',
                 'schoolPrincipalFirstName',

@@ -21,9 +21,12 @@ from app.schemas.request_find_school_schema import ReqFindSchoolSchema
 
 class RequestsAll():
     def getAllContactsRequest(self, filters=None):
-        coordinatorReq = CoordinatorContact.objects.order_by('-createdAt')
-        sponsorReq = SponsorContact.objects.order_by('-createdAt')
-        schoolReq = SchoolContact.objects.order_by('-createdAt')
+        coordinatorReq = CoordinatorContact.objects(
+            isDeleted=False).order_by('-createdAt')
+        sponsorReq = SponsorContact.objects(
+            isDeleted=False).order_by('-createdAt')
+        schoolReq = SchoolContact.objects(
+            isDeleted=False).order_by('-createdAt')
 
         coords = []
         for coord in coordinatorReq:
@@ -61,9 +64,12 @@ class RequestsAll():
         return {"records": jsonRequests}, 200
 
     def getAllFindRequest(self, filters=None):
-        coordinatorReq = RequestFindCoordinator.objects.order_by('-createdAt')
-        sponsorReq = RequestFindSponsor.objects.order_by('-createdAt')
-        schoolReq = RequestFindSchool.objects.order_by('-createdAt')
+        coordinatorReq = RequestFindCoordinator.objects(
+            isDeleted=False).order_by('-createdAt')
+        sponsorReq = RequestFindSponsor.objects(
+            isDeleted=False).order_by('-createdAt')
+        schoolReq = RequestFindSchool.objects(
+            isDeleted=False).order_by('-createdAt')
 
         coords = []
         for coord in coordinatorReq:

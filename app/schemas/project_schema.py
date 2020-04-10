@@ -48,8 +48,8 @@ class StepFieldsSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     status = fields.Str(
         validate=OneOf(
-            ("1", "2"),
-            ("pending", "approved")
+            ("1", "2", "3"),
+            ("pending", "in_approval", "approved")
         )
     )
     createdAt = fields.DateTime(dump_only=True)

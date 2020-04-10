@@ -169,7 +169,7 @@ class TeacherPecaTest(unittest.TestCase):
             "phone": "04122222233",
             "addressState": str(self.state.pk),
             "addressMunicipality": str(self.municipality.pk),
-            "addressStreet": "19th street",
+            "address": "19th street",
             "addressCity": "Barquisimeto",
             "status": "1"
         }
@@ -197,7 +197,7 @@ class TeacherPecaTest(unittest.TestCase):
             "phone": "04122222233",
             "addressState": str(self.state.pk),
             "addressMunicipality": str(self.municipality.pk),
-            "addressStreet": "19th street",
+            "address": "19th street",
             "addressCity": "Barquisimeto",
             "status": "1"
         }

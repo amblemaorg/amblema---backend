@@ -34,7 +34,6 @@ class ReqFindSponsorSchema(Schema):
     addressMunicipality = MAReferenceField(
         required=True, document=Municipality)
     addressCity = fields.Str()
-    addressStreet = fields.Str()
     contactFirstName = fields.Str(validate=(not_blank, only_letters))
     contactLastName = fields.Str(validate=(not_blank, only_letters))
     contactPhone = fields.Str(required=True, validate=not_blank)

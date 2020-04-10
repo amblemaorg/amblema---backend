@@ -72,7 +72,7 @@ class TeacherSchema(Schema):
     addressState = MAReferenceField(document=State)
     addressMunicipality = MAReferenceField(
         document=Municipality)
-    addressStreet = fields.Str()
+    address = fields.Str()
     addressCity = fields.Str()
     status = fields.Str(
         required=True,
@@ -109,7 +109,7 @@ class SchoolSchema(Schema):
     addressState = MAReferenceField(document=State, dump_only=True)
     addressMunicipality = MAReferenceField(
         document=Municipality, dump_only=True)
-    addressStreet = fields.Str(dump_only=True)
+    address = fields.Str(dump_only=True)
     addressCity = fields.Str(dump_only=True)
     principalFirstName = fields.Str(required=True)
     principalLastName = fields.Str(required=True)

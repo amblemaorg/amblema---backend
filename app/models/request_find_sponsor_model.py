@@ -24,7 +24,6 @@ class RequestFindSponsor(Document):
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
     addressCity = fields.StringField()
-    addressStreet = fields.StringField()
     contactFirstName = fields.StringField()
     contactLastName = fields.StringField()
     contactPhone = fields.StringField(required=True)

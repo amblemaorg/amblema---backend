@@ -23,7 +23,7 @@ class RequestFindCoordinator(Document):
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
     addressCity = fields.StringField()
-    addressStreet = fields.StringField()
+    address = fields.StringField()
     addressHome = fields.StringField()
     email = fields.EmailField(required=True)
     phone = fields.StringField(required=True)
@@ -58,7 +58,7 @@ class RequestFindCoordinator(Document):
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
-                        address="",
+                        address=document.address,
                         status='1',
                         firstName=document.firstName,
                         lastName=document.lastName,

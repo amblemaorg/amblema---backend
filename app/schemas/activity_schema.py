@@ -43,6 +43,7 @@ class ActivitySchema(Schema):
             ["active", "inactive"]
         )
     )
+    isStandard = fields.Bool(default=False, dump_only=False)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

@@ -28,12 +28,14 @@ ImageSchema.image = MAImageField(
 
 
 class InicialWorkshopSchema(Schema):
+    name = fields.Str(dump_only=True, default="Taller inicial")
     agreementFile = fields.Nested(FileSchema())
     agreementDescription = fields.Str()
     planningMeetingFile = fields.Nested(FileSchema())
     planningMeetingDescription = fields.Str()
     teachersMeetingFile = fields.Nested(FileSchema())
     teachersMeetingDescription = fields.Str()
+    isStandard = fields.Bool(default=True, dump_only=True)
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -41,9 +43,11 @@ class InicialWorkshopSchema(Schema):
 
 
 class LapsePlanningSchema(Schema):
+    name = fields.Str(dump_only=True, default="Planificación de lapso")
     proposalFundationFile = fields.Nested(FileSchema())
     proposalFundationDescription = fields.Str()
     meetingDescription = fields.Str()
+    isStandard = fields.Bool(default=True, dump_only=True)
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -51,10 +55,12 @@ class LapsePlanningSchema(Schema):
 
 
 class AmbleCoinsSchema(Schema):
+    name = fields.Str(dump_only=True, default="AmbLeMonedas")
     teachersMeetingFile = fields.Nested(FileSchema())
     teachersMeetingDescription = fields.Str()
     piggyBankDescription = fields.Str()
     piggyBankSlider = fields.List(fields.Nested(ImageSchema()))
+    isStandard = fields.Bool(default=True, dump_only=True)
 
     @pre_load
     def process_input(self, data, **kwargs):
@@ -64,10 +70,12 @@ class AmbleCoinsSchema(Schema):
 
 
 class AnnualConventionSchema(Schema):
+    name = fields.Str(dump_only=True, default="Convención Anual")
     step1Description = fields.Str()
     step2Description = fields.Str()
     step3Description = fields.Str()
     step4Description = fields.Str()
+    isStandard = fields.Bool(default=True, dump_only=True)
 
 
 class LapseSchema(Schema):

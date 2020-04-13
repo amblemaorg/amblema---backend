@@ -11,6 +11,7 @@ from app.models.shared_embedded_documents import ImageStatus
 from app.schemas.shared_schemas import ImageStatusSchema
 
 from app.helpers.error_helpers import RegisterNotFound
+from app.models.request_content_approval_model import RequestContentApproval
 
 
 class SchoolSliderService():
@@ -31,6 +32,12 @@ class SchoolSliderService():
                 try:
                     peca.school.slider.append(image)
                     peca.save()
+                    RequestContentApproval(
+                        parentId=peca.id,
+                        type="schoolSlider",
+                        status="1",
+                        content=peca
+                    ).save()
                     return schema.dump(image), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

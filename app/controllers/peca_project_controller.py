@@ -5,6 +5,7 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.peca_project_service import PecaProjectService
+from app.services.school_slider_service import SchoolSliderService
 from app.helpers.handler_request import getQueryParams
 
 
@@ -34,3 +35,12 @@ class SchoolController(Resource):
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateSchool(id, jsonData)
+
+
+class SchoolSliderController(Resource):
+
+    service = SchoolSliderService()
+
+    def post(self, pecaId):
+        jsonData = request.form.to_dict()
+        return self.service.save(pecaId, jsonData)

@@ -86,7 +86,8 @@ from app.controllers.goal_setting_controller import (
 from app.controllers.peca_project_controller import (
     PecaProjectController,
     PecaProjectHandlerController,
-    SchoolController
+    SchoolController,
+    SchoolSliderController
 )
 from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
@@ -249,6 +250,8 @@ def create_app(config_instance):
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(SchoolController, '/pecaprojects/school/<string:id>')
+    api.add_resource(SchoolSliderController,
+                     '/pecaprojects/schoolsliders/<string:pecaId>')
     api.add_resource(TeacherController,
                      '/pecaprojects/teachers/<string:pecaId>')
     api.add_resource(TeacherHandlerController,

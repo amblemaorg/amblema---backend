@@ -28,7 +28,7 @@ ImageSchema.image = MAImageField(
 
 
 class InicialWorkshopSchema(Schema):
-    name = fields.Str(dump_only=True, default="Taller inicial")
+    name = fields.Str(dump_only=True)
     agreementFile = fields.Nested(FileSchema())
     agreementDescription = fields.Str()
     planningMeetingFile = fields.Nested(FileSchema())
@@ -43,7 +43,7 @@ class InicialWorkshopSchema(Schema):
 
 
 class LapsePlanningSchema(Schema):
-    name = fields.Str(dump_only=True, default="Planificación de lapso")
+    name = fields.Str(dump_only=True)
     proposalFundationFile = fields.Nested(FileSchema())
     proposalFundationDescription = fields.Str()
     meetingDescription = fields.Str()
@@ -55,7 +55,7 @@ class LapsePlanningSchema(Schema):
 
 
 class AmbleCoinsSchema(Schema):
-    name = fields.Str(dump_only=True, default="AmbLeMonedas")
+    name = fields.Str(dump_only=True)
     teachersMeetingFile = fields.Nested(FileSchema())
     teachersMeetingDescription = fields.Str()
     piggyBankDescription = fields.Str()
@@ -70,7 +70,7 @@ class AmbleCoinsSchema(Schema):
 
 
 class AnnualConventionSchema(Schema):
-    name = fields.Str(dump_only=True, default="Convención Anual")
+    name = fields.Str(dump_only=True)
     step1Description = fields.Str()
     step2Description = fields.Str()
     step3Description = fields.Str()

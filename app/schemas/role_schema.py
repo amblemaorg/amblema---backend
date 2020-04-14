@@ -37,6 +37,7 @@ class RoleSchema(Schema):
         ('1', '2'),
         ('active', 'inactive')
     ))
+    isStandard = fields.Bool(dump_only=True)
     permissions = fields.List(fields.Nested(PermissionSchema()))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

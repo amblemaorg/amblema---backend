@@ -26,7 +26,7 @@ class RoleController(Resource):
 
 
 class RoleHandlerController(Resource):
-    service = GenericServices(
+    service = RoleService(
         Model=Role,
         Schema=RoleSchema
     )

@@ -30,3 +30,20 @@ class RoleService(GenericServices):
                 isDeleted=False, devName__ne='superadmin').order_by('name')
 
         return {"records": schema.dump(records, many=True)}, 200
+
+    def deleteRecord(self, recordId):
+        """
+        Delete (change status False) a record
+        """
+        record = self.getOr404(recordId)
+        from flask import current_app
+        current_app.logger.info(record.isStandard)
+        if record.isStandard:
+            return {'status': 0, 'message': 'Standard role can not be deleted'}, 400
+        try:
+            record.isDeleted = True
+            record.save()
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400
+
+        return {"message": "Record deleted successfully"}, 200

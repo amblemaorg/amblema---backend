@@ -228,9 +228,11 @@ class ActivityService():
 
                 for activity in schoolYear.pecaSetting['lapse{}'.format(i+1)].activities:
                     if (
-                        (not filters) or
-                        ('status' in filters and filters['status']
-                         == '1' and activity.status == '1')
+                        not activity.isDeleted and (
+                            (not filters) or
+                            ('status' in filters and filters['status']
+                                == '1' and activity.status == '1')
+                        )
                     ):
                         data = {
                             "id": str(activity.id),

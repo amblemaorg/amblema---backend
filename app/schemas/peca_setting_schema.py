@@ -35,7 +35,7 @@ class InicialWorkshopSchema(Schema):
     planningMeetingDescription = fields.Str()
     teachersMeetingFile = fields.Nested(FileSchema())
     teachersMeetingDescription = fields.Str()
-    isStandard = fields.Bool(default=True, dump_only=True)
+    isStandard = fields.Bool(dump_only=True)
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -47,7 +47,7 @@ class LapsePlanningSchema(Schema):
     proposalFundationFile = fields.Nested(FileSchema())
     proposalFundationDescription = fields.Str()
     meetingDescription = fields.Str()
-    isStandard = fields.Bool(default=True, dump_only=True)
+    isStandard = fields.Bool(dump_only=True)
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -60,7 +60,7 @@ class AmbleCoinsSchema(Schema):
     teachersMeetingDescription = fields.Str()
     piggyBankDescription = fields.Str()
     piggyBankSlider = fields.List(fields.Nested(ImageSchema()))
-    isStandard = fields.Bool(default=True, dump_only=True)
+    isStandard = fields.Bool(dump_only=True)
 
     @pre_load
     def process_input(self, data, **kwargs):
@@ -75,7 +75,7 @@ class AnnualConventionSchema(Schema):
     step2Description = fields.Str()
     step3Description = fields.Str()
     step4Description = fields.Str()
-    isStandard = fields.Bool(default=True, dump_only=True)
+    isStandard = fields.Bool(dump_only=True)
 
 
 class LapseSchema(Schema):

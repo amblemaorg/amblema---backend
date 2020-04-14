@@ -36,7 +36,7 @@ class SchoolSliderService():
                         parentId=peca.id,
                         type="schoolSlider",
                         status="1",
-                        content=peca
+                        content=image
                     ).save()
                     return schema.dump(image), 200
                 except Exception as e:

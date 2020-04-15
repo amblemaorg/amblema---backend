@@ -15,7 +15,7 @@ from app.helpers.ma_schema_validators import (
     not_blank, only_numbers, OneOf, Range, validate_url, validate_email)
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
-from app.schemas.shared_schemas import ProjectReferenceSchema
+from app.schemas.shared_schemas import ProjectReferenceSchema, ImageStatusSchema
 
 
 class DiagnosticSchema(Schema):
@@ -130,6 +130,7 @@ class SchoolSchema(Schema):
     twitter = fields.Str()
     sections = fields.List(fields.Nested(SectionSchema()), dump_only=True)
     teachers = fields.List(fields.Nested(TeacherSchema()), dump_only=True)
+    slider = fields.List(fields.Nested(ImageStatusSchema()), dump_only=True)
 
 
 class PecaProjectSchema(Schema):

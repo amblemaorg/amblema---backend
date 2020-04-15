@@ -7,7 +7,7 @@ from bson import ObjectId
 from flask import current_app
 from mongoengine import fields, Document, EmbeddedDocument, signals
 
-from app.models.shared_embedded_documents import ProjectReference
+from app.models.shared_embedded_documents import ProjectReference, ImageStatus
 
 
 class Diagnostic(EmbeddedDocument):
@@ -103,6 +103,7 @@ class School(EmbeddedDocument):
     twitter = fields.StringField()
     sections = fields.EmbeddedDocumentListField(Section)
     teachers = fields.EmbeddedDocumentListField(Teacher)
+    slider = fields.EmbeddedDocumentListField(ImageStatus)
 
 
 class PecaProject(Document):

@@ -6,7 +6,8 @@ import json
 from marshmallow import Schema, post_load, pre_load
 from app.schemas import fields
 
-from app.helpers.ma_schema_validators import validate_url, not_blank
+from app.helpers.ma_schema_fields import MAImageField
+from app.helpers.ma_schema_validators import validate_url, not_blank, validate_image, OneOf
 from app.models.shared_embedded_documents import Link, CheckTemplate
 
 
@@ -57,3 +58,24 @@ class CheckTemplateSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         return CheckTemplate(**data)
+
+
+class ImageStatusSchema(Schema):
+    id = fields.Str(dump_only=True)
+    image = MAImageField(
+        validate=(not_blank, validate_image),
+        folder='schools',
+        size=800)
+    description = fields.Str()
+    approvalStatus = fields.Str(
+        validate=OneOf(
+            ('1', '2', '3'),
+            ("pending", "approved", "rejected")
+        ))
+    visibilityStatus = fields.Str(
+        validate=OneOf(
+            ('1', '2', '3'),
+            ("active", "inactive")
+        ))
+    createdAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime(dump_only=True)

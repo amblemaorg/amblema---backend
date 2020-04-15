@@ -30,10 +30,12 @@ class RequestContentApprovalSchema(Schema):
     status = fields.Str(
         validate=OneOf(
             ("1", "2", "3", "4"),
-            ("pending", "approved", "rejected", "cancelled")
+            ("pending", "approved", "rejected")
         )
     )
     content = fields.Dict()
+    createdAt = fields.Str(dump_only=True)
+    updatedAt = fields.Str(dump_only=True)
 
     @pre_dump
     def process_input(self, data, **kwargs):

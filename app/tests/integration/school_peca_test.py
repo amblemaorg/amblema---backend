@@ -177,6 +177,39 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual("new Name",
                          result['subPrincipalFirstName'])
 
+        # slider save image
+        requestData = dict(
+            image="https://someserver.com/image.jpg",
+            description="some description"
+        )
+        res = self.client().post(
+            '/pecaprojects/schoolsliders/{}'.format(self.pecaProject.id),
+            data=requestData,
+            content_type='multipart/form-data')
+        # self.app.logger.info(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.pecaProject = PecaProject.objects(id=self.pecaProject.id).first()
+        self.assertEqual('1', self.pecaProject.school.slider[0].approvalStatus)
+
+        # get approval request
+        res = self.client().get(
+            '/pecaprojects/contentapproval')
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('some description',
+                         result['records'][0]['content']['description'])
+
+        # approve request
+        res = self.client().put(
+            '/pecaprojects/contentapproval/{}'.format(
+                result['records'][0]['id']),
+            data=json.dumps({'status': '2'}),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        self.pecaProject = PecaProject.objects(id=self.pecaProject.id).first()
+        self.assertEqual('2', self.pecaProject.school.slider[0].approvalStatus)
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

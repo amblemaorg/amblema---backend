@@ -75,6 +75,8 @@ from app.controllers.annual_convention_controller import (
 from app.controllers.request_step_approval_controller import (
     ReqStepApprovalController, ReqStepApprovalHandlerController
 )
+from app.controllers.request_content_approval_controller import (
+    ReqContentApprovalController, ReqContentApprovalHandlerController)
 from app.controllers.request_all_controller import (
     ReqContactAllController, ReqFindAllController)
 from app.controllers.activity_controller import (
@@ -252,6 +254,10 @@ def create_app(config_instance):
     api.add_resource(SchoolController, '/pecaprojects/school/<string:id>')
     api.add_resource(SchoolSliderController,
                      '/pecaprojects/schoolsliders/<string:pecaId>')
+    api.add_resource(ReqContentApprovalController,
+                     '/pecaprojects/contentapproval')
+    api.add_resource(ReqContentApprovalHandlerController,
+                     '/pecaprojects/contentapproval/<string:id>')
     api.add_resource(TeacherController,
                      '/pecaprojects/teachers/<string:pecaId>')
     api.add_resource(TeacherHandlerController,

@@ -33,7 +33,8 @@ class SchoolSliderService():
                     peca.school.slider.append(image)
                     peca.save()
                     RequestContentApproval(
-                        parentId=peca.id,
+                        pecaId=peca.id,
+                        recordId=image.id,
                         type="schoolSlider",
                         status="1",
                         content=image

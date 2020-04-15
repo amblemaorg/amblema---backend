@@ -8,21 +8,20 @@ from marshmallow import (
     validate,
     pre_load,
     post_load,
+    pre_dump,
     EXCLUDE)
 
 from app.schemas import fields
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf)
-from app.helpers.ma_schema_fields import MAReferenceField
-from app.models.project_model import Project
-from app.schemas.project_schema import CheckSchema
-from app.schemas.step_schema import FileSchema
+from app.schemas.shared_schemas import ImageStatusSchema
 
 
 class RequestContentApprovalSchema(Schema):
     id = fields.Str(dump_only=True)
     code = fields.Function(lambda obj: str(obj.code).zfill(7))
-    parentId = fields.Str(required=True)
+    pecaId = fields.Str(required=True)
+    recordId = fields.Str(required=True)
     type = fields.Str(
         validate=OneOf(
             ('schoolSlider',)
@@ -34,4 +33,14 @@ class RequestContentApprovalSchema(Schema):
             ("pending", "approved", "rejected", "cancelled")
         )
     )
-    content = fields.Dict(dump_only=True)
+    content = fields.Dict()
+
+    @pre_dump
+    def process_input(self, data, **kwargs):
+        if data['type'] == 'schoolSlider':
+            data['content'] = ImageStatusSchema().dump(data['content'])
+        return data
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True

@@ -2,6 +2,7 @@
 
 
 from datetime import datetime
+from app.models.peca_project_model import PecaProject
 
 from flask import current_app
 from mongoengine import (
@@ -14,7 +15,8 @@ from mongoengine import (
 
 class RequestContentApproval(Document):
     code = fields.SequenceField(required=True, value_decorator=str)
-    parentId = fields.ObjectIdField(required=True)
+    pecaId = fields.ObjectIdField(required=True)
+    recordId = fields.ObjectIdField(required=True)
     type = fields.StringField()
     comments = fields.StringField()
     status = fields.StringField(required=True, max_length=1, default="1")
@@ -26,15 +28,17 @@ class RequestContentApproval(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
-        current_app.logger.info("presave")
-
-    @classmethod
-    def post_save(cls, sender, document, **kwargs):
-        if 'created' in kwargs and kwargs['created']:
-            current_app.logger.info("postsave")
+        if document.id is not None:
+            oldDocument = document.__class__.objects(id=document.id).first()
+            if document.status != oldDocument.status:
+                if document.type == "schoolSlider":
+                    peca = PecaProject.objects(id=document.pecaId).first()
+                    for slider in peca.school.slider:
+                        if slider.id == document.recordId:
+                            slider.approvalStatus = document.status
+                            break
+                    peca.save()
 
 
 signals.pre_save.connect(RequestContentApproval.pre_save,
                          sender=RequestContentApproval)
-signals.post_save.connect(RequestContentApproval.post_save,
-                          sender=RequestContentApproval)

@@ -66,6 +66,7 @@ class RequestStepApproval(Document):
     @classmethod
     def post_save(cls, sender, document, **kwargs):
         if 'created' in kwargs and kwargs['created']:
+            from app.schemas.request_step_approval_schema import RequestStepApprovalSchema
             for step in document.project.stepsProgress.steps:
                 if step.id == document.stepId:
                     step.status = "2"  # in approval
@@ -73,6 +74,7 @@ class RequestStepApproval(Document):
                         Approval(
                             id=str(document.id),
                             comments=document.comments,
+                            data=RequestStepApprovalSchema().dump(document),
                             status="1"
                         ))
                     document.project.save()

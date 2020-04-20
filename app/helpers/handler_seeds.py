@@ -705,16 +705,16 @@ def create_initial_steps():
     )
     sponsorAgreementSchoolFoundation.save()
 
-    schoolFillSponsorlForm = Step(
+    schoolFillSponsorForm = Step(
         name="Rellenar planilla de padrino",
-        devName="schoolFillSponsorlForm",
+        devName="schoolFillSponsorForm",
         tag="4",
         isStandard=True,
         approvalType="3",
         hasText=True,
         text="some description"
     )
-    schoolFillSponsorlForm.save()
+    schoolFillSponsorForm.save()
 
     schoolFillCoordinatorForm = Step(
         name="Rellenar planilla de coordinador",

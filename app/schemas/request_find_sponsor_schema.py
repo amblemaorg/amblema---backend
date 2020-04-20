@@ -8,6 +8,7 @@ from marshmallow import (
     validate)
 
 from app.schemas import fields
+from app.models.user_model import User
 from app.models.request_find_sponsor_model import Project
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, only_letters
@@ -18,6 +19,7 @@ class ReqFindSponsorSchema(Schema):
     id = fields.Str(dump_only=True)
     requestCode = fields.Function(lambda obj: obj.requestCode.zfill(7))
     project = MAReferenceField(required=True, document=Project, field="code")
+    user = MAReferenceField(required=True, document=User, field="name")
     name = fields.Str(required=True, validate=not_blank)
     email = fields.Email(required=True, validate=not_blank)
     rif = fields.Str(required=True, validate=only_numbers)

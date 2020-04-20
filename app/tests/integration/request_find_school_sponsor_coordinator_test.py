@@ -17,7 +17,7 @@ from app.models.state_model import State, Municipality
 from app.models.request_find_school_model import RequestFindSchool
 from app.models.request_find_sponsor_model import RequestFindSponsor
 from app.models.request_find_coordinator_model import RequestFindCoordinator
-from app.helpers.handler_seeds import create_standard_roles
+from app.helpers.handler_seeds import create_standard_roles, create_initial_steps
 
 
 class ApprovalProcess(unittest.TestCase):
@@ -36,6 +36,8 @@ class ApprovalProcess(unittest.TestCase):
             startDate="2020-02-14",
             endDate="2020-09-14")
         self.schoolYear.save()
+
+        create_initial_steps()
 
         self.role = Role(name="test")
         self.role.save()
@@ -71,6 +73,24 @@ class ApprovalProcess(unittest.TestCase):
         )
         self.coordinator.save()
 
+        self.sponsor = SponsorUser(
+            name="Test",
+            companyRif="303993833",
+            companyType="2",
+            companyPhone="02343432323",
+            contactFirstName="Danel",
+            contactLastName="Ortega",
+            contactPhone="04244664646",
+            addressHome="House 34A",
+            email="testemail@test.com",
+            password="12345678",
+            userType="3",
+            role=Role.objects(devName="sponsor").first(),
+            addressState=self.state,
+            addressMunicipality=self.municipality
+        )
+        self.sponsor.save()
+
         self.project = Project(
             schoolYear=self.schoolYear,
             coordinator=self.coordinator
@@ -81,6 +101,7 @@ class ApprovalProcess(unittest.TestCase):
 
         requestData = {
             "project": str(self.project.pk),
+            "user": str(self.sponsor.pk),
             "firstName": "Coordinator",
             "lastName": "Last Name",
             "name": "hola",
@@ -110,6 +131,7 @@ class ApprovalProcess(unittest.TestCase):
 
         data = dict(
             project=str(self.project.pk),
+            user=str(self.coordinator.pk),
             email="iamsponsor@test.com",
             name="Sponsor C.A.",
             rif="282882822",
@@ -134,6 +156,7 @@ class ApprovalProcess(unittest.TestCase):
 
         data = dict(
             project=str(self.project.pk),
+            user=str(self.sponsor.pk),
             name="U.E. Libertador",
             code="315",
             email="uelibertador@test.com",
@@ -168,8 +191,13 @@ class ApprovalProcess(unittest.TestCase):
 
     def test_create_school_user_on_approve_request(self):
 
+        reciprocalFields = [
+            'coordinatorFillSchoolForm',
+            'sponsorFillSchoolForm'
+        ]
         request = RequestFindSchool(
             project=self.project,
+            user=self.sponsor,
             name="U.E. Libertador",
             code="315",
             email="uelibertador@test.com",
@@ -200,6 +228,23 @@ class ApprovalProcess(unittest.TestCase):
         schoolUser = SchoolUser.objects(email=request.email).first()
         self.assertEqual(None, schoolUser)
 
+        self.project = Project.objects.get(id=self.project.id)
+        for step in self.project.stepsProgress.steps:
+            if step.devName in reciprocalFields:
+                self.assertEqual("1", step.approvalHistory[0].status)
+                self.assertEqual(
+                    request.name, step.approvalHistory[0].data['name'])
+
+        res = self.client().get(
+            '/projects/{}'.format(self.project.id))
+        result = json.loads(
+            res.data.decode('utf8').replace("'", '"'))
+        for step in result['stepsProgress']['steps']:
+            if step['devName'] in reciprocalFields:
+                self.assertEqual("1", step['approvalHistory'][0]['status'])
+                self.assertEqual(
+                    request.name, step['approvalHistory'][0]['data']['name'])
+
         # once request is approved must create a schoolUser
         # and assign it to project
         request.status = "2"
@@ -208,12 +253,23 @@ class ApprovalProcess(unittest.TestCase):
         schoolUser = SchoolUser.objects(email=request.email).first()
         self.assertEqual(request.email, schoolUser.email)
 
+        self.project = Project.objects.get(id=self.project.id)
         self.assertEqual(self.project.school, schoolUser)
+
+        for step in self.project.stepsProgress.steps:
+            if step.devName in reciprocalFields:
+                self.assertEqual("2", step.approvalHistory[0].status)
 
     def test_create_sponsor_user_on_approve_request(self):
 
+        reciprocalFields = [
+            'coordinatorFillSponsorForm',
+            'schoolFillSponsorForm'
+        ]
+
         request = RequestFindSponsor(
             project=self.project,
+            user=self.coordinator,
             email="iamsponsor@test.com",
             name="Sponsor C.A.",
             rif="282882822",
@@ -232,6 +288,13 @@ class ApprovalProcess(unittest.TestCase):
         sponsorUser = SponsorUser.objects(email=request.email).first()
         self.assertEqual(None, sponsorUser)
 
+        self.project = Project.objects.get(id=self.project.id)
+        for step in self.project.stepsProgress.steps:
+            if step.devName in reciprocalFields:
+                self.assertEqual("1", step.approvalHistory[0].status)
+                self.assertEqual(
+                    request.name, step.approvalHistory[0].data['name'])
+
         # once request is approved must create a sponsorUser
         # and assign it to project
         request.status = "2"
@@ -240,10 +303,19 @@ class ApprovalProcess(unittest.TestCase):
         sponsorUser = SponsorUser.objects(email=request.email).first()
         self.assertEqual(request.email, sponsorUser.email)
 
+        self.project = Project.objects.get(id=self.project.id)
         self.assertEqual(self.project.sponsor, sponsorUser)
+
+        for step in self.project.stepsProgress.steps:
+            if step.devName in reciprocalFields:
+                self.assertEqual("2", step.approvalHistory[0].status)
 
     def test_create_coordinator_user_on_approve_request(self):
 
+        reciprocalFields = [
+            'schoolFillCoordinatorForm',
+            'sponsorFillCoordinatorForm'
+        ]
         sponsor = SponsorUser(
             name="Test",
             companyRif="303993833",
@@ -270,11 +342,12 @@ class ApprovalProcess(unittest.TestCase):
 
         request = RequestFindCoordinator(
             project=project,
+            user=sponsor,
             firstName="Coordinator",
             lastName="Last Name",
             cardType="1",
             cardId="20922842",
-            birthdate=str(datetime.utcnow()),
+            birthdate=datetime.utcnow(),
             gender="1",
             addressState=self.state,
             addressMunicipality=self.municipality,
@@ -293,6 +366,13 @@ class ApprovalProcess(unittest.TestCase):
         coordinatorUser = CoordinatorUser.objects(email=request.email).first()
         self.assertEqual(None, coordinatorUser)
 
+        project = Project.objects.get(id=project.id)
+        for step in project.stepsProgress.steps:
+            if step.devName in reciprocalFields:
+                self.assertEqual("1", step.approvalHistory[0].status)
+                self.assertEqual(
+                    request.email, step.approvalHistory[0].data['email'])
+
         # once request is approved must create a coordinatorUser
         # and assign it to project
         request.status = "2"
@@ -301,7 +381,12 @@ class ApprovalProcess(unittest.TestCase):
         coordinatorUser = CoordinatorUser.objects(email=request.email).first()
         self.assertEqual(request.email, coordinatorUser.email)
 
+        project = Project.objects.get(id=project.id)
         self.assertEqual(project.coordinator.id, coordinatorUser.id)
+
+        for step in project.stepsProgress.steps:
+            if step.devName in reciprocalFields:
+                self.assertEqual("2", step.approvalHistory[0].status)
 
     def tearDown(self):
         """teardown all initialized variables."""

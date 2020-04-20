@@ -198,16 +198,16 @@ class InitialSteps(unittest.TestCase):
         )
         self.sponsorAgreementSchoolFoundation.save()
 
-        self.schoolFillSponsorlForm = Step(
+        self.schoolFillSponsorForm = Step(
             name="Rellenar planilla de padrino",
-            devName="schoolFillSponsorlForm",
+            devName="schoolFillSponsorForm",
             tag="4",
             isStandard=True,
             approvalType="3",
             hasText=True,
             text="some description"
         )
-        self.schoolFillSponsorlForm.save()
+        self.schoolFillSponsorForm.save()
 
         self.schoolFillCoordinatorForm = Step(
             name="Rellenar planilla de coordinador",
@@ -384,7 +384,7 @@ class InitialSteps(unittest.TestCase):
             project=self.project,
             stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"},
-            stepDate="2020-02-20"
+            stepDate=datetime.utcnow()
         )
         approvalRequest.save()
         approvalRequest.status = "2"

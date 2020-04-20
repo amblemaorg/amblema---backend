@@ -74,34 +74,20 @@ class RequestsAll():
         coords = []
         for coord in coordinatorReq:
             coords.append(
-                {'id': coord.id, 'createdAt': coord.createdAt, 'type': 'coordinator', 'record': coord})
+                {'id': str(coord.id), 'requestCode': coord.requestCode.zfill(7), 'projectCode': coord.project.code.zfill(7), 'type': 'coordinator', 'user': coord.user.name, 'createdAt': coord.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', 'record': ReqFindCoordSchema().dump(coord)})
         sponsors = []
         for sponsor in sponsorReq:
             sponsors.append(
-                {'id': sponsor.id, 'createdAt': sponsor.createdAt, 'type': 'sponsor', 'record': sponsor})
+                {'id': str(sponsor.id), 'requestCode': sponsor.requestCode.zfill(7), 'projectCode': sponsor.project.code.zfill(7), 'type': 'sponsor', 'user': sponsor.user.name, 'createdAt': sponsor.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',  'record': ReqFindSponsorSchema().dump(sponsor)})
         schools = []
         for school in schoolReq:
             schools.append(
-                {'id': school.id, 'createdAt': school.createdAt, 'type': 'school', 'record': school})
+                {'id': str(school.id), 'requestCode': school.requestCode.zfill(7), 'projectCode': school.project.code.zfill(7), 'type': 'school', 'user': school.user.name, 'createdAt': school.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', 'record': ReqFindSchoolSchema().dump(school)})
 
         requests = coords + sponsors + schools
         requests = sorted(requests, reverse=True, key=lambda x: x['createdAt'])
 
-        jsonRequests = []
-        for request in requests:
-            if request['type'] == 'coordinator':
-                data = ReqFindCoordSchema().dump(request['record'])
-                data['type'] = 'coordinator'
-                data['name'] = request['record']['firstName'] + \
-                    ' ' + request['record']['lastName']
-                jsonRequests.append(data)
-            if request['type'] == 'sponsor':
-                data = ReqFindSponsorSchema().dump(request['record'])
-                data['type'] = 'sponsor'
-                jsonRequests.append(data)
-            if request['type'] == 'school':
-                data = ReqFindSchoolSchema().dump(request['record'])
-                data['type'] = 'school'
-                jsonRequests.append(data)
+        # for request in requests:
+        #    request['createdAt'] = request['createdAt'].strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
-        return {"records": jsonRequests}, 200
+        return {"records": requests}, 200

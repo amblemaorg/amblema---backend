@@ -5,13 +5,15 @@ from datetime import datetime
 from flask import current_app
 from mongoengine import Document, fields, signals
 
-from app.models.project_model import Project
+from app.models.user_model import User
+from app.models.project_model import Project, Approval
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.role_model import Role
 
 
 class RequestFindCoordinator(Document):
     project = fields.ReferenceField(Project, required=True)
+    user = fields.ReferenceField(User, required=True)
     requestCode = fields.SequenceField(
         sequence_name="find_requests", value_decorator=str)
     firstName = fields.StringField(required=True)
@@ -42,8 +44,14 @@ class RequestFindCoordinator(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
+        reciprocalFields = [
+            'sponsorFillCoordinatorForm',
+            'schoolFillCoordinatorForm'
+        ]
+        # before update
         if document.id:
             oldRequest = document.__class__.objects.get(id=document.id)
+            # is approved?
             if document.status != oldRequest.status and document.status == '2':
                 coordinatorUser = CoordinatorUser.objects(
                     email=document.email).first()
@@ -78,8 +86,47 @@ class RequestFindCoordinator(Document):
                     coordinatorUser.save()
                     coordinatorUser.sendRegistrationEmail(password)
                 document.project.coordinator = coordinatorUser
+                for step in document.project.stepsProgress.steps:
+                    if step.devName in reciprocalFields:
+                        step.status = "2"  # approved
+                        for approval in step.approvalHistory:
+                            if approval.id == str(document.id):
+                                approval.status = document.status
+                                approval.updatedAt = datetime.utcnow()
                 document.project.save()
+            # is rejected?
+            if document.status != oldRequest.status and document.status == '3':
+                for step in document.project.stepsProgress.steps:
+                    if step.devName in reciprocalFields:
+                        step.status = "1"  # pending
+                        for approval in step.approvalHistory:
+                            if approval.id == str(document.id):
+                                approval.status = document.status
+                                approval.updatedAt = datetime.utcnow()
+                document.project.save()
+
+    @classmethod
+    def post_save(cls, sender, document, **kwargs):
+        from app.schemas.request_find_coordinator_schema import ReqFindCoordSchema
+        # after create
+        reciprocalFields = [
+            'sponsorFillCoordinatorForm',
+            'schoolFillCoordinatorForm'
+        ]
+        for step in document.project.stepsProgress.steps:
+            if step.devName in reciprocalFields:
+                step.status = "2"  # in approval
+                step.approvalHistory.append(
+                    Approval(
+                        id=str(document.id),
+                        data=ReqFindCoordSchema().dump(document),
+                        status="1"
+                    ))
+        document.project.save()
 
 
 signals.pre_save_post_validation.connect(
     RequestFindCoordinator.pre_save, sender=RequestFindCoordinator)
+
+signals.post_save.connect(
+    RequestFindCoordinator.post_save, sender=RequestFindCoordinator)

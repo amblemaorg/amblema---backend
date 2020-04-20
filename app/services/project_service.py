@@ -172,7 +172,7 @@ class ProjectService():
                 if step.devName in ("findSchool", "coordinatorFillSchoolForm", "sponsorFillSchoolForm"):
                     stepCtrl.status = "3"
             if document.sponsor:
-                if step.devName in ("findSponsor", "coordinatorFillSponsorForm", "schoolFillSponsorlForm"):
+                if step.devName in ("findSponsor", "coordinatorFillSponsorForm", "schoolFillSponsorForm"):
                     stepCtrl.status = "3"
             if document.coordinator:
                 if step.devName in ("findCoordinator", "sponsorFillCoordinatorForm", "schoolFillCoordinatorForm"):
@@ -202,7 +202,7 @@ class ProjectService():
                         step.devName in (
                             "findSponsor",
                             "coordinatorFillSponsorForm",
-                            "schoolFillSponsorlForm")
+                            "schoolFillSponsorForm")
                     ):
                         step.status = "3"
 

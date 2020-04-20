@@ -159,7 +159,7 @@ class ContactRequestTest(unittest.TestCase):
                          result['records'][0]['name'])
         self.assertEqual('0000003', result['records'][0]['requestCode'])
 
-    def test_get_all_contact_requests(self):
+    def test_get_all_create_user_requests(self):
 
         coordinator = CoordinatorUser(
             firstName="Test",
@@ -189,6 +189,7 @@ class ContactRequestTest(unittest.TestCase):
 
         data = dict(
             project=str(project.pk),
+            user=str(coordinator.pk),
             email="iamsponsor@test.com",
             name="Sponsor C.A.",
             rif="282882822",
@@ -211,6 +212,7 @@ class ContactRequestTest(unittest.TestCase):
 
         data = dict(
             project=str(project.pk),
+            user=str(coordinator.pk),
             name="U.E. Libertador",
             code="315",
             email="uelibertador@test.com",
@@ -251,6 +253,7 @@ class ContactRequestTest(unittest.TestCase):
 
         data = dict(
             project=str(secondProject.pk),
+            user=str(coordinator.pk),
             email="iamsponsor@test.com",
             name="Sponsor C.A.",
             rif="282882822",
@@ -273,6 +276,7 @@ class ContactRequestTest(unittest.TestCase):
 
         data = dict(
             project=str(project.pk),
+            user=str(coordinator.pk),
             email="iamsponsor@test.com",
             name="Sponsor C.A.",
             rif="282882822",
@@ -298,9 +302,10 @@ class ContactRequestTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("Sponsor C.A.",
-                         result['records'][0]['name'])
         self.assertEqual('0000004', result['records'][0]['requestCode'])
+        self.assertEqual('Test Test', result['records'][0]['user'])
+        self.assertEqual(result['records'][0]['id'],
+                         result['records'][0]['record']['id'])
 
     def tearDown(self):
         """teardown all initialized variables."""

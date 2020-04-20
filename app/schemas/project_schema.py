@@ -70,6 +70,7 @@ class StepFieldsSchema(Schema):
 class ApprovalSchema(Schema):
     id = fields.Str(dump_only=True)
     comments = fields.Str(dump_only=True)
+    data = fields.Dict(dump_only=True)
     status = fields.Str(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

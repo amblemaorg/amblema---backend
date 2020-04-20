@@ -52,6 +52,7 @@ class StepFields(EmbeddedDocument):
 class Approval(EmbeddedDocument):
     id = fields.StringField()
     comments = fields.StringField()
+    data = fields.DictField()
     status = fields.StringField(max_length=1)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

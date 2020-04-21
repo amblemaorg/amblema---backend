@@ -380,6 +380,191 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual(30,
                          result['grade3']['wordsPerMin'])
 
+    def test_endpoint_environmental_project(self):
+
+        requestData = {
+            "name": "Some name",
+            "lapse1": {
+                "generalObjective": "Some general objective",
+                "topics": [
+                    {
+                        "name": "Some topic",
+                        "objectives": [
+                            "first one",
+                            "second one"
+                        ],
+                        "strategies": [
+                            "first one",
+                            "second one"
+                        ],
+                        "contents": [
+                            "first one",
+                            "second one"
+                        ],
+                        "levels": [
+                            {
+                                "target": [
+                                    {
+                                        "label": "1",
+                                        "value": True
+                                    },
+                                    {
+                                        "label": "2",
+                                        "value": True
+                                    }
+                                ],
+                                "week": [
+                                    "2020-04-20T18:45:33.108Z",
+                                    "2020-04-25T18:45:33.108Z"
+                                ],
+                                "duration": "0100",
+                                "techniques": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "activities": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "resources": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "evaluations": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "supportMaterial": [
+                                    "https://somedomain.com/somefile",
+                                    "https://somedomain.com/somefile"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        res = self.client().post(
+            '/pecasetting/environmentalproject',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client().get(
+            '/pecasetting/environmentalproject')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual("first one",
+                         result['lapse1']['topics'][0]['levels'][0]['activities'][0])
+
+        requestData = {
+            "name": "Some name",
+            "lapse1": {
+                "generalObjective": "Some general objective",
+                "topics": [
+                    {
+                        "name": "Some topic",
+                        "objectives": [
+                            "first one",
+                            "second one"
+                        ],
+                        "strategies": [
+                            "first one",
+                            "second one"
+                        ],
+                        "contents": [
+                            "first one",
+                            "second one"
+                        ],
+                        "levels": [
+                            {
+                                "target": [
+                                    {
+                                        "label": "1",
+                                        "value": True
+                                    },
+                                    {
+                                        "label": "2",
+                                        "value": True
+                                    }
+                                ],
+                                "week": [
+                                    "2020-04-20T18:45:33.108Z",
+                                    "2020-04-25T18:45:33.108Z"
+                                ],
+                                "duration": "0100",
+                                "techniques": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "activities": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "resources": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "evaluations": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "supportMaterial": [
+                                    "https://somedomain.com/somefile",
+                                    "https://somedomain.com/somefile"
+                                ]
+                            },
+                            {
+                                "target": [
+                                    {
+                                        "label": "1",
+                                        "value": True
+                                    },
+                                    {
+                                        "label": "2",
+                                        "value": True
+                                    }
+                                ],
+                                "week": [
+                                    "2020-04-20T18:45:33.108Z",
+                                    "2020-04-25T18:45:33.108Z"
+                                ],
+                                "duration": "0100",
+                                "techniques": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "activities": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "resources": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "evaluations": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "supportMaterial": [
+                                    "https://somedomain.com/somefile",
+                                    "https://somedomain.com/somefile"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        res = self.client().post(
+            '/pecasetting/environmentalproject',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 400)
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

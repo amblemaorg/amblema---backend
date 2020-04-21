@@ -20,6 +20,7 @@ from app.models.peca_setting_model import (
 from app.schemas.learning_module_schema import ImageSchema
 from app.schemas.activity_schema import ActivitySchema
 from app.schemas.goal_setting_schema import GoalSettingSchema
+from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
 
 
 ImageSchema.image = MAImageField(
@@ -87,6 +88,7 @@ class PecaSettingSchema(Schema):
     lapse2 = fields.Nested(LapseSchema)
     lapse3 = fields.Nested(LapseSchema)
     goalSetting = fields.Nested(GoalSettingSchema)
+    environmentalProject = fields.Nested(EnvironmentalProjectSchema)
 
     @post_load
     def make_document(self, data, **kwargs):

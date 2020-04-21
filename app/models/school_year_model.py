@@ -14,7 +14,8 @@ from app.models.peca_setting_model import (
     InitialWorshop,
     LapsePlanning,
     AmbleCoins,
-    AnnualConvention)
+    AnnualConvention,
+    EnvironmentalProject)
 
 from app.models.goal_setting_model import GoalSetting, GradeSetting
 
@@ -68,6 +69,7 @@ class SchoolYear(Document):
             lapse1=lapse1,
             lapse2=lapse2,
             lapse3=lapse3,
-            goalSetting=goalSetting
+            goalSetting=goalSetting,
+            environmentalProject=EnvironmentalProject()
         )
         self.pecaSetting = pecaSetting

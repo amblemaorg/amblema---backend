@@ -6,6 +6,7 @@ from app.models.shared_embedded_documents import Link, CheckTemplate
 from app.models.learning_module_model import Image
 from app.models.activity_model import Activity
 from app.models.goal_setting_model import GoalSetting
+from app.models.environmental_project_model import EnvironmentalProject
 
 
 class InitialWorshop(EmbeddedDocument):
@@ -58,4 +59,5 @@ class PecaSetting(EmbeddedDocument):
     lapse1 = fields.EmbeddedDocumentField(Lapse)
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)
+    environmentalProject = fields.EmbeddedDocumentField(EnvironmentalProject)
     goalSetting = fields.EmbeddedDocumentField(GoalSetting)

@@ -47,11 +47,19 @@ class AnnualConvention(EmbeddedDocument):
     status = fields.StringField(max_length=1, default="2")
 
 
+class MathOlimpic(EmbeddedDocument):
+    file = fields.EmbeddedDocumentField(
+        Link, is_file=True)
+    description = fields.StringField()
+    status = fields.StringField(max_length=1, default="2")
+
+
 class Lapse(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
     ambleCoins = fields.EmbeddedDocumentField(AmbleCoins)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
     annualConvention = fields.EmbeddedDocumentField(AnnualConvention)
+    mathOlimpic = fields.EmbeddedDocumentField(MathOlimpic)
     activities = fields.EmbeddedDocumentListField(Activity)
 
 

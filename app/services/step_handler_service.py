@@ -28,7 +28,8 @@ class StepHandlerService(GenericServices):
             documentFiles = getFileFields(self.Model)
             if files and documentFiles:
                 validFiles = validate_files(files, documentFiles)
-                uploadedfiles = upload_files(validFiles)
+                folder = self.Model.__name__.lower()
+                uploadedfiles = upload_files(validFiles, folder)
                 jsonData.update(uploadedfiles)
             data = schema.load(jsonData)
 
@@ -59,7 +60,8 @@ class StepHandlerService(GenericServices):
             documentFiles = getFileFields(self.Model)
             if files and documentFiles:
                 validFiles = validate_files(files, documentFiles)
-                uploadedfiles = upload_files(validFiles)
+                folder = self.Model.__name__.lower()
+                uploadedfiles = upload_files(validFiles, folder)
                 jsonData.update(uploadedfiles)
             data = schema.load(jsonData, partial=partial)
             record = self.getOr404(recordId)

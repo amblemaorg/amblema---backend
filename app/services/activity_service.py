@@ -17,6 +17,8 @@ from app.helpers.error_helpers import RegisterNotFound
 
 class ActivityService():
 
+    filesPath = 'activities'
+
     def get(self, lapse, id):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
@@ -44,7 +46,7 @@ class ActivityService():
                 documentFiles = getFileFields(Activity)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
-                    uploadedfiles = upload_files(validFiles)
+                    uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 
@@ -79,7 +81,7 @@ class ActivityService():
                 documentFiles = getFileFields(Activity)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
-                    uploadedfiles = upload_files(validFiles)
+                    uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData, partial=True)
 
@@ -226,6 +228,24 @@ class ActivityService():
                     }
                     records['lapse{}'.format(i+1)].append(schema.dump(data))
 
+                mathOlimpic = schoolYear.pecaSetting['lapse{}'.format(
+                    i+1)].mathOlimpic
+
+                if (
+                    (not filters) or
+                    ('status' in filters and filters['status']
+                     == '1' and mathOlimpic.status == '1')
+                ):
+
+                    data = {
+                        "id": "mathOlimpic",
+                        "name": "Olimpiadas matemáticas",
+                        "devName": "mathOlimpic",
+                        "isStandard": True,
+                        "status": mathOlimpic.status
+                    }
+                    records['lapse{}'.format(i+1)].append(schema.dump(data))
+
                 for activity in schoolYear.pecaSetting['lapse{}'.format(i+1)].activities:
                     if (
                         (not filters) or
@@ -287,6 +307,10 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].annualConvention.status = data['status']
+                    elif data['id'] == "mathOlimpic":
+                        found = True
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].mathOlimpic.status = data['status']
                 else:
                     for activity in schoolYear.pecaSetting['lapse{}'.format(data['lapse'])].activities:
                         if str(activity.id) == data['id']:

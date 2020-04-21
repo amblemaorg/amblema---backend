@@ -1,28 +1,28 @@
-# app/services/annual_convention_service.py
+# app/services/math_olimpic_service.py
 
 from flask import current_app
 from marshmallow import ValidationError
 
 from app.models.school_year_model import SchoolYear
-from app.models.peca_setting_model import AnnualConvention
-from app.schemas.peca_setting_schema import AnnualConventionSchema
+from app.models.peca_setting_model import MathOlimpic
+from app.schemas.peca_setting_schema import MathOlimpicSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 
 
-class AnnualConventionService():
+class MathOlimpicService():
 
-    filesPath = 'annual_convention'
+    filesPath = 'math_olimpics'
 
     def get(self, lapse):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
 
         if schoolYear:
-            schema = AnnualConventionSchema()
-            annualConvention = schoolYear.pecaSetting['lapse{}'.format(
-                lapse)].annualConvention
-            return schema.dump(annualConvention), 200
+            schema = MathOlimpicSchema()
+            mathOlimpic = schoolYear.pecaSetting['lapse{}'.format(
+                lapse)].mathOlimpic
+            return schema.dump(mathOlimpic), 200
 
     def save(self, lapse, jsonData, files=None):
 
@@ -31,8 +31,8 @@ class AnnualConventionService():
 
         if schoolYear:
             try:
-                schema = AnnualConventionSchema()
-                documentFiles = getFileFields(AnnualConvention)
+                schema = MathOlimpicSchema()
+                documentFiles = getFileFields(MathOlimpic)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles, self.filesPath)
@@ -41,15 +41,15 @@ class AnnualConventionService():
 
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
-                annualConvention = schoolYear.pecaSetting['lapse{}'.format(
-                    lapse)].annualConvention
+                mathOlimpic = schoolYear.pecaSetting['lapse{}'.format(
+                    lapse)].mathOlimpic
                 for field in schema.dump(data).keys():
-                    annualConvention[field] = data[field]
+                    mathOlimpic[field] = data[field]
                 try:
                     schoolYear.pecaSetting['lapse{}'.format(
-                        lapse)].annualConvention = annualConvention
+                        lapse)].mathOlimpic = mathOlimpic
                     schoolYear.save()
-                    return schema.dump(annualConvention), 200
+                    return schema.dump(mathOlimpic), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
 

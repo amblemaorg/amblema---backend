@@ -33,7 +33,8 @@ class InicialWorkshopService():
                 documentFiles = getFileFields(InitialWorshop)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
-                    uploadedfiles = upload_files(validFiles)
+                    folder = 'initial_workshop'
+                    uploadedfiles = upload_files(validFiles, folder)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 

@@ -13,6 +13,8 @@ from app.helpers.document_metadata import getFileFields
 
 class LapsePlanningService():
 
+    filesPath = 'lapse_planning'
+
     def get(self, lapse):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
@@ -34,7 +36,7 @@ class LapsePlanningService():
                 documentFiles = getFileFields(LapsePlanning)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
-                    uploadedfiles = upload_files(validFiles)
+                    uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 

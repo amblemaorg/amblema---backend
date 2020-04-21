@@ -71,11 +71,17 @@ class AnnualConventionSchema(Schema):
     step4Description = fields.Str()
 
 
+class MathOlimpicSchema(Schema):
+    file = fields.Nested(FileSchema())
+    description = fields.Str()
+
+
 class LapseSchema(Schema):
     initialWorshop = fields.Nested(InicialWorkshopSchema)
     lapsePlanning = fields.Nested(LapsePlanningSchema)
     ambleCoins = fields.Nested(AmbleCoinsSchema)
     annualConvention = fields.Nested(AnnualConventionSchema)
+    mathOlimpic = fields.Nested(MathOlimpicSchema)
     activities = fields.List(fields.Nested(ActivitySchema))
 
     @post_load

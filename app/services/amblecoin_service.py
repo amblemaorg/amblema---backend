@@ -12,6 +12,8 @@ from app.helpers.document_metadata import getFileFields
 
 class AmbleCoinService():
 
+    filesPath = 'amblecoins'
+
     def get(self, lapse):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
@@ -33,7 +35,7 @@ class AmbleCoinService():
                 documentFiles = getFileFields(AmbleCoins)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
-                    uploadedfiles = upload_files(validFiles)
+                    uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 

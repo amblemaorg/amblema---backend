@@ -12,5 +12,8 @@ resources/images/*.svg
 resources/files/*.pdf
 resources/files/*.docx
 resources/files/*.pptx
+resources/files/*/*.pdf
+resources/files/*/*.docx
+resources/files/*/*.pptx
 .coverage
 htmlcov/

@@ -5,6 +5,7 @@ from base64 import b64decode
 from flask import current_app
 import os
 from mimetypes import guess_extension, guess_type
+from pathlib import Path
 
 from werkzeug.utils import secure_filename
 
@@ -47,13 +48,19 @@ def validate_files(files, documentFiles):
     return validFiles
 
 
-def upload_files(files):
+def upload_files(files, folder=''):
     uploaded_files = {}
     for file in files:
         filename = secure_filename(file['file'].filename)
-        file['file'].save(os.path.join(files_path, filename))
+        if folder:
+            path = files_path + '/' + folder
+        else:
+            path = files_path
+        Path(path).mkdir(parents=True, exist_ok=True)
+        file['file'].save(os.path.join(path, filename))
         fileUrl = current_app.config.get(
-            'SERVER_URL') + '/resources/files/' + filename
+            'SERVER_URL') + '/resources/files/' + ((folder+'/') if folder else folder) + filename
+
         uploaded_files.update(
             {file['field']: {'name': filename, 'url': fileUrl}})
     return uploaded_files

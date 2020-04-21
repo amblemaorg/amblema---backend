@@ -15,7 +15,8 @@ from app.models.peca_setting_model import (
     LapsePlanning,
     AmbleCoins,
     AnnualConvention,
-    EnvironmentalProject)
+    EnvironmentalProject,
+    MathOlimpic)
 
 from app.models.goal_setting_model import GoalSetting, GradeSetting
 
@@ -35,25 +36,12 @@ class SchoolYear(Document):
         self.updatedAt = datetime.utcnow()
 
     def initFirstPecaSetting(self):
-        lapse1 = Lapse(
+        lapse = Lapse(
             initialWorkshop=InitialWorshop(),
             lapsePlanning=LapsePlanning(),
             ambleCoins=AmbleCoins(),
             annualConvention=AnnualConvention(),
-            activities=[]
-        )
-        lapse2 = Lapse(
-            initialWorkshop=InitialWorshop(),
-            lapsePlanning=LapsePlanning(),
-            ambleCoins=AmbleCoins(),
-            annualConvention=AnnualConvention(),
-            activities=[]
-        )
-        lapse3 = Lapse(
-            initialWorkshop=InitialWorshop(),
-            lapsePlanning=LapsePlanning(),
-            ambleCoins=AmbleCoins(),
-            annualConvention=AnnualConvention(),
+            mathOlimpic=MathOlimpic(),
             activities=[]
         )
 
@@ -66,9 +54,9 @@ class SchoolYear(Document):
             )
 
         pecaSetting = PecaSetting(
-            lapse1=lapse1,
-            lapse2=lapse2,
-            lapse3=lapse3,
+            lapse1=lapse,
+            lapse2=lapse,
+            lapse3=lapse,
             goalSetting=goalSetting,
             environmentalProject=EnvironmentalProject()
         )

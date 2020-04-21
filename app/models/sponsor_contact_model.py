@@ -32,6 +32,7 @@ class SponsorContact(Document):
     addressCity = fields.StringField()
     contactFirstName = fields.StringField()
     contactLastName = fields.StringField()
+    contactEmail = fields.EmailField()
     contactPhone = fields.StringField()
     hasSchool = fields.BooleanField(required=True)
     schoolName = fields.StringField()
@@ -41,6 +42,8 @@ class SponsorContact(Document):
     schoolAddressState = fields.ReferenceField('State')
     schoolAddressMunicipality = fields.ReferenceField('Municipality')
     schoolAddressCity = fields.StringField()
+    schoolAddressZoneType = fields.StringField(max_length=1, null=True)
+    schoolAddressZone = fields.StringField(null=True)
     schoolPhone = fields.StringField()
     schoolType = fields.StringField(max_length=1)
     schoolPrincipalFirstName = fields.StringField()
@@ -93,6 +96,7 @@ class SponsorContact(Document):
                         companyPhone=document.companyPhone,
                         contactFirstName=document.contactFirstName,
                         contactLastName=document.contactLastName,
+                        contactEmail=document.contactEmail,
                         contactPhone=document.contactPhone
                     )
                     password = sponsorUser.generatePassword()
@@ -117,6 +121,8 @@ class SponsorContact(Document):
                             addressState=document.schoolAddressState,
                             addressMunicipality=document.schoolAddressMunicipality,
                             addressCity=document.schoolAddressCity,
+                            addressZoneType=document.schoolAddressZoneType,
+                            addressZone=document.schoolAddressZone,
                             address=document.schoolAddress,
                             status='1',
                             code=document.schoolCode,

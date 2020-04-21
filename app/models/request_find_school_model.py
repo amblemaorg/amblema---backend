@@ -23,16 +23,18 @@ class RequestFindSchool(Document):
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
     addressCity = fields.StringField()
+    addressZoneType = fields.StringField(max_length=1, null=True)
+    addressZone = fields.StringField(null=True)
     phone = fields.StringField(required=True)
     schoolType = fields.StringField(required=True, max_length=1)
     principalFirstName = fields.StringField(required=True)
     principalLastName = fields.StringField(required=True)
     principalEmail = fields.EmailField(required=True)
     principalPhone = fields.StringField(required=True)
-    subPrincipalFirstName = fields.StringField(required=True)
-    subPrincipalLastName = fields.StringField(required=True)
-    subPrincipalEmail = fields.EmailField(required=True)
-    subPrincipalPhone = fields.StringField(required=True)
+    subPrincipalFirstName = fields.StringField(null=True)
+    subPrincipalLastName = fields.StringField(null=True)
+    subPrincipalEmail = fields.EmailField(null=True)
+    subPrincipalPhone = fields.StringField(null=True)
     nTeachers = fields.IntField(required=True)
     nAdministrativeStaff = fields.IntField(required=True)
     nLaborStaff = fields.IntField(required=True)
@@ -72,6 +74,8 @@ class RequestFindSchool(Document):
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
+                        addressZoneType=document.addressZoneType,
+                        addressZone=document.addressZone,
                         address=document.address,
                         status='1',
                         code=document.code,

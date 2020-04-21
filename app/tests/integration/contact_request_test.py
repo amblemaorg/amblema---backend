@@ -58,6 +58,8 @@ class ContactRequestTest(unittest.TestCase):
             addressState=str(self.state.pk),
             addressMunicipality=str(self.municipality.pk),
             addressCity="Barquisimeto",
+            addressZoneType="2",
+            addressZone="Barrio Bolivar",
             address="calle 9 entre 1 y 2",
             phone="02524433434",
             schoolType="1",
@@ -88,6 +90,7 @@ class ContactRequestTest(unittest.TestCase):
             sponsorAddress="calle 9 entre 1 y 2",
             sponsorContactFirstName="Contact FirstName",
             sponsorContactLastName="Contact Lastname",
+            sponsorContactEmail="someemail@test.com",
             sponsorContactPhone="04242772727"
         )
 
@@ -165,6 +168,8 @@ class ContactRequestTest(unittest.TestCase):
             schoolAddressState=str(self.state.pk),
             schoolAddressMunicipality=str(self.municipality.pk),
             schoolAddressCity="Barquisimeto",
+            schoolAddressZoneType="1",
+            schoolAddressZone="La Granja",
             schoolAddress="calle 9 entre 1 y 2",
             schoolPhone="02524433434",
             schoolType="1",
@@ -195,6 +200,7 @@ class ContactRequestTest(unittest.TestCase):
             address="calle 9 entre 1 y 2",
             contactFirstName="Contact FirstName",
             contactLastName="Contact Lastname",
+            contactEmail="someemail@test.com",
             contactPhone="04242772727"
         )
 

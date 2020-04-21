@@ -27,16 +27,18 @@ class SchoolContact(Document):
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
     addressCity = fields.StringField()
+    addressZoneType = fields.StringField(max_length=1, null=True)
+    addressZone = fields.StringField(null=True)
     phone = fields.StringField(required=True)
     schoolType = fields.StringField(required=True, max_length=1)
     principalFirstName = fields.StringField(required=True)
     principalLastName = fields.StringField(required=True)
     principalEmail = fields.EmailField(required=True)
     principalPhone = fields.StringField(required=True)
-    subPrincipalFirstName = fields.StringField(required=True)
-    subPrincipalLastName = fields.StringField(required=True)
-    subPrincipalEmail = fields.EmailField(required=True)
-    subPrincipalPhone = fields.StringField(required=True)
+    subPrincipalFirstName = fields.StringField(null=True)
+    subPrincipalLastName = fields.StringField(null=True)
+    subPrincipalEmail = fields.EmailField(null=True)
+    subPrincipalPhone = fields.StringField(null=True)
     nTeachers = fields.IntField(required=True)
     nAdministrativeStaff = fields.IntField(required=True)
     nLaborStaff = fields.IntField(required=True)
@@ -57,6 +59,7 @@ class SchoolContact(Document):
     sponsorCompanyPhone = fields.StringField()
     sponsorContactFirstName = fields.StringField()
     sponsorContactLastName = fields.StringField()
+    sponsorContactEmail = fields.EmailField()
     sponsorContactPhone = fields.StringField()
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
@@ -85,6 +88,8 @@ class SchoolContact(Document):
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
+                        addressZoneType=document.addressZoneType,
+                        addressZone=document.addressZone,
                         address=document.address,
                         status='1',
                         code=document.code,
@@ -133,6 +138,7 @@ class SchoolContact(Document):
                             companyPhone=document.sponsorCompanyPhone,
                             contactFirstName=document.sponsorContactFirstName,
                             contactLastName=document.sponsorContactLastName,
+                            contactEmail=document.sponsorContactEmail,
                             contactPhone=document.sponsorContactPhone
                         )
                         password = sponsorUser.generatePassword()

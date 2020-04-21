@@ -23,6 +23,13 @@ class ReqFindSchoolSchema(Schema):
     addressMunicipality = MAReferenceField(
         document=Municipality, required=True)
     addressCity = fields.Str()
+    addressZoneType = fields.Str(
+        allow_none=True,
+        validate=OneOf(
+            ('1', '2', '3'),
+            ('sector', 'neighborhood', 'hamlet')
+        ))
+    addressZone = fields.Str(allow_none=True)
     phone = fields.Str(required=True, validate=(not_blank, only_numbers))
     schoolType = fields.Str(
         required=True,
@@ -34,10 +41,10 @@ class ReqFindSchoolSchema(Schema):
     principalLastName = fields.Str(required=True)
     principalEmail = fields.Email(required=True)
     principalPhone = fields.Str(required=True, validate=only_numbers)
-    subPrincipalFirstName = fields.Str()
-    subPrincipalLastName = fields.Str()
-    subPrincipalEmail = fields.Email()
-    subPrincipalPhone = fields.Str(validate=only_numbers)
+    subPrincipalFirstName = fields.Str(allow_none=True)
+    subPrincipalLastName = fields.Str(allow_none=True)
+    subPrincipalEmail = fields.Email(allow_none=True)
+    subPrincipalPhone = fields.Str(validate=only_numbers, allow_none=True)
     nTeachers = fields.Int(required=True, validate=Range(min=0))
     nAdministrativeStaff = fields.Int(
         required=True, validate=Range(min=0))

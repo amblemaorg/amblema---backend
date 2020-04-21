@@ -10,7 +10,7 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
-from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range
+from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range, validate_email
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 
@@ -24,8 +24,8 @@ class SponsorContactSchema(Schema):
     companyType = fields.Str(
         required=True,
         validate=OneOf(
-            ('1', '2', '3', '4'),
-            ('factory', 'grocery', 'personal business', 'other')
+            ('0', '1', '2', '3', '4'),
+            ('other', 'factory', 'grocery', 'personal business', 'estate')
         ))
     companyOtherType = fields.Str()
     companyPhone = fields.Str(required=True, validate=only_numbers)
@@ -36,6 +36,7 @@ class SponsorContactSchema(Schema):
     addressCity = fields.Str()
     contactFirstName = fields.Str(validate=not_blank)
     contactLastName = fields.Str(validate=not_blank)
+    contactEmail = fields.Str(validate=validate_email)
     contactPhone = fields.Str(required=True, validate=not_blank)
     hasSchool = fields.Bool()
     schoolName = fields.Str(validate=not_blank)
@@ -46,6 +47,13 @@ class SponsorContactSchema(Schema):
     schoolAddressMunicipality = MAReferenceField(
         document=Municipality)
     schoolAddressCity = fields.Str()
+    schoolAddressZoneType = fields.Str(
+        allow_none=True,
+        validate=OneOf(
+            ('1', '2', '3'),
+            ('sector', 'neighborhood', 'hamlet')
+        ))
+    schoolAddressZone = fields.Str(allow_none=True)
     schoolPhone = fields.Str(validate=(not_blank, only_numbers))
     schoolType = fields.Str(
         validate=OneOf(

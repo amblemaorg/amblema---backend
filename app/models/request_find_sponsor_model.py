@@ -28,7 +28,8 @@ class RequestFindSponsor(Document):
     addressCity = fields.StringField()
     contactFirstName = fields.StringField()
     contactLastName = fields.StringField()
-    contactPhone = fields.StringField(required=True)
+    contactEmail = fields.EmailField()
+    contactPhone = fields.StringField()
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -69,6 +70,7 @@ class RequestFindSponsor(Document):
                         companyPhone=document.companyPhone,
                         contactFirstName=document.contactFirstName,
                         contactLastName=document.contactLastName,
+                        contactEmail=document.contactEmail,
                         contactPhone=document.contactPhone
                     )
                     password = sponsorUser.generatePassword()

@@ -17,6 +17,7 @@ class SponsorUser(User):
     companyPhone = fields.StringField(required=True)
     contactFirstName = fields.StringField()
     contactLastName = fields.StringField()
+    contactEmail = fields.EmailField()
     contactPhone = fields.StringField()
     image = fields.URLField()
     webSite = fields.URLField()

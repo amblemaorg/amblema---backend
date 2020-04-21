@@ -14,6 +14,8 @@ class SchoolUser(User):
     phone = fields.StringField(required=True)
     image = fields.URLField(null=True)
     schoolType = fields.StringField(null=True, max_length=1)
+    addressZoneType = fields.StringField(max_length=1, null=True)
+    addressZone = fields.StringField(null=True)
     principalFirstName = fields.StringField()
     principalLastName = fields.StringField()
     principalEmail = fields.EmailField()

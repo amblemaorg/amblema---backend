@@ -6,7 +6,7 @@ from marshmallow import fields, validate, EXCLUDE
 from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers, OneOf, validate_image, validate_url)
+    not_blank, only_letters, only_numbers, OneOf, validate_image, validate_url, validate_email)
 from app.helpers.ma_schema_fields import MAImageField
 
 
@@ -25,6 +25,7 @@ class SponsorUserSchema(UserSchema):
     companyPhone = fields.Str(required=True, validate=only_numbers)
     contactFirstName = fields.Str(validate=only_letters)
     contactLastName = fields.Str(validate=only_letters)
+    contactEmail = fields.Str(validate=validate_email)
     contactPhone = fields.Str(required=True, validate=only_numbers)
     image = MAImageField(validate=validate_image,
                          folder='sponsors')

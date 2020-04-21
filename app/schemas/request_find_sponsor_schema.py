@@ -11,7 +11,7 @@ from app.schemas import fields
 from app.models.user_model import User
 from app.models.request_find_sponsor_model import Project
 from app.helpers.ma_schema_fields import MAReferenceField
-from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, only_letters
+from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, only_letters, validate_email
 from app.models.state_model import State, Municipality
 
 
@@ -38,6 +38,7 @@ class ReqFindSponsorSchema(Schema):
     addressCity = fields.Str()
     contactFirstName = fields.Str(validate=(not_blank, only_letters))
     contactLastName = fields.Str(validate=(not_blank, only_letters))
+    contactEmail = fields.Str(validate=validate_email)
     contactPhone = fields.Str(required=True, validate=not_blank)
     status = fields.Str(
         default="1",

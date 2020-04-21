@@ -11,7 +11,7 @@ from marshmallow import (
     ValidationError)
 
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers, OneOf, Range)
+    not_blank, only_letters, only_numbers, OneOf, Range, validate_email)
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 
@@ -79,6 +79,7 @@ class SchoolContactSchema(Schema):
     sponsorCompanyPhone = fields.Str(validate=(not_blank, only_numbers))
     sponsorContactFirstName = fields.Str(validate=only_letters)
     sponsorContactLastName = fields.Str(validate=only_letters)
+    sponsorContactEmail = fields.Str(validate=validate_email)
     sponsorContactPhone = fields.Str(validate=only_numbers)
     status = fields.Str(
         default="1",

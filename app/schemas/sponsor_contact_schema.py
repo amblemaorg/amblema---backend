@@ -10,7 +10,7 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
-from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range
+from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range, validate_email
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 
@@ -36,6 +36,7 @@ class SponsorContactSchema(Schema):
     addressCity = fields.Str()
     contactFirstName = fields.Str(validate=not_blank)
     contactLastName = fields.Str(validate=not_blank)
+    contactEmail = fields.Str(validate=validate_email)
     contactPhone = fields.Str(required=True, validate=not_blank)
     hasSchool = fields.Bool()
     schoolName = fields.Str(validate=not_blank)

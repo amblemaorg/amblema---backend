@@ -32,6 +32,7 @@ class SponsorContact(Document):
     addressCity = fields.StringField()
     contactFirstName = fields.StringField()
     contactLastName = fields.StringField()
+    contactEmail = fields.EmailField()
     contactPhone = fields.StringField()
     hasSchool = fields.BooleanField(required=True)
     schoolName = fields.StringField()
@@ -95,6 +96,7 @@ class SponsorContact(Document):
                         companyPhone=document.companyPhone,
                         contactFirstName=document.contactFirstName,
                         contactLastName=document.contactLastName,
+                        contactEmail=document.contactEmail,
                         contactPhone=document.contactPhone
                     )
                     password = sponsorUser.generatePassword()

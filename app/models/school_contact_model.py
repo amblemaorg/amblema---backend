@@ -59,6 +59,7 @@ class SchoolContact(Document):
     sponsorCompanyPhone = fields.StringField()
     sponsorContactFirstName = fields.StringField()
     sponsorContactLastName = fields.StringField()
+    sponsorContactEmail = fields.EmailField()
     sponsorContactPhone = fields.StringField()
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
@@ -137,6 +138,7 @@ class SchoolContact(Document):
                             companyPhone=document.sponsorCompanyPhone,
                             contactFirstName=document.sponsorContactFirstName,
                             contactLastName=document.sponsorContactLastName,
+                            contactEmail=document.sponsorContactEmail,
                             contactPhone=document.sponsorContactPhone
                         )
                         password = sponsorUser.generatePassword()

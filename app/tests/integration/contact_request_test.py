@@ -90,6 +90,7 @@ class ContactRequestTest(unittest.TestCase):
             sponsorAddress="calle 9 entre 1 y 2",
             sponsorContactFirstName="Contact FirstName",
             sponsorContactLastName="Contact Lastname",
+            sponsorContactEmail="someemail@test.com",
             sponsorContactPhone="04242772727"
         )
 
@@ -199,6 +200,7 @@ class ContactRequestTest(unittest.TestCase):
             address="calle 9 entre 1 y 2",
             contactFirstName="Contact FirstName",
             contactLastName="Contact Lastname",
+            contactEmail="someemail@test.com",
             contactPhone="04242772727"
         )
 

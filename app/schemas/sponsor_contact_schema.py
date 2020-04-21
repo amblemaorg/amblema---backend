@@ -24,8 +24,8 @@ class SponsorContactSchema(Schema):
     companyType = fields.Str(
         required=True,
         validate=OneOf(
-            ('1', '2', '3', '4', '5'),
-            ('factory', 'grocery', 'personal business', 'estate', 'other')
+            ('0', '1', '2', '3', '4'),
+            ('other', 'factory', 'grocery', 'personal business', 'estate')
         ))
     companyOtherType = fields.Str()
     companyPhone = fields.Str(required=True, validate=only_numbers)

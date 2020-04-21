@@ -204,6 +204,8 @@ class ApprovalProcess(unittest.TestCase):
             addressState=self.state,
             addressMunicipality=self.municipality,
             addressCity="Barquisimeto",
+            addressZoneType="2",
+            addressZone="Barrio Bolivar",
             address="calle 9 entre 1 y 2",
             phone="02524433434",
             schoolType="1",

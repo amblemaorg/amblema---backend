@@ -23,6 +23,8 @@ class RequestFindSchool(Document):
     addressState = fields.ReferenceField('State', required=True)
     addressMunicipality = fields.ReferenceField('Municipality', required=True)
     addressCity = fields.StringField()
+    addressZoneType = fields.StringField(max_length=1, null=True)
+    addressZone = fields.StringField(null=True)
     phone = fields.StringField(required=True)
     schoolType = fields.StringField(required=True, max_length=1)
     principalFirstName = fields.StringField(required=True)
@@ -72,6 +74,8 @@ class RequestFindSchool(Document):
                         addressState=document.addressState,
                         addressMunicipality=document.addressMunicipality,
                         addressCity=document.addressCity,
+                        addressZoneType=document.addressZoneType,
+                        addressZone=document.addressZone,
                         address=document.address,
                         status='1',
                         code=document.code,

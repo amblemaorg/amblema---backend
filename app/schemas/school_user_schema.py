@@ -27,6 +27,13 @@ class SchoolUserSchema(UserSchema):
             ('1', '2', '3'),
             ('national', 'statal', 'municipal')
         ))
+    addressZoneType = fields.Str(
+        allow_none=True,
+        validate=OneOf(
+            ('1', '2', '3'),
+            ('sector', 'neighborhood', 'hamlet')
+        ))
+    addressZone = fields.Str(allow_none=True)
     principalFirstName = fields.Str()
     principalLastName = fields.Str()
     principalEmail = fields.Email()

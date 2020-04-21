@@ -41,6 +41,8 @@ class SponsorContact(Document):
     schoolAddressState = fields.ReferenceField('State')
     schoolAddressMunicipality = fields.ReferenceField('Municipality')
     schoolAddressCity = fields.StringField()
+    schoolAddressZoneType = fields.StringField(max_length=1, null=True)
+    schoolAddressZone = fields.StringField(null=True)
     schoolPhone = fields.StringField()
     schoolType = fields.StringField(max_length=1)
     schoolPrincipalFirstName = fields.StringField()
@@ -117,6 +119,8 @@ class SponsorContact(Document):
                             addressState=document.schoolAddressState,
                             addressMunicipality=document.schoolAddressMunicipality,
                             addressCity=document.schoolAddressCity,
+                            addressZoneType=document.schoolAddressZoneType,
+                            addressZone=document.schoolAddressZone,
                             address=document.schoolAddress,
                             status='1',
                             code=document.schoolCode,

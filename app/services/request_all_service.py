@@ -74,15 +74,45 @@ class RequestsAll():
         coords = []
         for coord in coordinatorReq:
             coords.append(
-                {'id': str(coord.id), 'requestCode': coord.requestCode.zfill(7), 'projectCode': coord.project.code.zfill(7), 'type': 'coordinator', 'user': coord.user.name, 'createdAt': coord.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', 'record': ReqFindCoordSchema().dump(coord)})
+                {
+                    'id': str(coord.id),
+                    'requestCode': coord.requestCode.zfill(7),
+                    'projectCode': coord.project.code.zfill(7),
+                    'type': 'coordinator',
+                    'user': coord.user.name,
+                    'createdAt': coord.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
+                    'record': ReqFindCoordSchema().dump(coord),
+                    'status': coord.status
+                }
+            )
         sponsors = []
         for sponsor in sponsorReq:
             sponsors.append(
-                {'id': str(sponsor.id), 'requestCode': sponsor.requestCode.zfill(7), 'projectCode': sponsor.project.code.zfill(7), 'type': 'sponsor', 'user': sponsor.user.name, 'createdAt': sponsor.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',  'record': ReqFindSponsorSchema().dump(sponsor)})
+                {
+                    'id': str(sponsor.id),
+                    'requestCode': sponsor.requestCode.zfill(7),
+                    'projectCode': sponsor.project.code.zfill(7),
+                    'type': 'sponsor',
+                    'user': sponsor.user.name,
+                    'createdAt': sponsor.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
+                    'record': ReqFindSponsorSchema().dump(sponsor),
+                    'status': sponsor.status
+                }
+            )
         schools = []
         for school in schoolReq:
             schools.append(
-                {'id': str(school.id), 'requestCode': school.requestCode.zfill(7), 'projectCode': school.project.code.zfill(7), 'type': 'school', 'user': school.user.name, 'createdAt': school.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', 'record': ReqFindSchoolSchema().dump(school)})
+                {
+                    'id': str(school.id),
+                    'requestCode': school.requestCode.zfill(7),
+                    'projectCode': school.project.code.zfill(7),
+                    'type': 'school',
+                    'user': school.user.name,
+                    'createdAt': school.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
+                    'record': ReqFindSchoolSchema().dump(school),
+                    'status': school.status
+                }
+            )
 
         requests = coords + sponsors + schools
         requests = sorted(requests, reverse=True, key=lambda x: x['createdAt'])

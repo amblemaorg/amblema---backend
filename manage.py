@@ -58,6 +58,12 @@ def create_standard_roles():
 
 
 @manager.command
+def create_states_municipalities():
+    from app.helpers.handler_seeds import create_states_and_municipalities
+    return create_states_and_municipalities()
+
+
+@manager.command
 def create_initial_steps():
     from app.helpers.handler_seeds import create_initial_steps
     return create_initial_steps()

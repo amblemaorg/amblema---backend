@@ -37,6 +37,8 @@ class EnvironmentalProjectService():
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
                 environmentalProject = schoolYear.pecaSetting.environmentalProject
+                if not environmentalProject:
+                    environmentalProject = EnvironmentalProject()
                 for field in schema.dump(data).keys():
                     environmentalProject[field] = data[field]
                 environmentalProject.validateTarget()

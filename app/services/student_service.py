@@ -6,7 +6,7 @@ from marshmallow import ValidationError
 from mongoengine.queryset.visitor import Q
 
 from app.models.peca_project_model import PecaProject
-from app.models.peca_project_model import Student
+from app.models.peca_project_model import Student, Diagnostic
 from app.schemas.peca_project_schema import StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
 
@@ -28,6 +28,9 @@ class StudentService():
                 student = Student()
                 for field in schema.dump(data).keys():
                     student[field] = data[field]
+
+                for i in range(3):
+                    student['lapse{}'.format(i+1)] = Diagnostic()
                 if self.checkForDuplicated(peca.id, sectionId, student):
                     raise ValidationError(
                         {"name": [{"status": "5",

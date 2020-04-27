@@ -77,8 +77,9 @@ class ImagesView(MethodView):
 
 
 class FileView(MethodView):
-    def get(self, filename):
-        return send_from_directory(files_path, filename)
+    def get(self, folder, filename):
+        files_path2 = files_path + '/' + folder + '/'
+        return send_from_directory(files_path2, filename)
 
 
 webContentView = WebContentView.as_view('webContentView')
@@ -112,7 +113,7 @@ web_content_blueprint.add_url_rule(
 )
 
 web_content_blueprint.add_url_rule(
-    '/resources/files/<string:filename>',
+    '/resources/files/<string:folder>/<string:filename>',
     view_func=fileView,
     methods=['GET']
 )

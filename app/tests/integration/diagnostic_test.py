@@ -317,8 +317,6 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual(
             None, self.pecaProject.school.sections[0].students[1].lapse1.operationsPerMinIndex)
 
-    def test_diagnostic_report(self):
-
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

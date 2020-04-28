@@ -52,12 +52,14 @@ class LevelDetailSchema(Schema):
         ordered = True
 
     def get_duration(self, obj):
-        return time.strftime('%H%M', time.gmtime(obj.duration))
+        if obj.duration:
+            return time.strftime('%H%M', time.gmtime(obj.duration))
 
     def load_duration(self, value):
-        h = value[:2]
-        m = value[2:]
-        return int(h) * 3600 + int(m) * 60
+        if value:
+            h = value[:2]
+            m = value[2:]
+            return int(h) * 3600 + int(m) * 60
 
     @post_load
     def make_document(self, data, **kwargs):

@@ -21,7 +21,7 @@ class LevelDetail(EmbeddedDocument):
     activities = fields.ListField(fields.StringField())
     resources = fields.ListField(fields.StringField())
     evaluations = fields.ListField(fields.StringField())
-    supportsMaterial = fields.ListField(fields.URLField())
+    supportMaterial = fields.ListField(fields.URLField())
 
 
 class Topic(EmbeddedDocument):

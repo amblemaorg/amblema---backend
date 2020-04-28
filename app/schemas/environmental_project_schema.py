@@ -43,7 +43,7 @@ class LevelDetailSchema(Schema):
     activities = fields.List(fields.Str())
     resources = fields.List(fields.Str())
     evaluations = fields.List(fields.Str())
-    supportsMaterial = fields.List(fields.Str(
+    supportMaterial = fields.List(fields.Str(
         validate=validate_url
     ))
 

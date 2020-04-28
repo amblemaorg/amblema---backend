@@ -35,8 +35,8 @@ class DiagnosticService():
                 elif diagnosticType == "math":
                     schema = DiagnosticSchema(
                         only=(
-                            'multitplicationsPerMin',
-                            'multitplicationsPerMinIndex',
+                            'multiplicationsPerMin',
+                            'multiplicationsPerMinIndex',
                             'operationsPerMin',
                             'operationsPerMinIndex',
                             'mathDate'))
@@ -105,9 +105,9 @@ class DiagnosticService():
                                         lapse)].wordsPerMinIndex = None
                                 elif diagnosticType == "math":
                                     student['lapse{}'.format(
-                                        lapse)].multitplicationsPerMin = None
+                                        lapse)].multiplicationsPerMin = None
                                     student['lapse{}'.format(
-                                        lapse)].multitplicationsPerMinIndex = None
+                                        lapse)].multiplicationsPerMinIndex = None
                                     student['lapse{}'.format(
                                         lapse)].operationsPerMin = None
                                     student['lapse{}'.format(

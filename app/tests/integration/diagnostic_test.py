@@ -35,7 +35,7 @@ class SchoolPecaTest(unittest.TestCase):
         self.schoolYear.initFirstPecaSetting()
         self.schoolYear.pecaSetting.goalSetting.grade1.wordsPerMin = 70
         self.schoolYear.pecaSetting.goalSetting.grade1.operationsPerMin = 30
-        self.schoolYear.pecaSetting.goalSetting.grade1.multitplicationsPerMin = 40
+        self.schoolYear.pecaSetting.goalSetting.grade1.multiplicationsPerMin = 40
         self.schoolYear.save()
 
         create_standard_roles()
@@ -167,7 +167,17 @@ class SchoolPecaTest(unittest.TestCase):
                                 "birthdate": datetime.utcnow(),
                                 "gender": "1",
                                 "lapse1": {
-                                    "multitplicationsPerMin": None,
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse2": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse3": {
+                                    "multiplicationsPerMin": None,
                                     "operationsPerMin": None,
                                     "wordsPerMin": None
                                 }
@@ -178,12 +188,26 @@ class SchoolPecaTest(unittest.TestCase):
                                 "birthdate": datetime.utcnow(),
                                 "gender": "1",
                                 "lapse1": {
-                                    "multitplicationsPerMin": None,
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse2": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse3": {
+                                    "multiplicationsPerMin": None,
                                     "operationsPerMin": None,
                                     "wordsPerMin": None
                                 }
                             }
-                        ]
+                        ],
+                        "teacher": {
+                            "firstName": "Maria",
+                            "lastName": "Teran"
+                        }
                     }
                 ]
             }
@@ -235,7 +259,7 @@ class SchoolPecaTest(unittest.TestCase):
     def test_math_diagnostics(self):
 
         requestData = {
-            "multitplicationsPerMin": 80,
+            "multiplicationsPerMin": 80,
             "operationsPerMin": 15
         }
 
@@ -258,9 +282,9 @@ class SchoolPecaTest(unittest.TestCase):
                          result['operationsPerMinIndex'])
 
         self.assertEqual(80,
-                         result['multitplicationsPerMin'])
+                         result['multiplicationsPerMin'])
         self.assertEqual(2,
-                         result['multitplicationsPerMinIndex'])
+                         result['multiplicationsPerMinIndex'])
         self.pecaProject = PecaProject.objects.get(id=self.pecaProject.id)
 
         self.assertEqual(
@@ -268,9 +292,9 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual(
             0.5, self.pecaProject.school.sections[0].students[1].lapse1.operationsPerMinIndex)
         self.assertEqual(
-            80, self.pecaProject.school.sections[0].students[1].lapse1.multitplicationsPerMin)
+            80, self.pecaProject.school.sections[0].students[1].lapse1.multiplicationsPerMin)
         self.assertEqual(
-            2, self.pecaProject.school.sections[0].students[1].lapse1.multitplicationsPerMinIndex)
+            2, self.pecaProject.school.sections[0].students[1].lapse1.multiplicationsPerMinIndex)
 
         # delete
         res = self.client().delete(
@@ -285,13 +309,15 @@ class SchoolPecaTest(unittest.TestCase):
 
         self.pecaProject = PecaProject.objects.get(id=self.pecaProject.id)
         self.assertEqual(
-            None, self.pecaProject.school.sections[0].students[1].lapse1.multitplicationsPerMin)
+            None, self.pecaProject.school.sections[0].students[1].lapse1.multiplicationsPerMin)
         self.assertEqual(
-            None, self.pecaProject.school.sections[0].students[1].lapse1.multitplicationsPerMinIndex)
+            None, self.pecaProject.school.sections[0].students[1].lapse1.multiplicationsPerMinIndex)
         self.assertEqual(
             None, self.pecaProject.school.sections[0].students[1].lapse1.operationsPerMin)
         self.assertEqual(
             None, self.pecaProject.school.sections[0].students[1].lapse1.operationsPerMinIndex)
+
+    def test_diagnostic_report(self):
 
     def tearDown(self):
         """teardown all initialized variables."""

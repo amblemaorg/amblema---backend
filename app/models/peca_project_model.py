@@ -11,19 +11,20 @@ from app.models.shared_embedded_documents import ProjectReference, ImageStatus
 
 
 class Diagnostic(EmbeddedDocument):
-    multitplicationsPerMin = fields.IntField()
-    multitplicationsPerMinIndex = fields.FloatField()
+    multiplicationsPerMin = fields.IntField()
+    multiplicationsPerMinIndex = fields.FloatField()
     operationsPerMin = fields.IntField()
     operationsPerMinIndex = fields.FloatField()
     wordsPerMin = fields.IntField()
     wordsPerMinIndex = fields.FloatField()
     mathDate = fields.DateTimeField()
+    logicDate = fields.DateTimeField()
     readingDate = fields.DateTimeField()
 
     def calculateIndex(self, setting):
-        if self.multitplicationsPerMin:
-            self.multitplicationsPerMinIndex = self.multitplicationsPerMin / \
-                setting.multitplicationsPerMin
+        if self.multiplicationsPerMin:
+            self.multiplicationsPerMinIndex = self.multiplicationsPerMin / \
+                setting.multiplicationsPerMin
         if self.operationsPerMin:
             self.operationsPerMinIndex = self.operationsPerMin / setting.operationsPerMin
         if self.wordsPerMin:

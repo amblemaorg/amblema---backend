@@ -6,7 +6,7 @@ from mongoengine import EmbeddedDocument, fields
 
 
 class GradeSetting(EmbeddedDocument):
-    multitplicationsPerMin = fields.IntField()
+    multiplicationsPerMin = fields.IntField()
     operationsPerMin = fields.IntField()
     wordsPerMin = fields.IntField()
 

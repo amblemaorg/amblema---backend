@@ -48,7 +48,7 @@ class SchoolYear(Document):
         goalSetting = GoalSetting()
         for i in range(6):
             goalSetting['grade'+str(i+1)] = GradeSetting(
-                multitplicationsPerMin=1,
+                multiplicationsPerMin=1,
                 operationsPerMin=1,
                 wordsPerMin=1
             )

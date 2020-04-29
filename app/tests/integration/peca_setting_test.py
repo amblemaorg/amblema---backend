@@ -417,7 +417,7 @@ class PecaSettings(unittest.TestCase):
         requestData = dict()
         for i in range(6):
             requestData['grade'+str(i+1)] = {
-                "multitplicationsPerMin": (i+1)*10,
+                "multiplicationsPerMin": (i+1)*10,
                 "operationsPerMin": (i+1)*10,
                 "wordsPerMin": (i+1)*10
             }

@@ -104,7 +104,7 @@ from app.controllers.student_controller import (
     StudentController, StudentHandlerController
 )
 from app.controllers.statistics_controller import (
-    UserSummaryController
+    UserSummaryController, DiagnosticReportController
 )
 from app.controllers.diagnostic_controller import DiagnosticController
 db = MongoEngine()
@@ -278,5 +278,7 @@ def create_app(config_instance):
     api.add_resource(DiagnosticController,
                      '/pecaprojects/diagnostics/<string:diagnostic>/<string:lapse>/<string:pecaId>/<string:sectionId>/<string:studentId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
+    api.add_resource(DiagnosticReportController,
+                     '/statistics/diagnosticsreport/<string:schoolYearId>/<string:schoolId>')
 
     return app

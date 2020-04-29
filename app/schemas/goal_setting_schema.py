@@ -16,7 +16,7 @@ from app.models.goal_setting_model import GradeSetting
 
 
 class GradeSettingSchema(Schema):
-    multitplicationsPerMin = fields.Int(min=0)
+    multiplicationsPerMin = fields.Int(min=0)
     operationsPerMin = fields.Int(min=0)
     wordsPerMin = fields.Int(min=0)
 

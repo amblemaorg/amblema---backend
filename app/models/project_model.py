@@ -144,9 +144,44 @@ class Project(Document):
             for check in step.checklist:
                 if not check.checked:
                     return False
-        if step.approvalType == "1" and step.status != "3":
+        if (step.approvalType == "1" or step.approvalType == "4") and step.status != "3":
             return False
         return True
+
+    def checkWaitingAmblemaConfirmation(self):
+        from app.models.request_project_approval_model import RequestProjectApproval
+        if (
+            self.stepsProgress.sponsor == 100
+            and self.stepsProgress.coordinator == 100
+            and self.stepsProgress.school == 100
+            and self.stepsProgress.general != 100
+        ):
+            confirmation = True
+            for step in self.stepsProgress.steps:
+                if step.tag == "1":
+                    if step.status != "3" and step.devName != "amblemaConfirmation":
+                        confirmation = False
+                    if step.status == "3" and step.devName == "amblemaConfirmation":
+                        confirmation = False
+            if confirmation:
+                RequestProjectApproval(
+                    project={
+                        "id": str(self.id),
+                        "code": self.code,
+                        "coordinator": {
+                            "id": str(self.coordinator.id),
+                            "name": self.coordinator.firstName + " " + self.coordinator.lastName
+                        },
+                        "sponsor": {
+                            "id": str(self.sponsor.id),
+                            "name": self.sponsor.name
+                        },
+                        "school": {
+                            "id": str(self.school.id),
+                            "name": self.school.name
+                        }
+                    }
+                ).save()
 
     def checkConfirm(self):
         if (
@@ -180,9 +215,13 @@ class Project(Document):
                         isUpdated = True
 
                 if isUpdated:
+                    # step is approved?
                     if self.checkStepApproval(myStep):
                         myStep.approve()
                         self.stepsProgress.updateProgress()
+                        # is only waitng for amblema confimation?
+                        self.checkWaitingAmblemaConfirmation()
+
                     myStep.updatedAt = datetime.utcnow()
                     self.save()
                     if self.checkConfirm():

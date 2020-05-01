@@ -1,4 +1,4 @@
-# app/tests/integration/request_find_school_test.py
+# app/tests/integration/request_step_approval_test.py
 
 
 import unittest
@@ -71,6 +71,16 @@ class StepApprovalTest(unittest.TestCase):
         )
         self.schoolAgreementFoundation.save()
 
+        self.amblemaConfirmation = Step(
+            name="Confirmación de AmbLeMa",
+            devName="amblemaConfirmation",
+            tag="1",
+            isStandard=True,
+            approvalType="1",
+            hasText=True,
+            text="some description"
+        ).save()
+
         self.role = Role(name="test")
         self.role.save()
 
@@ -110,7 +120,7 @@ class StepApprovalTest(unittest.TestCase):
             coordinator=self.coordinator
         )
         self.project.save()
-        self.assertEqual(3, len(self.project.stepsProgress.steps))
+        self.assertEqual(4, len(self.project.stepsProgress.steps))
 
     def test_endpoint_step_approval(self):
         requestData = dict(

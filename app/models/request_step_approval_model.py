@@ -132,6 +132,7 @@ class RequestStepApproval(Document):
                             document.project.coordinator.curriculum = step.uploadedFile
                             document.project.coordinator.save()
                         document.project.stepsProgress.updateProgress()
+                        document.project.checkWaitingAmblemaConfirmation()
                         document.project.save()
                         break
             else:

@@ -60,8 +60,8 @@ class StepSchema(Schema):
         allow_none=True)
     approvalType = fields.Str(
         validate=OneOf(
-            ["1", "2", "3"],
-            ["onlyAdmin", "fillAllFields", "approvalRequest"]
+            ["1", "2", "3", "4"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest", "internalApproval"]
         ), required=True)
     schoolYear = MAReferenceField(document=SchoolYear, dump_only=True)
     status = fields.Str(

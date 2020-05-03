@@ -65,6 +65,12 @@ class RequestStepApproval(Document):
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
+        reciprocalFields = {
+            "sponsorAgreementSchool": "schoolAgreementSponsor",
+            "schoolAgreementSponsor": "sponsorAgreementSchool",
+            "sponsorAgreementSchoolFoundation": "schoolAgreementFoundation",
+            "schoolAgreementFoundation": "sponsorAgreementSchoolFoundation"
+        }
         if 'created' in kwargs and kwargs['created']:
             from app.schemas.request_step_approval_schema import RequestStepApprovalSchema
             for step in document.project.stepsProgress.steps:
@@ -77,6 +83,17 @@ class RequestStepApproval(Document):
                             data=RequestStepApprovalSchema().dump(document),
                             status="1"
                         ))
+                    if step.devName in reciprocalFields:
+                        for reciprocalStep in document.project.stepsProgress.steps:
+                            if reciprocalStep.devName == reciprocalFields[step.devName]:
+                                reciprocalStep.approvalHistory.append(
+                                    Approval(
+                                        id=str(document.id),
+                                        comments=document.comments,
+                                        data=RequestStepApprovalSchema().dump(document),
+                                        status="1"
+                                    ))
+                                break
                     document.project.save()
                     break
         else:
@@ -98,18 +115,19 @@ class RequestStepApproval(Document):
                                 approval.status = "2"  # approved
                                 approval.updatedAt = datetime.utcnow()
                                 break
-                        reciprocalFields = {
-                            "sponsorAgreementSchool": "schoolAgreementSponsor",
-                            "schoolAgreementSponsor": "sponsorAgreementSchool",
-                            "sponsorAgreementSchoolFoundation": "schoolAgreementFoundation",
-                            "schoolAgreementFoundation": "sponsorAgreementSchoolFoundation"
-                        }
+
                         if document.stepDevName in reciprocalFields:
-                            for step in document.project.stepsProgress.steps:
-                                if step.devName == reciprocalFields[document.stepDevName]:
-                                    step.uploadedFile = document.stepUploadedFile
-                                    step.approve()
+                            for reciprocalStep in document.project.stepsProgress.steps:
+                                if reciprocalStep.devName == reciprocalFields[document.stepDevName]:
+                                    reciprocalStep.uploadedFile = document.stepUploadedFile
+                                    reciprocalStep.approve()
+                                    for reciprocalApproval in reciprocalStep.approvalHistory:
+                                        if reciprocalApproval.id == str(document.id):
+                                            reciprocalApproval.status = "2"  # approved
+                                            reciprocalApproval.updatedAt = datetime.utcnow()
+                                            break
                                     break
+
                         if document.stepDevName == "coordinatorSendCurriculum":
                             document.project.coordinator.curriculum = step.uploadedFile
                             document.project.coordinator.save()
@@ -127,6 +145,17 @@ class RequestStepApproval(Document):
                                 approval.comments = document.comments
                                 approval.updatedAt = datetime.utcnow()
                                 break
+                        if step.devName in reciprocalFields:
+                            for reciprocalStep in document.project.stepsProgress.steps:
+                                if reciprocalStep.devName == reciprocalFields[document.stepDevName]:
+                                    reciprocalStep.status = "1"  # pending
+                                    for reciprocalApproval in reciprocalStep.approvalHistory:
+                                        if reciprocalApproval.id == str(document.id):
+                                            reciprocalApproval.status = document.status
+                                            reciprocalApproval.comments = document.comments
+                                            reciprocalApproval.updatedAt = datetime.utcnow()
+                                            break
+                                    break
                         document.project.save()
                         break
 

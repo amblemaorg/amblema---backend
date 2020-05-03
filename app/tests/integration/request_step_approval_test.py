@@ -42,6 +42,35 @@ class StepApprovalTest(unittest.TestCase):
         )
         self.generalStep.save()
 
+        self.sponsorAgreementSchoolFoundation = Step(
+            name="Convenio escuela - fundación",
+            devName="sponsorAgreementSchoolFoundation",
+            tag="3",
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            hasFile=True,
+            hasUpload=True,
+            text="some description",
+            file={"name": "Agreement name",
+                  "url": "https://urlserver.com/files/asd.pdf"}
+        ).save()
+
+        self.schoolAgreementFoundation = Step(
+            name="Convenio escuela - fundación",
+            devName="schoolAgreementFoundation",
+            tag="4",
+            isStandard=True,
+            approvalType="3",
+            hasText=True,
+            hasFile=True,
+            hasUpload=True,
+            text="some description",
+            file={"name": "Agreement name",
+                    "url": "https://urlserver.com/files/asd.pdf"}
+        )
+        self.schoolAgreementFoundation.save()
+
         self.role = Role(name="test")
         self.role.save()
 
@@ -81,7 +110,7 @@ class StepApprovalTest(unittest.TestCase):
             coordinator=self.coordinator
         )
         self.project.save()
-        self.assertEqual(1, len(self.project.stepsProgress.steps))
+        self.assertEqual(3, len(self.project.stepsProgress.steps))
 
     def test_endpoint_step_approval(self):
         requestData = dict(
@@ -195,6 +224,37 @@ class StepApprovalTest(unittest.TestCase):
             "1", self.project.stepsProgress.steps[0].status)
         self.assertEqual(
             "4", self.project.stepsProgress.steps[0].approvalHistory[0].status)
+
+    def test_reciprocal_step(self):
+        reqStepApproval = RequestStepApproval(
+            project=self.project,
+            stepId=self.project.stepsProgress.steps[1].id,
+            stepUploadedFile={
+                "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+        )
+        reqStepApproval.save()
+        self.project = Project.objects.get(id=self.project.pk)
+        self.assertEqual(
+            str(reqStepApproval.pk), self.project.stepsProgress.steps[1].approvalHistory[0].id)
+
+        # check fill of the step fields on approval
+        self.assertEqual(
+            self.sponsorAgreementSchoolFoundation.name, reqStepApproval.stepName)
+        self.assertEqual(
+            self.sponsorAgreementSchoolFoundation.devName, reqStepApproval.stepDevName)
+        self.assertEqual(self.sponsorAgreementSchoolFoundation.hasUpload,
+                         reqStepApproval.stepHasUpload)
+
+        # approved
+        reqStepApproval.status = "2"
+        reqStepApproval.save()
+        self.project = Project.objects.get(id=self.project.pk)
+        self.assertEqual(
+            "3", self.project.stepsProgress.steps[1].status)
+
+        self.assertEqual("3", self.project.stepsProgress.steps[2].status)
+        self.assertEqual(
+            "2", self.project.stepsProgress.steps[2]['approvalHistory'][0].status)
 
     def tearDown(self):
         """teardown all initialized variables."""

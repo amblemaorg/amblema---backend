@@ -174,7 +174,7 @@ class Project(Document):
                     if myStep.date != step.date:
                         myStep.date = step.date
                         isUpdated = True
-                if myStep.approvalType == "1":
+                if myStep.approvalType == "1" or myStep.approvalType == '4':
                     if myStep.status != step.status:
                         myStep.status = step.status
                         isUpdated = True

@@ -515,7 +515,7 @@ def create_initial_steps():
         return "An active school year is required"
 
     findSchool = Step(
-        name="Encontrar Escuela",
+        name="Encontrar escuela",
         devName="findSchool",
         tag="1",
         hasText=True,
@@ -526,7 +526,7 @@ def create_initial_steps():
     findSchool.save()
 
     findSponsor = Step(
-        name="Encontrar Padrino",
+        name="Encontrar padrino",
         devName="findSponsor",
         tag="1",
         hasText=True,
@@ -537,7 +537,7 @@ def create_initial_steps():
     findSponsor.save()
 
     findCoordinator = Step(
-        name="Encontrar Coordinador",
+        name="Encontrar coordinador",
         devName="findCoordinator",
         tag="1",
         hasText=True,
@@ -554,14 +554,14 @@ def create_initial_steps():
         hasText=True,
         hasVideo=True,
         isStandard=True,
-        approvalType="1",
+        approvalType="4",
         text="Descripción de la planificación inicial",
         video={"name": "some video", "url": "https://youtube.com"}
     )
     initialWorkshopPlanning.save()
 
     amblemaConfirmation = Step(
-        name="Confirmacion de AmbLeMa",
+        name="Confirmación de AmbLeMa",
         devName="amblemaConfirmation",
         tag="1",
         isStandard=True,
@@ -572,7 +572,7 @@ def create_initial_steps():
     amblemaConfirmation.save()
 
     coordinatorFillSchoolForm = Step(
-        name="Rellenar planilla de escuela",
+        name="Llenar planilla de escuela",
         devName="coordinatorFillSchoolForm",
         tag="2",
         isStandard=True,
@@ -583,7 +583,7 @@ def create_initial_steps():
     coordinatorFillSchoolForm.save()
 
     coordinatorFillSponsorForm = Step(
-        name="Rellenar planilla de padrino",
+        name="Llenar planilla de padrino",
         devName="coordinatorFillSponsorForm",
         tag="2",
         isStandard=True,
@@ -594,7 +594,7 @@ def create_initial_steps():
     coordinatorFillSponsorForm.save()
 
     coordinatorSendCurriculum = Step(
-        name="Enviar curriculo Vitae",
+        name="Enviar currículo vitae",
         devName="coordinatorSendCurriculum",
         tag="2",
         isStandard=True,
@@ -607,7 +607,7 @@ def create_initial_steps():
     coordinatorSendCurriculum.save()
 
     corrdinatorCompleteTrainingModules = Step(
-        name="Completar modulos de formacion",
+        name="Completar módulos de formación",
         devName="corrdinatorCompleteTrainingModules",
         tag="2",
         isStandard=True,
@@ -627,6 +627,19 @@ def create_initial_steps():
     )
     checklistInitialWorkshop.save()
 
+    sponsorPresentationSchool = Step(
+        name="Presentación a la escuela",
+        devName="sponsorPresentationSchool",
+        tag="3",
+        isStandard=True,
+        approvalType="4",
+        hasText=True,
+        hasFile=True,
+        text="some description",
+        file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
+    )
+    sponsorPresentationSchool.save()
+
     sponsorKnowAmblemaMethod = Step(
         name="Conoce el método AmbLeMa",
         devName="sponsorKnowAmblemaMethod",
@@ -641,7 +654,7 @@ def create_initial_steps():
     sponsorKnowAmblemaMethod.save()
 
     sponsorFillSchoolForm = Step(
-        name="Rellenar planilla de escuela",
+        name="Llenar planilla de escuela",
         devName="sponsorFillSchoolForm",
         tag="3",
         isStandard=True,
@@ -652,7 +665,7 @@ def create_initial_steps():
     sponsorFillSchoolForm.save()
 
     sponsorFillCoordinatorForm = Step(
-        name="Rellenar planilla de coordinador",
+        name="Llenar planilla de coordinador",
         devName="sponsorFillCoordinatorForm",
         tag="3",
         isStandard=True,
@@ -662,21 +675,8 @@ def create_initial_steps():
     )
     sponsorFillCoordinatorForm.save()
 
-    sponsorPresentationSchool = Step(
-        name="Presentación a la escuela",
-        devName="sponsorPresentationSchool",
-        tag="3",
-        isStandard=True,
-        approvalType="1",
-        hasText=True,
-        hasFile=True,
-        text="some description",
-        file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
-    )
-    sponsorPresentationSchool.save()
-
     sponsorAgreementSchool = Step(
-        name="Convenio Padrino - Escuela",
+        name="Convenio padrino - escuela",
         devName="sponsorAgreementSchool",
         tag="3",
         isStandard=True,
@@ -691,7 +691,7 @@ def create_initial_steps():
     sponsorAgreementSchool.save()
 
     sponsorAgreementSchoolFoundation = Step(
-        name="Convenio Escuela - Fundacion",
+        name="Convenio escuela - fundación",
         devName="sponsorAgreementSchoolFoundation",
         tag="3",
         isStandard=True,
@@ -705,8 +705,21 @@ def create_initial_steps():
     )
     sponsorAgreementSchoolFoundation.save()
 
+    schoolPresentationSponsor = Step(
+        name="Presentación al padrino",
+        devName="schoolPresentationSponsor",
+        tag="4",
+        isStandard=True,
+        approvalType="4",
+        hasText=True,
+        hasFile=True,
+        text="some description",
+        file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
+    )
+    schoolPresentationSponsor.save()
+
     schoolFillSponsorForm = Step(
-        name="Rellenar planilla de padrino",
+        name="Llenar planilla de padrino",
         devName="schoolFillSponsorForm",
         tag="4",
         isStandard=True,
@@ -717,7 +730,7 @@ def create_initial_steps():
     schoolFillSponsorForm.save()
 
     schoolFillCoordinatorForm = Step(
-        name="Rellenar planilla de coordinador",
+        name="Llenar planilla de coordinador",
         devName="schoolFillCoordinatorForm",
         tag="4",
         isStandard=True,
@@ -727,21 +740,8 @@ def create_initial_steps():
     )
     schoolFillCoordinatorForm.save()
 
-    schoolPresentationSponsor = Step(
-        name="Presentación al padrino",
-        devName="schoolPresentationSponsor",
-        tag="4",
-        isStandard=True,
-        approvalType="1",
-        hasText=True,
-        hasFile=True,
-        text="some description",
-        file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
-    )
-    schoolPresentationSponsor.save()
-
     schoolAgreementSponsor = Step(
-        name="Convenio Escuela - Padrino",
+        name="Convenio escuela - padrino",
         devName="schoolAgreementSponsor",
         tag="4",
         isStandard=True,
@@ -756,7 +756,7 @@ def create_initial_steps():
     schoolAgreementSponsor.save()
 
     schoolAgreementFoundation = Step(
-        name="Convenio Escuela - Fundacion",
+        name="Convenio escuela - fundación",
         devName="schoolAgreementFoundation",
         tag="4",
         isStandard=True,

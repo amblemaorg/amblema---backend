@@ -39,8 +39,8 @@ class StepFieldsSchema(Schema):
     checklist = fields.List(fields.Nested(CheckSchema))
     approvalType = fields.Str(
         validate=OneOf(
-            ["1", "2", "3"],
-            ["onlyAdmin", "fillAllFields", "approvalRequest"]
+            ["1", "2", "3", "4"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest", "internalApproval"]
         ),
         required=True)
     date = fields.DateTime()

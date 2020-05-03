@@ -78,6 +78,9 @@ from app.controllers.environmental_project_controller import (
 from app.controllers.request_step_approval_controller import (
     ReqStepApprovalController, ReqStepApprovalHandlerController
 )
+from app.controllers.request_project_approval_controller import (
+    ReqProjectApprovalController, ReqProjectApprovalHandlerController
+)
 from app.controllers.request_content_approval_controller import (
     ReqContentApprovalController, ReqContentApprovalHandlerController)
 from app.controllers.request_all_controller import (
@@ -252,6 +255,9 @@ def create_app(config_instance):
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
     api.add_resource(ReqStepApprovalHandlerController,
                      '/requestsstepapproval/<string:id>')
+    api.add_resource(ReqProjectApprovalController, '/requestsprojectapproval')
+    api.add_resource(ReqProjectApprovalHandlerController,
+                     '/requestsprojectapproval/<string:id>')
     api.add_resource(ReqContactAllController, '/contactrequests')
     api.add_resource(ReqFindAllController, '/findrequests')
     api.add_resource(PecaProjectController, '/pecaprojects')

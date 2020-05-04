@@ -3,7 +3,6 @@
 
 from marshmallow import (
     Schema,
-    fields,
     pre_load,
     post_load,
     EXCLUDE,
@@ -11,6 +10,7 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 
+from app.schemas import fields
 from app.helpers.ma_schema_validators import (
     not_blank, only_numbers, OneOf, validate_image)
 from app.helpers.ma_schema_fields import MAReferenceField, MAImageField

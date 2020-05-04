@@ -117,9 +117,7 @@ class ApprovalProcess(unittest.TestCase):
             "email": "coordinator@test.com",
             "phone": "04144433434",
             "homePhone": "02524433434",
-            "profession": "Teacher",
-            "isReferred": True,
-            "referredName": "Juan Veriken"
+            "profession": "Teacher"
         }
         res = self.client().post(
             '/requestsfindcoordinator',
@@ -359,9 +357,7 @@ class ApprovalProcess(unittest.TestCase):
             email="uelibertador@test.com",
             phone="04144433434",
             homePhone="02524433434",
-            profession="Teacher",
-            isReferred=True,
-            referredName="Juan Veriken"
+            profession="Teacher"
         )
         request.save()
 

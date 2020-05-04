@@ -31,8 +31,6 @@ class RequestFindCoordinator(Document):
     phone = fields.StringField(required=True)
     homePhone = fields.StringField(required=True)
     profession = fields.StringField()
-    isReferred = fields.BooleanField(required=True)
-    referredName = fields.StringField(required=True)
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -77,8 +75,8 @@ class RequestFindCoordinator(Document):
                         homePhone=document.homePhone,
                         addressHome=document.addressHome,
                         profession=document.profession,
-                        isReferred=document.isReferred,
-                        referredName=document.referredName
+                        isReferred=True,
+                        referredName=document.user.name
                     )
                     password = coordinatorUser.generatePassword()
                     coordinatorUser.password = password

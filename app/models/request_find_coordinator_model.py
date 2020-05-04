@@ -32,7 +32,7 @@ class RequestFindCoordinator(Document):
     homePhone = fields.StringField(required=True)
     profession = fields.StringField()
     isReferred = fields.BooleanField(required=True)
-    referredName = fields.StringField(required=True)
+    referredName = fields.StringField()
     status = fields.StringField(required=True, default="1")
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

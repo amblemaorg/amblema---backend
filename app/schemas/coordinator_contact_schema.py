@@ -51,7 +51,7 @@ class CoordinatorContactSchema(Schema):
     homePhone = fields.Str(validate=only_numbers, required=True)
     profession = fields.Str(required=True, validate=not_blank)
     isReferred = fields.Bool(required=True)
-    referredName = fields.Str(validate=not_blank)
+    referredName = fields.Str()
     status = fields.Str(
         default="1",
         validate=OneOf(

@@ -167,10 +167,10 @@ class StatisticsDiagnosticService():
                                 lapse['math']['lastTestDate'] = maxDate.strftime(
                                     '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
                             if 'logic' in lapse and lapse['logic']['available']:
-                                minDate = min(diagnocticsDateLapse['math'])
+                                minDate = min(diagnocticsDateLapse['logic'])
                                 lapse['logic']['firstTestDate'] = minDate.strftime(
                                     '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-                                maxDate = max(diagnocticsDateLapse['math'])
+                                maxDate = max(diagnocticsDateLapse['logic'])
                                 lapse['logic']['lastTestDate'] = maxDate.strftime(
                                     '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
                             if 'reading' in lapse and lapse['reading']['available']:

@@ -134,7 +134,10 @@ class ProjectService():
 
     def handlerProjectBeforeCreate(self, document):
 
-        from app.models.project_model import StepControl, StepsProgress, CheckElement
+        from app.models.project_model import StepControl, StepsProgress, CheckElement, Approval
+        from app.schemas.school_user_schema import SchoolUserSchema
+        from app.schemas.coordinator_user_schema import CoordinatorUserSchema
+        from app.schemas.sponsor_user_schema import SponsorUserSchema
 
         year = SchoolYear.objects(status="1", isDeleted=False).first()
         if not year:
@@ -171,12 +174,33 @@ class ProjectService():
             if document.school:
                 if step.devName in ("findSchool", "coordinatorFillSchoolForm", "sponsorFillSchoolForm"):
                     stepCtrl.status = "3"
+                    stepCtrl.approvalHistory.append(
+                        Approval(
+                            id="",
+                            data=SchoolUserSchema().dump(document.school),
+                            status="2"
+                        )
+                    )
             if document.sponsor:
                 if step.devName in ("findSponsor", "coordinatorFillSponsorForm", "schoolFillSponsorForm"):
                     stepCtrl.status = "3"
+                    stepCtrl.approvalHistory.append(
+                        Approval(
+                            id="",
+                            data=SponsorUserSchema().dump(document.sponsor),
+                            status="2"
+                        )
+                    )
             if document.coordinator:
                 if step.devName in ("findCoordinator", "sponsorFillCoordinatorForm", "schoolFillCoordinatorForm"):
                     stepCtrl.status = "3"
+                    stepCtrl.approvalHistory.append(
+                        Approval(
+                            id="",
+                            data=CoordinatorUserSchema().dump(document.coordinator),
+                            status="2"
+                        )
+                    )
             initialSteps.steps.append(stepCtrl)
         document.stepsProgress = initialSteps
         document.schoolYear = year
@@ -191,6 +215,10 @@ class ProjectService():
             document.school.addProject(document)
 
     def handlerProjectBeforeUpdate(self, document, oldDocument):
+        from app.models.project_model import Approval
+        from app.schemas.school_user_schema import SchoolUserSchema
+        from app.schemas.coordinator_user_schema import CoordinatorUserSchema
+        from app.schemas.sponsor_user_schema import SponsorUserSchema
 
         if document.sponsor != oldDocument.sponsor:
             if oldDocument.sponsor:
@@ -205,6 +233,13 @@ class ProjectService():
                             "schoolFillSponsorForm")
                     ):
                         step.status = "3"
+                        step.approvalHistory.append(
+                            Approval(
+                                id="",
+                                data=SponsorUserSchema().dump(document.sponsor),
+                                status="2"
+                            )
+                        )
 
         if document.school != oldDocument.school:
             if oldDocument.school:
@@ -219,6 +254,13 @@ class ProjectService():
                             "sponsorFillSchoollForm")
                     ):
                         step.status = "3"
+                        step.approvalHistory.append(
+                            Approval(
+                                id="",
+                                data=SchoolUserSchema().dump(document.school),
+                                status="2"
+                            )
+                        )
 
         if document.coordinator != oldDocument.coordinator:
             if oldDocument.coordinator:
@@ -233,6 +275,13 @@ class ProjectService():
                             "schoolFillSchoollForm")
                     ):
                         step.status = "3"
+                        step.approvalHistory.append(
+                            Approval(
+                                id="",
+                                data=CoordinatorUserSchema().dump(document.coordinator),
+                                status="2"
+                            )
+                        )
                     if (
                         step.devName == "corrdinatorCompleteTrainingModules"
                         and document.coordinator.instructed

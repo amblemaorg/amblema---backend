@@ -150,7 +150,37 @@ class SchoolPecaTest(unittest.TestCase):
                 "nGrades": self.school.nGrades,
                 "nStudents": self.school.nStudents,
                 "nAdministrativeStaff": self.school.nAdministrativeStaff,
-                "nLaborStaff": self.school.nLaborStaff
+                "nLaborStaff": self.school.nLaborStaff,
+                "teachers": [
+                    {
+                        "firstName": "Maria",
+                        "lastName": "Fernandez",
+                        "cardType": "1",
+                        "cardId": "17277272",
+                        "gender": "1",
+                        "email": "mariatfer@test.com",
+                        "phone": "04242442424",
+                        "addressState": self.state.id,
+                        "addressMunicipality": self.municipality.id,
+                        "address": "19th street",
+                        "addressCity": "Barquisimeto",
+                        "status": "1"
+                    },
+                    {
+                        "firstName": "Antonio",
+                        "lastName": "Fernandez",
+                        "cardType": "1",
+                        "cardId": "17277273",
+                        "gender": "2",
+                        "email": "antofer@test.com",
+                        "phone": "04242442424",
+                        "addressState": self.state.id,
+                        "addressMunicipality": self.municipality.id,
+                        "address": "19th street",
+                        "addressCity": "Barquisimeto",
+                        "status": "1"
+                    }
+                ]
             }
 
         )
@@ -160,7 +190,8 @@ class SchoolPecaTest(unittest.TestCase):
 
         requestData = {
             "grade": "1",
-            "name": "A"
+            "name": "A",
+            "teacher": str(self.pecaProject.school.teachers[0].id)
         }
         res = self.client().post(
             '/pecaprojects/sections/{}'.format(self.pecaProject.id),
@@ -171,6 +202,7 @@ class SchoolPecaTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual("A",
                          result['name'])
+        self.assertEqual("Maria", result['teacher']['firstName'])
 
         # create B
         requestData = {
@@ -202,7 +234,8 @@ class SchoolPecaTest(unittest.TestCase):
         # create A
         requestData = {
             "grade": "1",
-            "name": "A"
+            "name": "A",
+            "teacher": str(self.pecaProject.school.teachers[0].id)
         }
         res = self.client().post(
             '/pecaprojects/sections/{}'.format(self.pecaProject.id),
@@ -213,6 +246,7 @@ class SchoolPecaTest(unittest.TestCase):
         resultA = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual("A",
                          resultA['name'])
+        self.assertEqual("Maria", resultA['teacher']['firstName'])
 
         # create B
         requestData = {
@@ -244,7 +278,8 @@ class SchoolPecaTest(unittest.TestCase):
         # update A -> C (new)
         requestData = {
             "grade": "1",
-            "name": "C"
+            "name": "C",
+            "teacher": str(self.pecaProject.school.teachers[1].id)
         }
         res = self.client().put(
             '/pecaprojects/sections/{}/{}'.format(
@@ -255,6 +290,7 @@ class SchoolPecaTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual("C",
                          result['name'])
+        self.assertEqual("Antonio", result['teacher']['firstName'])
 
     def test_delete_section(self):
 

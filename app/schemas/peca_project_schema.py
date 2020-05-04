@@ -16,6 +16,7 @@ from app.helpers.ma_schema_validators import (
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 from app.schemas.shared_schemas import ProjectReferenceSchema, ImageStatusSchema
+from app.models.peca_project_model import TeacherLink
 
 
 class DiagnosticSchema(Schema):
@@ -27,6 +28,7 @@ class DiagnosticSchema(Schema):
     wordsPerMinIndex = fields.Float(dump_only=True)
     readingDate = fields.DateTime(dump_only=True)
     mathDate = fields.DateTime(dump_only=True)
+    logicDate = fields.DateTime(dump_only=True)
 
 
 class StudentSchema(Schema):
@@ -85,9 +87,13 @@ class TeacherSchema(Schema):
 
 
 class TeacherLinkSchema(Schema):
-    id = fields.Str(dump_only=True)
+    id = fields.Str()
     firstName = fields.Str()
     lastName = fields.Str()
+
+    @post_load
+    def make_action(self, data, **kwargs):
+        return TeacherLink(**data)
 
 
 class SectionSchema(Schema):

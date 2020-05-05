@@ -20,6 +20,19 @@ class SectionService():
         if peca:
             try:
                 schema = SectionSchema()
+                if "teacher" in jsonData:
+                    teacher = peca.school.teachers.filter(
+                        id=jsonData['teacher']).first()
+                    if not teacher:
+                        raise RegisterNotFound(message="Record not found",
+                                               status_code=404,
+                                               payload={"teacher": jsonData['teacher']})
+                    else:
+                        jsonData['teacher'] = {
+                            'id': str(teacher.id),
+                            'firstName': teacher.firstName,
+                            'lastName': teacher.lastName
+                        }
                 data = schema.load(jsonData)
 
                 section = Section()
@@ -50,11 +63,24 @@ class SectionService():
             id=pecaId,
             school__sections__id=sectionId,
             school__sections__isDeleted=False
-        ).only('school__sections').first()
+        ).only('school__sections', 'school__teachers').first()
 
         if peca:
             try:
                 schema = SectionSchema()
+                if "teacher" in jsonData:
+                    teacher = peca.school.teachers.filter(
+                        id=jsonData['teacher']).first()
+                    if not teacher:
+                        raise RegisterNotFound(message="Record not found",
+                                               status_code=404,
+                                               payload={"teacher": jsonData['teacher']})
+                    else:
+                        jsonData['teacher'] = {
+                            'id': str(teacher.id),
+                            'firstName': teacher.firstName,
+                            'lastName': teacher.lastName
+                        }
                 data = schema.load(jsonData)
 
                 section = peca.school.sections.filter(

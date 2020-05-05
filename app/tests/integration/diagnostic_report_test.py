@@ -174,7 +174,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 70,
                                     "wordsPerMinIndex": 70/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse2": {
                                     "multiplicationsPerMin": 45,
@@ -184,7 +185,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 75,
                                     "wordsPerMinIndex": 75/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse3": {
                                     "multiplicationsPerMin": 50,
@@ -194,7 +196,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 80,
                                     "wordsPerMinIndex": 80/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 }
                             },
                             {
@@ -210,7 +213,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 70,
                                     "wordsPerMinIndex": 70/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse2": {
                                     "multiplicationsPerMin": 60,
@@ -220,7 +224,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 90,
                                     "wordsPerMinIndex": 90/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse3": {
                                     "multiplicationsPerMin": 80,
@@ -230,7 +235,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 110,
                                     "wordsPerMinIndex": 110/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 }
                             }
                         ],
@@ -256,7 +262,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 80,
                                     "wordsPerMinIndex": 80/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse2": {
                                     "multiplicationsPerMin": 80,
@@ -266,7 +273,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 80,
                                     "wordsPerMinIndex": 80/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse3": {
                                     "multiplicationsPerMin": 80,
@@ -276,7 +284,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 80,
                                     "wordsPerMinIndex": 80/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 }
                             },
                             {
@@ -292,7 +301,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 20,
                                     "wordsPerMinIndex": 20/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse2": {
                                     "multiplicationsPerMin": 20,
@@ -302,7 +312,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 20,
                                     "wordsPerMinIndex": 20/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 },
                                 "lapse3": {
                                     "multiplicationsPerMin": 25,
@@ -312,7 +323,8 @@ class SchoolPecaTest(unittest.TestCase):
                                     "wordsPerMin": 25,
                                     "wordsPerMinIndex": 25/70,
                                     "readingDate": datetime.utcnow(),
-                                    "mathDate": datetime.utcnow()
+                                    "mathDate": datetime.utcnow(),
+                                    "logicDate": datetime.utcnow()
                                 }
                             }
                         ],

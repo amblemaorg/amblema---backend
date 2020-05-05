@@ -126,18 +126,9 @@ class StatisticsDiagnosticService():
                                             sectionLapse[diag]['overGoalStudents'] += 1
 
                                         # set dates of diagnostics
-                                        if diag == 'math':
-                                            diagnosticsDates['lapse{}'.format(i+1)][diag].append(
-                                                studentLapse.mathDate
-                                            )
-                                        elif diag == 'logic':
-                                            diagnosticsDates['lapse{}'.format(i+1)][diag].append(
-                                                studentLapse.mathDate
-                                            )
-                                        elif diag == 'reading':
-                                            diagnosticsDates['lapse{}'.format(i+1)][diag].append(
-                                                studentLapse.readingDate
-                                            )
+                                        diagnosticsDates['lapse{}'.format(i+1)][diag].append(
+                                            studentLapse['{}Date'.format(diag)]
+                                        )
 
                                         # add diagnostic data to student
                                         studentData[diagnostics[diag]
@@ -159,28 +150,6 @@ class StatisticsDiagnosticService():
                         diagnocticsDateLapse = diagnosticsDates['lapse{}'.format(
                             i+1)]
                         if lapse['available']:
-                            if 'math' in lapse and lapse['math']['available']:
-                                minDate = min(diagnocticsDateLapse['math'])
-                                lapse['math']['firstTestDate'] = minDate.strftime(
-                                    '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-                                maxDate = max(diagnocticsDateLapse['math'])
-                                lapse['math']['lastTestDate'] = maxDate.strftime(
-                                    '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-                            if 'logic' in lapse and lapse['logic']['available']:
-                                minDate = min(diagnocticsDateLapse['logic'])
-                                lapse['logic']['firstTestDate'] = minDate.strftime(
-                                    '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-                                maxDate = max(diagnocticsDateLapse['logic'])
-                                lapse['logic']['lastTestDate'] = maxDate.strftime(
-                                    '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-                            if 'reading' in lapse and lapse['reading']['available']:
-                                minDate = min(diagnocticsDateLapse['reading'])
-                                lapse['reading']['firstTestDate'] = minDate.strftime(
-                                    '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-                                maxDate = max(diagnocticsDateLapse['reading'])
-                                lapse['reading']['lastTestDate'] = maxDate.strftime(
-                                    '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-
                             for diag in diagnosticsSearch:
                                 diagnostic = lapse[diag]
                                 if diagnostic['available']:
@@ -190,6 +159,15 @@ class StatisticsDiagnosticService():
                                         diagnostic['participants']
                                     diagnostic['indexAverage'] = diagnostic['indexTotal'] / \
                                         diagnostic['participants']
+
+                                    # set diagnostic date min and max
+                                    minDate = min(diagnocticsDateLapse[diag])
+                                    diagnostic['firstTestDate'] = minDate.strftime(
+                                        '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+                                    maxDate = max(diagnocticsDateLapse[diag])
+                                    diagnostic['lastTestDate'] = maxDate.strftime(
+                                        '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+
                                     lapse[diag] = diagnostic
                             sectionData['lapse{}'.format(i+1)] = lapse
                         else:

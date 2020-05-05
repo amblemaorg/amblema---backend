@@ -65,7 +65,7 @@ class Teacher(EmbeddedDocument):
 
 
 class TeacherLink(EmbeddedDocument):
-    id = fields.ObjectIdField(default=fields.ObjectId)
+    id = fields.StringField()
     firstName = fields.StringField()
     lastName = fields.StringField()
 

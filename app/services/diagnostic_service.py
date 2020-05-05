@@ -39,7 +39,8 @@ class DiagnosticService():
                             'multiplicationsPerMinIndex',
                             'operationsPerMin',
                             'operationsPerMinIndex',
-                            'mathDate'))
+                            'mathDate',
+                            'logicDate'))
                 data = schema.load(jsonData)
 
                 grade = peca.school.sections.filter(
@@ -58,7 +59,10 @@ class DiagnosticService():
                 if diagnosticType == "reading":
                     diagnostic.readingDate = datetime.utcnow()
                 elif diagnosticType == "math":
-                    diagnostic.mathDate = datetime.utcnow()
+                    if diagnostic.multiplicationsPerMin and not diagnostic.mathDate:
+                        diagnostic.mathDate = datetime.utcnow()
+                    if diagnostic.operationsPerMin and not diagnostic.logicDate:
+                        diagnostic.logicDate = datetime.utcnow()
                 diagnostic.calculateIndex(setting)
 
                 try:

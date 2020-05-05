@@ -15,6 +15,7 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.shared_embedded_documents import Link
 from app.services.project_service import ProjectService
+from app.models.user_model import User
 
 
 class CheckElement(EmbeddedDocument):
@@ -51,6 +52,7 @@ class StepFields(EmbeddedDocument):
 
 class Approval(EmbeddedDocument):
     id = fields.StringField()
+    user = fields.ReferenceField(User)
     comments = fields.StringField()
     data = fields.DictField()
     status = fields.StringField(max_length=1)

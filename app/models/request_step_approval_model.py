@@ -13,11 +13,13 @@ from mongoengine import (
 
 from app.models.project_model import Project, Approval, CheckElement
 from app.models.shared_embedded_documents import Link
+from app.models.user_model import User
 
 
 class RequestStepApproval(Document):
     stepId = fields.StringField(required=True)
     project = fields.ReferenceField(Project, required=True)
+    user = fields.ReferenceField(User)
     comments = fields.StringField()
     status = fields.StringField(required=True, max_length=1, default="1")
     stepName = fields.StringField()
@@ -79,6 +81,7 @@ class RequestStepApproval(Document):
                     step.approvalHistory.append(
                         Approval(
                             id=str(document.id),
+                            user=str(document.user),
                             comments=document.comments,
                             data=RequestStepApprovalSchema().dump(document),
                             status="1"
@@ -86,9 +89,11 @@ class RequestStepApproval(Document):
                     if step.devName in reciprocalFields:
                         for reciprocalStep in document.project.stepsProgress.steps:
                             if reciprocalStep.devName == reciprocalFields[step.devName]:
+                                reciprocalStep.status = "2"  # in approval
                                 reciprocalStep.approvalHistory.append(
                                     Approval(
                                         id=str(document.id),
+                                        user=str(document.user),
                                         comments=document.comments,
                                         data=RequestStepApprovalSchema().dump(document),
                                         status="1"

@@ -17,6 +17,7 @@ from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
+from app.models.user_model import User
 from app.models.school_year_model import SchoolYear
 from app.schemas.step_schema import FileSchema
 from app.schemas.shared_schemas import CheckSchema
@@ -69,6 +70,7 @@ class StepFieldsSchema(Schema):
 
 class ApprovalSchema(Schema):
     id = fields.Str(dump_only=True)
+    user = MAReferenceField(document=User, required=True, field="name")
     comments = fields.Str(dump_only=True)
     data = fields.Dict(dump_only=True)
     status = fields.Str(dump_only=True)

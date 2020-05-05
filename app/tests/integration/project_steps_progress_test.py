@@ -382,6 +382,7 @@ class InitialSteps(unittest.TestCase):
         approvalRequest = RequestStepApproval(
             stepId=str(self.schoolStepDateFile.id),
             project=self.project,
+            user=self.coordinator.id,
             stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"},
             stepDate=datetime.utcnow()
@@ -441,6 +442,7 @@ class InitialSteps(unittest.TestCase):
         approvalRequest = RequestStepApproval(
             stepId=str(self.schoolAgreementFoundation.id),
             project=self.project,
+            user=self.coordinator.id,
             stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"}
         )
@@ -451,6 +453,7 @@ class InitialSteps(unittest.TestCase):
         approvalRequest = RequestStepApproval(
             stepId=str(self.sponsorAgreementSchool.id),
             project=self.project,
+            user=self.coordinator.id,
             stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"}
         )
@@ -467,6 +470,7 @@ class InitialSteps(unittest.TestCase):
         approvalRequest = RequestStepApproval(
             stepId=str(self.coordinatorSendCurriculum.id),
             project=self.project,
+            user=self.coordinator.id,
             stepUploadedFile={"name": "uploaded",
                               "url": "https://server.com/files/asd.pdf"}
         )

@@ -125,6 +125,7 @@ class StepApprovalTest(unittest.TestCase):
     def test_endpoint_step_approval(self):
         requestData = dict(
             project=str(self.project.pk),
+            user=str(self.coordinator.pk),
             stepId=str(self.generalStep.pk),
             stepUploadedFile=(io.BytesIO(b'hi everyone'), 'test.pdf')
         )
@@ -135,7 +136,6 @@ class StepApprovalTest(unittest.TestCase):
             content_type='multipart/form-data')
         approval_request = json.loads(
             res.data.decode('utf8').replace("'", '"'))
-
         self.assertEqual(res.status_code, 201)
 
         res = self.client().put(
@@ -150,6 +150,7 @@ class StepApprovalTest(unittest.TestCase):
     def test_update_step_on_approval(self):
         reqStepApproval = RequestStepApproval(
             project=self.project,
+            user=self.coordinator.pk,
             stepId=self.project.stepsProgress.steps[0].id,
             stepUploadedFile={
                 "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
@@ -175,6 +176,7 @@ class StepApprovalTest(unittest.TestCase):
     def test_update_step_on_rejected(self):
         reqStepApproval = RequestStepApproval(
             project=self.project,
+            user=self.coordinator.pk,
             stepId=self.project.stepsProgress.steps[0].id,
             stepUploadedFile={
                 "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
@@ -208,6 +210,7 @@ class StepApprovalTest(unittest.TestCase):
     def test_update_step_on_cancelled(self):
         reqStepApproval = RequestStepApproval(
             project=self.project,
+            user=self.coordinator.pk,
             stepId=self.project.stepsProgress.steps[0].id,
             stepUploadedFile={
                 "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
@@ -238,6 +241,7 @@ class StepApprovalTest(unittest.TestCase):
     def test_reciprocal_step(self):
         reqStepApproval = RequestStepApproval(
             project=self.project,
+            user=self.coordinator.pk,
             stepId=self.project.stepsProgress.steps[1].id,
             stepUploadedFile={
                 "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}

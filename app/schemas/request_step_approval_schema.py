@@ -15,6 +15,7 @@ from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf)
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.project_model import Project
+from app.models.user_model import User
 from app.schemas.project_schema import CheckSchema
 from app.schemas.step_schema import FileSchema
 
@@ -23,6 +24,7 @@ class RequestStepApprovalSchema(Schema):
     id = fields.Str(dump_only=True)
     stepId = fields.Str(required=True)
     project = MAReferenceField(document=Project, required=True, field="code")
+    user = MAReferenceField(document=User, required=True, field="name")
     comments = fields.Str()
     status = fields.Str(
         validate=OneOf(

@@ -117,6 +117,7 @@ class RequestFindCoordinator(Document):
                 step.approvalHistory.append(
                     Approval(
                         id=str(document.id),
+                        user=str(document.user.id),
                         data=ReqFindCoordSchema().dump(document),
                         status="1"
                     ))

@@ -163,6 +163,7 @@ class RequestProjectConfirmationTest(unittest.TestCase):
     def test_request_project_confirmation(self):
         reqStepApproval = RequestStepApproval(
             project=self.project,
+            user=self.coordinator.id,
             stepId=self.project.stepsProgress.steps[0].id,
             stepUploadedFile={
                 "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}

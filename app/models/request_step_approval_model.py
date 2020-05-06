@@ -81,7 +81,7 @@ class RequestStepApproval(Document):
                     step.approvalHistory.append(
                         Approval(
                             id=str(document.id),
-                            user=str(document.user),
+                            user=str(document.user.id),
                             comments=document.comments,
                             data=RequestStepApprovalSchema().dump(document),
                             status="1"
@@ -93,7 +93,7 @@ class RequestStepApproval(Document):
                                 reciprocalStep.approvalHistory.append(
                                     Approval(
                                         id=str(document.id),
-                                        user=str(document.user),
+                                        user=str(document.user.id),
                                         comments=document.comments,
                                         data=RequestStepApprovalSchema().dump(document),
                                         status="1"

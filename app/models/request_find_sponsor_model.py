@@ -112,6 +112,7 @@ class RequestFindSponsor(Document):
                 step.approvalHistory.append(
                     Approval(
                         id=str(document.id),
+                        user=str(document.user.id),
                         data=ReqFindSponsorSchema().dump(document),
                         status="1"
                     ))

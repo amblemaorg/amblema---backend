@@ -1,7 +1,6 @@
 # /app/blueprints/web_content/views.py
 
 import os
-
 from flask import request, send_file
 from flask_restful import Resource
 from flask.views import MethodView
@@ -12,10 +11,10 @@ from app.blueprints.web_content.models.web_content import WebContent, WebContent
 from app.blueprints.web_content.models.post_model import Post, PostSchema
 from app.blueprints.web_content.services import WebContentService
 from app.helpers.handler_request import getQueryParams
+from app.helpers.query_filter import MongoQueryFilter
 from app.services.generic_service import GenericServices
 from resources.images import path_images
 from resources.files import files_path
-
 
 class WebContentView(MethodView):
     service = WebContentService(
@@ -39,7 +38,8 @@ class WebContentView(MethodView):
 class PostView(MethodView):
     service = GenericServices(
         Model=Post,
-        Schema=PostSchema)
+        Schema=PostSchema
+    )
 
     def get(self):
         filters = getQueryParams(request)
@@ -49,6 +49,35 @@ class PostView(MethodView):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
 
+class PostViewPaginated(MethodView) :
+    service = GenericServices(
+        Model=Post,
+        Schema=PostSchema
+    )
+
+    def get(self, page_number) :
+        page_size = 8
+        filters = getQueryParams(request)
+        filtersWithOperator = []
+        finalFilters = [{ "field": "status", "value": "1" }]
+
+        if filters != None :
+            for f in filters :
+                if f['field'] == 'title' or f['field'] == 'text' :
+                    filtersWithOperator.append(f)
+                elif f['field'] == 'page_size' :
+                    page_size = int(f['value'])
+                else :
+                    finalFilters.append(f)
+
+            queryfilter = MongoQueryFilter()
+            filtersWithOperator = queryfilter.assignOperatorToFilters(
+                filtersWithOperator, 
+                'icontains'
+            )
+            finalFilters.extend(filtersWithOperator)
+
+        return self.service.getPaginatedRecords(filters=finalFilters, page=page_number, page_size=page_size)
 
 class PostHandlerView(MethodView):
     service = GenericServices(
@@ -84,6 +113,7 @@ class FileView(MethodView):
 
 webContentView = WebContentView.as_view('webContentView')
 postView = PostView.as_view('postView')
+postViewPaginated = PostViewPaginated.as_view('postViewPaginated')
 postHandlerView = PostHandlerView.as_view('postHandlerView')
 imagesView = ImagesView.as_view('imagesView')
 fileView = FileView.as_view('fileView')
@@ -98,6 +128,12 @@ web_content_blueprint.add_url_rule(
     '/webcontent/posts',
     view_func=postView,
     methods=['POST', 'GET']
+)
+
+web_content_blueprint.add_url_rule(
+    '/webcontent/posts/page/<int:page_number>',
+    view_func=postViewPaginated,
+    methods=['GET']
 )
 
 web_content_blueprint.add_url_rule(

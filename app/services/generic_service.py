@@ -37,6 +37,27 @@ class GenericServices():
 
         return {"records": schema.dump(records, many=True)}, 200
 
+    def getPaginatedRecords(self, filters=None, only=None, exclude=(), order_by='+createdAt', page=0, page_size=4) :
+        # THIS METHOD ASSUMES THAT MODEL IS A SUBCLASS OF DOCUMENT FROM FLASK_MONGOENGINE
+        schema = self.Schema(only=only, exclude=exclude)
+        if filters:
+            filterList = []
+            for f in filters:
+                filterList.append(Q(**{f['field']: f['value']}))
+        
+        records = self.Model.objects(isDeleted=False).filter(
+            reduce(operator.and_, filterList)
+        ).order_by(order_by).paginate(page=page, per_page=page_size)
+
+        return {
+            "records": schema.dump(records.items, many=True) ,
+            "pagination": {
+                "total_records": records.total,
+                "total_pages": records.pages,
+                "page": records.page,
+            }
+        }, 200
+
     def saveRecord(self, jsonData, files=None):
         """
         Method that saves a new record.

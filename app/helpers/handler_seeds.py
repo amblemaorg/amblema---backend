@@ -645,7 +645,7 @@ def create_initial_steps():
         devName="sponsorKnowAmblemaMethod",
         tag="3",
         isStandard=True,
-        approvalType="1",
+        approvalType="4",
         hasText=True,
         hasFile=True,
         text="some description",

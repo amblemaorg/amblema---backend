@@ -1,4 +1,4 @@
-# app/tests/section_peca_test.py
+# app/test/integration/peca_amblecoins_test.py
 
 
 import unittest
@@ -20,7 +20,7 @@ from app.helpers.handler_seeds import create_standard_roles
 from app.models.peca_amblecoins_model import AmblecoinsPeca, AmbleSection
 
 
-class SchoolPecaTest(unittest.TestCase):
+class PecaAmblecoinsTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -154,42 +154,14 @@ class SchoolPecaTest(unittest.TestCase):
                 "nStudents": self.school.nStudents,
                 "nAdministrativeStaff": self.school.nAdministrativeStaff,
                 "nLaborStaff": self.school.nLaborStaff,
-                "teachers": [
-                    {
-                        "firstName": "Maria",
-                        "lastName": "Fernandez",
-                        "cardType": "1",
-                        "cardId": "17277272",
-                        "gender": "1",
-                        "email": "mariatfer@test.com",
-                        "phone": "04242442424",
-                        "addressState": self.state.id,
-                        "addressMunicipality": self.municipality.id,
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "1"
-                    },
-                    {
-                        "firstName": "Antonio",
-                        "lastName": "Fernandez",
-                        "cardType": "1",
-                        "cardId": "17277273",
-                        "gender": "2",
-                        "email": "antofer@test.com",
-                        "phone": "04242442424",
-                        "addressState": self.state.id,
-                        "addressMunicipality": self.municipality.id,
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "1"
-                    }
+                "sections": [
                 ]
             }
 
         )
         self.pecaProject.save()
 
-    def test_create_section(self):
+    def test_amblecoins_peca(self):
 
         # enable ambleCoins for lapse1
         requestData = dict(
@@ -220,114 +192,15 @@ class SchoolPecaTest(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # create section
-        requestData = {
-            "grade": "1",
-            "name": "A",
-            "teacher": str(self.pecaProject.school.teachers[0].id)
-        }
-        res = self.client().post(
-            '/pecaprojects/sections/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("A",
-                         result['name'])
-        self.assertEqual("Maria", result['teacher']['firstName'])
-
-        # create B
-        requestData = {
-            "grade": "1",
-            "name": "B"
-        }
-        res = self.client().post(
-            '/pecaprojects/sections/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
+        # check ambleCoins on peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("B",
-                         result['name'])
+        self.assertEqual([], result['lapse1']['ambleCoins']['sections'])
 
-        # create duplicated
-        requestData = {
-            "grade": "1",
-            "name": "A"
-        }
-        res = self.client().post(
-            '/pecaprojects/sections/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 400)
-
-    def test_update_section(self):
-
-        # create A
-        requestData = {
-            "grade": "1",
-            "name": "A",
-            "teacher": str(self.pecaProject.school.teachers[0].id)
-        }
-        res = self.client().post(
-            '/pecaprojects/sections/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        resultA = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("A",
-                         resultA['name'])
-        self.assertEqual("Maria", resultA['teacher']['firstName'])
-
-        # create B
-        requestData = {
-            "grade": "1",
-            "name": "B"
-        }
-        res = self.client().post(
-            '/pecaprojects/sections/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        resultB = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("B",
-                         resultB['name'])
-
-        # update A -> B (duplicated)
-        requestData = {
-            "grade": "1",
-            "name": "B"
-        }
-        res = self.client().put(
-            '/pecaprojects/sections/{}/{}'.format(
-                self.pecaProject.pk, resultA['id']),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 400)
-
-        # update A -> C (new)
-        requestData = {
-            "grade": "1",
-            "name": "C",
-            "teacher": str(self.pecaProject.school.teachers[1].id)
-        }
-        res = self.client().put(
-            '/pecaprojects/sections/{}/{}'.format(
-                self.pecaProject.pk, resultA['id']),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("C",
-                         result['name'])
-        self.assertEqual("Antonio", result['teacher']['firstName'])
-
-    def test_delete_section(self):
-
-        # create A
+        # add section to school
         requestData = {
             "grade": "1",
             "name": "A"
@@ -338,26 +211,59 @@ class SchoolPecaTest(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        resultA = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("A",
-                         resultA['name'])
+        # check section on ambleCoins
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        resultSection = resultPeca['lapse1']['ambleCoins']['sections'][0]
+        self.assertEqual('1', resultSection['status'])
 
-        # delete A
-        res = self.client().delete(
-            '/pecaprojects/sections/{}/{}'.format(
-                self.pecaProject.pk, resultA['id']))
+        # set data to ambleCoins in peca
+        resultSection['status'] = "2"
+        requestData = {
+            "meetingDate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+            "elaborationDate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+            "sections": [
+                resultSection
+            ]
+        }
+        res = self.client().put(
+            '/pecaprojects/amblecoins/{}/{}'.format(self.pecaProject.id, 1),
+            data=json.dumps(requestData),
+            content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # delete A (Again)
-        res = self.client().delete(
-            '/pecaprojects/sections/{}/{}'.format(
-                self.pecaProject.pk, resultA['id']))
-        self.assertEqual(res.status_code, 404)
+        # check section on ambleCoins
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        resultSection = resultPeca['lapse1']['ambleCoins']['sections'][0]
+        self.assertEqual('2', resultSection['status'])
+
+        # disable amblecoins for lapse1
+        requestData = {
+            "id": 'ambleCoins',
+            "lapse": "1",
+            "isStandard": True,
+            "status": "2"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check section on ambleCoins
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(None, resultPeca['lapse1']['ambleCoins'])
 
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')
-
-
-if __name__ == "__main__":
-    unittest.main()

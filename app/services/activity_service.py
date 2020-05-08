@@ -278,6 +278,9 @@ class ActivityService():
               isStandard: boolean
               status: 1=active 2=inactive
         """
+        from app.models.peca_project_model import PecaProject, AmblecoinsPeca
+        from app.models.peca_amblecoins_model import AmbleSection
+        from pymongo import UpdateOne
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -297,6 +300,34 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].ambleCoins.status = data['status']
+                        bulk_operations = []
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False)
+
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                ambleCoins = AmblecoinsPeca()
+                                for section in peca.school.sections:
+                                    ambleCoins.sections.append(
+                                        AmbleSection(
+                                            id=str(section.id),
+                                            name=section.name,
+                                            grade=section.grade,
+                                            status="2"
+                                        )
+                                    )
+                                peca['lapse{}'.format(
+                                    data['lapse'])].ambleCoins = ambleCoins
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(
+                                    data['lapse'])].ambleCoins = None
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
 
                     elif data['id'] == "lapsePlanning":
                         found = True

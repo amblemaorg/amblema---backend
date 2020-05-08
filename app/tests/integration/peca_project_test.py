@@ -31,6 +31,7 @@ class SchoolPecaTest(unittest.TestCase):
             name="Test",
             startDate="2020-09-14",
             endDate="2021-07-14")
+        self.schoolYear.initFirstPecaSetting()
         self.schoolYear.save()
 
         create_standard_roles()

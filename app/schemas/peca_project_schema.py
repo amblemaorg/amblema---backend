@@ -17,6 +17,7 @@ from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 from app.schemas.shared_schemas import ProjectReferenceSchema, ImageStatusSchema
 from app.models.peca_project_model import TeacherLink
+from app.schemas.peca_amblecoins_schema import AmblecoinsPecaSchema
 
 
 class DiagnosticSchema(Schema):
@@ -139,8 +140,19 @@ class SchoolSchema(Schema):
     slider = fields.List(fields.Nested(ImageStatusSchema()), dump_only=True)
 
 
+class LapseSchema(Schema):
+    ambleCoins = fields.Nested(AmblecoinsPecaSchema)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
+
 class PecaProjectSchema(Schema):
-    schoolYear = fields.Str()
+    #schoolYear = fields.Str()
     schoolYearName = fields.Str()
     project = fields.Nested(ProjectReferenceSchema)
     school = fields.Nested(SchoolSchema)
+    lapse1 = fields.Nested(LapseSchema)
+    lapse2 = fields.Nested(LapseSchema)
+    lapse3 = fields.Nested(LapseSchema)

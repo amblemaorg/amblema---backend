@@ -290,7 +290,7 @@ def create_app(config_instance):
                      '/pecaprojects/amblecoins/<string:pecaId>/<string:lapse>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
-                     '/statistics/usersreport/<string:userType>/<string:status>/<string:instructed>')
+                     '/statistics/usersreport/<string:userType>')
     api.add_resource(DiagnosticReportController,
                      '/statistics/diagnosticsreport/<string:schoolYearId>/<string:schoolId>')
 

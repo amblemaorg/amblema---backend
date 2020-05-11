@@ -203,6 +203,202 @@ class StatisticsTest(unittest.TestCase):
         self.assertEqual(2,
                          result['teachers'])
 
+    def test_user_report(self):
+
+        self.coordinatorInstructed = CoordinatorUser(
+            firstName="Test",
+            lastName="Test",
+            cardType="1",
+            cardId="20922842",
+            birthdate=datetime.utcnow(),
+            gender="1",
+            homePhone="02343432323",
+            addressHome="House 34A",
+            email="testemail@test.com",
+            password="12345678",
+            userType="2",
+            phone="02322322323",
+            role=Role.objects(devName="coordinator").first(),
+            addressState=self.state,
+            addressMunicipality=self.municipality,
+            instructed=True,
+            isReferred=False
+        )
+        self.coordinatorInstructed.save()
+
+        self.coordinatorInactive = CoordinatorUser(
+            firstName="Test",
+            lastName="Test",
+            cardType="1",
+            cardId="20922842",
+            birthdate=datetime.utcnow(),
+            gender="1",
+            homePhone="02343432323",
+            addressHome="House 34A",
+            email="testemail@test.com",
+            password="12345678",
+            userType="2",
+            phone="02322322323",
+            role=Role.objects(devName="coordinator").first(),
+            addressState=self.state,
+            addressMunicipality=self.municipality,
+            status="2",
+            isReferred=False
+        )
+        self.coordinatorInactive.save()
+
+        self.sponsor = SponsorUser(
+            name="Test",
+            companyRif="303993833",
+            companyType="2",
+            companyPhone="02343432323",
+            contactFirstName="Danel",
+            contactLastName="Ortega",
+            contactPhone="04244664646",
+            addressHome="House 34A",
+            email="testemail@test.com",
+            password="12345678",
+            userType="3",
+            role=Role.objects(devName="sponsor").first(),
+            addressState=self.state,
+            addressMunicipality=self.municipality
+        )
+        self.sponsor.save()
+
+        self.school = SchoolUser(
+            name="School",
+            code="0002",
+            phone="02343432323",
+            schoolType="1",
+            principalFirstName="Danel",
+            principalLastName="Ortega",
+            principalEmail="testemail@test.com",
+            principalPhone="04244664646",
+            nTeachers=20,
+            nAdministrativeStaff=20,
+            nLaborStaff=20,
+            nStudents=20,
+            nGrades=20,
+            nSections=20,
+            schoolShift="1",
+            email="someschoolemail@test.com",
+            password="12345678",
+            userType="3",
+            role=Role.objects(devName="school").first(),
+            addressState=self.state,
+            addressMunicipality=self.municipality
+        )
+        self.school.save()
+
+        # create project
+        self.project = Project(
+            coordinator=self.coordinatorInstructed,
+            sponsor=self.sponsor,
+            school=self.school
+        )
+        self.project.save()
+
+        # create peca project
+        self.pecaProject = PecaProject(
+            schoolYear=self.schoolYear,
+            schoolYearName=self.schoolYear.name,
+            project={
+                "id": str(self.project.id),
+                "code": str(self.project.code),
+                "coordinator": {
+                    "id": str(self.project.coordinator.id),
+                    "name": self.project.coordinator.firstName + " " + self.project.coordinator.lastName
+                },
+                "sponsor": {
+                    "id": str(self.project.sponsor.id),
+                    "name": self.project.sponsor.name
+                },
+                "school": {
+                    "id": str(self.project.school.id),
+                    "name": self.project.school.name
+                }
+            },
+            school={
+                "name": self.school.name,
+                "code": self.school.code,
+                "addressState": str(self.state.id),
+                "addressMunicipality": str(self.municipality.id),
+                "principalFirstName": self.school.principalFirstName,
+                "principalLastName": self.school.principalLastName,
+                "principalEmail": self.school.principalEmail,
+                "principalPhone": self.school.principalPhone,
+                "nTeachers": self.school.nTeachers,
+                "nGrades": self.school.nGrades,
+                "nStudents": self.school.nStudents,
+                "nAdministrativeStaff": self.school.nAdministrativeStaff,
+                "nLaborStaff": self.school.nLaborStaff,
+                "teachers": [
+                    {
+                        "firstName": "Arelis",
+                        "lastName": "Crespo",
+                        "cardType": "1",
+                        "cardId": "20928888",
+                        "gender": "1",
+                        "email": "arelis@test.com",
+                        "phone": "04122222233",
+                        "addressState": str(self.state.pk),
+                        "addressMunicipality": str(self.municipality.pk),
+                        "address": "19th street",
+                        "addressCity": "Barquisimeto",
+                        "status": "1"
+                    },
+                    {
+                        "firstName": "Yurancy",
+                        "lastName": "Gonzalez",
+                        "cardType": "1",
+                        "cardId": "20928889",
+                        "gender": "1",
+                        "email": "yugonz@test.com",
+                        "phone": "04122222233",
+                        "addressState": str(self.state.pk),
+                        "addressMunicipality": str(self.municipality.pk),
+                        "address": "19th street",
+                        "addressCity": "Barquisimeto",
+                        "status": "2"
+                    }
+                ]
+            }
+
+        )
+        self.pecaProject.save()
+
+        # sponsor
+        res = self.client().get(
+            '/statistics/usersreport/0')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1,
+                         len(result['users']))
+        # coordinator
+        res = self.client().get(
+            '/statistics/usersreport/1?status=1')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1,
+                         len(result['users']))
+        res = self.client().get(
+            '/statistics/usersreport/1?instructed=1')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1,
+                         len(result['users']))
+
+        res = self.client().get(
+            '/statistics/usersreport/1?status=2?instructed=false')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(0,
+                         len(result['users']))
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

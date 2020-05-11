@@ -22,8 +22,9 @@ class UserSummaryController(Resource):
 class UserReportController(Resource):
     service = StatisticsUserService()
 
-    def get(self, userType, status, instructed=None):
-        return self.service.get_users(userType, status, instructed)
+    def get(self, userType):
+        filters = getQueryParams(request)
+        return self.service.get_users(userType, filters)
 
 
 class DiagnosticReportController(Resource):

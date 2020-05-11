@@ -33,6 +33,7 @@ class RequestProjectConfirmationTest(unittest.TestCase):
             name="Test",
             startDate="2020-02-14",
             endDate="2020-09-14")
+        self.schoolYear.initFirstPecaSetting()
         self.schoolYear.save()
 
         self.sponsorAgreementSchoolFoundation = Step(

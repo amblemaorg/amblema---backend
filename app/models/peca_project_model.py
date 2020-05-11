@@ -8,6 +8,7 @@ from flask import current_app
 from mongoengine import fields, Document, EmbeddedDocument, signals
 
 from app.models.shared_embedded_documents import ProjectReference, ImageStatus
+from app.models.peca_amblecoins_model import AmblecoinsPeca
 
 
 class Diagnostic(EmbeddedDocument):
@@ -107,9 +108,27 @@ class School(EmbeddedDocument):
     slider = fields.EmbeddedDocumentListField(ImageStatus)
 
 
+class Lapse(EmbeddedDocument):
+    ambleCoins = fields.EmbeddedDocumentField(AmblecoinsPeca)
+
+
 class PecaProject(Document):
     schoolYear = fields.LazyReferenceField('SchoolYear')
     schoolYearName = fields.StringField()
     project = fields.EmbeddedDocumentField(ProjectReference)
     school = fields.EmbeddedDocumentField(School)
+    lapse1 = fields.EmbeddedDocumentField(Lapse)
+    lapse2 = fields.EmbeddedDocumentField(Lapse)
+    lapse3 = fields.EmbeddedDocumentField(Lapse)
     isDeleted = fields.BooleanField(default=False)
+
+    @classmethod
+    def pre_save(cls, sender, document, **kwargs):
+        from app.services.peca_project_service import PecaProjectService
+        service = PecaProjectService()
+        # before create
+        if not document.id:
+            service.initPecaSetting(document)
+
+
+signals.pre_save.connect(PecaProject.pre_save, sender=PecaProject)

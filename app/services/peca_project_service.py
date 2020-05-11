@@ -81,3 +81,18 @@ class PecaProjectService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"recordId": id})
+
+    def initPecaSetting(self, peca):
+        from app.models.school_year_model import SchoolYear
+        from app.models.peca_amblecoins_model import AmblecoinsPeca, AmbleSection
+        from app.models.peca_project_model import Lapse
+
+        schoolYear = SchoolYear.objects(
+            isDeleted=False, status="1").only('pecaSetting').first()
+
+        for i in range(1, 4):
+            peca['lapse{}'.format(i)] = Lapse()
+            if schoolYear.pecaSetting['lapse{}'.format(i)].ambleCoins.status == "1":
+                peca['lapse{}'.format(i)].ambleCoins = AmblecoinsPeca()
+            else:
+                peca['lapse{}'.format(i)].ambleCoins = None

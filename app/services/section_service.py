@@ -6,6 +6,7 @@ from marshmallow import ValidationError
 
 from app.models.peca_project_model import PecaProject
 from app.models.peca_project_model import Section
+from app.models.peca_amblecoins_model import AmbleSection
 from app.schemas.peca_project_schema import SectionSchema
 from app.helpers.error_helpers import RegisterNotFound
 
@@ -45,6 +46,17 @@ class SectionService():
                     )
                 try:
                     peca.school.sections.append(section)
+
+                    for i in range(1, 4):
+                        if peca['lapse{}'.format(i)].ambleCoins:
+                            peca['lapse{}'.format(i)].ambleCoins.sections.append(
+                                AmbleSection(
+                                    id=str(section.id),
+                                    name=section.name,
+                                    grade=section.grade
+                                )
+                            )
+
                     peca.save()
                     return schema.dump(section), 200
                 except Exception as e:
@@ -63,7 +75,7 @@ class SectionService():
             id=pecaId,
             school__sections__id=sectionId,
             school__sections__isDeleted=False
-        ).only('school__sections', 'school__teachers').first()
+        ).first()
 
         if peca:
             try:
@@ -94,10 +106,16 @@ class SectionService():
                                    "msg": "Duplicated record found: {}".format(section.name)}]}
                     )
                 try:
-                    PecaProject.objects(
-                        id=pecaId,
-                        school__sections__id=sectionId
-                    ).update(set__school__sections__S=section)
+                    for oldSection in peca.school.sections:
+                        if str(oldSection.id) == sectionId:
+                            oldSection = section
+                    for i in range(1, 4):
+                        if peca['lapse{}'.format(i)].ambleCoins:
+                            for oldSection in peca['lapse{}'.format(i)].ambleCoins.sections:
+                                if oldSection.id == sectionId:
+                                    oldSection.name = section.name
+                                    oldSection.grade = section.grade
+                    peca.save()
                     return schema.dump(section), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -118,24 +136,25 @@ class SectionService():
             id=pecaId,
             school__sections__id=sectionId,
             school__sections__isDeleted=False
-        ).only('school__sections').first()
+        ).first()
 
         if peca:
+
             try:
+                for oldSection in peca.school.sections:
+                    if str(oldSection.id) == sectionId:
+                        oldSection.isDeleted = True
+                for i in range(1, 4):
+                    if peca['lapse{}'.format(i)].ambleCoins:
+                        for oldSection in peca['lapse{}'.format(i)].ambleCoins.sections:
+                            if oldSection.id == sectionId:
+                                peca['lapse{}'.format(i)].ambleCoins.sections.remove(
+                                    oldSection)
+                peca.save()
+                return "Record deleted successfully", 200
+            except Exception as e:
+                return {'status': 0, 'message': str(e)}, 400
 
-                section = peca.school.sections.filter(id=sectionId).first()
-                section.isDeleted = True
-                try:
-                    PecaProject.objects(
-                        id=pecaId,
-                        school__sections__id=sectionId
-                    ).update(set__school__sections__S=section)
-                    return "Record deleted successfully", 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
-
-            except ValidationError as err:
-                return err.normalized_messages(), 400
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,

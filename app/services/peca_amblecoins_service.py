@@ -1,0 +1,64 @@
+# app/services/peca_amblecoins_service.py
+
+from flask import current_app
+from marshmallow import ValidationError
+
+from app.models.peca_project_model import PecaProject
+from app.models.peca_amblecoins_model import AmblecoinsPeca
+from app.schemas.peca_amblecoins_schema import AmblecoinsPecaSchema
+from app.helpers.error_helpers import RegisterNotFound
+
+
+class AmblecoinsPecaService():
+
+    def get(self, pecaId, lapse):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).first()
+
+        if peca:
+            schema = AmblecoinsPecaSchema()
+            ambleCoins = peca['lapse{}'.format(
+                lapse)].ambleCoins
+            return schema.dump(ambleCoins), 200
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"pecaId": pecaId})
+
+    def save(self, pecaId, lapse, jsonData):
+
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).first()
+
+        if peca:
+            try:
+                schema = AmblecoinsPecaSchema()
+                data = schema.load(jsonData)
+
+                if not peca['lapse{}'.format(lapse)].ambleCoins:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"ambleCoins lapse: ": lapse})
+
+                ambleCoins = peca['lapse{}'.format(
+                    lapse)].ambleCoins
+                for field in schema.dump(data).keys():
+                    ambleCoins[field] = data[field]
+                try:
+                    peca['lapse{}'.format(
+                        lapse)].ambleCoins = ambleCoins
+                    peca.save()
+                    return schema.dump(ambleCoins), 200
+                except Exception as e:
+                    return {'status': 0, 'message': str(e)}, 400
+
+            except ValidationError as err:
+                return err.normalized_messages(), 400
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"pecaId": pecaId})

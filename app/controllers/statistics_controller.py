@@ -6,6 +6,7 @@ from flask_restful import Resource
 from flask import current_app
 
 from app.services.statistics_service import StatisticsService
+from app.services.statistics_user_service import StatisticsUserService
 from app.services.statistics_diagnostics_service import StatisticsDiagnosticService
 from app.helpers.handler_request import getQueryParams
 
@@ -16,6 +17,13 @@ class UserSummaryController(Resource):
 
     def get(self):
         return self.service.get_count_users()
+
+
+class UserReportController(Resource):
+    service = StatisticsUserService()
+
+    def get(self, userType, status, instructed=None):
+        return self.service.get_users(userType, status, instructed)
 
 
 class DiagnosticReportController(Resource):

@@ -196,6 +196,10 @@ class Project(Document):
         return False
 
     def updateStep(self, step):
+        reciprocalFields = {
+            "sponsorPresentationSchool": "schoolPresentationSponsor",
+            "schoolPresentationSponsor": "sponsorPresentationSchool"
+        }
         for myStep in self.stepsProgress.steps:
             if step.id == myStep.id:
                 isUpdated = False
@@ -215,6 +219,10 @@ class Project(Document):
                     if myStep.status != step.status:
                         myStep.status = step.status
                         isUpdated = True
+                        if myStep.devName in reciprocalFields:
+                            for recipStep in self.stepsProgress.steps:
+                                if recipStep.devName == reciprocalFields[myStep.devName]:
+                                    recipStep.status = myStep.status
 
                 if isUpdated:
                     # step is approved?

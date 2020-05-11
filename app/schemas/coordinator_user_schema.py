@@ -81,6 +81,7 @@ class CoordinatorUserSchema(UserSchema):
                          allow_none=True)
     learning = fields.List(fields.Nested(LearningModSchema()), dump_only=True)
     nCoins = fields.Int(dump_only=True)
+    instructed = fields.Bool(dump_only=True)
     status = fields.Str(
         validate=OneOf(
             ("1", "2"),

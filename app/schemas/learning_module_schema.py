@@ -118,12 +118,12 @@ class LearningModuleSchema(Schema):
             not_blank,
             Length(max=2800)))
     secondaryTitle = fields.Str(
-        required=True,
+        allow_none=True,
         validate=(
             not_blank,
             Length(max=140)))
     secondaryDescription = fields.Str(
-        required=True,
+        allow_none=True,
         validate=(
             not_blank,
             Length(max=4970)))

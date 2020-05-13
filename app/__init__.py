@@ -113,7 +113,7 @@ from app.controllers.student_controller import (
     StudentController, StudentHandlerController
 )
 from app.controllers.statistics_controller import (
-    UserSummaryController, DiagnosticReportController, UserReportController
+    UserSummaryController, DiagnosticReportController, UserReportController, OlympicsReportCtrl
 )
 from app.controllers.diagnostic_controller import DiagnosticController
 db = MongoEngine()
@@ -298,6 +298,8 @@ def create_app(config_instance):
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')
+    api.add_resource(OlympicsReportCtrl,
+                     '/statistics/olympicsreport/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(DiagnosticReportController,
                      '/statistics/diagnosticsreport/<string:schoolYearId>/<string:schoolId>')
 

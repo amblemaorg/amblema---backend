@@ -8,6 +8,7 @@ from flask import current_app
 from app.services.statistics_service import StatisticsService
 from app.services.statistics_user_service import StatisticsUserService
 from app.services.statistics_diagnostics_service import StatisticsDiagnosticService
+from app.services.statistics_olympics_service import StatisticsOlympicsService
 from app.helpers.handler_request import getQueryParams
 
 
@@ -37,3 +38,11 @@ class DiagnosticReportController(Resource):
             if 'diagnostics' in request.args.keys():
                 diagnostics = request.args['diagnostics']
         return self.service.get(schoolYearId, schoolId, diagnostics)
+
+
+class OlympicsReportCtrl(Resource):
+
+    service = StatisticsOlympicsService()
+
+    def get(self, startPeriodId, endPeriodId):
+        return self.service.get(startPeriodId, endPeriodId)

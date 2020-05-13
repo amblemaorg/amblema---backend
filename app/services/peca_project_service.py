@@ -85,6 +85,7 @@ class PecaProjectService():
     def initPecaSetting(self, peca):
         from app.models.school_year_model import SchoolYear
         from app.models.peca_amblecoins_model import AmblecoinsPeca, AmbleSection
+        from app.models.peca_olympics_model import Olympics
         from app.models.peca_project_model import Lapse
 
         schoolYear = SchoolYear.objects(
@@ -96,3 +97,7 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].ambleCoins = AmblecoinsPeca()
             else:
                 peca['lapse{}'.format(i)].ambleCoins = None
+            if schoolYear.pecaSetting['lapse{}'.format(i)].mathOlympic.status == "1":
+                peca['lapse{}'.format(i)].olympics = Olympics()
+            else:
+                peca['lapse{}'.format(i)].olympics = None

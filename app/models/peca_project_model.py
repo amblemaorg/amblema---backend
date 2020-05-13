@@ -9,6 +9,7 @@ from mongoengine import fields, Document, EmbeddedDocument, signals
 
 from app.models.shared_embedded_documents import ProjectReference, ImageStatus
 from app.models.peca_amblecoins_model import AmblecoinsPeca
+from app.models.peca_olympics_model import Olympics
 
 
 class Diagnostic(EmbeddedDocument):
@@ -110,6 +111,7 @@ class School(EmbeddedDocument):
 
 class Lapse(EmbeddedDocument):
     ambleCoins = fields.EmbeddedDocumentField(AmblecoinsPeca)
+    olympics = fields.EmbeddedDocumentField(Olympics)
 
 
 class PecaProject(Document):

@@ -16,7 +16,7 @@ from app.models.peca_setting_model import (
     AmbleCoins,
     AnnualConvention,
     EnvironmentalProject,
-    MathOlimpic)
+    MathOlympic)
 
 from app.models.goal_setting_model import GoalSetting, GradeSetting
 
@@ -41,7 +41,7 @@ class SchoolYear(Document):
             lapsePlanning=LapsePlanning(),
             ambleCoins=AmbleCoins(),
             annualConvention=AnnualConvention(),
-            mathOlimpic=MathOlimpic(),
+            mathOlympic=MathOlympic(),
             activities=[]
         )
 

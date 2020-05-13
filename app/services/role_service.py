@@ -37,7 +37,6 @@ class RoleService(GenericServices):
         """
         record = self.getOr404(recordId)
         from flask import current_app
-        current_app.logger.info(record.isStandard)
         if record.isStandard:
             return {'status': 0, 'message': 'Standard role can not be deleted'}, 400
         try:

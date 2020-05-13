@@ -1,9 +1,10 @@
-# app/tests/school_peca_test.py
+# app/test/integration/peca_olympics_test.py
 
 
 import unittest
 import json
 from datetime import datetime
+import io
 
 from app import create_app, db
 
@@ -12,13 +13,13 @@ from app.models.coordinator_user_model import CoordinatorUser
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.project_model import Project
-from app.models.peca_project_model import PecaProject
+from app.models.peca_project_model import PecaProject, Lapse
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
 
 
-class SchoolPecaTest(unittest.TestCase):
+class PecaOlympicsTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -151,69 +152,166 @@ class SchoolPecaTest(unittest.TestCase):
                 "nGrades": self.school.nGrades,
                 "nStudents": self.school.nStudents,
                 "nAdministrativeStaff": self.school.nAdministrativeStaff,
-                "nLaborStaff": self.school.nLaborStaff
+                "nLaborStaff": self.school.nLaborStaff,
+                "sections": [
+                    {
+                        "grade": "1",
+                        "name": "A",
+                        "students": [
+                            {
+                                "firstName": "Danel",
+                                "lastName": "Rodriguez",
+                                "birthdate": datetime.utcnow(),
+                                "gender": "1",
+                                "lapse1": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse2": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse3": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                }
+                            },
+                            {
+                                "firstName": "Ary",
+                                "lastName": "Rodriguez",
+                                "birthdate": datetime.utcnow(),
+                                "gender": "1",
+                                "lapse1": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse2": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                },
+                                "lapse3": {
+                                    "multiplicationsPerMin": None,
+                                    "operationsPerMin": None,
+                                    "wordsPerMin": None
+                                }
+                            }
+                        ],
+                        "teacher": {
+                            "firstName": "Maria",
+                            "lastName": "Teran"
+                        }
+                    }
+                ]
             }
 
         )
         self.pecaProject.save()
 
-    def test_update_peca_school(self):
+    def test_olympics_peca(self):
+
+        # enable olympics for lapse1
+        requestData = dict(
+            file=(io.BytesIO(b'hi everyone'),
+                  'olympicsFile.pdf'),
+            description="Some description"
+        )
+        res = self.client().put(
+            '/pecasetting/activities/matholympics/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
 
         requestData = {
-            "subPrincipalFirstName": "new Name"
+            "id": 'mathOlympic',
+            "lapse": "1",
+            "isStandard": True,
+            "status": "1"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check olympics on peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual([], result['lapse1']['olympics']['students'])
+
+        # add student to olympics
+        requestData = {
+            "section": str(self.pecaProject.school.sections[0].id),
+            "student": str(self.pecaProject.school.sections[0].students[0].id),
+            "status": "1",  # registered
+            "result": None  # without result
+        }
+        res = self.client().post(
+            '/pecaprojects/olympics/{}/{}'.format(self.pecaProject.id, 1),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # edit student status in olympics
+        requestData = {
+            "status": "2",  # qualified
+            "result": None  # without result
         }
         res = self.client().put(
-            '/pecaprojects/school/{}'.format(self.pecaProject.id),
+            '/pecaprojects/olympics/{}/{}/{}'.format(
+                self.pecaProject.id,
+                1,
+                self.pecaProject.school.sections[0].students[0].id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("new Name",
-                         result['subPrincipalFirstName'])
+        self.assertEqual('2', result['status'])
 
-        res = self.client().get(
-            '/pecaprojects/school/{}'.format(self.pecaProject.id))
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("new Name",
-                         result['subPrincipalFirstName'])
-
-        # slider save image
-        requestData = dict(
-            image="https://someserver.com/image.jpg",
-            description="some description"
-        )
-        res = self.client().post(
-            '/pecaprojects/schoolsliders/{}'.format(self.pecaProject.id),
-            data=requestData,
-            content_type='multipart/form-data')
-        self.assertEqual(res.status_code, 200)
-        self.pecaProject = PecaProject.objects(id=self.pecaProject.id).first()
-        self.assertEqual('1', self.pecaProject.school.slider[0].approvalStatus)
-
-        # get approval request
-        res = self.client().get(
-            '/pecaprojects/contentapproval')
-        self.assertEqual(res.status_code, 200)
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('some description',
-                         result['records'][0]['content']['description'])
-
-        # approve request
+        # add student result in olympics
+        requestData = {
+            "result": "1"  # gold medal
+        }
         res = self.client().put(
-            '/pecaprojects/contentapproval/{}'.format(
-                result['records'][0]['id']),
-            data=json.dumps({'status': '2'}),
+            '/pecaprojects/olympics/{}/{}/{}'.format(
+                self.pecaProject.id,
+                1,
+                self.pecaProject.school.sections[0].students[0].id),
+            data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        self.pecaProject = PecaProject.objects(id=self.pecaProject.id).first()
-        self.assertEqual('2', self.pecaProject.school.slider[0].approvalStatus)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('1', result['result'])
+        self.assertEqual('2', result['status'])
+
+       # delete student from olympics
+        res = self.client().delete(
+            '/pecaprojects/olympics/{}/{}/{}'.format(
+                self.pecaProject.id,
+                1,
+                self.pecaProject.school.sections[0].students[0].id),
+            data=requestData,
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client().delete(
+            '/pecaprojects/olympics/{}/{}/{}'.format(
+                self.pecaProject.id,
+                1,
+                self.pecaProject.school.sections[0].students[0].id),
+            data=requestData,
+            content_type='application/json')
+        self.assertEqual(res.status_code, 404)
 
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')
-
-
-if __name__ == "__main__":
-    unittest.main()

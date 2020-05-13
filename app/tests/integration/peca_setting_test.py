@@ -291,15 +291,15 @@ class PecaSettings(unittest.TestCase):
             "Some 1 description updated",
             schoolYear.pecaSetting.lapse2.annualConvention.step1Description)
 
-    def test_endpoint_math_olimpics(self):
+    def test_endpoint_math_olympics(self):
 
         requestData = dict(
             file=(io.BytesIO(b'hi everyone'),
-                  'olimpicsFile.pdf'),
+                  'olympicsFile.pdf'),
             description="Some description"
         )
         res = self.client().put(
-            '/pecasetting/activities/matholimpics/1',
+            '/pecasetting/activities/matholympics/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -307,13 +307,13 @@ class PecaSettings(unittest.TestCase):
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
         self.assertEqual(
             "Some description",
-            schoolYear.pecaSetting.lapse1.mathOlimpic.description)
+            schoolYear.pecaSetting.lapse1.mathOlympic.description)
         self.assertEqual(
-            "olimpicsFile.pdf",
-            schoolYear.pecaSetting.lapse1.mathOlimpic.file.name)
+            "olympicsFile.pdf",
+            schoolYear.pecaSetting.lapse1.mathOlympic.file.name)
 
         res = self.client().get(
-            '/pecasetting/activities/matholimpics/1')
+            '/pecasetting/activities/matholympics/1')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('Some description',
@@ -323,11 +323,11 @@ class PecaSettings(unittest.TestCase):
 
         requestData = dict(
             file=(io.BytesIO(b'hi everyone'),
-                  'olimpicsFile2.pdf'),
+                  'olympicsFile2.pdf'),
             description="Some description"
         )
         res = self.client().put(
-            '/pecasetting/activities/matholimpics/2',
+            '/pecasetting/activities/matholympics/2',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -335,13 +335,13 @@ class PecaSettings(unittest.TestCase):
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
         self.assertEqual(
             "Some description",
-            schoolYear.pecaSetting.lapse2.mathOlimpic.description)
+            schoolYear.pecaSetting.lapse2.mathOlympic.description)
         self.assertEqual(
-            "olimpicsFile2.pdf",
-            schoolYear.pecaSetting.lapse2.mathOlimpic.file.name)
+            "olympicsFile2.pdf",
+            schoolYear.pecaSetting.lapse2.mathOlympic.file.name)
 
         res = self.client().get(
-            '/pecasetting/activities/matholimpics/2')
+            '/pecasetting/activities/matholympics/2')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('Some description',

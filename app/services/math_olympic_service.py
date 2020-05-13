@@ -4,25 +4,25 @@ from flask import current_app
 from marshmallow import ValidationError
 
 from app.models.school_year_model import SchoolYear
-from app.models.peca_setting_model import MathOlimpic
-from app.schemas.peca_setting_schema import MathOlimpicSchema
+from app.models.peca_setting_model import MathOlympic
+from app.schemas.peca_setting_schema import MathOlympicSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 
 
-class MathOlimpicService():
+class MathOlympicService():
 
-    filesPath = 'math_olimpics'
+    filesPath = 'math_olympics'
 
     def get(self, lapse):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
 
         if schoolYear:
-            schema = MathOlimpicSchema()
-            mathOlimpic = schoolYear.pecaSetting['lapse{}'.format(
-                lapse)].mathOlimpic
-            return schema.dump(mathOlimpic), 200
+            schema = MathOlympicSchema()
+            mathOlympic = schoolYear.pecaSetting['lapse{}'.format(
+                lapse)].mathOlympic
+            return schema.dump(mathOlympic), 200
 
     def save(self, lapse, jsonData, files=None):
 
@@ -31,8 +31,8 @@ class MathOlimpicService():
 
         if schoolYear:
             try:
-                schema = MathOlimpicSchema()
-                documentFiles = getFileFields(MathOlimpic)
+                schema = MathOlympicSchema()
+                documentFiles = getFileFields(MathOlympic)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles, self.filesPath)
@@ -41,15 +41,15 @@ class MathOlimpicService():
 
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
-                mathOlimpic = schoolYear.pecaSetting['lapse{}'.format(
-                    lapse)].mathOlimpic
+                mathOlympic = schoolYear.pecaSetting['lapse{}'.format(
+                    lapse)].mathOlympic
                 for field in schema.dump(data).keys():
-                    mathOlimpic[field] = data[field]
+                    mathOlympic[field] = data[field]
                 try:
                     schoolYear.pecaSetting['lapse{}'.format(
-                        lapse)].mathOlimpic = mathOlimpic
+                        lapse)].mathOlympic = mathOlympic
                     schoolYear.save()
-                    return schema.dump(mathOlimpic), 200
+                    return schema.dump(mathOlympic), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
 

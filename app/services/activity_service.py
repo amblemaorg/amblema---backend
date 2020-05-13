@@ -228,21 +228,21 @@ class ActivityService():
                     }
                     records['lapse{}'.format(i+1)].append(schema.dump(data))
 
-                mathOlimpic = schoolYear.pecaSetting['lapse{}'.format(
-                    i+1)].mathOlimpic
+                mathOlympic = schoolYear.pecaSetting['lapse{}'.format(
+                    i+1)].mathOlympic
 
                 if (
                     (not filters) or
                     ('status' in filters and filters['status']
-                     == '1' and mathOlimpic.status == '1')
+                     == '1' and mathOlympic.status == '1')
                 ):
 
                     data = {
-                        "id": "mathOlimpic",
-                        "name": "Olimpiadas matemáticas",
-                        "devName": "mathOlimpic",
+                        "id": "mathOlympic",
+                        "name": "Olimpíadas matemáticas",
+                        "devName": "mathOlympic",
                         "isStandard": True,
-                        "status": mathOlimpic.status
+                        "status": mathOlympic.status
                     }
                     records['lapse{}'.format(i+1)].append(schema.dump(data))
 
@@ -278,7 +278,7 @@ class ActivityService():
               isStandard: boolean
               status: 1=active 2=inactive
         """
-        from app.models.peca_project_model import PecaProject, AmblecoinsPeca
+        from app.models.peca_project_model import PecaProject, AmblecoinsPeca, Olympics
         from app.models.peca_amblecoins_model import AmbleSection
         from pymongo import UpdateOne
 
@@ -338,10 +338,36 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].annualConvention.status = data['status']
-                    elif data['id'] == "mathOlimpic":
+                    elif data['id'] == "mathOlympic":
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
-                            data['lapse'])].mathOlimpic.status = data['status']
+                            data['lapse'])].mathOlympic.status = data['status']
+
+                        bulk_operations = []
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False)
+
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                olympics = Olympics(
+                                    file=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].mathOlympic.file,
+                                    description=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].mathOlympic.description
+                                )
+                                peca['lapse{}'.format(
+                                    data['lapse'])].olympics = olympics
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(
+                                    data['lapse'])].olympics = None
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
+
                 else:
                     for activity in schoolYear.pecaSetting['lapse{}'.format(data['lapse'])].activities:
                         if str(activity.id) == data['id']:

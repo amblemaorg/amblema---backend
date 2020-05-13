@@ -27,7 +27,6 @@ def upload(file, name, path, ext):
 
     try:
         fh = open(path + name + ext, "wb")
-        current_app.logger.info(len(file))
         fh.write(b64decode(file+"==="))
         fh.close()
         return True

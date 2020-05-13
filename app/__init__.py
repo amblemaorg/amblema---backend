@@ -100,6 +100,9 @@ from app.controllers.peca_project_controller import (
 from app.controllers.peca_amblecoins_controller import (
     PecaAmblecoinsController
 )
+from app.controllers.peca_olympics_controller import (
+    PecaOlympicsController, PecaOlympicsHandlerCtrl
+)
 from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
 )
@@ -288,6 +291,10 @@ def create_app(config_instance):
                      '/pecaprojects/diagnostics/<string:diagnostic>/<string:lapse>/<string:pecaId>/<string:sectionId>/<string:studentId>')
     api.add_resource(PecaAmblecoinsController,
                      '/pecaprojects/amblecoins/<string:pecaId>/<string:lapse>')
+    api.add_resource(PecaOlympicsController,
+                     '/pecaprojects/olympics/<string:pecaId>/<string:lapse>')
+    api.add_resource(PecaOlympicsHandlerCtrl,
+                     '/pecaprojects/olympics/<string:pecaId>/<string:lapse>/<string:studentId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')

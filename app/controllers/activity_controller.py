@@ -9,7 +9,7 @@ from app.services.amblecoin_service import AmbleCoinService
 from app.services.initial_workshop_service import InicialWorkshopService
 from app.services.lapse_planning_service import LapsePlanningService
 from app.services.annual_convention_service import AnnualConventionService
-from app.services.math_olimpic_service import MathOlimpicService
+from app.services.math_olympic_service import MathOlympicService
 from app.helpers.handler_request import getQueryParams
 
 
@@ -30,7 +30,7 @@ class ActivityHandlerController(Resource):
         'lapseplanning': LapsePlanningService(),
         'amblecoins': AmbleCoinService(),
         'annualconvention': AnnualConventionService(),
-        'matholimpics': MathOlimpicService()
+        'matholympics': MathOlympicService()
     }
 
     def get(self, id, lapse):

@@ -72,6 +72,9 @@ from app.controllers.amblecoin_controller import (
 from app.controllers.annual_convention_controller import (
     AnnualConventionController
 )
+from app.controllers.annual_preparation_controller import (
+    AnnualPreparationController
+)
 from app.controllers.environmental_project_controller import (
     EnvironmentalProjectController
 )
@@ -249,6 +252,8 @@ def create_app(config_instance):
                      '/pecasetting/amblecoins/<string:lapse>')
     api.add_resource(AnnualConventionController,
                      '/pecasetting/annualconvention/<string:lapse>')
+    api.add_resource(AnnualPreparationController,
+                     '/pecasetting/annualpreparation/<string:lapse>')
     api.add_resource(EnvironmentalProjectController,
                      '/pecasetting/environmentalproject')
     api.add_resource(ActivitySummaryController,

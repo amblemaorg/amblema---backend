@@ -2,6 +2,7 @@
 
 from flask import current_app
 from marshmallow import ValidationError
+from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_setting_model import AnnualConvention
@@ -24,7 +25,8 @@ class AnnualConventionService():
                 lapse)].annualConvention
             return schema.dump(annualConvention), 200
 
-    def save(self, lapse, jsonData, files=None):
+    def save(self, lapse, jsonData):
+        from app.models.peca_project_model import PecaProject
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -32,23 +34,58 @@ class AnnualConventionService():
         if schoolYear:
             try:
                 schema = AnnualConventionSchema()
-                documentFiles = getFileFields(AnnualConvention)
-                if files and documentFiles:
-                    validFiles = validate_files(files, documentFiles)
-                    uploadedfiles = upload_files(validFiles, self.filesPath)
-                    jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
                 annualConvention = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].annualConvention
+                oldAnnualConvention = annualConvention
                 for field in schema.dump(data).keys():
                     annualConvention[field] = data[field]
                 try:
                     schoolYear.pecaSetting['lapse{}'.format(
                         lapse)].annualConvention = annualConvention
                     schoolYear.save()
+                    if annualConvention.status == "1":
+                        from app.models.project_model import CheckElement
+
+                        oldIds = []
+                        for reg in oldAnnualConvention.checklist:
+                            oldIds.append(reg.id)
+                        newIds = {}
+                        for reg in schoolYear.pecaSetting['lapse{}'.format(lapse)].annualConvention.checklist:
+                            newIds[str(reg.id)] = reg
+
+                        bulk_operations = []
+                        for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+                            updated = False
+                            pecaRegs = []
+                            for reg in peca['lapse{}'.format(lapse)].annualConvention.checklist:
+                                if reg.id in oldIds and reg.id not in newIds:
+                                    peca['lapse{}'.format(
+                                        lapse)].annualConvention.checklist.remove(reg)
+                                    updated = True
+                                if reg.id in newIds and reg.name != newIds[reg.id].name:
+                                    reg.name = newIds[reg.id].name
+                                    updated = True
+                                pecaRegs.append(reg.id)
+                            for key in newIds.keys():
+                                if key not in pecaRegs:
+                                    peca['lapse{}'.format(lapse)].annualConvention.checklist.append(
+                                        CheckElement(
+                                            id=str(newIds[key].id),
+                                            name=newIds[key].name
+                                        )
+                                    )
+                                    updated = True
+                            if updated:
+                                bulk_operations.append(
+                                    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
+
                     return schema.dump(annualConvention), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

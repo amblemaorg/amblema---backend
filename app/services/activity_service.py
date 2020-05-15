@@ -228,6 +228,24 @@ class ActivityService():
                     }
                     records['lapse{}'.format(i+1)].append(schema.dump(data))
 
+                annualPreparation = schoolYear.pecaSetting['lapse{}'.format(
+                    i+1)].annualPreparation
+
+                if (
+                    (not filters) or
+                    ('status' in filters and filters['status']
+                     == '1' and annualPreparation.status == '1')
+                ):
+
+                    data = {
+                        "id": "annualpreparation",
+                        "name": "Preparación anual",
+                        "devName": "annualPreparation",
+                        "isStandard": True,
+                        "status": annualPreparation.status
+                    }
+                    records['lapse{}'.format(i+1)].append(schema.dump(data))
+
                 mathOlympic = schoolYear.pecaSetting['lapse{}'.format(
                     i+1)].mathOlympic
 

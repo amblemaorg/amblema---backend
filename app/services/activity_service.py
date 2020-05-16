@@ -298,6 +298,7 @@ class ActivityService():
         """
         from app.models.peca_project_model import PecaProject, AmblecoinsPeca, Olympics
         from app.models.peca_amblecoins_model import AmbleSection
+        from app.models.peca_annual_preparation_model import AnnualPreparationPeca
         from pymongo import UpdateOne
 
         schoolYear = SchoolYear.objects(
@@ -356,6 +357,38 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].annualConvention.status = data['status']
+
+                    elif data['id'] == "annualPreparation":
+                        found = True
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].annualPreparation.status = data['status']
+                        annualPreparation = schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].annualPreparation
+                        bulk_operations = []
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False)
+
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                annualPreparation = AnnualPreparationPeca(
+                                    step1Description=annualPreparation.step1Description,
+                                    step2Description=annualPreparation.step2Description,
+                                    step3Description=annualPreparation.step3Description,
+                                    step4Description=annualPreparation.step4Description,
+                                )
+                                peca['lapse{}'.format(
+                                    data['lapse'])].annualPreparation = annualPreparation
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(
+                                    data['lapse'])].annualPreparation = None
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
+
                     elif data['id'] == "mathOlympic":
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(

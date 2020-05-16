@@ -10,6 +10,7 @@ from mongoengine import fields, Document, EmbeddedDocument, signals
 from app.models.shared_embedded_documents import ProjectReference, ImageStatus
 from app.models.peca_amblecoins_model import AmblecoinsPeca
 from app.models.peca_olympics_model import Olympics
+from app.models.peca_annual_preparation_model import AnnualPreparationPeca
 
 
 class Diagnostic(EmbeddedDocument):
@@ -60,7 +61,8 @@ class Teacher(EmbeddedDocument):
     addressMunicipality = fields.ReferenceField('Municipality')
     address = fields.StringField()
     addressCity = fields.StringField()
-    status = fields.StringField(max_length=1, default=1)
+    status = fields.StringField(max_length=1, default="1")
+    annualPreparationStatus = fields.StringField(max_length=1, null=True)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
@@ -112,6 +114,7 @@ class School(EmbeddedDocument):
 class Lapse(EmbeddedDocument):
     ambleCoins = fields.EmbeddedDocumentField(AmblecoinsPeca)
     olympics = fields.EmbeddedDocumentField(Olympics)
+    annualPreparation = fields.EmbeddedDocumentField(AnnualPreparationPeca)
 
 
 class PecaProject(Document):

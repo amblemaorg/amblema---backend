@@ -85,6 +85,9 @@ class TeacherSchema(Schema):
             ('1', '2'),
             ('active', 'inactive')
         ))
+    annualPreparationStatus = fields.Str(
+        dump_only=True
+    )
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

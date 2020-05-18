@@ -10,6 +10,7 @@ from app.models.environmental_project_model import EnvironmentalProject
 
 
 class InitialWorshop(EmbeddedDocument):
+    name = fields.StringField(default="Taller inicial")
     agreementFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     agreementDescription = fields.StringField()
@@ -20,36 +21,45 @@ class InitialWorshop(EmbeddedDocument):
         Link, is_file=True)
     teachersMeetingDescription = fields.StringField()
     status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
 
 
 class LapsePlanning(EmbeddedDocument):
+    name = fields.StringField(default="Planificación de lapso")
     proposalFundationFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     proposalFundationDescription = fields.StringField()
     meetingDescription = fields.StringField()
     status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
 
 
 class AmbleCoins(EmbeddedDocument):
+    name = fields.StringField(default="AmbLeMonedas")
     teachersMeetingFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     teachersMeetingDescription = fields.StringField()
     piggyBankDescription = fields.StringField()
     piggyBankSlider = fields.EmbeddedDocumentListField(Image)
     status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
 
 
 class AnnualPreparation(EmbeddedDocument):
+    name = fields.StringField(default="Preparación anual")
     step1Description = fields.StringField()
     step2Description = fields.StringField()
     step3Description = fields.StringField()
     step4Description = fields.StringField()
     status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
 
 
 class AnnualConvention(EmbeddedDocument):
+    name = fields.StringField(default="Convención anual")
     checklist = fields.EmbeddedDocumentListField(CheckTemplate)
     status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
 
 
 class MathOlympic(EmbeddedDocument):

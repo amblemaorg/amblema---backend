@@ -95,8 +95,8 @@ class StatisticsUserService():
                             if project.school:
                                 user['schools'].append(project.school.name)
                     elif userType == '2':
-                        user['sponsor'] = "" if not record.project.sponsor else record.project.sponsor.name
-                        user['coordinator'] = "" if not record.project.coordinator else record.project.coordinator.name
+                        user['sponsor'] = "" if not record.project or not record.project.sponsor else record.project.sponsor.name
+                        user['coordinator'] = "" if not record.project or not record.project.coordinator else record.project.coordinator.name
                     users.append(user)
 
         return {'typeUser': userType, 'users': users}, 200

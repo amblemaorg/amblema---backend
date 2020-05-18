@@ -5,6 +5,7 @@ import json
 
 from marshmallow import Schema, post_load, pre_load
 from app.schemas import fields
+from flask import current_app
 
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import validate_url, not_blank, validate_image, OneOf
@@ -52,7 +53,9 @@ class CheckTemplateSchema(Schema):
     @pre_load
     def process_input(self, data, **kwargs):
         if isinstance(data, str):
+            current_app.logger.info("preload")
             data = json.loads(data)
+            current_app.logger.info(data)
         return data
 
     @post_load

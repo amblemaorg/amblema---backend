@@ -87,17 +87,31 @@ class PecaProjectService():
         from app.models.peca_amblecoins_model import AmblecoinsPeca, AmbleSection
         from app.models.peca_olympics_model import Olympics
         from app.models.peca_project_model import Lapse
+        from app.models.peca_annual_preparation_model import AnnualPreparationPeca
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only('pecaSetting').first()
 
         for i in range(1, 4):
             peca['lapse{}'.format(i)] = Lapse()
-            if schoolYear.pecaSetting['lapse{}'.format(i)].ambleCoins.status == "1":
+            pecaSettingLapse = schoolYear.pecaSetting['lapse{}'.format(i)]
+
+            if pecaSettingLapse.ambleCoins.status == "1":
                 peca['lapse{}'.format(i)].ambleCoins = AmblecoinsPeca()
             else:
                 peca['lapse{}'.format(i)].ambleCoins = None
-            if schoolYear.pecaSetting['lapse{}'.format(i)].mathOlympic.status == "1":
+
+            if pecaSettingLapse.mathOlympic.status == "1":
                 peca['lapse{}'.format(i)].olympics = Olympics()
             else:
                 peca['lapse{}'.format(i)].olympics = None
+
+            if pecaSettingLapse.annualPreparation.status == "1":
+                peca['lapse{}'.format(i)].annualPreparation = AnnualPreparationPeca(
+                    step1Description=pecaSettingLapse.annualPreparation.step1Description,
+                    step2Description=pecaSettingLapse.annualPreparation.step2Description,
+                    step3Description=pecaSettingLapse.annualPreparation.step3Description,
+                    step4Description=pecaSettingLapse.annualPreparation.step4Description
+                )
+            else:
+                peca['lapse{}'.format(i)].annualPreparation = None

@@ -72,6 +72,9 @@ from app.controllers.amblecoin_controller import (
 from app.controllers.annual_convention_controller import (
     AnnualConventionController
 )
+from app.controllers.annual_preparation_controller import (
+    AnnualPreparationController
+)
 from app.controllers.environmental_project_controller import (
     EnvironmentalProjectController
 )
@@ -102,6 +105,9 @@ from app.controllers.peca_amblecoins_controller import (
 )
 from app.controllers.peca_olympics_controller import (
     PecaOlympicsController, PecaOlympicsHandlerCtrl
+)
+from app.controllers.peca_annual_preparation_controller import (
+    PecaPreparationController, PecaPreparationHandlerCtrl
 )
 from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
@@ -249,6 +255,8 @@ def create_app(config_instance):
                      '/pecasetting/amblecoins/<string:lapse>')
     api.add_resource(AnnualConventionController,
                      '/pecasetting/annualconvention/<string:lapse>')
+    api.add_resource(AnnualPreparationController,
+                     '/pecasetting/annualpreparation/<string:lapse>')
     api.add_resource(EnvironmentalProjectController,
                      '/pecasetting/environmentalproject')
     api.add_resource(ActivitySummaryController,
@@ -295,6 +303,10 @@ def create_app(config_instance):
                      '/pecaprojects/olympics/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaOlympicsHandlerCtrl,
                      '/pecaprojects/olympics/<string:pecaId>/<string:lapse>/<string:studentId>')
+    api.add_resource(PecaPreparationController,
+                     '/pecaprojects/annualpreparation/<string:pecaId>')
+    api.add_resource(PecaPreparationHandlerCtrl,
+                     '/pecaprojects/annualpreparation/<string:pecaId>/<string:teacherId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')

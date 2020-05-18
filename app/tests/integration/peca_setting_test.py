@@ -238,7 +238,7 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual('teachersMeetingFile3.pdf',
                          result['teachersMeetingFile']['name'])
 
-    def test_endpoint_annual_convention(self):
+    def test_endpoint_annual_preparation(self):
 
         requestData = dict(
             step1Description="Some 1 description",
@@ -247,7 +247,7 @@ class PecaSettings(unittest.TestCase):
             step4Description="Some 4 description"
         )
         res = self.client().post(
-            '/pecasetting/annualconvention/1',
+            '/pecasetting/annualpreparation/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -255,19 +255,19 @@ class PecaSettings(unittest.TestCase):
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
         self.assertEqual(
             "Some 1 description",
-            schoolYear.pecaSetting.lapse1.annualConvention.step1Description)
+            schoolYear.pecaSetting.lapse1.annualPreparation.step1Description)
         self.assertEqual(
             "Some 2 description",
-            schoolYear.pecaSetting.lapse1.annualConvention.step2Description)
+            schoolYear.pecaSetting.lapse1.annualPreparation.step2Description)
         self.assertEqual(
             "Some 3 description",
-            schoolYear.pecaSetting.lapse1.annualConvention.step3Description)
+            schoolYear.pecaSetting.lapse1.annualPreparation.step3Description)
         self.assertEqual(
             "Some 4 description",
-            schoolYear.pecaSetting.lapse1.annualConvention.step4Description)
+            schoolYear.pecaSetting.lapse1.annualPreparation.step4Description)
 
         res = self.client().get(
-            '/pecasetting/annualconvention/1')
+            '/pecasetting/annualpreparation/1')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('Some 1 description',
@@ -281,7 +281,7 @@ class PecaSettings(unittest.TestCase):
             step4Description="Some 4 description"
         )
         res = self.client().post(
-            '/pecasetting/annualconvention/2',
+            '/pecasetting/annualpreparation/2',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -289,7 +289,65 @@ class PecaSettings(unittest.TestCase):
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
         self.assertEqual(
             "Some 1 description updated",
-            schoolYear.pecaSetting.lapse2.annualConvention.step1Description)
+            schoolYear.pecaSetting.lapse2.annualPreparation.step1Description)
+
+    def test_endpoint_annual_convention(self):
+
+        requestData = dict(
+            checklist='[{"name": "some description1"},{"name": "some description2"}]'
+        )
+        res = self.client().post(
+            '/pecasetting/annualconvention/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(
+            "some description1",
+            schoolYear.pecaSetting.lapse1.annualConvention.checklist[0].name)
+        self.assertEqual(
+            "some description2",
+            schoolYear.pecaSetting.lapse1.annualConvention.checklist[1].name)
+
+        res = self.client().get(
+            '/pecasetting/annualconvention/1')
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+
+        self.assertEqual('some description1',
+                         result['checklist'][0]['name'])
+        self.assertEqual(str(schoolYear.pecaSetting.lapse1.annualConvention.checklist[0].id),
+                         result['checklist'][0]['id'])
+
+        requestData = dict(
+            checklist=json.dumps(
+                [
+                    {
+                        'name': 'some description0',
+                        'id': str(result['checklist'][0]['id'])
+                    },
+                    {
+                        'name': 'some description3',
+                    }
+                ])
+        )
+        res = self.client().post(
+            '/pecasetting/annualconvention/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        res = self.client().get(
+            '/pecasetting/annualconvention/1')
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('some description0',
+                         result['checklist'][0]['name'])
+        self.assertEqual(str(schoolYear.pecaSetting.lapse1.annualConvention.checklist[0].id),
+                         result['checklist'][0]['id'])
+        self.assertEqual(2, len(result['checklist']))
+        self.assertEqual('some description3', result['checklist'][1]['name'])
 
     def test_endpoint_math_olympics(self):
 

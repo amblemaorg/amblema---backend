@@ -24,6 +24,7 @@ class Activity(EmbeddedDocument):
     checklist = fields.EmbeddedDocumentListField(
         CheckTemplate, null=True, default=None)
     approvalType = fields.StringField(required=True, max_length=1)
+    isStandard = fields.BooleanField(default=False)
     status = fields.StringField(default='2', max_length=1)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

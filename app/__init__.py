@@ -109,6 +109,9 @@ from app.controllers.peca_olympics_controller import (
 from app.controllers.peca_annual_preparation_controller import (
     PecaPreparationController, PecaPreparationHandlerCtrl
 )
+from app.controllers.peca_annual_convention_controller import (
+    PecaConventionController
+)
 from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
 )
@@ -307,6 +310,8 @@ def create_app(config_instance):
                      '/pecaprojects/annualpreparation/<string:pecaId>')
     api.add_resource(PecaPreparationHandlerCtrl,
                      '/pecaprojects/annualpreparation/<string:pecaId>/<string:teacherId>')
+    api.add_resource(PecaConventionController,
+                     '/pecaprojects/annualconvention/<string:pecaId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')

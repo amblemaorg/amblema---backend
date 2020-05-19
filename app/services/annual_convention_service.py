@@ -40,7 +40,7 @@ class AnnualConventionService():
                     schoolYear.initFirstPecaSetting()
                 annualConvention = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].annualConvention
-                oldAnnualConvention = annualConvention
+                oldChecklist = annualConvention.checklist
                 for field in schema.dump(data).keys():
                     annualConvention[field] = data[field]
                 try:
@@ -51,27 +51,26 @@ class AnnualConventionService():
                         from app.models.project_model import CheckElement
 
                         oldIds = []
-                        for reg in oldAnnualConvention.checklist:
-                            oldIds.append(reg.id)
+                        for reg in oldChecklist:
+                            oldIds.append(str(reg.id))
                         newIds = {}
                         for reg in schoolYear.pecaSetting['lapse{}'.format(lapse)].annualConvention.checklist:
                             newIds[str(reg.id)] = reg
-
                         bulk_operations = []
                         for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
                             updated = False
                             pecaRegs = []
                             for reg in peca['lapse{}'.format(lapse)].annualConvention.checklist:
-                                if reg.id in oldIds and reg.id not in newIds:
+                                if str(reg.id) in oldIds and str(reg.id) not in newIds:
                                     peca['lapse{}'.format(
                                         lapse)].annualConvention.checklist.remove(reg)
                                     updated = True
-                                if reg.id in newIds and reg.name != newIds[reg.id].name:
-                                    reg.name = newIds[reg.id].name
+                                if str(reg.id) in newIds and reg.name != newIds[str(reg.id)].name:
+                                    reg.name = newIds[str(reg.id)].name
                                     updated = True
-                                pecaRegs.append(reg.id)
+                                pecaRegs.append(str(reg.id))
                             for key in newIds.keys():
-                                if key not in pecaRegs:
+                                if str(key) not in pecaRegs:
                                     peca['lapse{}'.format(lapse)].annualConvention.checklist.append(
                                         CheckElement(
                                             id=str(newIds[key].id),

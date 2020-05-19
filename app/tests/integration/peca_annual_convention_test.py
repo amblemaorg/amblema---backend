@@ -217,6 +217,9 @@ class PecaAnnualConventionTest(unittest.TestCase):
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        checklist = result['checklist']
+        self.assertEqual(2, len(checklist))
 
         requestData = {
             "id": 'annualConvention',
@@ -241,9 +244,54 @@ class PecaAnnualConventionTest(unittest.TestCase):
         self.assertEqual(
             False, result['lapse1']['annualConvention']['checklist'][0]['checked'])
 
-        # edit annual convention
-        requestData = result['lapse1']['annualConvention']['checklist']
-        requestData[0]['checked'] = True
+        # delete element in config
+        checklist.pop(1)
+        requestData = {
+            'checklist': json.dumps(checklist)
+        }
+        res = self.client().post(
+            '/pecasetting/annualconvention/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        checklist = result['checklist']
+        self.assertEqual(1, len(checklist))
+
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(
+            1, len(result['lapse1']['annualConvention']['checklist']))
+
+        # edit name element in config
+        checklist[0]['name'] = "Edited name"
+        requestData = {
+            'checklist': json.dumps(checklist)
+        }
+        res = self.client().post(
+            '/pecasetting/annualconvention/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1, len(result['checklist']))
+
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(
+            "Edited name", result['lapse1']['annualConvention']['checklist'][0]['name'])
+        self.assertEqual(
+            checklist[0]['id'], result['lapse1']['annualConvention']['checklist'][0]['id'])
+
+        # edit annual convention peca
+        requestData = result['lapse1']['annualConvention']
+        requestData['checklist'][0]['checked'] = True
         res = self.client().post(
             '/pecaprojects/annualconvention/{}'.format(self.pecaProject.id),
             data=json.dumps(requestData),
@@ -257,7 +305,7 @@ class PecaAnnualConventionTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(
-            "some description1", result['lapse1']['annualConvention']['checklist'][0]['name'])
+            "Edited name", result['lapse1']['annualConvention']['checklist'][0]['name'])
         self.assertEqual(
             True, result['lapse1']['annualConvention']['checklist'][0]['checked'])
 

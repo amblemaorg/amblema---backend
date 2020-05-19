@@ -53,9 +53,7 @@ class CheckTemplateSchema(Schema):
     @pre_load
     def process_input(self, data, **kwargs):
         if isinstance(data, str):
-            current_app.logger.info("preload")
             data = json.loads(data)
-            current_app.logger.info(data)
         return data
 
     @post_load

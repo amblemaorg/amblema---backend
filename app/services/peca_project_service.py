@@ -88,6 +88,7 @@ class PecaProjectService():
         from app.models.peca_olympics_model import Olympics
         from app.models.peca_project_model import Lapse
         from app.models.peca_annual_preparation_model import AnnualPreparationPeca
+        from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only('pecaSetting').first()
@@ -115,3 +116,16 @@ class PecaProjectService():
                 )
             else:
                 peca['lapse{}'.format(i)].annualPreparation = None
+
+            if pecaSettingLapse.annualConvention.status == "1":
+                annualConvention = AnnualConventionPeca()
+                for element in pecaSettingLapse.annualConvention.checklist:
+                    annualConvention.checklist.append(
+                        CheckElement(
+                            id=str(element.id),
+                            name=element.name,
+                            checked=False
+                        ))
+                peca['lapse{}'.format(i)].annualConvention = annualConvention
+            else:
+                peca['lapse{}'.format(i)].annualConvention = None

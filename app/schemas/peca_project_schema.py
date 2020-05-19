@@ -20,6 +20,7 @@ from app.models.peca_project_model import TeacherLink
 from app.schemas.peca_amblecoins_schema import AmblecoinsPecaSchema
 from app.schemas.peca_olympics_schema import OlympicsSchema
 from app.schemas.peca_annual_preparation_schema import AnnualPreparationSchema
+from app.schemas.peca_annual_convention_schema import AnnualConventionSchema
 
 
 class DiagnosticSchema(Schema):
@@ -149,6 +150,7 @@ class LapseSchema(Schema):
     ambleCoins = fields.Nested(AmblecoinsPecaSchema)
     olympics = fields.Nested(OlympicsSchema)
     annualPreparation = fields.Nested(AnnualPreparationSchema)
+    annualConvention = fields.Nested(AnnualConventionSchema)
 
     class Meta:
         unknown = EXCLUDE

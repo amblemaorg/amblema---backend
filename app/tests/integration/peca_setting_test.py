@@ -357,7 +357,7 @@ class PecaSettings(unittest.TestCase):
             description="Some description"
         )
         res = self.client().put(
-            '/pecasetting/activities/matholympics/1',
+            '/pecasetting/activities/matholympic/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -371,7 +371,7 @@ class PecaSettings(unittest.TestCase):
             schoolYear.pecaSetting.lapse1.mathOlympic.file.name)
 
         res = self.client().get(
-            '/pecasetting/activities/matholympics/1')
+            '/pecasetting/activities/matholympic/1')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('Some description',
@@ -385,7 +385,7 @@ class PecaSettings(unittest.TestCase):
             description="Some description"
         )
         res = self.client().put(
-            '/pecasetting/activities/matholympics/2',
+            '/pecasetting/activities/matholympic/2',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -399,7 +399,7 @@ class PecaSettings(unittest.TestCase):
             schoolYear.pecaSetting.lapse2.mathOlympic.file.name)
 
         res = self.client().get(
-            '/pecasetting/activities/matholympics/2')
+            '/pecasetting/activities/matholympic/2')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('Some description',

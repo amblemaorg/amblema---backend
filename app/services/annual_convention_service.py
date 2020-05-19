@@ -25,7 +25,7 @@ class AnnualConventionService():
                 lapse)].annualConvention
             return schema.dump(annualConvention), 200
 
-    def save(self, lapse, jsonData):
+    def save(self, lapse, jsonData, files=None):
         from app.models.peca_project_model import PecaProject
 
         schoolYear = SchoolYear.objects(

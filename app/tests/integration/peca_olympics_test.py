@@ -221,7 +221,7 @@ class PecaOlympicsTest(unittest.TestCase):
             description="Some description"
         )
         res = self.client().put(
-            '/pecasetting/activities/matholympics/1',
+            '/pecasetting/activities/matholympic/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)

@@ -256,7 +256,7 @@ class ActivityService():
                 ):
 
                     data = {
-                        "id": "mathOlympic",
+                        "id": "matholympic",
                         "name": "Olimpíadas matemáticas",
                         "devName": "mathOlympic",
                         "isStandard": True,

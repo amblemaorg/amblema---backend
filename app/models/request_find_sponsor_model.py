@@ -102,21 +102,22 @@ class RequestFindSponsor(Document):
     def post_save(cls, sender, document, **kwargs):
         from app.schemas.request_find_sponsor_schema import ReqFindSponsorSchema
         # after create
-        reciprocalFields = [
-            'coordinatorFillSponsorForm',
-            'schoolFillSponsorForm'
-        ]
-        for step in document.project.stepsProgress.steps:
-            if step.devName in reciprocalFields:
-                step.status = "2"  # in approval
-                step.approvalHistory.append(
-                    Approval(
-                        id=str(document.id),
-                        user=str(document.user.id),
-                        data=ReqFindSponsorSchema().dump(document),
-                        status="1"
-                    ))
-        document.project.save()
+        if 'created' in kwargs and kwargs['created']:
+            reciprocalFields = [
+                'coordinatorFillSponsorForm',
+                'schoolFillSponsorForm'
+            ]
+            for step in document.project.stepsProgress.steps:
+                if step.devName in reciprocalFields:
+                    step.status = "2"  # in approval
+                    step.approvalHistory.append(
+                        Approval(
+                            id=str(document.id),
+                            user=str(document.user.id),
+                            data=ReqFindSponsorSchema().dump(document),
+                            status="1"
+                        ))
+            document.project.save()
 
 
 signals.pre_save_post_validation.connect(

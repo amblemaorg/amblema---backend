@@ -125,21 +125,22 @@ class RequestFindSchool(Document):
     def post_save(cls, sender, document, **kwargs):
         from app.schemas.request_find_school_schema import ReqFindSchoolSchema
         # after create
-        reciprocalFields = [
-            'coordinatorFillSchoolForm',
-            'sponsorFillSchoolForm'
-        ]
-        for step in document.project.stepsProgress.steps:
-            if step.devName in reciprocalFields:
-                step.status = "2"  # in approval
-                step.approvalHistory.append(
-                    Approval(
-                        id=str(document.id),
-                        user=str(document.user.id),
-                        data=ReqFindSchoolSchema().dump(document),
-                        status="1"
-                    ))
-        document.project.save()
+        if 'created' in kwargs and kwargs['created']:
+            reciprocalFields = [
+                'coordinatorFillSchoolForm',
+                'sponsorFillSchoolForm'
+            ]
+            for step in document.project.stepsProgress.steps:
+                if step.devName in reciprocalFields:
+                    step.status = "2"  # in approval
+                    step.approvalHistory.append(
+                        Approval(
+                            id=str(document.id),
+                            user=str(document.user.id),
+                            data=ReqFindSchoolSchema().dump(document),
+                            status="1"
+                        ))
+            document.project.save()
 
 
 signals.pre_save_post_validation.connect(

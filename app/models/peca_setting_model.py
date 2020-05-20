@@ -45,12 +45,19 @@ class AmbleCoins(EmbeddedDocument):
     isStandard = fields.BooleanField(default=True)
 
 
-class AnnualConvention(EmbeddedDocument):
-    name = fields.StringField(default="Convención anual")
+class AnnualPreparation(EmbeddedDocument):
+    name = fields.StringField(default="Preparación anual")
     step1Description = fields.StringField()
     step2Description = fields.StringField()
     step3Description = fields.StringField()
     step4Description = fields.StringField()
+    status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
+
+
+class AnnualConvention(EmbeddedDocument):
+    name = fields.StringField(default="Convención anual")
+    checklist = fields.EmbeddedDocumentListField(CheckTemplate)
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
 
@@ -67,6 +74,7 @@ class Lapse(EmbeddedDocument):
     ambleCoins = fields.EmbeddedDocumentField(AmbleCoins)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanning)
     annualConvention = fields.EmbeddedDocumentField(AnnualConvention)
+    annualPreparation = fields.EmbeddedDocumentField(AnnualPreparation)
     mathOlympic = fields.EmbeddedDocumentField(MathOlympic)
     activities = fields.EmbeddedDocumentListField(Activity)
 

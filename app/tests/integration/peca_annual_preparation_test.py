@@ -1,4 +1,4 @@
-# app/test/integration/peca_olympics_test.py
+# app/test/integration/peca_annual_preparation_test.py
 
 
 import unittest
@@ -19,7 +19,7 @@ from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
 
 
-class PecaOlympicsTest(unittest.TestCase):
+class PecaAnnualPreparationTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -206,28 +206,70 @@ class PecaOlympicsTest(unittest.TestCase):
                             "lastName": "Teran"
                         }
                     }
+                ],
+                "teachers": [
+                    {
+                        "firstName": "Maria",
+                        "lastName": "Teran",
+                        "cardType": "1",
+                        "cardId": "282882828",
+                        "gender": "1",
+                        "email": "mteran@test.com",
+                        "phone": "04242332323",
+                        "addressState": str(self.state.id),
+                        "addressMunicipality": str(self.municipality.id),
+                        "address": "street 7th",
+                        "addressCity": "Barquisimeto"
+                    },
+                    {
+                        "firstName": "Maria",
+                        "lastName": "Fernandez",
+                        "cardType": "1",
+                        "cardId": "282882827",
+                        "gender": "1",
+                        "email": "mfer@test.com",
+                        "phone": "04242332323",
+                        "addressState": str(self.state.id),
+                        "addressMunicipality": str(self.municipality.id),
+                        "address": "street 7th",
+                        "addressCity": "Barquisimeto"
+                    },
+                    {
+                        "firstName": "Vicente",
+                        "lastName": "Fernandez",
+                        "cardType": "1",
+                        "cardId": "282882826",
+                        "gender": "2",
+                        "email": "vfer@test.com",
+                        "phone": "04242332323",
+                        "addressState": str(self.state.id),
+                        "addressMunicipality": str(self.municipality.id),
+                        "address": "street 7th",
+                        "addressCity": "Barquisimeto"
+                    }
                 ]
             }
 
         )
         self.pecaProject.save()
 
-    def test_olympics_peca(self):
+    def test_annual_preparation_peca(self):
 
-        # enable olympics for lapse1
+        # enable annual preparation for lapse1
         requestData = dict(
-            file=(io.BytesIO(b'hi everyone'),
-                  'olympicsFile.pdf'),
-            description="Some description"
+            step1Description="Some 1 description",
+            step2Description="Some 2 description",
+            step3Description="Some 3 description",
+            step4Description="Some 4 description"
         )
-        res = self.client().put(
-            '/pecasetting/activities/matholympic/1',
+        res = self.client().post(
+            '/pecasetting/annualpreparation/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
         requestData = {
-            "id": 'mathOlympic',
+            "id": 'annualPreparation',
             "lapse": "1",
             "isStandard": True,
             "status": "1"
@@ -238,79 +280,66 @@ class PecaOlympicsTest(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # check olympics on peca
+        # check annualPreparation on peca
         res = self.client().get(
             '/pecaprojects/{}'.format(self.pecaProject.id)
         )
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual([], result['lapse1']['olympics']['students'])
+        self.assertEqual(
+            "Some 1 description", result['lapse1']['annualPreparation']['step1Description'])
 
-        # add student to olympics
+        # add teachers to annual preparation
         requestData = {
-            "section": str(self.pecaProject.school.sections[0].id),
-            "student": str(self.pecaProject.school.sections[0].students[0].id),
-            "status": "1",  # registered
-            "result": None  # without result
+            "teacherId": str(self.pecaProject.school.teachers[0].id)
         }
         res = self.client().post(
-            '/pecaprojects/olympics/{}/{}'.format(self.pecaProject.id, 1),
+            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # edit student status in olympics
         requestData = {
-            "status": "2",  # qualified
-            "result": None  # without result
+            "teacherId": str(self.pecaProject.school.teachers[1].id)
+        }
+        res = self.client().post(
+            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = {
+            "teacherId": str(self.pecaProject.school.teachers[2].id)
+        }
+        res = self.client().post(
+            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # confirm teacher
+        requestData = {
+            "annualPreparationStatus": "2"
         }
         res = self.client().put(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
+            '/pecaprojects/annualpreparation/{}/{}'.format(
                 self.pecaProject.id,
-                1,
-                self.pecaProject.school.sections[0].students[0].id),
+                self.pecaProject.school.teachers[0].id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('2', result['status'])
-
-        # add student result in olympics
+       # delete teacher from annual preparation
         requestData = {
-            "result": "1"  # gold medal
+            "annualPreparationStatus": None
         }
         res = self.client().put(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
+            '/pecaprojects/annualpreparation/{}/{}'.format(
                 self.pecaProject.id,
-                1,
-                self.pecaProject.school.sections[0].students[0].id),
+                self.pecaProject.school.teachers[1].id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
-
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('1', result['result'])
-        self.assertEqual('2', result['status'])
-
-       # delete student from olympics
-        res = self.client().delete(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
-                self.pecaProject.id,
-                1,
-                self.pecaProject.school.sections[0].students[0].id),
-            data=requestData,
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        res = self.client().delete(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
-                self.pecaProject.id,
-                1,
-                self.pecaProject.school.sections[0].students[0].id),
-            data=requestData,
-            content_type='application/json')
-        self.assertEqual(res.status_code, 404)
 
     def tearDown(self):
         """teardown all initialized variables."""

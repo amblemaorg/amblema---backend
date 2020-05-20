@@ -19,6 +19,7 @@ from app.schemas.shared_schemas import ProjectReferenceSchema, ImageStatusSchema
 from app.models.peca_project_model import TeacherLink
 from app.schemas.peca_amblecoins_schema import AmblecoinsPecaSchema
 from app.schemas.peca_olympics_schema import OlympicsSchema
+from app.schemas.peca_annual_preparation_schema import AnnualPreparationSchema
 
 
 class DiagnosticSchema(Schema):
@@ -84,6 +85,9 @@ class TeacherSchema(Schema):
             ('1', '2'),
             ('active', 'inactive')
         ))
+    annualPreparationStatus = fields.Str(
+        dump_only=True
+    )
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 
@@ -144,6 +148,7 @@ class SchoolSchema(Schema):
 class LapseSchema(Schema):
     ambleCoins = fields.Nested(AmblecoinsPecaSchema)
     olympics = fields.Nested(OlympicsSchema)
+    annualPreparation = fields.Nested(AnnualPreparationSchema)
 
     class Meta:
         unknown = EXCLUDE

@@ -58,3 +58,11 @@ class ReqFindSchoolSchema(Schema):
             ('1', '2', '3'),
             ('morning', 'afternoon', 'both')
         ))
+    status = fields.Str(
+        default="1",
+        validate=OneOf(
+            ('1', '2', '3'),
+            ('pending', 'accepted', 'rejected')
+        ))
+    createdAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime(dump_only=True)

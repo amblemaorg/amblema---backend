@@ -345,7 +345,8 @@ class StatisticsTest(unittest.TestCase):
                         "addressMunicipality": str(self.municipality.pk),
                         "address": "19th street",
                         "addressCity": "Barquisimeto",
-                        "status": "1"
+                        "status": "1",
+                        "annualPreparationStatus": "1"
                     },
                     {
                         "firstName": "Yurancy",
@@ -359,7 +360,8 @@ class StatisticsTest(unittest.TestCase):
                         "addressMunicipality": str(self.municipality.pk),
                         "address": "19th street",
                         "addressCity": "Barquisimeto",
-                        "status": "2"
+                        "status": "2",
+                        "annualPreparationStatus": "2"
                     }
                 ]
             }
@@ -398,6 +400,32 @@ class StatisticsTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(0,
                          len(result['users']))
+
+        # teachers
+        res = self.client().get(
+            '/statistics/usersreport/3?status=2&annualPreparationStatus=2')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1,
+                         len(result['users']))
+        res = self.client().get(
+            '/statistics/usersreport/3?status=1&annualPreparationStatus=1')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1,
+                         len(result['users']))
+
+        res = self.client().get(
+            '/statistics/usersreport/3')
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(2,
+                         len(result['users']))
+        self.assertEqual(str(self.pecaProject.id),
+                         result['users'][0]['pecaId'])
 
     def tearDown(self):
         """teardown all initialized variables."""

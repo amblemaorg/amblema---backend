@@ -15,6 +15,7 @@ from app.models.peca_setting_model import (
     LapsePlanning,
     AmbleCoins,
     AnnualConvention,
+    AnnualPreparation,
     EnvironmentalProject,
     MathOlympic)
 
@@ -41,6 +42,7 @@ class SchoolYear(Document):
             lapsePlanning=LapsePlanning(),
             ambleCoins=AmbleCoins(),
             annualConvention=AnnualConvention(),
+            annualPreparation=AnnualPreparation(),
             mathOlympic=MathOlympic(),
             activities=[]
         )

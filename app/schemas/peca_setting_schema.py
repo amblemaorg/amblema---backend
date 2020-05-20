@@ -70,13 +70,26 @@ class AmbleCoinsSchema(Schema):
         return data
 
 
-class AnnualConventionSchema(Schema):
+class AnnualPreparationSchema(Schema):
     name = fields.Str(dump_only=True)
     step1Description = fields.Str()
     step2Description = fields.Str()
     step3Description = fields.Str()
     step4Description = fields.Str()
     isStandard = fields.Bool(dump_only=True)
+
+
+class AnnualConventionSchema(Schema):
+    name = fields.Str(dump_only=True)
+    checklist = fields.List(fields.Nested(CheckTemplateSchema()))
+    isStandard = fields.Bool(dump_only=True)
+
+    @pre_load
+    def process_input(self, data, **kwargs):
+        if 'checklist' in data and isinstance(data['checklist'], str):
+
+            data['checklist'] = json.loads(data['checklist'])
+        return data
 
 
 class MathOlympicSchema(Schema):
@@ -89,6 +102,7 @@ class LapseSchema(Schema):
     lapsePlanning = fields.Nested(LapsePlanningSchema)
     ambleCoins = fields.Nested(AmbleCoinsSchema)
     annualConvention = fields.Nested(AnnualConventionSchema)
+    annualPreparation = fields.Nested(AnnualPreparationSchema)
     mathOlympic = fields.Nested(MathOlympicSchema)
     activities = fields.List(fields.Nested(ActivitySchema))
 

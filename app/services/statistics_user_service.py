@@ -80,10 +80,13 @@ class StatisticsUserService():
                             if hasattr(teacher, f['field']) and teacher[f['field']] != f['value']:
                                 available = False
                         if available:
+                            teacher.pecaId = str(peca.id)
                             records.append(teacher)
             if records:
                 for record in records:
                     user = usersType[userType]['schema'].dump(record)
+                    if userType == "3":
+                        user['pecaId'] = record.pecaId
                     user['addressState'] = "" if not user['addressState'] else user['addressState']['name']
                     user['addressMunicipality'] = "" if not user['addressMunicipality'] else user['addressMunicipality']['name']
                     if userType in ('0', '1'):

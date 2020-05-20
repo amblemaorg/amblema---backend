@@ -11,6 +11,7 @@ from app.models.shared_embedded_documents import ProjectReference, ImageStatus
 from app.models.peca_amblecoins_model import AmblecoinsPeca
 from app.models.peca_olympics_model import Olympics
 from app.models.peca_annual_preparation_model import AnnualPreparationPeca
+from app.models.peca_annual_convention_model import AnnualConventionPeca
 
 
 class Diagnostic(EmbeddedDocument):
@@ -116,6 +117,7 @@ class Lapse(EmbeddedDocument):
     ambleCoins = fields.EmbeddedDocumentField(AmblecoinsPeca)
     olympics = fields.EmbeddedDocumentField(Olympics)
     annualPreparation = fields.EmbeddedDocumentField(AnnualPreparationPeca)
+    annualConvention = fields.EmbeddedDocumentField(AnnualConventionPeca)
 
 
 class PecaProject(Document):

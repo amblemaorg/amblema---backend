@@ -93,8 +93,10 @@ class AnnualConventionSchema(Schema):
 
 
 class MathOlympicSchema(Schema):
+    name = fields.Str(dump_only=True)
     file = fields.Nested(FileSchema())
     description = fields.Str()
+    isStandard = fields.Bool(dump_only=True)
 
 
 class LapseSchema(Schema):

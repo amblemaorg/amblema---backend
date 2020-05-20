@@ -63,10 +63,12 @@ class AnnualConvention(EmbeddedDocument):
 
 
 class MathOlympic(EmbeddedDocument):
+    name = fields.StringField(default="Olimpíadas matemáticas")
     file = fields.EmbeddedDocumentField(
         Link, is_file=True)
     description = fields.StringField()
     status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
 
 
 class Lapse(EmbeddedDocument):

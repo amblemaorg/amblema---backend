@@ -86,7 +86,7 @@ class RequestFindCoordinator(Document):
                 document.project.coordinator = coordinatorUser
                 for step in document.project.stepsProgress.steps:
                     if step.devName in reciprocalFields:
-                        step.status = "2"  # approved
+                        step.approve()  # approved
                         for approval in step.approvalHistory:
                             if approval.id == str(document.id):
                                 approval.status = document.status

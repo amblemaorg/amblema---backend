@@ -27,8 +27,10 @@ class SponsorUserSchema(UserSchema):
     contactLastName = fields.Str(validate=only_letters)
     contactEmail = fields.Str(validate=validate_email)
     contactPhone = fields.Str(required=True, validate=only_numbers)
-    image = MAImageField(validate=validate_image,
-                         folder='sponsors')
+    image = MAImageField(
+        allow_none=True,
+        validate=validate_image,
+        folder='sponsors')
     webSite = fields.Str(validate=validate_url)
     status = fields.Str(
         validate=OneOf(

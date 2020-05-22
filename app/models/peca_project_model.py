@@ -12,6 +12,7 @@ from app.models.peca_amblecoins_model import AmblecoinsPeca
 from app.models.peca_olympics_model import Olympics
 from app.models.peca_annual_preparation_model import AnnualPreparationPeca
 from app.models.peca_annual_convention_model import AnnualConventionPeca
+from app.models.peca_lapse_planning_model import LapsePlanningPeca
 
 
 class Diagnostic(EmbeddedDocument):
@@ -118,6 +119,7 @@ class Lapse(EmbeddedDocument):
     olympics = fields.EmbeddedDocumentField(Olympics)
     annualPreparation = fields.EmbeddedDocumentField(AnnualPreparationPeca)
     annualConvention = fields.EmbeddedDocumentField(AnnualConventionPeca)
+    lapsePlanning = fields.EmbeddedDocumentField(LapsePlanningPeca)
 
 
 class PecaProject(Document):

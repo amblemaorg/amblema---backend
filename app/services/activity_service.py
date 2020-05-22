@@ -302,6 +302,7 @@ class ActivityService():
         from app.models.peca_amblecoins_model import AmbleSection
         from app.models.peca_annual_preparation_model import AnnualPreparationPeca
         from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
+        from app.models.peca_lapse_planning_model import LapsePlanningPeca
         from pymongo import UpdateOne
 
         schoolYear = SchoolYear.objects(
@@ -355,6 +356,35 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].lapsePlanning.status = data['status']
+
+                        lapsePlanning = schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].lapsePlanning
+                        bulk_operations = []
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False)
+                        if data['status'] == "1":
+                            lapsePlanningStg = schoolYear.pecaSetting['lapse{}'.format(
+                                data['lapse'])].lapsePlanning
+                            lapsePlanning = LapsePlanningPeca(
+                                proposalFundationFile=lapsePlanningStg.proposalFundationFile,
+                                proposalFundationDescription=lapsePlanningStg.proposalFundationDescription,
+                                meetingDescription=lapsePlanningStg.meetingDescription
+                            )
+
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                peca['lapse{}'.format(
+                                    data['lapse'])].lapsePlanning = lapsePlanning
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(
+                                    data['lapse'])].lapsePlanning = None
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
 
                     elif data['id'] == "annualConvention":
                         found = True

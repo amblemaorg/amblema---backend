@@ -21,6 +21,7 @@ from app.schemas.peca_amblecoins_schema import AmblecoinsPecaSchema
 from app.schemas.peca_olympics_schema import OlympicsSchema
 from app.schemas.peca_annual_preparation_schema import AnnualPreparationSchema
 from app.schemas.peca_annual_convention_schema import AnnualConventionSchema
+from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema
 
 
 class DiagnosticSchema(Schema):
@@ -151,6 +152,7 @@ class LapseSchema(Schema):
     olympics = fields.Nested(OlympicsSchema)
     annualPreparation = fields.Nested(AnnualPreparationSchema)
     annualConvention = fields.Nested(AnnualConventionSchema)
+    lapsePlanning = fields.Nested(LapsePlanningPecaSchema)
 
     class Meta:
         unknown = EXCLUDE

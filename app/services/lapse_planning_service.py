@@ -3,6 +3,7 @@
 
 from flask import current_app
 from marshmallow import ValidationError
+from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_setting_model import LapsePlanning
@@ -26,6 +27,7 @@ class LapsePlanningService():
             return schema.dump(lapsePlanning), 200
 
     def save(self, jsonData, lapse, files=None):
+        from app.models.peca_project_model import PecaProject
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -53,6 +55,24 @@ class LapsePlanningService():
                     schoolYear.pecaSetting['lapse{}'.format(
                         lapse)].lapsePlanning = lapsePlanning
                     schoolYear.save()
+
+                    if lapsePlanning.status == "1":
+
+                        bulk_operations = []
+                        for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+
+                            lapsePlanningPeca = peca['lapse{}'.format(
+                                lapse)].lapsePlanning
+                            lapsePlanningPeca.proposalFundationFile = lapsePlanning.proposalFundationFile
+                            lapsePlanningPeca.proposalFundationDescription = lapsePlanning.proposalFundationDescription
+                            lapsePlanningPeca.meetingDescription = lapsePlanning.meetingDescription
+                            peca['lapse{}'.format(
+                                lapse)].lapsePlanning = lapsePlanningPeca
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
                     return schema.dump(lapsePlanning), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

@@ -303,6 +303,7 @@ class ActivityService():
         from app.models.peca_annual_preparation_model import AnnualPreparationPeca
         from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
         from app.models.peca_lapse_planning_model import LapsePlanningPeca
+        from app.models.peca_initial_workshop_model import InitialWorkshopPeca
         from pymongo import UpdateOne
 
         schoolYear = SchoolYear.objects(
@@ -318,6 +319,37 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].initialWorkshop.status = data['status']
+                        initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].initialWorkshop
+                        bulk_operations = []
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False)
+                        if data['status'] == "1":
+                            initialWorkshopStg = schoolYear.pecaSetting['lapse{}'.format(
+                                data['lapse'])].initialWorkshop
+                            initialWorkshop = InitialWorkshopPeca(
+                                agreementFile=initialWorkshopStg.agreementFile,
+                                agreementDescription=initialWorkshopStg.agreementDescription,
+                                planningMeetingFile=initialWorkshopStg.planningMeetingFile,
+                                planningMeetingDescription=initialWorkshopStg.planningMeetingDescription,
+                                teachersMeetingFile=initialWorkshopStg.teachersMeetingFile,
+                                teachersMeetingDescription=initialWorkshopStg.teachersMeetingDescription
+                            )
+
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                peca['lapse{}'.format(
+                                    data['lapse'])].initialWorkshop = initialWorkshop
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(
+                                    data['lapse'])].initialWorkshop = None
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
 
                     elif data['id'] == "ambleCoins":
                         found = True

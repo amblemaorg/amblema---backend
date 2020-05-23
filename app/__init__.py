@@ -115,6 +115,9 @@ from app.controllers.peca_annual_convention_controller import (
 from app.controllers.peca_lapse_planning_controller import (
     PecaLapsePlanningCtrl
 )
+from app.controllers.peca_initial_workshop_controller import (
+    PecaInitialWorkshopCtrl
+)
 from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
 )
@@ -317,6 +320,8 @@ def create_app(config_instance):
                      '/pecaprojects/annualconvention/<string:pecaId>')
     api.add_resource(PecaLapsePlanningCtrl,
                      '/pecaprojects/lapseplanning/<string:pecaId>/<string:lapse>')
+    api.add_resource(PecaInitialWorkshopCtrl,
+                     '/pecaprojects/initialworkshop/<string:pecaId>/<string:lapse>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')

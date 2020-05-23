@@ -147,7 +147,8 @@ class ProjectService():
             raise ValidationError(
                 message="At least an sponsor, school or coordinator is required")
         initialSteps = StepsProgress()
-        steps = Step.objects(schoolYear=str(year.id)).all()
+        steps = Step.objects(schoolYear=str(year.id),
+                             isDeleted=False, status="1").all()
         for step in steps:
             stepCtrl = StepControl(
                 id=str(step.id),

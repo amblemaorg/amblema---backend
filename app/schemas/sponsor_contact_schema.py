@@ -19,7 +19,7 @@ class SponsorContactSchema(Schema):
     id = fields.Str(dump_only=True)
     requestCode = fields.Function(lambda obj: obj.requestCode.zfill(7))
     name = fields.Str(required=True, validate=not_blank)
-    email = fields.Email(required=True, validate=not_blank)
+    email = fields.Str(required=True, validate=(not_blank, validate_email))
     rif = fields.Str(required=True, validate=only_numbers)
     companyType = fields.Str(
         required=True,
@@ -41,7 +41,7 @@ class SponsorContactSchema(Schema):
     hasSchool = fields.Bool()
     schoolName = fields.Str(validate=not_blank)
     schoolCode = fields.Str(validate=not_blank)
-    schoolEmail = fields.Email()
+    schoolEmail = fields.Str(validate=validate_email)
     schoolAddress = fields.Str()
     schoolAddressState = MAReferenceField(document=State)
     schoolAddressMunicipality = MAReferenceField(
@@ -62,11 +62,11 @@ class SponsorContactSchema(Schema):
         ))
     schoolPrincipalFirstName = fields.Str()
     schoolPrincipalLastName = fields.Str()
-    schoolPrincipalEmail = fields.Email()
+    schoolPrincipalEmail = fields.Str(validate=validate_email)
     schoolPrincipalPhone = fields.Str(validate=only_numbers)
     schoolSubPrincipalFirstName = fields.Str()
     schoolSubPrincipalLastName = fields.Str()
-    schoolSubPrincipalEmail = fields.Email()
+    schoolSubPrincipalEmail = fields.Str(validate=validate_email)
     schoolSubPrincipalPhone = fields.Str(validate=only_numbers)
     schoolNTeachers = fields.Int(validate=Range(min=0))
     schoolNAdministrativeStaff = fields.Int(

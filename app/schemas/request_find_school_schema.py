@@ -7,7 +7,7 @@ from app.models.user_model import User
 from app.models.project_model import Project
 from app.models.state_model import State, Municipality
 from app.helpers.ma_schema_fields import MAReferenceField
-from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range
+from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range, validate_email
 
 
 class ReqFindSchoolSchema(Schema):
@@ -17,7 +17,7 @@ class ReqFindSchoolSchema(Schema):
     requestCode = fields.Function(lambda obj: obj.requestCode.zfill(7))
     name = fields.Str(required=True, validate=not_blank)
     code = fields.Str(required=True, validate=not_blank)
-    email = fields.Email(required=True)
+    email = fields.Str(required=True, validate=validate_email)
     address = fields.Str()
     addressState = MAReferenceField(document=State, required=True)
     addressMunicipality = MAReferenceField(
@@ -39,11 +39,11 @@ class ReqFindSchoolSchema(Schema):
         ))
     principalFirstName = fields.Str(required=True)
     principalLastName = fields.Str(required=True)
-    principalEmail = fields.Email(required=True)
+    principalEmail = fields.Str(required=True, validate=validate_email)
     principalPhone = fields.Str(required=True, validate=only_numbers)
     subPrincipalFirstName = fields.Str(allow_none=True)
     subPrincipalLastName = fields.Str(allow_none=True)
-    subPrincipalEmail = fields.Email(allow_none=True)
+    subPrincipalEmail = fields.Str(allow_none=True, validate=validate_email)
     subPrincipalPhone = fields.Str(validate=only_numbers, allow_none=True)
     nTeachers = fields.Int(required=True, validate=Range(min=0))
     nAdministrativeStaff = fields.Int(

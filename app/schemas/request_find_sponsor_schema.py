@@ -21,7 +21,7 @@ class ReqFindSponsorSchema(Schema):
     project = MAReferenceField(required=True, document=Project, field="code")
     user = MAReferenceField(required=True, document=User, field="name")
     name = fields.Str(required=True, validate=not_blank)
-    email = fields.Email(required=True, validate=not_blank)
+    email = fields.Str(required=True, validate=(not_blank, validate_email))
     rif = fields.Str(required=True, validate=only_numbers)
     companyType = fields.Str(
         required=True,

@@ -202,6 +202,29 @@ class ProjectService():
                             status="2"
                         )
                     )
+            if step.devName == 'corrdinatorCompleteTrainingModules':
+                if document.coordinator and document.coordinator.instructed:
+                    stepCtrl.status = "3"
+            if step.devName == 'coordinatorSendCurriculum':
+                if document.coordinator and document.coordinator.curriculum:
+                    stepCtrl.status = "3"
+                    stepCtrl.approvalHistory.append(
+                        Approval(
+                            id="",
+                            data={
+                                "stepHasText": stepCtrl.hasText,
+                                "stepHasUpload": stepCtrl.hasUpload,
+                                "stepHasDate": stepCtrl.hasDate,
+                                "stepHasVideo": stepCtrl.hasVideo,
+                                "stepHasChecklist": stepCtrl.hasChecklist,
+                                "stepHasFile": stepCtrl.hasFile,
+                                "stepText": stepCtrl.text,
+                                "stepUploadedFile": document.coordinator.curriculum
+                            },
+                            status="2"
+                        )
+                    )
+
             initialSteps.steps.append(stepCtrl)
         document.stepsProgress = initialSteps
         document.schoolYear = year
@@ -288,5 +311,26 @@ class ProjectService():
                         and document.coordinator.instructed
                     ):
                         step.status = "3"
+                    if (
+                        step.devName == "coordinatorSendCurriculum"
+                        and document.coordinator.curriculum
+                    ):
+                        step.status = "3"
+                        step.approvalHistory.append(
+                            Approval(
+                                id="",
+                                data={
+                                    "stepHasText": step.hasText,
+                                    "stepHasUpload": step.hasUpload,
+                                    "stepHasDate": step.hasDate,
+                                    "stepHasVideo": step.hasVideo,
+                                    "stepHasChecklist": step.hasChecklist,
+                                    "stepHasFile": step.hasFile,
+                                    "stepText": step.text,
+                                    "stepUploadedFile": document.coordinator.curriculum
+                                },
+                                status="2"
+                            )
+                        )
 
         document.stepsProgress.updateProgress()

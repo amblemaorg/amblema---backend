@@ -15,7 +15,7 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.project_model import Project
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
-from app.models.shared_embedded_documents import CheckTemplate
+from app.models.shared_embedded_documents import CheckTemplate, Link
 
 
 class InitialSteps(unittest.TestCase):
@@ -71,6 +71,28 @@ class InitialSteps(unittest.TestCase):
             )
             coordinatorStep.save()
 
+        coordinatorSendCurriculum = Step(
+            name="Enviar currículo vitae",
+            devName="coordinatorSendCurriculum",
+            tag="2",
+            isStandard=True,
+            approvalType="3",
+            hasUpload=True,
+            hasText=True,
+            text="some description"
+
+        )
+        coordinatorSendCurriculum.save()
+
+        corrdinatorCompleteTrainingModules = Step(
+            name="Completar módulos de formación",
+            devName="corrdinatorCompleteTrainingModules",
+            tag="2",
+            isStandard=True,
+            approvalType="2"
+        )
+        corrdinatorCompleteTrainingModules.save()
+
         self.role = Role(name="test")
         self.role.save()
 
@@ -101,7 +123,12 @@ class InitialSteps(unittest.TestCase):
             role=self.role,
             addressState=self.state,
             addressMunicipality=self.municipality,
-            isReferred=False
+            isReferred=False,
+            curriculum=Link(
+                url="https://someurl.com/file.pdf",
+                name="some file name"
+            ),
+            instructed=True
         )
         self.coordinator.save()
 
@@ -113,7 +140,17 @@ class InitialSteps(unittest.TestCase):
         )
         self.project.save()
 
-        self.assertEqual(16, len(self.project.stepsProgress.steps))
+        self.assertEqual(18, len(self.project.stepsProgress.steps))
+
+        curriculumStep = self.project.stepsProgress.steps.filter(
+            devName="coordinatorSendCurriculum").first()
+        self.assertEqual(
+            "some file name", curriculumStep.approvalHistory[0].data['stepUploadedFile'].name)
+        self.assertEqual("3", curriculumStep.status)
+
+        instructedStep = self.project.stepsProgress.steps.filter(
+            devName="corrdinatorCompleteTrainingModules").first()
+        self.assertEqual("3", curriculumStep.status)
 
     def test_update_project_steps_on_create_new_step(self):
         project = Project(
@@ -121,7 +158,7 @@ class InitialSteps(unittest.TestCase):
             coordinator=self.coordinator
         )
         project.save()
-        self.assertEqual(16, len(project.stepsProgress.steps))
+        self.assertEqual(18, len(project.stepsProgress.steps))
 
         generalStep = Step(
             name="new step",
@@ -133,7 +170,7 @@ class InitialSteps(unittest.TestCase):
         generalStep.save()
 
         project = Project.objects.get(id=str(project.id))
-        self.assertEqual(17, len(project.stepsProgress.steps))
+        self.assertEqual(19, len(project.stepsProgress.steps))
 
     def test_update_project_steps_on_delete_step(self):
         project = Project(
@@ -141,21 +178,21 @@ class InitialSteps(unittest.TestCase):
             coordinator=self.coordinator
         )
         project.save()
-        self.assertEqual(16, len(project.stepsProgress.steps))
+        self.assertEqual(18, len(project.stepsProgress.steps))
 
         step1 = self.generalSteps[0]
         step1.status = "2"
         step1.save()
 
         project = Project.objects.get(id=str(project.id))
-        self.assertEqual(15, len(project.stepsProgress.steps))
+        self.assertEqual(17, len(project.stepsProgress.steps))
 
         step1 = self.generalSteps[1]
         step1.isDeleted = True
         step1.save()
 
         project = Project.objects.get(id=str(project.id))
-        self.assertEqual(14, len(project.stepsProgress.steps))
+        self.assertEqual(16, len(project.stepsProgress.steps))
 
     def test_update_project_steps_on_activate_step(self):
         project = Project(
@@ -163,21 +200,21 @@ class InitialSteps(unittest.TestCase):
             coordinator=self.coordinator
         )
         project.save()
-        self.assertEqual(16, len(project.stepsProgress.steps))
+        self.assertEqual(18, len(project.stepsProgress.steps))
 
         step1 = self.generalSteps[0]
         step1.status = "2"
         step1.save()
 
         project = Project.objects.get(id=str(project.id))
-        self.assertEqual(15, len(project.stepsProgress.steps))
+        self.assertEqual(17, len(project.stepsProgress.steps))
 
         step1 = self.generalSteps[0]
         step1.status = "1"
         step1.save()
 
         project = Project.objects.get(id=str(project.id))
-        self.assertEqual(16, len(project.stepsProgress.steps))
+        self.assertEqual(18, len(project.stepsProgress.steps))
 
     def test_update_value_steps(self):
         project = Project(
@@ -202,7 +239,7 @@ class InitialSteps(unittest.TestCase):
             coordinator=self.coordinator
         )
         project.save()
-        self.assertEqual(16, len(project.stepsProgress.steps))
+        self.assertEqual(18, len(project.stepsProgress.steps))
 
         check1 = CheckTemplate(name="check1")
         check2 = CheckTemplate(name="check2")
@@ -226,7 +263,7 @@ class InitialSteps(unittest.TestCase):
 
         project = Project.objects.get(id=str(project.id))
         self.assertEqual(
-            "check1", project.stepsProgress.steps[16].checklist.filter(id=str(checkId)).first().name)
+            "check1", project.stepsProgress.steps[18].checklist.filter(id=str(checkId)).first().name)
 
         for check in generalStep.checklist:
             if check.id == checkId:
@@ -234,7 +271,7 @@ class InitialSteps(unittest.TestCase):
         generalStep.save()
 
         project = Project.objects.get(id=str(project.id))
-        for check in project.stepsProgress.steps[16].checklist:
+        for check in project.stepsProgress.steps[18].checklist:
             if check.id == checkId:
                 self.assertEqual(
                     "check updated", check.name)

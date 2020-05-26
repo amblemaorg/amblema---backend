@@ -8,7 +8,7 @@ from app.schemas.shared_schemas import ProjectReferenceSchema
 from app.schemas import fields
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers, OneOf, Range, validate_image)
+    not_blank, only_letters, only_numbers, OneOf, Range, validate_image, validate_email)
 
 
 class SchoolUserSchema(UserSchema):
@@ -36,11 +36,11 @@ class SchoolUserSchema(UserSchema):
     addressZone = fields.Str(allow_none=True)
     principalFirstName = fields.Str()
     principalLastName = fields.Str()
-    principalEmail = fields.Email()
+    principalEmail = fields.Str(validate=validate_email)
     principalPhone = fields.Str(validate=only_numbers)
     subPrincipalFirstName = fields.Str(allow_none=True)
     subPrincipalLastName = fields.Str(allow_none=True)
-    subPrincipalEmail = fields.Email(allow_none=True)
+    subPrincipalEmail = fields.Str(allow_none=True, validate=validate_email)
     subPrincipalPhone = fields.Str(allow_none=True, validate=only_numbers)
     nTeachers = fields.Int(allow_none=True, validate=Range(min=0))
     nAdministrativeStaff = fields.Int(allow_none=True,

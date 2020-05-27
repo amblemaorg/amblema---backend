@@ -169,3 +169,5 @@ class PecaProjectSchema(Schema):
     lapse1 = fields.Nested(LapseSchema)
     lapse2 = fields.Nested(LapseSchema)
     lapse3 = fields.Nested(LapseSchema)
+    createdAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime(dump_only=True)

@@ -133,6 +133,8 @@ class PecaProject(Document):
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)
     isDeleted = fields.BooleanField(default=False)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):

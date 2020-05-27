@@ -10,6 +10,7 @@ from app.services.statistics_user_service import StatisticsUserService
 from app.services.statistics_diagnostics_service import StatisticsDiagnosticService
 from app.services.statistics_olympics_service import StatisticsOlympicsService
 from app.helpers.handler_request import getQueryParams
+from app.service.statistics_active_sponsor_service import StatisticsActiveSponsorService
 
 
 class UserSummaryController(Resource):
@@ -43,6 +44,14 @@ class DiagnosticReportController(Resource):
 class OlympicsReportCtrl(Resource):
 
     service = StatisticsOlympicsService()
+
+    def get(self, startPeriodId, endPeriodId):
+        return self.service.get(startPeriodId, endPeriodId)
+
+
+class ActiveSponsorsGraphicController(Resource):
+
+    service = StatisticsActiveSponsorService()
 
     def get(self, startPeriodId, endPeriodId):
         return self.service.get(startPeriodId, endPeriodId)

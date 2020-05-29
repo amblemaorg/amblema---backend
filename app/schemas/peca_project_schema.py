@@ -23,6 +23,7 @@ from app.schemas.peca_annual_preparation_schema import AnnualPreparationSchema
 from app.schemas.peca_annual_convention_schema import AnnualConventionSchema
 from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema
 from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
+from app.schemas.peca_activities_schema import ActivityPecaSchema
 
 
 class DiagnosticSchema(Schema):
@@ -155,6 +156,7 @@ class LapseSchema(Schema):
     annualConvention = fields.Nested(AnnualConventionSchema)
     lapsePlanning = fields.Nested(LapsePlanningPecaSchema)
     initialWorkshop = fields.Nested(InitialWorkshopPecaSchema)
+    activities = fields.List(fields.Nested(ActivityPecaSchema))
 
     class Meta:
         unknown = EXCLUDE

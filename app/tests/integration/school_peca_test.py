@@ -193,18 +193,18 @@ class SchoolPecaTest(unittest.TestCase):
 
         # get approval request
         res = self.client().get(
-            '/pecaprojects/contentapproval')
+            '/requestscontentapproval')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('some description',
-                         result['records'][0]['content']['description'])
+                         result['records'][0]['detail']['description'])
 
         # approve request
         res = self.client().put(
-            '/pecaprojects/contentapproval/{}'.format(
+            '/requestscontentapproval/{}'.format(
                 result['records'][0]['id']),
-            data=json.dumps({'status': '2'}),
-            content_type='application/json')
+            data={'status': '2'},
+            content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
         self.pecaProject = PecaProject.objects(id=self.pecaProject.id).first()

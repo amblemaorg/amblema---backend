@@ -32,7 +32,7 @@ class ReqContentApprovalHandlerController(Resource):
         return self.service.getRecord(id)
 
     def put(self, id):
-        jsonData = request.get_json()
+        jsonData = request.form.to_dict()
         return self.service.updateRecord(
             recordId=id,
             jsonData=jsonData,

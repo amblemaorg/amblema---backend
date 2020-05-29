@@ -17,6 +17,7 @@ from app.models.request_content_approval_model import RequestContentApproval
 class SchoolSliderService():
 
     def save(self, pecaId, jsonData):
+        from app.models.project_model import Project
 
         peca = PecaProject.objects(
             isDeleted=False, id=pecaId).first()
@@ -27,17 +28,17 @@ class SchoolSliderService():
                 data = schema.load(jsonData)
 
                 image = ImageStatus()
+                image.pecaId = pecaId
                 for field in schema.dump(data).keys():
                     image[field] = data[field]
                 try:
                     peca.school.slider.append(image)
                     peca.save()
                     RequestContentApproval(
-                        pecaId=peca.id,
-                        recordId=image.id,
-                        type="schoolSlider",
+                        project=peca.project,
+                        type="4",
                         status="1",
-                        content=image
+                        detail=schema.dump(image)
                     ).save()
                     return schema.dump(image), 200
                 except Exception as e:

@@ -30,6 +30,7 @@ class CheckTemplate(EmbeddedDocument):
 
 class ImageStatus(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
+    pecaId = fields.StringField()
     image = fields.URLField()
     description = fields.StringField()
     approvalStatus = fields.StringField(default="1", max_length=1)

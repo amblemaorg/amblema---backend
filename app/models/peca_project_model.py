@@ -14,6 +14,7 @@ from app.models.peca_annual_preparation_model import AnnualPreparationPeca
 from app.models.peca_annual_convention_model import AnnualConventionPeca
 from app.models.peca_lapse_planning_model import LapsePlanningPeca
 from app.models.peca_initial_workshop_model import InitialWorkshopPeca
+from app.models.peca_activities_model import ActivityPeca
 
 
 class Diagnostic(EmbeddedDocument):
@@ -122,6 +123,7 @@ class Lapse(EmbeddedDocument):
     annualConvention = fields.EmbeddedDocumentField(AnnualConventionPeca)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanningPeca)
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorkshopPeca)
+    activities = fields.EmbeddedDocumentListField(ActivityPeca)
 
 
 class PecaProject(Document):

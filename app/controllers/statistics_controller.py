@@ -10,7 +10,7 @@ from app.services.statistics_user_service import StatisticsUserService
 from app.services.statistics_diagnostics_service import StatisticsDiagnosticService
 from app.services.statistics_olympics_service import StatisticsOlympicsService
 from app.helpers.handler_request import getQueryParams
-from app.service.statistics_active_sponsor_service import StatisticsActiveSponsorService
+from app.services.statistics_active_sponsor_service import StatisticsActiveSponsorService
 
 
 class UserSummaryController(Resource):

@@ -16,7 +16,7 @@ from app.models.school_user_model import SchoolUser
 from app.models.project_model import Project
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
-from app.models.request_step_approval_model import RequestStepApproval
+from app.models.request_content_approval_model import RequestContentApproval
 from app.models.request_project_approval_model import RequestProjectApproval
 
 
@@ -162,12 +162,15 @@ class RequestProjectConfirmationTest(unittest.TestCase):
         self.assertEqual(3, len(self.project.stepsProgress.steps))
 
     def test_request_project_confirmation(self):
-        reqStepApproval = RequestStepApproval(
-            project=self.project,
+        reqStepApproval = RequestContentApproval(
+            project=self.project.getReference(),
             user=self.coordinator.id,
-            stepId=self.project.stepsProgress.steps[0].id,
-            stepUploadedFile={
-                "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.project.stepsProgress.steps[0].id),
+                "stepUploadedFile": {
+                    "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            }
         )
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
@@ -176,11 +179,11 @@ class RequestProjectConfirmationTest(unittest.TestCase):
 
         # check fill of the step fields on approval
         self.assertEqual(
-            self.sponsorAgreementSchoolFoundation.name, reqStepApproval.stepName)
+            self.sponsorAgreementSchoolFoundation.name, reqStepApproval.detail['stepName'])
         self.assertEqual(
-            self.sponsorAgreementSchoolFoundation.devName, reqStepApproval.stepDevName)
+            self.sponsorAgreementSchoolFoundation.devName, reqStepApproval['detail']['stepDevName'])
         self.assertEqual(self.sponsorAgreementSchoolFoundation.hasUpload,
-                         reqStepApproval.stepHasUpload)
+                         reqStepApproval['detail']['stepHasUpload'])
 
         # approved
         reqStepApproval.status = "2"

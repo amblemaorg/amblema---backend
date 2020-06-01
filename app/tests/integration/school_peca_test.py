@@ -184,7 +184,9 @@ class SchoolPecaTest(unittest.TestCase):
             description="some description"
         )
         res = self.client().post(
-            '/pecaprojects/schoolsliders/{}'.format(self.pecaProject.id),
+            '/pecaprojects/schoolsliders/{}?userId={}'.format(
+                self.pecaProject.id,
+                self.coordinator.id),
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)

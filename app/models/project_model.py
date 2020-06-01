@@ -249,15 +249,15 @@ class Project(Document):
             coordinator={
                 "id": str(self.coordinator.id),
                 "name": self.coordinator.name
-            },
+            } if self.coordinator else {},
             sponsor={
                 "id": str(self.sponsor.id),
                 "name": self.sponsor.name
-            },
+            } if self.sponsor else {},
             school={
                 "id": str(self.school.id),
                 "name": self.school.name
-            }
+            } if self.school else {}
         )
         return reference
 

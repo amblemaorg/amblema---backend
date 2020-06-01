@@ -16,8 +16,9 @@ from app.models.request_content_approval_model import RequestContentApproval
 
 class SchoolSliderService():
 
-    def save(self, pecaId, jsonData):
+    def save(self, pecaId, userId, jsonData):
         from app.models.project_model import Project
+        from app.models.user_model import User
 
         peca = PecaProject.objects(
             isDeleted=False, id=pecaId).first()
@@ -26,6 +27,12 @@ class SchoolSliderService():
             try:
                 schema = ImageStatusSchema()
                 data = schema.load(jsonData)
+
+                user = User.objects(id=userId, isDeleted=False).first()
+                if not user:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"userId":  userId})
 
                 image = ImageStatus()
                 image.pecaId = pecaId
@@ -36,8 +43,8 @@ class SchoolSliderService():
                     peca.save()
                     RequestContentApproval(
                         project=peca.project,
+                        user=user,
                         type="4",
-                        status="1",
                         detail=schema.dump(image)
                     ).save()
                     return schema.dump(image), 200

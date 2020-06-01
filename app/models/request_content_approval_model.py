@@ -110,7 +110,6 @@ class RequestContentApproval(Document):
         if 'created' in kwargs and kwargs['created']:
             # steps
             if document.type == "1":
-                from app.schemas.request_step_approval_schema import RequestStepApprovalSchema
                 from app.models.project_model import Project
 
                 project = Project.objects(id=document.project.id).first()
@@ -122,7 +121,7 @@ class RequestContentApproval(Document):
                                 id=str(document.id),
                                 user=str(document.user.id),
                                 comments=document.comments,
-                                data=RequestStepApprovalSchema().dump(document.detail),
+                                data=document.detail,
                                 status="1"
                             ))
                         if step.devName in reciprocalFields:
@@ -134,7 +133,7 @@ class RequestContentApproval(Document):
                                             id=str(document.id),
                                             user=str(document.user.id),
                                             comments=document.comments,
-                                            data=RequestStepApprovalSchema().dump(document.detail),
+                                            data=document.detail,
                                             status="1"
                                         ))
                                     break
@@ -144,7 +143,8 @@ class RequestContentApproval(Document):
         else:
             # steps
             if document.type == "1":
-                from app.models.project_model import Project
+                from app.models.project_model import Project, Link
+                from app.schemas.project_schema import StepFieldsSchema
 
                 project = Project.objects(id=document.project.id).first()
 
@@ -155,7 +155,9 @@ class RequestContentApproval(Document):
                             if document.detail['stepHasDate']:
                                 step.date = document.detail['stepDate']
                             if document.detail['stepHasUpload']:
-                                step.uploadedFile = document.detail['stepUploadedFile']
+                                step.uploadedFile = Link(
+                                    name=document.detail['stepUploadedFile']['name'],
+                                    url=document.detail['stepUploadedFile']['url'])
                             if document.detail['stepHasVideo']:
                                 step.video = document.detail['stepVideo']
                             if document.detail['stepHasChecklist']:
@@ -169,8 +171,10 @@ class RequestContentApproval(Document):
 
                             if document.detail['stepDevName'] in reciprocalFields:
                                 for reciprocalStep in project.stepsProgress.steps:
-                                    if reciprocalStep.devName == reciprocalFields[document.stepDevName]:
-                                        reciprocalStep.uploadedFile = document.detail['stepUploadedFile']
+                                    if reciprocalStep.devName == reciprocalFields[document.detail['stepDevName']]:
+                                        reciprocalStep.uploadedFile = Link(
+                                            name=document.detail['stepUploadedFile']['name'],
+                                            url=document.detail['stepUploadedFile']['url'])
                                         reciprocalStep.approve()
                                         for reciprocalApproval in reciprocalStep.approvalHistory:
                                             if reciprocalApproval.id == str(document.id):
@@ -179,7 +183,7 @@ class RequestContentApproval(Document):
                                                 break
                                         break
 
-                            if document.stepDevName == "coordinatorSendCurriculum":
+                            if document.detail['stepDevName'] == "coordinatorSendCurriculum":
                                 project.coordinator.curriculum = step.uploadedFile
                                 project.coordinator.save()
                             project.stepsProgress.updateProgress()

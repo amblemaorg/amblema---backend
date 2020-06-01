@@ -79,7 +79,7 @@ from app.controllers.environmental_project_controller import (
     EnvironmentalProjectController
 )
 from app.controllers.request_step_approval_controller import (
-    ReqStepApprovalController, ReqStepApprovalHandlerController
+    ReqStepApprovalController
 )
 from app.controllers.request_project_approval_controller import (
     ReqProjectApprovalController, ReqProjectApprovalHandlerController
@@ -279,8 +279,6 @@ def create_app(config_instance):
                      '/pecasetting/activities/<string:id>/<string:lapse>')
     api.add_resource(GoalSettingController, '/pecasetting/goalsetting')
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
-    api.add_resource(ReqStepApprovalHandlerController,
-                     '/requestsstepapproval/<string:id>')
     api.add_resource(ReqProjectApprovalController, '/requestsprojectapproval')
     api.add_resource(ReqProjectApprovalHandlerController,
                      '/requestsprojectapproval/<string:id>')

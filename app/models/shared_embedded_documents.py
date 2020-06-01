@@ -6,8 +6,8 @@ from mongoengine import EmbeddedDocument, fields
 
 
 class DocumentReference(EmbeddedDocument):
-    id = fields.StringField(required=True)
-    name = fields.StringField(required=True)
+    id = fields.StringField()
+    name = fields.StringField()
 
 
 class ProjectReference(EmbeddedDocument):

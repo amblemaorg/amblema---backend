@@ -79,7 +79,7 @@ from app.controllers.environmental_project_controller import (
     EnvironmentalProjectController
 )
 from app.controllers.request_step_approval_controller import (
-    ReqStepApprovalController, ReqStepApprovalHandlerController
+    ReqStepApprovalController
 )
 from app.controllers.request_project_approval_controller import (
     ReqProjectApprovalController, ReqProjectApprovalHandlerController
@@ -117,6 +117,9 @@ from app.controllers.peca_lapse_planning_controller import (
 )
 from app.controllers.peca_initial_workshop_controller import (
     PecaInitialWorkshopCtrl
+)
+from app.controllers.peca_activities_controller import (
+    PecaActivitiesCtrl
 )
 from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
@@ -276,8 +279,6 @@ def create_app(config_instance):
                      '/pecasetting/activities/<string:id>/<string:lapse>')
     api.add_resource(GoalSettingController, '/pecasetting/goalsetting')
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
-    api.add_resource(ReqStepApprovalHandlerController,
-                     '/requestsstepapproval/<string:id>')
     api.add_resource(ReqProjectApprovalController, '/requestsprojectapproval')
     api.add_resource(ReqProjectApprovalHandlerController,
                      '/requestsprojectapproval/<string:id>')
@@ -289,9 +290,9 @@ def create_app(config_instance):
     api.add_resource(SchoolSliderController,
                      '/pecaprojects/schoolsliders/<string:pecaId>')
     api.add_resource(ReqContentApprovalController,
-                     '/pecaprojects/contentapproval')
+                     '/requestscontentapproval')
     api.add_resource(ReqContentApprovalHandlerController,
-                     '/pecaprojects/contentapproval/<string:id>')
+                     '/requestscontentapproval/<string:id>')
     api.add_resource(TeacherController,
                      '/pecaprojects/teachers/<string:pecaId>')
     api.add_resource(TeacherHandlerController,
@@ -322,6 +323,8 @@ def create_app(config_instance):
                      '/pecaprojects/lapseplanning/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaInitialWorkshopCtrl,
                      '/pecaprojects/initialworkshop/<string:pecaId>/<string:lapse>')
+    api.add_resource(PecaActivitiesCtrl,
+                     '/pecaprojects/activities/<string:pecaId>/<string:lapse>/<string:activityId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')

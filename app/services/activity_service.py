@@ -5,6 +5,7 @@ import re
 
 from flask import current_app
 from marshmallow import ValidationError
+from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_setting_model import Activity
@@ -36,7 +37,8 @@ class ActivityService():
                                    payload={"recordId": id})
 
     def save(self, lapse, jsonData, files=None):
-
+        from app.models.peca_project_model import PecaProject
+        from app.models.peca_activities_model import ActivityPeca, CheckElement
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
 
@@ -63,6 +65,34 @@ class ActivityService():
                     schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.append(
                         activity)
                     schoolYear.save()
+
+                    bulk_operations = []
+                    for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+                        peca['lapse{}'.format(lapse)].activities.append(
+                            ActivityPeca(
+                                id=str(activity.id),
+                                name=activity.name,
+                                devName=activity.devName,
+                                hasText=activity.hasText,
+                                hasDate=activity.hasDate,
+                                hasFile=activity.hasFile,
+                                hasVideo=activity.hasVideo,
+                                hasChecklist=activity.hasChecklist,
+                                hasUpload=activity.hasUpload,
+                                text=activity.text,
+                                file=activity.file,
+                                video=activity.video,
+                                checklist=[CheckElement(
+                                    id=c.id, name=c.name) for c in activity.checklist],
+                                approvalType=activity.approvalType
+                            )
+                        )
+                        bulk_operations.append(
+                            UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                    if bulk_operations:
+                        PecaProject._get_collection() \
+                            .bulk_write(bulk_operations, ordered=False)
+
                     return schema.dump(activity), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -71,6 +101,8 @@ class ActivityService():
                 return err.normalized_messages(), 400
 
     def update(self, lapse, id, jsonData, files=None):
+        from app.models.peca_project_model import PecaProject
+        from app.models.peca_activities_model import ActivityPeca, CheckElement
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -92,11 +124,15 @@ class ActivityService():
                 hasChanged = False
                 for activity in activities:
                     if str(activity.id) == str(id) and not activity.isDeleted:
+                        oldActivity = activity
                         found = True
                         for field in schema.dump(data).keys():
                             if activity[field] != data[field]:
                                 hasChanged = True
                                 activity[field] = data[field]
+                        if hasChanged:
+                            newActivity = activity
+                        break
                 if not found:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
@@ -104,10 +140,47 @@ class ActivityService():
 
                 if hasChanged:
                     try:
-
                         schoolYear.pecaSetting['lapse{}'.format(
                             lapse)].activities = activities
                         schoolYear.save()
+
+                        if newActivity.status == "1":
+                            bulk_operations = []
+                            for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+                                for activity in peca['lapse{}'.format(lapse)].activities:
+                                    if str(activity.id) == id:
+                                        activity.name = newActivity.name
+                                        activity.devName = newActivity.devName
+                                        activity.hasText = newActivity.hasText
+                                        activity.hasDate = newActivity.hasDate
+                                        activity.hasFile = newActivity.hasFile
+                                        activity.hasVideo = newActivity.hasVideo
+                                        activity.hasChecklist = newActivity.hasChecklist
+                                        activity.hasUpload = newActivity.hasUpload
+                                        activity.text = newActivity.text
+                                        activity.file = newActivity.file
+                                        activity.video = newActivity.video
+
+                                        oldCheckIds = [str(c.id)
+                                                       for c in oldActivity.checklist]
+                                        newCheckIds = {}
+                                        for c in newActivity.checklist:
+                                            newCheckIds[str(c.id)] = c
+                                        if activity.hasChecklist and oldActivity.checklist != newActivity.checklist:
+                                            for c in activity.checklist:
+                                                if str(c.id) not in newCheckIds:
+                                                    activity.checklist.remove(
+                                                        c)
+                                            for k in newCheckIds.keys():
+                                                if k not in oldCheckIds:
+                                                    activity.checklist.append(
+                                                        CheckElement(
+                                                            id=newCheckIds[k].id, name=newCheckIds[k].name)
+                                                    )
+                                bulk_operations.append(
+                                    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                            if bulk_operations:
+                                PecaProject._get_collection().bulk_write(bulk_operations, ordered=False)
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
 
@@ -120,6 +193,7 @@ class ActivityService():
         """
         Delete (change isDeleted to False) a record
         """
+        from app.models.peca_project_model import PecaProject
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -138,6 +212,16 @@ class ActivityService():
                         schoolYear.pecaSetting['lapse{}'.format(
                             lapse)].activities = activities
                         schoolYear.save()
+                        bulk_operations = []
+                        for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+                            for activity in peca['lapse{}'.format(lapse)].activities:
+                                if str(activity.id) == id:
+                                    peca['lapse{}'.format(lapse)].activities.remove(
+                                        activity)
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection().bulk_write(bulk_operations, ordered=False)
                         return {"message": "Record deleted successfully"}, 200
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400

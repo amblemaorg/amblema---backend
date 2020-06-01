@@ -13,7 +13,7 @@ from mongoengine import (
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, ProjectReference
 from app.services.project_service import ProjectService
 from app.models.user_model import User
 
@@ -241,6 +241,25 @@ class Project(Document):
     def createPeca(self):
         service = ProjectService()
         return service.createPeca(self)
+
+    def getReference(self):
+        reference = ProjectReference(
+            id=str(self.id),
+            code=self.code,
+            coordinator={
+                "id": str(self.coordinator.id),
+                "name": self.coordinator.name
+            } if self.coordinator else {},
+            sponsor={
+                "id": str(self.sponsor.id),
+                "name": self.sponsor.name
+            } if self.sponsor else {},
+            school={
+                "id": str(self.school.id),
+                "name": self.school.name
+            } if self.school else {}
+        )
+        return reference
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):

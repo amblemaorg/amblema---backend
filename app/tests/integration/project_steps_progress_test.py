@@ -16,7 +16,7 @@ from app.models.project_model import Project, StepControl, CheckElement
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.models.learning_module_model import LearningModule, Quiz
-from app.models.request_step_approval_model import RequestStepApproval
+from app.models.request_content_approval_model import RequestContentApproval
 
 
 class InitialSteps(unittest.TestCase):
@@ -379,13 +379,18 @@ class InitialSteps(unittest.TestCase):
         )
 
         # update step date file (approval process)
-        approvalRequest = RequestStepApproval(
-            stepId=str(self.schoolStepDateFile.id),
-            project=self.project,
+        approvalRequest = RequestContentApproval(
+
+            project=self.project.getReference(),
+            type="1",
             user=self.coordinator.id,
-            stepUploadedFile={"name": "uploaded",
-                              "url": "https://server.com/files/asd.pdf"},
-            stepDate=datetime.utcnow()
+            detail={
+                "stepId": str(self.schoolStepDateFile.id),
+                "stepUploadedFile": {"name": "uploaded",
+                                     "url": "https://server.com/files/asd.pdf"},
+
+                "stepDate": datetime.utcnow()
+            }
         )
         approvalRequest.save()
         approvalRequest.status = "2"
@@ -439,23 +444,32 @@ class InitialSteps(unittest.TestCase):
 
         # Agreements steps
         # update step date file (approval process)
-        approvalRequest = RequestStepApproval(
-            stepId=str(self.schoolAgreementFoundation.id),
-            project=self.project,
+        approvalRequest = RequestContentApproval(
+
+            project=self.project.getReference(),
             user=self.coordinator.id,
-            stepUploadedFile={"name": "uploaded",
-                              "url": "https://server.com/files/asd.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.schoolAgreementFoundation.id),
+                "stepUploadedFile": {"name": "uploaded",
+                                     "url": "https://server.com/files/asd.pdf"}
+            }
         )
         approvalRequest.save()
         approvalRequest.status = "2"
         approvalRequest.save()
 
-        approvalRequest = RequestStepApproval(
-            stepId=str(self.sponsorAgreementSchool.id),
-            project=self.project,
+        approvalRequest = RequestContentApproval(
+
+            project=self.project.getReference(),
             user=self.coordinator.id,
-            stepUploadedFile={"name": "uploaded",
-                              "url": "https://server.com/files/asd.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.sponsorAgreementSchool.id),
+                "stepUploadedFile": {"name": "uploaded",
+                                     "url": "https://server.com/files/asd.pdf"}
+            }
+
         )
         approvalRequest.save()
         approvalRequest.status = "2"
@@ -467,12 +481,17 @@ class InitialSteps(unittest.TestCase):
         self.assertEqual(90, self.project.stepsProgress.school)
 
         # coordinatorSendCurriculum
-        approvalRequest = RequestStepApproval(
-            stepId=str(self.coordinatorSendCurriculum.id),
-            project=self.project,
+        approvalRequest = RequestContentApproval(
+
+            project=self.project.getReference(),
             user=self.coordinator.id,
-            stepUploadedFile={"name": "uploaded",
-                              "url": "https://server.com/files/asd.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.coordinatorSendCurriculum.id),
+                "stepUploadedFile": {"name": "uploaded",
+                                     "url": "https://server.com/files/asd.pdf"}
+            }
+
         )
         approvalRequest.save()
         approvalRequest.status = "2"

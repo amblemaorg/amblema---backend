@@ -131,7 +131,7 @@ from app.controllers.student_controller import (
     StudentController, StudentHandlerController
 )
 from app.controllers.statistics_controller import (
-    UserSummaryController, DiagnosticReportController, UserReportController, OlympicsReportCtrl, ActiveSponsorsGraphicController, InactiveSponsorsGraphicController
+    UserSummaryController, DiagnosticReportController, UserReportController, OlympicsReportCtrl, ActiveSponsorsGraphicController, InactiveSponsorsGraphicController, NumberActiveSchoolsController
 )
 from app.controllers.diagnostic_controller import DiagnosticController
 db = MongoEngine()
@@ -336,5 +336,7 @@ def create_app(config_instance):
                      '/statistics/activesponsorsgraphic/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(InactiveSponsorsGraphicController,
                      '/statistics/inactivesponsorsgraphic/<string:startPeriodId>/<string:endPeriodId>')
+    api.add_resource(NumberActiveSchoolsController,
+                     '/statistics/numberactiveschools/<string:startPeriodId>/<string:endPeriodId>')
 
     return app

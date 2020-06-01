@@ -14,7 +14,7 @@ from app.models.coordinator_user_model import CoordinatorUser
 from app.models.project_model import Project
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
-from app.models.request_step_approval_model import RequestStepApproval
+from app.models.request_content_approval_model import RequestContentApproval
 
 
 class StepApprovalTest(unittest.TestCase):
@@ -139,7 +139,7 @@ class StepApprovalTest(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
 
         res = self.client().put(
-            '/requestsstepapproval/{}'.format(approval_request['id']),
+            '/requestscontentapproval/{}'.format(approval_request['id']),
             data={"status": "2"})
         self.assertEqual(res.status_code, 200)
 
@@ -148,12 +148,15 @@ class StepApprovalTest(unittest.TestCase):
             "3", self.project.stepsProgress.steps[0].status)
 
     def test_update_step_on_approval(self):
-        reqStepApproval = RequestStepApproval(
-            project=self.project,
+        reqStepApproval = RequestContentApproval(
+            project=self.project.getReference(),
             user=self.coordinator.pk,
-            stepId=self.project.stepsProgress.steps[0].id,
-            stepUploadedFile={
-                "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.project.stepsProgress.steps[0].id),
+                "stepUploadedFile": {
+                    "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            }
         )
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
@@ -161,10 +164,12 @@ class StepApprovalTest(unittest.TestCase):
             str(reqStepApproval.pk), self.project.stepsProgress.steps[0].approvalHistory[0].id)
 
         # check fill of the step fields on approval
-        self.assertEqual(self.generalStep.name, reqStepApproval.stepName)
-        self.assertEqual(self.generalStep.devName, reqStepApproval.stepDevName)
+        self.assertEqual(self.generalStep.name,
+                         reqStepApproval['detail']['stepName'])
+        self.assertEqual(self.generalStep.devName,
+                         reqStepApproval['detail']['stepDevName'])
         self.assertEqual(self.generalStep.hasUpload,
-                         reqStepApproval.stepHasUpload)
+                         reqStepApproval['detail']['stepHasUpload'])
 
         # approved
         reqStepApproval.status = "2"
@@ -174,12 +179,15 @@ class StepApprovalTest(unittest.TestCase):
             "3", self.project.stepsProgress.steps[0].status)
 
     def test_update_step_on_rejected(self):
-        reqStepApproval = RequestStepApproval(
-            project=self.project,
+        reqStepApproval = RequestContentApproval(
+            project=self.project.getReference(),
             user=self.coordinator.pk,
-            stepId=self.project.stepsProgress.steps[0].id,
-            stepUploadedFile={
-                "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.project.stepsProgress.steps[0].id),
+                "stepUploadedFile": {
+                    "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            }
         )
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
@@ -190,10 +198,12 @@ class StepApprovalTest(unittest.TestCase):
             "2", self.project.stepsProgress.steps[0].status)
 
         # check fill of the step fields on approval
-        self.assertEqual(self.generalStep.name, reqStepApproval.stepName)
-        self.assertEqual(self.generalStep.devName, reqStepApproval.stepDevName)
+        self.assertEqual(self.generalStep.name,
+                         reqStepApproval['detail']['stepName'])
+        self.assertEqual(self.generalStep.devName,
+                         reqStepApproval['detail']['stepDevName'])
         self.assertEqual(self.generalStep.hasUpload,
-                         reqStepApproval.stepHasUpload)
+                         reqStepApproval['detail']['stepHasUpload'])
 
         # rejected
         reqStepApproval.status = "3"
@@ -208,12 +218,15 @@ class StepApprovalTest(unittest.TestCase):
             reqStepApproval.comments, self.project.stepsProgress.steps[0].approvalHistory[0].comments)
 
     def test_update_step_on_cancelled(self):
-        reqStepApproval = RequestStepApproval(
-            project=self.project,
+        reqStepApproval = RequestContentApproval(
+            project=self.project.getReference(),
             user=self.coordinator.pk,
-            stepId=self.project.stepsProgress.steps[0].id,
-            stepUploadedFile={
-                "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.project.stepsProgress.steps[0].id),
+                "stepUploadedFile": {
+                    "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            }
         )
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
@@ -224,10 +237,12 @@ class StepApprovalTest(unittest.TestCase):
             "2", self.project.stepsProgress.steps[0].status)
 
         # check fill of the step fields on approval
-        self.assertEqual(self.generalStep.name, reqStepApproval.stepName)
-        self.assertEqual(self.generalStep.devName, reqStepApproval.stepDevName)
+        self.assertEqual(self.generalStep.name,
+                         reqStepApproval['detail']['stepName'])
+        self.assertEqual(self.generalStep.devName,
+                         reqStepApproval['detail']['stepDevName'])
         self.assertEqual(self.generalStep.hasUpload,
-                         reqStepApproval.stepHasUpload)
+                         reqStepApproval['detail']['stepHasUpload'])
 
         # cancelled
         reqStepApproval.status = "4"
@@ -239,12 +254,15 @@ class StepApprovalTest(unittest.TestCase):
             "4", self.project.stepsProgress.steps[0].approvalHistory[0].status)
 
     def test_reciprocal_step(self):
-        reqStepApproval = RequestStepApproval(
-            project=self.project,
+        reqStepApproval = RequestContentApproval(
+            project=self.project.getReference(),
             user=self.coordinator.pk,
-            stepId=self.project.stepsProgress.steps[1].id,
-            stepUploadedFile={
-                "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            type="1",
+            detail={
+                "stepId": str(self.project.stepsProgress.steps[1].id),
+                "stepUploadedFile": {
+                    "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
+            }
         )
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
@@ -253,11 +271,11 @@ class StepApprovalTest(unittest.TestCase):
 
         # check fill of the step fields on approval
         self.assertEqual(
-            self.sponsorAgreementSchoolFoundation.name, reqStepApproval.stepName)
+            self.sponsorAgreementSchoolFoundation.name, reqStepApproval['detail']['stepName'])
         self.assertEqual(
-            self.sponsorAgreementSchoolFoundation.devName, reqStepApproval.stepDevName)
+            self.sponsorAgreementSchoolFoundation.devName, reqStepApproval['detail']['stepDevName'])
         self.assertEqual(self.sponsorAgreementSchoolFoundation.hasUpload,
-                         reqStepApproval.stepHasUpload)
+                         reqStepApproval['detail']['stepHasUpload'])
 
         # approved
         reqStepApproval.status = "2"

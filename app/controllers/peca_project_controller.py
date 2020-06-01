@@ -42,5 +42,6 @@ class SchoolSliderController(Resource):
     service = SchoolSliderService()
 
     def post(self, pecaId):
+        userId = request.args.get('userId')
         jsonData = request.form.to_dict()
-        return self.service.save(pecaId, jsonData)
+        return self.service.save(pecaId, userId, jsonData)

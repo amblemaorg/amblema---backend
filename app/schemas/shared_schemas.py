@@ -63,6 +63,7 @@ class CheckTemplateSchema(Schema):
 
 class ImageStatusSchema(Schema):
     id = fields.Str(dump_only=True)
+    pecaId = fields.Str(dump_only=True)
     image = MAImageField(
         validate=(not_blank, validate_image),
         folder='schools',

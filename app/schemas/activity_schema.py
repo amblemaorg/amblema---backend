@@ -34,8 +34,8 @@ class ActivitySchema(Schema):
         allow_none=True)
     approvalType = fields.Str(
         validate=OneOf(
-            ["1", "2"],
-            ["onlyAdmin", "approvalRequest"]
+            ["1", "2", "3", "4"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest", "internalApproval"]
         ), required=True)
     status = fields.Str(
         validate=OneOf(
@@ -53,8 +53,6 @@ class ActivitySchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
-        if "name" in data and isinstance(data["name"], str):
-            data["name"] = data["name"].title()
         if "checklist" in data and isinstance(data["checklist"], str):
             if not data["checklist"]:
                 data["checklist"] = None

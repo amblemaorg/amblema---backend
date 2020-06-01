@@ -31,7 +31,7 @@ class SchoolYear(Document):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
-    meta = {'collection': 'school_years'}
+    meta = {'collection': 'school_years', 'ordering': ['+startDate']}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()

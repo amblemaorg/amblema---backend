@@ -16,6 +16,8 @@ from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf)
 from app.schemas.shared_schemas import ImageStatusSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema
+from app.helpers.ma_schema_fields import MAReferenceField
+from app.models.user_model import User
 
 
 class RequestContentApprovalSchema(Schema):
@@ -27,11 +29,12 @@ class RequestContentApprovalSchema(Schema):
             ('1', '2', '3', '4'),
             ('steps', 'testimonials', 'activities', 'slider')
         ), required=True)
+    user = MAReferenceField(document=User, field="name")
     comments = fields.Str()
     status = fields.Str(
         validate=OneOf(
             ("1", "2", "3", "4"),
-            ("pending", "approved", "rejected")
+            ("pending", "approved", "rejected", "cancelled")
         )
     )
     detail = fields.Dict()

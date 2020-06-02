@@ -145,7 +145,7 @@ class InitialSteps(unittest.TestCase):
         curriculumStep = self.project.stepsProgress.steps.filter(
             devName="coordinatorSendCurriculum").first()
         self.assertEqual(
-            "some file name", curriculumStep.approvalHistory[0].data['stepUploadedFile'].name)
+            "some file name", curriculumStep.approvalHistory[0].data['stepUploadedFile']['name'])
         self.assertEqual("3", curriculumStep.status)
 
         instructedStep = self.project.stepsProgress.steps.filter(

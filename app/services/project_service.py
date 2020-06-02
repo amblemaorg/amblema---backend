@@ -219,7 +219,9 @@ class ProjectService():
                                 "stepHasChecklist": stepCtrl.hasChecklist,
                                 "stepHasFile": stepCtrl.hasFile,
                                 "stepText": stepCtrl.text,
-                                "stepUploadedFile": document.coordinator.curriculum
+                                "stepUploadedFile": {
+                                    "name": document.coordinator.curriculum.name,
+                                    "url": document.coordinator.curriculum.url}
                             },
                             status="2"
                         )

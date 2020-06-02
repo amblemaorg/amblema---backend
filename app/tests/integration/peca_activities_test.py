@@ -254,6 +254,54 @@ class PecaActivitiesTest(unittest.TestCase):
         self.assertEqual('Activity test 3',
                          peca['lapse1']['activities'][2]['name'])
 
+        # disable activity 3
+        requestData = {
+            "id": activity3Id,
+            "lapse": "1",
+            "isStandard": False,
+            "status": "2"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check activity on peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(2,
+                         len(peca['lapse1']['activities']))
+
+        # enable activity 3
+        requestData = {
+            "id": activity3Id,
+            "lapse": "1",
+            "isStandard": False,
+            "status": "1"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check activity on peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('Activity test 1',
+                         peca['lapse1']['activities'][0]['name'])
+        self.assertEqual('Activity test 2',
+                         peca['lapse1']['activities'][1]['name'])
+        self.assertEqual('Activity test 3',
+                         peca['lapse1']['activities'][2]['name'])
+
         #####################################
         # test activity with approval request
         #####################################

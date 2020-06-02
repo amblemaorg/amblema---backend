@@ -1,0 +1,109 @@
+# app/services/school_year_service.py
+
+
+import re
+import datetime
+
+from flask import current_app
+from marshmallow import ValidationError
+
+from app.models.school_year_model import SchoolYear
+from app.models.peca_project_model import PecaProject
+from app.models.project_model import Project
+from app.schemas.project_schema import ProjectSchema
+from app.helpers.error_helpers import RegisterNotFound
+from app.services.generic_service import GenericServices
+
+
+class SchoolYearService(GenericServices):
+
+    def saveRecord(self, jsonData, files=None):
+        schema = self.Schema()
+        try:
+            data = schema.load(jsonData)
+            oldSchoolYear = SchoolYear.objects(
+                isDeleted=False, status="1").first()
+            if oldSchoolYear:
+                date = datetime.datetime.now()
+                newSchoolYear = SchoolYear(
+                    name=data['name'],
+                    startDate=date,
+                    endDate=date.replace(date.year + 1),
+                    pecaSetting=oldSchoolYear.pecaSetting
+                ).save()
+                oldSchoolYear.status = "2"
+                oldSchoolYear.endDate = date
+                oldSchoolYear.save()
+            else:
+                date = datetime.datetime.now()
+                newSchoolYear = SchoolYear(
+                    name=data['name'],
+                    startDate=date,
+                    endDate=date.replace(date.year + 1)
+                )
+                newSchoolYear.initFirstPecaSetting()
+                newSchoolYear.save()
+            return schema.dump(newSchoolYear), 201
+        except ValidationError as err:
+            return err.normalized_messages(), 400
+
+    def schoolEnroll(self, projectId, action=None):
+        """
+        Params:
+          projectId: str
+          action: str "add" or "delete"
+        """
+
+        schoolYear = SchoolYear.objects(
+            isDeleted=False, status="1").first()
+        if not schoolYear:
+            raise RegisterNotFound(message="Active school year not found",
+                                   status_code=404,
+                                   payload={})
+        project = Project.objects(id=projectId, isDeleted=False).first()
+        if not project:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={'projectId': projectId})
+
+        if action and action == "delete":
+            peca = PecaProject.objects(
+                schoolYear=schoolYear.id,
+                project__id=str(project.id),
+                isDeleted=False).first()
+            if not peca:
+                return {
+                    "status": "0",
+                    "msg": "School is not enrolled in active school year"
+                }, 400
+
+            try:
+                for resume in project.schoolYears:
+                    if resume.pecaId == str(peca.id):
+                        project.schoolYears.remove(resume)
+                        break
+
+                project.save()
+                peca.isDeleted = True
+                peca.save()
+                return {'msg': 'Record deleted'}, 200
+            except Exception as e:
+                return {'status': 0, 'message': str(e)}, 400
+
+        else:
+
+            peca = PecaProject.objects(
+                schoolYear=schoolYear.id,
+                project__id=str(project.id),
+                isDeleted=False).first()
+            if peca:
+                return {
+                    "status": "0",
+                    "msg": "School already enrolled in active school year"
+                }, 400
+
+            try:
+                project.createPeca()
+                return ProjectSchema(exclude=['stepsProgress']).dump(project)
+            except Exception as e:
+                return {'status': 0, 'message': str(e)}, 400

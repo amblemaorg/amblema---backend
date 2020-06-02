@@ -147,7 +147,7 @@ class PecaProjectService():
                             text=activity.text,
                             file=activity.file,
                             video=activity.video,
-                            checklist=[CheckElement(
+                            checklist=None if not activity.hasChecklist else [CheckElement(
                                 id=chk.id, name=chk.name) for chk in activity.checklist],
                             approvalType=activity.approvalType,
                             isStandard=activity.isStandard,

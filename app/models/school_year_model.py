@@ -24,8 +24,8 @@ from app.models.goal_setting_model import GoalSetting, GradeSetting
 
 class SchoolYear(Document):
     name = fields.StringField(required=True)
-    startDate = fields.DateField(required=True)
-    endDate = fields.DateField(required=True)
+    startDate = fields.DateField(default=datetime.utcnow)
+    endDate = fields.DateField(default=datetime.utcnow)
     status = fields.StringField(required=True, default="1")
     pecaSetting = fields.EmbeddedDocumentField(PecaSetting)
     isDeleted = fields.BooleanField(default=False)

@@ -50,7 +50,10 @@ class RequestContentApproval(Document):
                         document.detail['stepHasChecklist'] = step.hasChecklist
                         document.detail['stepHasUpload'] = step.hasUpload
                         document.detail['stepText'] = step.text
-                        document.detail['stepFile'] = step.file
+                        document.detail['stepFile'] = None if not step.hasFile else {
+                            "name": step.file.name,
+                            "url": step.file.url
+                        }
                         document.detail['stepVideo'] = step.video
                         document.detail['stepChecklist'] = step.checklist
                         break

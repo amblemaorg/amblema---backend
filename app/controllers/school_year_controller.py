@@ -4,7 +4,7 @@
 from flask import request
 from flask_restful import Resource
 
-from app.services.generic_service import GenericServices
+from app.services.school_year_service import SchoolYearService
 from app.models.school_year_model import SchoolYear
 from app.schemas.school_year_schema import SchoolYearSchema
 from app.helpers.handler_request import getQueryParams
@@ -12,7 +12,7 @@ from app.helpers.handler_request import getQueryParams
 
 class SchoolYearController(Resource):
 
-    service = GenericServices(
+    service = SchoolYearService(
         Model=SchoolYear,
         Schema=SchoolYearSchema)
 
@@ -27,7 +27,7 @@ class SchoolYearController(Resource):
 
 class SchoolYearHandlerController(Resource):
 
-    service = GenericServices(
+    service = SchoolYearService(
         Model=SchoolYear,
         Schema=SchoolYearSchema)
 
@@ -43,3 +43,16 @@ class SchoolYearHandlerController(Resource):
 
     def delete(self, id):
         return self.service.deleteRecord(id)
+
+
+class EnrollCtrl(Resource):
+
+    service = SchoolYearService(
+        Model=SchoolYear,
+        Schema=SchoolYearSchema)
+
+    def put(self, projectId):
+        action = request.args.get('action')
+        return self.service.schoolEnroll(
+            projectId=projectId,
+            action=action)

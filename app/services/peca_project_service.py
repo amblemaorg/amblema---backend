@@ -89,6 +89,7 @@ class PecaProjectService():
         from app.models.peca_project_model import Lapse
         from app.models.peca_annual_preparation_model import AnnualPreparationPeca
         from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
+        from app.models.peca_activities_model import ActivityPeca
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only('pecaSetting').first()
@@ -129,3 +130,29 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].annualConvention = annualConvention
             else:
                 peca['lapse{}'.format(i)].annualConvention = None
+
+            for activity in pecaSettingLapse.activities:
+                if activity.status == "1":
+                    peca['lapse{}'.format(i)].activities.append(
+                        ActivityPeca(
+                            id=str(activity.id),
+                            name=activity.name,
+                            devName=activity.devName,
+                            hasText=activity.hasText,
+                            hasDate=activity.hasDate,
+                            hasFile=activity.hasFile,
+                            hasVideo=activity.hasVideo,
+                            hasChecklist=activity.hasChecklist,
+                            hasUpload=activity.hasUpload,
+                            text=activity.text,
+                            file=activity.file,
+                            video=activity.video,
+                            checklist=None if not activity.hasChecklist else [CheckElement(
+                                id=chk.id, name=chk.name) for chk in activity.checklist],
+                            approvalType=activity.approvalType,
+                            isStandard=activity.isStandard,
+                            status=activity.status,
+                            createdAt=activity.createdAt,
+                            updatedAt=activity.updatedAt
+                        )
+                    )

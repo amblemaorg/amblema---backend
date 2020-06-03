@@ -600,10 +600,52 @@ class ActivityService():
                                 .bulk_write(bulk_operations, ordered=False)
 
                 else:
+                    from app.models.peca_activities_model import ActivityPeca, CheckElement
                     for activity in schoolYear.pecaSetting['lapse{}'.format(data['lapse'])].activities:
                         if str(activity.id) == data['id']:
                             found = True
                             activity.status = data['status']
+                            bulk_operations = []
+                            pecaProjects = PecaProject.objects(
+                                schoolYear=schoolYear.id, isDeleted=False)
+
+                            for peca in pecaProjects:
+                                # is active
+                                if data['status'] == "1":
+                                    peca['lapse{}'.format(data['lapse'])].activities.append(
+                                        ActivityPeca(
+                                            id=str(activity.id),
+                                            name=activity.name,
+                                            devName=activity.devName,
+                                            hasText=activity.hasText,
+                                            hasDate=activity.hasDate,
+                                            hasFile=activity.hasFile,
+                                            hasVideo=activity.hasVideo,
+                                            hasChecklist=activity.hasChecklist,
+                                            hasUpload=activity.hasUpload,
+                                            text=activity.text,
+                                            file=activity.file,
+                                            video=activity.video,
+                                            checklist=None if not activity.hasChecklist else [CheckElement(
+                                                id=chk.id, name=chk.name) for chk in activity.checklist],
+                                            approvalType=activity.approvalType,
+                                            isStandard=activity.isStandard,
+                                            status=activity.status,
+                                            createdAt=activity.createdAt,
+                                            updatedAt=activity.updatedAt
+                                        )
+                                    )
+                                # is inactive
+                                else:
+                                    for act in peca['lapse{}'.format(data['lapse'])].activities:
+                                        if act.id == str(activity.id):
+                                            peca['lapse{}'.format(
+                                                data['lapse'])].activities.remove(act)
+                                bulk_operations.append(
+                                    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                            if bulk_operations:
+                                PecaProject._get_collection() \
+                                    .bulk_write(bulk_operations, ordered=False)
                             break
                 if found:
                     schoolYear.save()

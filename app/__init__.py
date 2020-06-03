@@ -295,9 +295,9 @@ def create_app(config_instance):
     api.add_resource(ReqContentApprovalHandlerController,
                      '/requestscontentapproval/<string:id>')
     api.add_resource(TeacherController,
-                     '/pecaprojects/teachers/<string:pecaId>')
+                     '/schools/teachers/<string:schoolId>')
     api.add_resource(TeacherHandlerController,
-                     '/pecaprojects/teachers/<string:pecaId>/<string:teacherId>')
+                     '/schools/teachers/<string:schoolId>/<string:teacherId>')
     api.add_resource(SectionController,
                      '/pecaprojects/sections/<string:pecaId>')
     api.add_resource(SectionHandlerController,

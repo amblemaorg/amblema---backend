@@ -9,6 +9,7 @@ from app.models.peca_project_model import Section
 from app.models.peca_amblecoins_model import AmbleSection
 from app.schemas.peca_project_schema import SectionSchema
 from app.helpers.error_helpers import RegisterNotFound
+from app.models.school_user_model import SchoolUser
 
 
 class SectionService():
@@ -20,10 +21,13 @@ class SectionService():
 
         if peca:
             try:
+                school = SchoolUser.objects(
+                    id=peca.project.school.id, isDeleted=False).first()
                 schema = SectionSchema()
                 if "teacher" in jsonData:
-                    teacher = peca.school.teachers.filter(
-                        id=jsonData['teacher']).first()
+
+                    teacher = school.teachers.filter(
+                        id=jsonData['teacher'], isDeleted=False).first()
                     if not teacher:
                         raise RegisterNotFound(message="Record not found",
                                                status_code=404,
@@ -80,9 +84,11 @@ class SectionService():
         if peca:
             try:
                 schema = SectionSchema()
+                school = SchoolUser.objects(
+                    id=peca.project.school.id, isDeleted=False).first()
                 if "teacher" in jsonData:
-                    teacher = peca.school.teachers.filter(
-                        id=jsonData['teacher']).first()
+                    teacher = school.teachers.filter(
+                        id=jsonData['teacher'], isDeleted=False).first()
                     if not teacher:
                         raise RegisterNotFound(message="Record not found",
                                                status_code=404,

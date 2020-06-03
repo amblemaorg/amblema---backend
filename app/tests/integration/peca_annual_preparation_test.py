@@ -17,6 +17,7 @@ from app.models.peca_project_model import PecaProject, Lapse
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
+from app.models.teacher_model import Teacher
 
 
 class PecaAnnualPreparationTest(unittest.TestCase):
@@ -107,7 +108,48 @@ class PecaAnnualPreparationTest(unittest.TestCase):
             userType="3",
             role=Role.objects(devName="school").first(),
             addressState=self.state,
-            addressMunicipality=self.municipality
+            addressMunicipality=self.municipality,
+            teachers=[
+                Teacher(
+                    firstName="Maria",
+                    lastName="Teran",
+                    cardType="1",
+                    cardId="282882828",
+                    gender="1",
+                    email="mteran@test.com",
+                    phone="04242332323",
+                    addressState=str(self.state.id),
+                    addressMunicipality=str(self.municipality.id),
+                    address="street 7th",
+                    addressCity="Barquisimeto"
+                ),
+                Teacher(
+                    firstName="Maria",
+                    lastName="Fernandez",
+                    cardType="1",
+                    cardId="282882827",
+                    gender="1",
+                    email="mfer@test.com",
+                    phone="04242332323",
+                    addressState=str(self.state.id),
+                    addressMunicipality=str(self.municipality.id),
+                    address="street 7th",
+                    addressCity="Barquisimeto"
+                ),
+                Teacher(
+                    firstName="Vicente",
+                    lastName="Fernandez",
+                    cardType="1",
+                    cardId="282882826",
+                    gender="2",
+                    email="vfer@test.com",
+                    phone="04242332323",
+                    addressState=str(self.state.id),
+                    addressMunicipality=str(self.municipality.id),
+                    address="street 7th",
+                    addressCity="Barquisimeto"
+                )
+            ]
         )
         self.school.save()
 
@@ -206,47 +248,6 @@ class PecaAnnualPreparationTest(unittest.TestCase):
                             "lastName": "Teran"
                         }
                     }
-                ],
-                "teachers": [
-                    {
-                        "firstName": "Maria",
-                        "lastName": "Teran",
-                        "cardType": "1",
-                        "cardId": "282882828",
-                        "gender": "1",
-                        "email": "mteran@test.com",
-                        "phone": "04242332323",
-                        "addressState": str(self.state.id),
-                        "addressMunicipality": str(self.municipality.id),
-                        "address": "street 7th",
-                        "addressCity": "Barquisimeto"
-                    },
-                    {
-                        "firstName": "Maria",
-                        "lastName": "Fernandez",
-                        "cardType": "1",
-                        "cardId": "282882827",
-                        "gender": "1",
-                        "email": "mfer@test.com",
-                        "phone": "04242332323",
-                        "addressState": str(self.state.id),
-                        "addressMunicipality": str(self.municipality.id),
-                        "address": "street 7th",
-                        "addressCity": "Barquisimeto"
-                    },
-                    {
-                        "firstName": "Vicente",
-                        "lastName": "Fernandez",
-                        "cardType": "1",
-                        "cardId": "282882826",
-                        "gender": "2",
-                        "email": "vfer@test.com",
-                        "phone": "04242332323",
-                        "addressState": str(self.state.id),
-                        "addressMunicipality": str(self.municipality.id),
-                        "address": "street 7th",
-                        "addressCity": "Barquisimeto"
-                    }
                 ]
             }
 
@@ -291,7 +292,7 @@ class PecaAnnualPreparationTest(unittest.TestCase):
 
         # add teachers to annual preparation
         requestData = {
-            "teacherId": str(self.pecaProject.school.teachers[0].id)
+            "teacherId": str(self.school.teachers[0].id)
         }
         res = self.client().post(
             '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
@@ -300,7 +301,7 @@ class PecaAnnualPreparationTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         requestData = {
-            "teacherId": str(self.pecaProject.school.teachers[1].id)
+            "teacherId": str(self.school.teachers[1].id)
         }
         res = self.client().post(
             '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
@@ -309,7 +310,7 @@ class PecaAnnualPreparationTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         requestData = {
-            "teacherId": str(self.pecaProject.school.teachers[2].id)
+            "teacherId": str(self.school.teachers[2].id)
         }
         res = self.client().post(
             '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
@@ -324,7 +325,7 @@ class PecaAnnualPreparationTest(unittest.TestCase):
         res = self.client().put(
             '/pecaprojects/annualpreparation/{}/{}'.format(
                 self.pecaProject.id,
-                self.pecaProject.school.teachers[0].id),
+                self.school.teachers[0].id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -336,7 +337,7 @@ class PecaAnnualPreparationTest(unittest.TestCase):
         res = self.client().put(
             '/pecaprojects/annualpreparation/{}/{}'.format(
                 self.pecaProject.id,
-                self.pecaProject.school.teachers[1].id),
+                self.school.teachers[1].id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)

@@ -7,6 +7,7 @@ from mongoengine import fields
 
 from app.models.user_model import User
 from app.models.shared_embedded_documents import ProjectReference, DocumentReference
+from app.models.teacher_model import Teacher
 
 
 class SchoolUser(User):
@@ -32,6 +33,7 @@ class SchoolUser(User):
     nSections = fields.IntField(null=True)
     schoolShift = fields.StringField(max_length=1, null=True)
     project = fields.EmbeddedDocumentField(ProjectReference)
+    teachers = fields.EmbeddedDocumentListField(Teacher)
     phase = fields.StringField(max_length=1, default="1")
 
     def addProject(self, project):

@@ -14,7 +14,7 @@ from app.models.coordinator_user_model import CoordinatorUser
 from app.schemas.coordinator_user_schema import CoordinatorUserSchema
 from app.models.sponsor_user_model import SponsorUser
 from app.schemas.sponsor_user_schema import SponsorUserSchema
-from app.schemas.peca_project_schema import TeacherSchema
+from app.schemas.teacher_schema import TeacherSchema
 from app.models.peca_project_model import PecaProject
 from app.models.school_year_model import SchoolYear
 from flask import current_app
@@ -66,21 +66,46 @@ class StatisticsUserService():
                         isDeleted=False)
             # is teacher
             else:
-                schoolYear = SchoolYear.objects(
-                    isDeleted=False, status="1").only('id').first()
-                pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
-                    'school__teachers')
                 records = []
-                for peca in pecas:
-                    for teacher in peca.school.teachers:
+                annualPreparationFilter = False
+                annualPreparationTeachers = {}
+                schools = SchoolUser.objects(
+                    isDeleted=False, status="1").only('teachers')
+                for f in filters:
+                    if f['field'] == 'annualPreparationStatus' and f['field']:
+                        annualPreparationFilter = f['value']
+                        filters.remove(f)
+                if annualPreparationFilter:
+                    schoolYear = SchoolYear.objects(
+                        isDeleted=False, status="1").only('id').first()
+                    pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
+                        'lapse1__annualPreparation',
+                        'lapse2__annualPreparation',
+                        'lapse3__annualPreparation')
+                    for peca in pecas:
+                        for i in range(1, 4):
+                            if peca['lapse{}'.format(i)].annualPreparation:
+                                annualPreparation = peca['lapse{}'.format(
+                                    i)].annualPreparation
+
+                                for teacher in annualPreparation.teachers:
+                                    if teacher.annualPreparationStatus == annualPreparationFilter:
+                                        annualPreparationTeachers[teacher.id] = str(
+                                            peca.id)
+
+                for school in schools:
+                    for teacher in school.teachers:
                         available = True
                         if teacher.isDeleted:
                             available = False
                         for f in filters:
                             if hasattr(teacher, f['field']) and teacher[f['field']] != f['value']:
                                 available = False
+                        if annualPreparationFilter and str(teacher.id) not in annualPreparationTeachers:
+                            available = False
                         if available:
-                            teacher.pecaId = str(peca.id)
+                            teacher.pecaId = None if not annualPreparationFilter else annualPreparationTeachers[str(
+                                teacher.id)]
                             records.append(teacher)
             if records:
                 for record in records:

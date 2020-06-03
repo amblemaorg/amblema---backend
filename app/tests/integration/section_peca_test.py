@@ -18,6 +18,7 @@ from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
 from app.models.peca_amblecoins_model import AmblecoinsPeca, AmbleSection
+from app.models.teacher_model import Teacher
 
 
 class SchoolPecaTest(unittest.TestCase):
@@ -108,7 +109,37 @@ class SchoolPecaTest(unittest.TestCase):
             userType="3",
             role=Role.objects(devName="school").first(),
             addressState=self.state,
-            addressMunicipality=self.municipality
+            addressMunicipality=self.municipality,
+            teachers=[
+                Teacher(
+                        firstName="Maria",
+                        lastName="Fernandez",
+                        cardType="1",
+                        cardId="17277272",
+                        gender="1",
+                        email="mariatfer@test.com",
+                        phone="04242442424",
+                        addressState=self.state.id,
+                        addressMunicipality=self.municipality.id,
+                        address="19th street",
+                        addressCity="Barquisimeto",
+                        status="1"
+                ),
+                Teacher(
+                    firstName="Antonio",
+                    lastName="Fernandez",
+                    cardType="1",
+                    cardId="17277273",
+                    gender="2",
+                    email="antofer@test.com",
+                    phone="04242442424",
+                    addressState=self.state.id,
+                    addressMunicipality=self.municipality.id,
+                    address="19th street",
+                    addressCity="Barquisimeto",
+                    status="1"
+                )
+            ]
         )
         self.school.save()
 
@@ -153,37 +184,7 @@ class SchoolPecaTest(unittest.TestCase):
                 "nGrades": self.school.nGrades,
                 "nStudents": self.school.nStudents,
                 "nAdministrativeStaff": self.school.nAdministrativeStaff,
-                "nLaborStaff": self.school.nLaborStaff,
-                "teachers": [
-                    {
-                        "firstName": "Maria",
-                        "lastName": "Fernandez",
-                        "cardType": "1",
-                        "cardId": "17277272",
-                        "gender": "1",
-                        "email": "mariatfer@test.com",
-                        "phone": "04242442424",
-                        "addressState": self.state.id,
-                        "addressMunicipality": self.municipality.id,
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "1"
-                    },
-                    {
-                        "firstName": "Antonio",
-                        "lastName": "Fernandez",
-                        "cardType": "1",
-                        "cardId": "17277273",
-                        "gender": "2",
-                        "email": "antofer@test.com",
-                        "phone": "04242442424",
-                        "addressState": self.state.id,
-                        "addressMunicipality": self.municipality.id,
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "1"
-                    }
-                ]
+                "nLaborStaff": self.school.nLaborStaff
             }
 
         )
@@ -224,7 +225,7 @@ class SchoolPecaTest(unittest.TestCase):
         requestData = {
             "grade": "1",
             "name": "A",
-            "teacher": str(self.pecaProject.school.teachers[0].id)
+            "teacher": str(self.school.teachers[0].id)
         }
         res = self.client().post(
             '/pecaprojects/sections/{}'.format(self.pecaProject.id),
@@ -268,7 +269,7 @@ class SchoolPecaTest(unittest.TestCase):
         requestData = {
             "grade": "1",
             "name": "A",
-            "teacher": str(self.pecaProject.school.teachers[0].id)
+            "teacher": str(self.school.teachers[0].id)
         }
         res = self.client().post(
             '/pecaprojects/sections/{}'.format(self.pecaProject.id),
@@ -312,7 +313,7 @@ class SchoolPecaTest(unittest.TestCase):
         requestData = {
             "grade": "1",
             "name": "C",
-            "teacher": str(self.pecaProject.school.teachers[1].id)
+            "teacher": str(self.school.teachers[1].id)
         }
         res = self.client().put(
             '/pecaprojects/sections/{}/{}'.format(

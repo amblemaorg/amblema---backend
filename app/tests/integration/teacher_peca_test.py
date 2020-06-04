@@ -157,7 +157,7 @@ class TeacherPecaTest(unittest.TestCase):
         )
         self.pecaProject.save()
 
-    def test_create_teacher(self):
+    def test_create_and_return_teachers(self):
 
         # create A
         requestDataA = {
@@ -213,6 +213,15 @@ class TeacherPecaTest(unittest.TestCase):
                          result['firstName'])
         self.assertEqual("Lara",
                          result['addressState']['name'])
+
+        # get teachers
+        res = self.client().get(
+            '/schools/teachers/{}'.format(self.school.pk))
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(2,
+                         len(result['records']))
 
         # create duplicate
         res = self.client().post(

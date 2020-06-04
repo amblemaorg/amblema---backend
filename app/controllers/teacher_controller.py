@@ -16,6 +16,9 @@ class TeacherController(Resource):
         jsonData = request.get_json()
         return self.service.save(schoolId=schoolId, jsonData=jsonData)
 
+    def get(self, schoolId):
+        return self.service.getAll(schoolId)
+
 
 class TeacherHandlerController(Resource):
 

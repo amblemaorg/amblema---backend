@@ -12,21 +12,21 @@ class TeacherController(Resource):
 
     service = TeacherService()
 
-    def post(self, pecaId):
+    def post(self, schoolId):
         jsonData = request.get_json()
-        return self.service.save(pecaId=pecaId, jsonData=jsonData)
+        return self.service.save(schoolId=schoolId, jsonData=jsonData)
 
 
 class TeacherHandlerController(Resource):
 
     service = TeacherService()
 
-    def put(self, pecaId, teacherId):
+    def put(self, schoolId, teacherId):
         jsonData = request.get_json()
         return self.service.update(
-            pecaId=pecaId,
+            schoolId=schoolId,
             teacherId=teacherId,
             jsonData=jsonData)
 
-    def delete(self, pecaId, teacherId):
-        return self.service.delete(pecaId=pecaId, teacherId=teacherId)
+    def delete(self, schoolId, teacherId):
+        return self.service.delete(schoolId=schoolId, teacherId=teacherId)

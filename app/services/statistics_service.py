@@ -6,7 +6,6 @@ from app.models.school_user_model import SchoolUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.peca_project_model import PecaProject
-from app.models.school_year_model import SchoolYear
 from flask import current_app
 from mongoengine.connection import get_db
 
@@ -32,12 +31,9 @@ class StatisticsService():
 
     def get_count_teacher(self):
         count = 0
-        schoolYear = SchoolYear.objects(
-            isDeleted=False, status="1").only('id').first()
-        pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
-            'school__teachers')
-        for peca in pecas:
-            for teacher in peca.school.teachers:
-                if not teacher.isDeleted:
-                    count += 1
+        schools = SchoolUser.objects(
+            isDeleted=False, status="1").only('teachers')
+        for school in schools:
+            count += len(school.teachers.filter(isDeleted=False))
+
         return count

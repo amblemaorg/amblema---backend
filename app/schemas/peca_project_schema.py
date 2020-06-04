@@ -60,41 +60,6 @@ class StudentSchema(Schema):
     lapse3 = fields.Nested(DiagnosticSchema(), dump_only=True)
 
 
-class TeacherSchema(Schema):
-    id = fields.Str(dump_only=True)
-    firstName = fields.Str()
-    lastName = fields.Str()
-    cardId = fields.Str(validate=only_numbers)
-    cardType = fields.Str(
-        validate=OneOf(
-            ('1', '2'),
-            ('V', 'E')
-        ))
-    gender = fields.Str(
-        required=True,
-        validate=OneOf(
-            ('1', '2'),
-            ('female', 'male')
-        ))
-    email = fields.Str(required=True, validate=validate_email)
-    phone = fields.Str(validate=only_numbers)
-    addressState = MAReferenceField(document=State)
-    addressMunicipality = MAReferenceField(
-        document=Municipality)
-    address = fields.Str()
-    addressCity = fields.Str()
-    status = fields.Str(
-        required=True,
-        validate=OneOf(
-            ('1', '2'),
-            ('active', 'inactive')
-        ))
-    annualPreparationStatus = fields.Str(
-        dump_only=True
-    )
-    createdAt = fields.DateTime(dump_only=True)
-    updatedAt = fields.DateTime(dump_only=True)
-
 
 class TeacherLinkSchema(Schema):
     id = fields.Str()
@@ -145,7 +110,6 @@ class SchoolSchema(Schema):
     instagram = fields.Str()
     twitter = fields.Str()
     sections = fields.List(fields.Nested(SectionSchema()), dump_only=True)
-    teachers = fields.List(fields.Nested(TeacherSchema()), dump_only=True)
     slider = fields.List(fields.Nested(ImageStatusSchema()), dump_only=True)
 
 

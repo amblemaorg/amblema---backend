@@ -17,6 +17,7 @@ from app.models.peca_project_model import PecaProject, Lapse
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
+from app.models.teacher_model import Teacher
 
 
 class PecaAnnualConventionTest(unittest.TestCase):
@@ -107,7 +108,22 @@ class PecaAnnualConventionTest(unittest.TestCase):
             userType="3",
             role=Role.objects(devName="school").first(),
             addressState=self.state,
-            addressMunicipality=self.municipality
+            addressMunicipality=self.municipality,
+            teachers=[
+                Teacher(
+                    firstName="Maria",
+                    lastName="Teran",
+                    cardType="1",
+                    cardId="282882828",
+                    gender="1",
+                    email="mteran@test.com",
+                    phone="04242332323",
+                    addressState=str(self.state.id),
+                    addressMunicipality=str(self.municipality.id),
+                    address="street 7th",
+                    addressCity="Barquisimeto"
+                )
+            ]
         )
         self.school.save()
 
@@ -184,21 +200,6 @@ class PecaAnnualConventionTest(unittest.TestCase):
                             "firstName": "Maria",
                             "lastName": "Teran"
                         }
-                    }
-                ],
-                "teachers": [
-                    {
-                        "firstName": "Maria",
-                        "lastName": "Teran",
-                        "cardType": "1",
-                        "cardId": "282882828",
-                        "gender": "1",
-                        "email": "mteran@test.com",
-                        "phone": "04242332323",
-                        "addressState": str(self.state.id),
-                        "addressMunicipality": str(self.municipality.id),
-                        "address": "street 7th",
-                        "addressCity": "Barquisimeto"
                     }
                 ]
             }

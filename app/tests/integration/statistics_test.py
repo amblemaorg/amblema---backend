@@ -16,6 +16,7 @@ from app.models.peca_project_model import PecaProject
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
+from app.models.teacher_model import Teacher
 
 
 class StatisticsTest(unittest.TestCase):
@@ -108,7 +109,37 @@ class StatisticsTest(unittest.TestCase):
             userType="3",
             role=Role.objects(devName="school").first(),
             addressState=self.state,
-            addressMunicipality=self.municipality
+            addressMunicipality=self.municipality,
+            teachers=[
+                Teacher(
+                        firstName="Arelis",
+                        lastName="Crespo",
+                        cardType="1",
+                        cardId="20928888",
+                        gender="1",
+                        email="arelis@test.com",
+                        phone="04122222233",
+                        addressState=str(self.state.pk),
+                        addressMunicipality=str(self.municipality.pk),
+                        address="19th street",
+                        addressCity="Barquisimeto",
+                        status="1"
+                ),
+                Teacher(
+                    firstName="Yurancy",
+                    lastName="Gonzalez",
+                    cardType="1",
+                    cardId="20928889",
+                    gender="1",
+                    email="yugonz@test.com",
+                    phone="04122222233",
+                    addressState=str(self.state.pk),
+                    addressMunicipality=str(self.municipality.pk),
+                    address="19th street",
+                    addressCity="Barquisimeto",
+                    status="1"
+                )
+            ]
         )
         self.school.save()
 
@@ -153,37 +184,7 @@ class StatisticsTest(unittest.TestCase):
                 "nGrades": self.school.nGrades,
                 "nStudents": self.school.nStudents,
                 "nAdministrativeStaff": self.school.nAdministrativeStaff,
-                "nLaborStaff": self.school.nLaborStaff,
-                "teachers": [
-                    {
-                        "firstName": "Arelis",
-                        "lastName": "Crespo",
-                        "cardType": "1",
-                        "cardId": "20928888",
-                        "gender": "1",
-                        "email": "arelis@test.com",
-                        "phone": "04122222233",
-                        "addressState": str(self.state.pk),
-                        "addressMunicipality": str(self.municipality.pk),
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "1"
-                    },
-                    {
-                        "firstName": "Yurancy",
-                        "lastName": "Gonzalez",
-                        "cardType": "1",
-                        "cardId": "20928889",
-                        "gender": "1",
-                        "email": "yugonz@test.com",
-                        "phone": "04122222233",
-                        "addressState": str(self.state.pk),
-                        "addressMunicipality": str(self.municipality.pk),
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "1"
-                    }
-                ]
+                "nLaborStaff": self.school.nLaborStaff
             }
 
         )
@@ -286,7 +287,37 @@ class StatisticsTest(unittest.TestCase):
             userType="3",
             role=Role.objects(devName="school").first(),
             addressState=self.state,
-            addressMunicipality=self.municipality
+            addressMunicipality=self.municipality,
+            teachers=[
+                Teacher(
+                    firstName="Arelis",
+                    lastName="Crespo",
+                    cardType="1",
+                    cardId="20928888",
+                    gender="1",
+                    email="arelis@test.com",
+                    phone="04122222233",
+                    addressState=str(self.state.pk),
+                    addressMunicipality=str(self.municipality.pk),
+                    address="19th street",
+                    addressCity="Barquisimeto",
+                    status="1"
+                ),
+                Teacher(
+                    firstName="Yurancy",
+                    lastName="Gonzalez",
+                    cardType="1",
+                    cardId="20928889",
+                    gender="1",
+                    email="yugonz@test.com",
+                    phone="04122222233",
+                    addressState=str(self.state.pk),
+                    addressMunicipality=str(self.municipality.pk),
+                    address="19th street",
+                    addressCity="Barquisimeto",
+                    status="2"
+                )
+            ]
         )
         self.school.save()
 
@@ -331,39 +362,7 @@ class StatisticsTest(unittest.TestCase):
                 "nGrades": self.school.nGrades,
                 "nStudents": self.school.nStudents,
                 "nAdministrativeStaff": self.school.nAdministrativeStaff,
-                "nLaborStaff": self.school.nLaborStaff,
-                "teachers": [
-                    {
-                        "firstName": "Arelis",
-                        "lastName": "Crespo",
-                        "cardType": "1",
-                        "cardId": "20928888",
-                        "gender": "1",
-                        "email": "arelis@test.com",
-                        "phone": "04122222233",
-                        "addressState": str(self.state.pk),
-                        "addressMunicipality": str(self.municipality.pk),
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "1",
-                        "annualPreparationStatus": "1"
-                    },
-                    {
-                        "firstName": "Yurancy",
-                        "lastName": "Gonzalez",
-                        "cardType": "1",
-                        "cardId": "20928889",
-                        "gender": "1",
-                        "email": "yugonz@test.com",
-                        "phone": "04122222233",
-                        "addressState": str(self.state.pk),
-                        "addressMunicipality": str(self.municipality.pk),
-                        "address": "19th street",
-                        "addressCity": "Barquisimeto",
-                        "status": "2",
-                        "annualPreparationStatus": "2"
-                    }
-                ]
+                "nLaborStaff": self.school.nLaborStaff
             }
 
         )
@@ -402,6 +401,63 @@ class StatisticsTest(unittest.TestCase):
                          len(result['users']))
 
         # teachers
+
+        # enable annual preparation for lapse1
+        requestData = dict(
+            step1Description="Some 1 description",
+            step2Description="Some 2 description",
+            step3Description="Some 3 description",
+            step4Description="Some 4 description"
+        )
+        res = self.client().post(
+            '/pecasetting/annualpreparation/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = {
+            "id": 'annualPreparation',
+            "lapse": "1",
+            "isStandard": True,
+            "status": "1"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # add to annual preparation
+        requestData = {
+            "teacherId": str(self.school.teachers[0].id)
+        }
+        res = self.client().post(
+            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = {
+            "teacherId": str(self.school.teachers[1].id)
+        }
+        res = self.client().post(
+            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # confirm teacher 2
+        requestData = {
+            "annualPreparationStatus": "2"
+        }
+        res = self.client().put(
+            '/pecaprojects/annualpreparation/{}/{}'.format(
+                self.pecaProject.id,
+                self.school.teachers[1].id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
         res = self.client().get(
             '/statistics/usersreport/3?status=2&annualPreparationStatus=2')
         self.assertEqual(res.status_code, 200)
@@ -416,6 +472,8 @@ class StatisticsTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(1,
                          len(result['users']))
+        self.assertEqual(str(self.pecaProject.id),
+                         result['users'][0]['pecaId'])
 
         res = self.client().get(
             '/statistics/usersreport/3')
@@ -424,8 +482,6 @@ class StatisticsTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(2,
                          len(result['users']))
-        self.assertEqual(str(self.pecaProject.id),
-                         result['users'][0]['pecaId'])
 
     def tearDown(self):
         """teardown all initialized variables."""

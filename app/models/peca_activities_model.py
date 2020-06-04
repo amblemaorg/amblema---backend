@@ -73,6 +73,8 @@ class ActivityPeca(ActivityFields):
                         approved = False
             if approved:
                 self.approve()
+        if self.approvalType == "5":
+            self.approve()
 
     def clean(self):
         self.updatedAt = datetime.utcnow()

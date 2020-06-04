@@ -40,8 +40,9 @@ class ActivityFieldsSchema(Schema):
     uploadedFile = fields.Nested(FileSchema)
     approvalType = fields.Str(
         validate=OneOf(
-            ["1", "2", "3", "4"],
-            ["onlyAdmin", "fillAllFields", "approvalRequest", "internalApproval"]
+            ["1", "2", "3", "4", "5"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest",
+                "internalApproval", "not required"]
         ),
         dump_only=True)
     isStandard = fields.Bool(dump_only=True)

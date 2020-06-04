@@ -206,7 +206,7 @@ class RequestContentApproval(Document):
                                     break
                             if step.devName in reciprocalFields:
                                 for reciprocalStep in project.stepsProgress.steps:
-                                    if reciprocalStep.devName == reciprocalFields[document.stepDevName]:
+                                    if reciprocalStep.devName == reciprocalFields[document.detail['stepDevName']]:
                                         reciprocalStep.status = "1"  # pending
                                         for reciprocalApproval in reciprocalStep.approvalHistory:
                                             if reciprocalApproval.id == str(document.id):

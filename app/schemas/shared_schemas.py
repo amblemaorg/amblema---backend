@@ -17,12 +17,18 @@ class ReferenceSchema(Schema):
     name = fields.Str(dump_only=True)
 
 
+class SchoolReferenceSchema(Schema):
+    id = fields.Str(dump_only=True)
+    name = fields.Str(dump_only=True)
+    code = fields.Str(dump_only=True)
+
+
 class ProjectReferenceSchema(Schema):
     id = fields.Str(dump_only=True)
     code = fields.Str(dump_only=True)
     sponsor = fields.Nested(ReferenceSchema, dump_only=True)
     coordinator = fields.Nested(ReferenceSchema, dump_only=True)
-    school = fields.Nested(ReferenceSchema, dump_only=True)
+    school = fields.Nested(SchoolReferenceSchema, dump_only=True)
 
 
 class CheckSchema(Schema):

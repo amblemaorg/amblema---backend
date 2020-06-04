@@ -621,8 +621,8 @@ def create_initial_steps():
         hasText=True,
         hasChecklist=True,
         text="some description",
-        checklist=[{"name": "Reunion con la escuela"},
-                   {"name": "reunion con el padrino"}],
+        checklist=[{"name": "Reunión con la escuela"},
+                   {"name": "Reunión con el padrino"}],
         approvalType="2"
     )
     checklistInitialWorkshop.save()

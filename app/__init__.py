@@ -30,7 +30,7 @@ from app.controllers.learning_module_controller import (
     AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
-    SchoolYearController, SchoolYearHandlerController, EnrollCtrl
+    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -237,6 +237,7 @@ def create_app(config_instance):
         '/schoolyears/<string:id>/'
     )
     api.add_resource(EnrollCtrl, '/enrollment/<string:projectId>')
+    api.add_resource(EnrollSchoolsCtrl, '/enrollment')
     api.add_resource(SchoolContactController, '/schoolscontacts')
     api.add_resource(SchoolContactHandlerController,
                      '/schoolscontacts/<string:id>')

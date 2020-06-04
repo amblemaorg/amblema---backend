@@ -21,10 +21,15 @@ class TeacherTestimonialSchema(Schema):
         folder='teachertestimonial')
     function = fields.Str(required=True, validate=not_blank)
     description = fields.Str(required=True, validate=not_blank)
-    status = fields.Str(
+    approvalStatus = fields.Str(
         validate=OneOf(
-            ('1', '2', '3'),
-            ("pending", "approved", "rejected")
+            ("1", "2", "3", "4"),
+            ("pending", "approved", "rejected", "cancelled")
+        ))
+    visibilityStatus = fields.Str(
+        validate=OneOf(
+            ("1", "2"),
+            ("active", "inactive")
         ))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

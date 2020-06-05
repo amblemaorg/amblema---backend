@@ -7,7 +7,7 @@ from bson import ObjectId
 from flask import current_app
 from mongoengine import fields, Document, EmbeddedDocument, signals
 
-from app.models.shared_embedded_documents import ProjectReference, ImageStatus
+from app.models.shared_embedded_documents import ProjectReference
 from app.models.peca_amblecoins_model import AmblecoinsPeca
 from app.models.peca_olympics_model import Olympics
 from app.models.peca_annual_preparation_model import AnnualPreparationPeca
@@ -91,7 +91,6 @@ class School(EmbeddedDocument):
     instagram = fields.StringField()
     twitter = fields.StringField()
     sections = fields.EmbeddedDocumentListField(Section)
-    slider = fields.EmbeddedDocumentListField(ImageStatus)
 
 
 class Lapse(EmbeddedDocument):

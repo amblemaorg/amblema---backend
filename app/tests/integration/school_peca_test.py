@@ -184,14 +184,14 @@ class SchoolPecaTest(unittest.TestCase):
             description="some description"
         )
         res = self.client().post(
-            '/pecaprojects/schoolsliders/{}?userId={}'.format(
-                self.pecaProject.id,
+            '/schools/schoolsliders/{}?userId={}'.format(
+                self.school.id,
                 self.coordinator.id),
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
-        self.pecaProject = PecaProject.objects(id=self.pecaProject.id).first()
-        self.assertEqual('1', self.pecaProject.school.slider[0].approvalStatus)
+        self.school = SchoolUser.objects(id=self.school.id).first()
+        self.assertEqual('1', self.school.slider[0].approvalStatus)
 
         # get approval request
         res = self.client().get(
@@ -209,8 +209,18 @@ class SchoolPecaTest(unittest.TestCase):
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
-        self.pecaProject = PecaProject.objects(id=self.pecaProject.id).first()
-        self.assertEqual('2', self.pecaProject.school.slider[0].approvalStatus)
+        # get sliders
+        res = self.client().get(
+            '/schools/schoolsliders/{}'.format(self.school.id))
+        self.assertEqual(res.status_code, 200)
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1,
+                         len(result['records']))
+        self.assertEqual("2", result['records'][0]
+                         ['approvalHistory']['status'])
+
+        self.school = SchoolUser.objects(id=self.school.id).first()
+        self.assertEqual('2', self.school.slider[0].approvalStatus)
 
     def tearDown(self):
         """teardown all initialized variables."""

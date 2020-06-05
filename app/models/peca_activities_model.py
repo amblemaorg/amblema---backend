@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, Approval
 
 
 class CheckElement(EmbeddedDocument):
@@ -37,16 +37,6 @@ class ActivityFields(EmbeddedDocument):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     meta = {'allow_inheritance': True}
-
-
-class Approval(EmbeddedDocument):
-    id = fields.StringField()
-    user = fields.ReferenceField('User')
-    comments = fields.StringField()
-    detail = fields.DictField()
-    status = fields.StringField(max_length=1, default="1")
-    createdAt = fields.DateTimeField(default=datetime.utcnow)
-    updatedAt = fields.DateTimeField(default=datetime.utcnow)
 
 
 class ActivityPeca(ActivityFields):

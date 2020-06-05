@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, Approval
 
 
 class Image(EmbeddedDocument):
@@ -28,3 +28,5 @@ class InitialWorkshopPeca(EmbeddedDocument):
     isStandard = fields.BooleanField(default=True)
     description = fields.StringField()
     images = fields.EmbeddedDocumentListField(Image)
+    isInApproval = fields.BooleanField(default=False)
+    approvalHistory = fields.EmbeddedDocumentListField(Approval)

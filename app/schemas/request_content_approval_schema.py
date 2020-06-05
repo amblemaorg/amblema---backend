@@ -26,8 +26,8 @@ class RequestContentApprovalSchema(Schema):
     project = fields.Nested(ProjectReferenceSchema)
     type = fields.Str(
         validate=OneOf(
-            ('1', '2', '3', '4'),
-            ('steps', 'testimonials', 'activities', 'slider')
+            ('1', '2', '3', '4', '5'),
+            ('steps', 'testimonials', 'activities', 'slider', 'initialWorkshop')
         ), required=True)
     user = MAReferenceField(document=User, field="name")
     comments = fields.Str()

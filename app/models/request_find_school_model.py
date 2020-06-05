@@ -3,7 +3,8 @@
 from datetime import datetime
 
 from flask import current_app
-from mongoengine import fields, Document, signals
+from mongoengine import fields, Document, signals, Q
+from marshmallow import ValidationError
 
 from app.models.user_model import User
 from app.models.project_model import Project, Approval
@@ -53,6 +54,24 @@ class RequestFindSchool(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
+        if not document.id:
+            school = SchoolUser.objects(
+                isDeleted=False, code=document.code).first()
+            if school:
+                raise ValidationError(
+                    {"code": [{"status": "5",
+                               "msg": "Duplicated school code"}]}
+                )
+            school = SchoolUser.objects(
+                isDeleted=False, email=document.email).first()
+            if school:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                "msg": "Duplicated school email"}]}
+                )
+
+    @classmethod
+    def pre_save_post_validation(cls, sender, document, **kwargs):
         reciprocalFields = [
             'coordinatorFillSchoolForm',
             'sponsorFillSchoolForm'
@@ -62,7 +81,8 @@ class RequestFindSchool(Document):
             oldRequest = document.__class__.objects.get(id=document.id)
             # is approved?
             if document.status != oldRequest.status and document.status == '2':
-                schoolUser = SchoolUser.objects(email=document.email).first()
+                schoolUser = SchoolUser.objects.filter(
+                    (Q(email=document.email) | Q(code=document.code)) & Q(isDeleted=False)).first()
                 if not schoolUser:
                     schoolUser = SchoolUser(
                         name=document.name,
@@ -143,8 +163,11 @@ class RequestFindSchool(Document):
             document.project.save()
 
 
-signals.pre_save_post_validation.connect(
+signals.pre_save.connect(
     RequestFindSchool.pre_save, sender=RequestFindSchool)
+
+signals.pre_save_post_validation.connect(
+    RequestFindSchool.pre_save_post_validation, sender=RequestFindSchool)
 
 signals.post_save.connect(
     RequestFindSchool.post_save, sender=RequestFindSchool)

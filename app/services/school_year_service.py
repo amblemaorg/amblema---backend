@@ -60,7 +60,8 @@ class SchoolYearService(GenericServices):
             raise RegisterNotFound(message="Active school year not found",
                                    status_code=404,
                                    payload={})
-        project = Project.objects(id=projectId, isDeleted=False).first()
+        project = Project.objects(
+            id=projectId, isDeleted=False, phase="2").first()
         if not project:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -107,3 +108,39 @@ class SchoolYearService(GenericServices):
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400
+
+    def availableSchools(self):
+
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        availableSchools = []
+        enrolledSchools = []
+        enrolledSchoolsIds = []
+        if schoolYear:
+            pecas = PecaProject.objects(
+                schoolYear=schoolYear.id, isDeleted=False).only('project__school', 'project__id')
+            for peca in pecas:
+                enrolledSchools.append(
+                    {
+                        "id": str(peca.project.school.id),
+                        "name": peca.project.school.name,
+                        "code": peca.project.school.code,
+                        "projectId": peca.project.id
+                    }
+                )
+                enrolledSchoolsIds.append(peca.project.id)
+            projects = Project.objects(
+                isDeleted=False, phase="2", pk__nin=enrolledSchoolsIds)
+
+            for project in projects:
+                availableSchools.append(
+                    {
+                        "id": str(project.school.id),
+                        "name": project.school.name,
+                        "code": project.school.code,
+                        "projectId": str(project.id)
+                    }
+                )
+        return {
+            "availableSchools": availableSchools,
+            "enrolledSchools": enrolledSchools
+        }, 200

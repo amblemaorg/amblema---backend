@@ -84,22 +84,7 @@ class ProjectService():
         pecaProject = PecaProject(
             schoolYear=schoolYear,
             schoolYearName=schoolYear.name,
-            project={
-                "id": str(project.id),
-                "code": str(project.code),
-                "coordinator": {
-                    "id": str(project.coordinator.id),
-                    "name": project.coordinator.firstName + " " + project.coordinator.lastName
-                },
-                "sponsor": {
-                    "id": str(project.sponsor.id),
-                    "name": project.sponsor.name
-                },
-                "school": {
-                    "id": str(project.school.id),
-                    "name": project.school.name
-                }
-            },
+            project=project.getReference(),
             school={
                 "name": project.school.name,
                 "code": project.school.code,

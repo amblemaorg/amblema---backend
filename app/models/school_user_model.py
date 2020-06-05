@@ -6,7 +6,7 @@ from datetime import datetime
 from mongoengine import fields
 
 from app.models.user_model import User
-from app.models.shared_embedded_documents import ProjectReference, DocumentReference
+from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference
 from app.models.teacher_model import Teacher
 
 
@@ -41,9 +41,10 @@ class SchoolUser(User):
         projectRef = ProjectReference(
             id=str(project.id),
             code=project.code.zfill(7),
-            school=DocumentReference(
+            school=SchoolReference(
                 id=str(self.pk),
-                name=self.name))
+                name=self.name,
+                code=self.code))
         if project.coordinator:
             projectRef.coordinator = DocumentReference(id=str(project.coordinator.id),
                                                        name=project.coordinator.name)

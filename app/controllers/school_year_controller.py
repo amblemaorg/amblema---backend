@@ -56,3 +56,13 @@ class EnrollCtrl(Resource):
         return self.service.schoolEnroll(
             projectId=projectId,
             action=action)
+
+
+class EnrollSchoolsCtrl(Resource):
+    service = SchoolYearService(
+        Model=SchoolYear,
+        Schema=SchoolYearSchema
+    )
+
+    def get(self):
+        return self.service.availableSchools()

@@ -7,17 +7,19 @@ from app.schemas import fields
 from app.helpers.ma_schema_validators import (not_blank, OneOf, validate_image)
 from app.helpers.ma_schema_fields import MAImageField
 from app.models.teacher_testimonial_model import TeacherTestimonial
-from app.models.peca_project_model import Teacher
 
 
 class TeacherTestimonialSchema(Schema):
     id = fields.Str(dump_only=True)
-    teacher = MAReferenceField(document=Teacher, allow_none=True)
+    teacherId = fields.Str(required=True, validate=not_blank)
     firstName = fields.Str(required=True, validate=not_blank)
     lastName = fields.Str(required=True, validate=not_blank)
+    #image = MAImageField(
+    #    required=True,
+    #    validate=(not_blank, validate_image),
+    #    folder='teachertestimonial')
     image = MAImageField(
-        required=True,
-        validate=(not_blank, validate_image),
+        validate=validate_image,
         folder='teachertestimonial')
     function = fields.Str(required=True, validate=not_blank)
     description = fields.Str(required=True, validate=not_blank)

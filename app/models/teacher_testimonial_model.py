@@ -6,15 +6,15 @@ from bson import ObjectId
 
 from flask import current_app
 from mongoengine import fields, EmbeddedDocument
-from app.models.peca_project_model import Teacher
 
 
 class TeacherTestimonial(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
-    teacher = fields.ReferenceField(Teacher)
-    firstName = StringField(required=True)
-    lastName = StringField(required=True)
-    image = fields.URLField(required=True)
+    teacherId = fields.StringField(required=True)
+    firstName = fields.StringField(required=True)
+    lastName = fields.StringField(required=True)
+    #image = fields.URLField(required=True)
+    image = fields.URLField()
     function = fields.StringField(required=True)
     description = fields.StringField(required=True)
     # approvalStatus = ("1": "pending", "2": "approved", "3": "rejected", "4": "cancelled")

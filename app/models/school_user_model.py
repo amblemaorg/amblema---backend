@@ -11,7 +11,7 @@ from app.models.teacher_model import Teacher
 
 
 class SchoolUser(User):
-    code = fields.StringField(required=True)
+    code = fields.StringField(required=True, unique_c=True)
     phone = fields.StringField(required=True)
     image = fields.URLField(null=True)
     schoolType = fields.StringField(null=True, max_length=1)

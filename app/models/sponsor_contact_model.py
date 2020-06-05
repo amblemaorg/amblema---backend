@@ -9,7 +9,9 @@ from mongoengine import (
     Document,
     EmbeddedDocument,
     fields,
-    signals)
+    signals,
+    Q)
+from marshmallow import ValidationError
 
 from app.models.sponsor_user_model import SponsorUser
 from app.models.school_user_model import SchoolUser
@@ -71,6 +73,25 @@ class SponsorContact(Document):
         self.updatedAt = datetime.utcnow()
 
     @classmethod
+    def pre_save(cls, sender, document, **kwargs):
+        if not document.id:
+            if document.hasSchool:
+                school = SchoolUser.objects(
+                    isDeleted=False, code=document.schoolCode).first()
+                if school:
+                    raise ValidationError(
+                        {"schoolCode": [{"status": "5",
+                                         "msg": "Duplicated school code"}]}
+                    )
+                school = SchoolUser.objects(
+                    isDeleted=False, email=document.schoolEmail).first()
+                if school:
+                    raise ValidationError(
+                        {"schoolEmail": [{"status": "5",
+                                          "msg": "Duplicated school email"}]}
+                    )
+
+    @classmethod
     def post_save(cls, sender, document, **kwargs):
         if document.id:
             oldRequest = SponsorContact.objects.get(id=document.id)
@@ -107,9 +128,8 @@ class SponsorContact(Document):
                 project.sponsor = sponsorUser
 
                 if document.hasSchool:
-                    schoolUser = SchoolUser.objects(
-                        email=document.schoolEmail,
-                        isDeleted=False).first()
+                    schoolUser = SchoolUser.objects.filter((
+                        Q(email=document.schoolEmail) | Q(code=document.schoolCode)) & Q(isDeleted=False)).first()
                     if not schoolUser:
                         schoolUser = SchoolUser(
                             name=document.schoolName,
@@ -154,3 +174,6 @@ class SponsorContact(Document):
 
 signals.pre_save_post_validation.connect(
     SponsorContact.post_save, sender=SponsorContact)
+signals.pre_save.connect(
+    SponsorContact.pre_save, sender=SponsorContact
+)

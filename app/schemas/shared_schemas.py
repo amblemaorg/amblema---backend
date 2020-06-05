@@ -7,9 +7,10 @@ from marshmallow import Schema, post_load, pre_load
 from app.schemas import fields
 from flask import current_app
 
-from app.helpers.ma_schema_fields import MAImageField
+from app.helpers.ma_schema_fields import MAImageField, MAReferenceField
 from app.helpers.ma_schema_validators import validate_url, not_blank, validate_image, OneOf
 from app.models.shared_embedded_documents import Link, CheckTemplate
+from app.models.user_model import User
 
 
 class ReferenceSchema(Schema):
@@ -67,9 +68,19 @@ class CheckTemplateSchema(Schema):
         return CheckTemplate(**data)
 
 
+class ApprovalSchema(Schema):
+    id = fields.Str(dump_only=True)
+    user = MAReferenceField(document=User, required=True, field="name")
+    comments = fields.Str(dump_only=True)
+    detail = fields.Dict(dump_only=True)
+    status = fields.Str(dump_only=True)
+    createdAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime(dump_only=True)
+
+
 class ImageStatusSchema(Schema):
     id = fields.Str(dump_only=True)
-    pecaId = fields.Str(dump_only=True)
+    schoolId = fields.Str(dump_only=True)
     image = MAImageField(
         validate=(not_blank, validate_image),
         folder='schools',
@@ -85,5 +96,6 @@ class ImageStatusSchema(Schema):
             ('1', '2', '3'),
             ("active", "inactive")
         ))
+    approvalHistory = fields.Nested(ApprovalSchema, dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

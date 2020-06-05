@@ -6,7 +6,7 @@ from datetime import datetime
 from mongoengine import fields
 
 from app.models.user_model import User
-from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference
+from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference, ImageStatus
 from app.models.teacher_model import Teacher
 
 
@@ -34,6 +34,7 @@ class SchoolUser(User):
     schoolShift = fields.StringField(max_length=1, null=True)
     project = fields.EmbeddedDocumentField(ProjectReference)
     teachers = fields.EmbeddedDocumentListField(Teacher)
+    slider = fields.EmbeddedDocumentListField(ImageStatus)
     phase = fields.StringField(max_length=1, default="1")
 
     def addProject(self, project):

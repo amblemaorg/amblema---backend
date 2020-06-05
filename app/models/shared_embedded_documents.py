@@ -34,13 +34,24 @@ class CheckTemplate(EmbeddedDocument):
     name = fields.StringField(required=True)
 
 
+class Approval(EmbeddedDocument):
+    id = fields.StringField()
+    user = fields.ReferenceField('User')
+    comments = fields.StringField()
+    detail = fields.DictField()
+    status = fields.StringField(max_length=1, default="1")
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+
 class ImageStatus(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
-    pecaId = fields.StringField()
+    schoolId = fields.StringField()
     image = fields.URLField()
     description = fields.StringField()
     approvalStatus = fields.StringField(default="1", max_length=1)
     visibilityStatus = fields.StringField(default="2", max_length=1)
+    approvalHistory = fields.EmbeddedDocumentField(Approval)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

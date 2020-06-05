@@ -5,6 +5,7 @@ from datetime import datetime
 from app.models.peca_project_model import PecaProject
 from app.models.shared_embedded_documents import ProjectReference
 from app.models.project_model import Project, Approval, CheckElement
+from app.models.school_user_model import SchoolUser
 
 from flask import current_app
 from mongoengine import (
@@ -64,13 +65,14 @@ class RequestContentApproval(Document):
             if document.status != oldDocument.status:
                 # slider
                 if document.type == "4":
-                    peca = PecaProject.objects(
-                        id=document.detail['pecaId']).first()
-                    for slider in peca.school.slider:
+                    school = SchoolUser.objects(
+                        id=document.detail['schoolId']).first()
+                    for slider in school.slider:
                         if str(slider.id) == document.detail['id']:
                             slider.approvalStatus = document.status
+                            slider.approvalHistory['status'] = document.status
                             break
-                    peca.save()
+                    school.save()
                 # activities
                 if document.type == "3":
                     fields = ['date', 'uploadedFile', 'checklist']

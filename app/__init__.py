@@ -289,12 +289,12 @@ def create_app(config_instance):
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(SchoolController, '/pecaprojects/school/<string:id>')
-    api.add_resource(SchoolSliderController,
-                     '/pecaprojects/schoolsliders/<string:pecaId>')
     api.add_resource(ReqContentApprovalController,
                      '/requestscontentapproval')
     api.add_resource(ReqContentApprovalHandlerController,
                      '/requestscontentapproval/<string:id>')
+    api.add_resource(SchoolSliderController,
+                     '/schools/schoolsliders/<string:schoolId>')
     api.add_resource(TeacherController,
                      '/schools/teachers/<string:schoolId>')
     api.add_resource(TeacherHandlerController,

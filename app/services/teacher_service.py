@@ -13,6 +13,19 @@ from app.helpers.error_helpers import RegisterNotFound
 
 class TeacherService():
 
+    def getAll(self, schoolId):
+
+        school = SchoolUser.objects(
+            isDeleted=False, id=schoolId).first()
+
+        if school:
+            return {"records": TeacherSchema().dump(school.teachers, many=True)}, 200
+
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"recordId": schoolId})
+
     def save(self, schoolId, jsonData):
 
         school = SchoolUser.objects(

@@ -481,7 +481,7 @@ class PecaActivitiesTest(unittest.TestCase):
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
-        # check activity history in peca
+        # check activity in peca
         res = self.client().get(
             '/pecaprojects/{}'.format(self.pecaProject.id)
         )

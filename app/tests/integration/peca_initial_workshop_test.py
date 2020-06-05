@@ -219,8 +219,8 @@ class PecaInitialWorkshopTest(unittest.TestCase):
             ]
         }
         res = self.client().post(
-            '/pecaprojects/initialworkshop/{}/{}'.format(
-                self.pecaProject.id, 1),
+            '/pecaprojects/initialworkshop/{}/{}?userId={}'.format(
+                self.pecaProject.id, 1, self.coordinator.id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -232,7 +232,15 @@ class PecaInitialWorkshopTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('some image2 description',
-                         resultPeca['lapse1']['initialWorkshop']['images'][1]['description'])
+                         resultPeca['lapse1']['initialWorkshop']['approvalHistory'][0]['detail']['images'][1]['description'])
+
+        # send with pending approval
+        res = self.client().post(
+            '/pecaprojects/initialworkshop/{}/{}?userId={}'.format(
+                self.pecaProject.id, 1, self.coordinator.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 400)
 
         # edit initialWorkshop
         requestData = dict(
@@ -260,6 +268,84 @@ class PecaInitialWorkshopTest(unittest.TestCase):
         resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('Some edited description',
                          resultPeca['lapse1']['initialWorkshop']['agreementDescription'])
+        self.assertEqual(None, resultPeca['lapse1']
+                         ['initialWorkshop']['description'])
+
+        # approve request
+        requestData = {
+            "status": "2"
+        }
+        res = self.client().put(
+            '/requestscontentapproval/{}'.format(
+                resultPeca['lapse1']['initialWorkshop']['approvalHistory'][0]['id']),
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('Some edited description',
+                         resultPeca['lapse1']['initialWorkshop']['agreementDescription'])
+        self.assertEqual(
+            "new description", resultPeca['lapse1']['initialWorkshop']['description'])
+
+        # cancel request
+        requestData = {
+            "description": "new description",
+            "images": [
+                {
+                    "image": test_image,
+                    "description": "some image description",
+                    "status": "1"
+                },
+                {
+                    "image": test_image,
+                    "description": "some image2 description",
+                    "status": "1"
+                }
+            ]
+        }
+        res = self.client().post(
+            '/pecaprojects/initialworkshop/{}/{}?userId={}'.format(
+                self.pecaProject.id, 1, self.coordinator.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(True,
+                         resultPeca['lapse1']['initialWorkshop']['isInApproval'])
+
+        # cancel
+        requestData = {
+            "status": "4"
+        }
+        res = self.client().put(
+            '/requestscontentapproval/{}'.format(
+                resultPeca['lapse1']['initialWorkshop']['approvalHistory'][1]['id']),
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(False,
+                         resultPeca['lapse1']['initialWorkshop']['isInApproval'])
+        self.assertEqual("4",
+                         resultPeca['lapse1']['initialWorkshop']['approvalHistory'][1]['status'])
 
     def tearDown(self):
         """teardown all initialized variables."""

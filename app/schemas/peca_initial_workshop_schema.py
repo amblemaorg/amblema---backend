@@ -6,7 +6,7 @@ from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf, validate_image
 from app.helpers.ma_schema_fields import MAImageField
-from app.schemas.shared_schemas import FileSchema, ReferenceSchema
+from app.schemas.shared_schemas import FileSchema, ReferenceSchema, ApprovalSchema
 from app.models.peca_initial_workshop_model import Image
 
 
@@ -41,6 +41,9 @@ class InitialWorkshopPecaSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     description = fields.Str()
     images = fields.List(fields.Nested(ImageSchema))
+    isInApproval = fields.Boolean(dump_only=True)
+    approvalHistory = fields.List(
+        fields.Nested(ApprovalSchema), dump_only=True)
 
     class Meta:
         unknown = EXCLUDE

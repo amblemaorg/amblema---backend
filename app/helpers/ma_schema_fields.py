@@ -40,6 +40,10 @@ class MAReferenceField(fields.Field):
             record = {
                 "id": str(value["id"]),
                 self.metadata["field"]: value[self.metadata["field"]]}
+        elif "fields" in self.metadata:
+            record = {}
+            for field in self.metadata['fields']:
+                record[field] = str(value[field])
         else:
             record = {"id": str(value["id"]), "name": value["name"]}
         return record

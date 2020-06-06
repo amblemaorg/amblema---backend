@@ -13,6 +13,8 @@ from flask_jwt_extended import (
 from app.blueprints.auth import auth_blueprint
 from app.models.user_model import User
 from app.schemas.user_schema import UserSchema
+from app.models.project_model import Project
+from app.models.school_year_model import SchoolYear
 from .schemas import RecoverySchema, ChangePasswordSchema, LoginSchema
 from app.helpers.ma_schema_validators import ValidationError
 
@@ -22,6 +24,7 @@ class LoginView(MethodView):
 
     def post(self):
         schema = LoginSchema()
+
         try:
             jsonData = request.get_json()
             data = schema.load(jsonData)
@@ -42,7 +45,56 @@ class LoginView(MethodView):
             userSchema = UserSchema(only=("id", "email", "name", "userType"))
             userJson = userSchema.dump(user)
             permissions = user.get_permissions()
+            projectsJson = []
+            projects = []
+            activeSchoolYear = SchoolYear.objects(
+                isDeleted=False, status="1").only('id', 'name').first()
+            if activeSchoolYear:
+                activeSchoolYear = {
+                    "id": str(activeSchoolYear.id),
+                    "name": activeSchoolYear.name
+                }
+            if user.userType == "2":
+                projects = Project.objects(
+                    isDeleted=False, status="1", coordinator=user.id).exclude('stepsProgress',)
+            elif user.userType == "3":
+                projects = Project.objects(
+                    isDeleted=False, status="1", sponsor=user.id).exclude('stepsProgress',)
+            elif user.userType == "4":
+                projects = Project.objects(
+                    isDeleted=False, status="1", school=user.id).exclude('stepsProgress',)
+            for project in projects:
+                projectsJson.append(
+                    {
+                        'id': str(project.id),
+                        "code": project.code.zfill(7),
+                        "school": {
+                            "id": str(project.school.id),
+                            "name": project.school.name
+                        } if project.school else {},
+                        "coordinator": {
+                            "id": str(project.coordinator.id),
+                            "name": project.coordinator.name
+                        } if project.coordinator else {},
+                        "sponsor": {
+                            "id": str(project.sponsor.id),
+                            "name": project.sponsor.name
+                        } if project.sponsor else {},
+                        "phase": project.phase,
+                        "pecas": [
+                            {
+                                "id": str(peca.pecaId),
+                                "schoolYear": {
+                                    "id": str(peca.schoolYear.id),
+                                    "name": peca.schoolYear.name
+                                }
+                            } for peca in project.schoolYears
+                        ]
+                    }
+                )
             payload = userJson
+            payload['projects'] = projectsJson
+            payload['activeSchoolYear'] = activeSchoolYear
             payload['permissions'] = permissions
             # Generate the access token.
             # This will be generated in login microservice

@@ -30,7 +30,7 @@ from app.controllers.learning_module_controller import (
     AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
-    SchoolYearController, SchoolYearHandlerController, EnrollCtrl
+    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -240,6 +240,7 @@ def create_app(config_instance):
         '/schoolyears/<string:id>/'
     )
     api.add_resource(EnrollCtrl, '/enrollment/<string:projectId>')
+    api.add_resource(EnrollSchoolsCtrl, '/enrollment')
     api.add_resource(SchoolContactController, '/schoolscontacts')
     api.add_resource(SchoolContactHandlerController,
                      '/schoolscontacts/<string:id>')
@@ -291,16 +292,16 @@ def create_app(config_instance):
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(SchoolController, '/pecaprojects/school/<string:id>')
-    api.add_resource(SchoolSliderController,
-                     '/pecaprojects/schoolsliders/<string:pecaId>')
     api.add_resource(ReqContentApprovalController,
                      '/requestscontentapproval')
     api.add_resource(ReqContentApprovalHandlerController,
                      '/requestscontentapproval/<string:id>')
+    api.add_resource(SchoolSliderController,
+                     '/schools/schoolsliders/<string:schoolId>')
     api.add_resource(TeacherController,
-                     '/pecaprojects/teachers/<string:pecaId>')
+                     '/schools/teachers/<string:schoolId>')
     api.add_resource(TeacherHandlerController,
-                     '/pecaprojects/teachers/<string:pecaId>/<string:teacherId>')
+                     '/schools/teachers/<string:schoolId>/<string:teacherId>')
     api.add_resource(SectionController,
                      '/pecaprojects/sections/<string:pecaId>')
     api.add_resource(SectionHandlerController,

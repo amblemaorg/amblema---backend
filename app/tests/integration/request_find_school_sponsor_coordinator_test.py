@@ -260,6 +260,47 @@ class ApprovalProcess(unittest.TestCase):
             if step.devName in reciprocalFields:
                 self.assertEqual("2", step.approvalHistory[0].status)
 
+        # test request with duplicate school code
+        reqData = dict(
+            project=str(self.project.pk),
+            user=str(self.sponsor.pk),
+            name="U.E. Libertador",
+            code="315",
+            email="uelibertador@test.com",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            addressZoneType="2",
+            addressZone="Barrio Bolivar",
+            address="calle 9 entre 1 y 2",
+            phone="02524433434",
+            schoolType="1",
+            principalFirstName="Marlene",
+            principalLastName="Mejia",
+            principalEmail="mmejia@test.com",
+            principalPhone="04242772727",
+            subPrincipalFirstName="Nelly",
+            subPrincipalLastName="Velazquez",
+            subPrincipalEmail="nvelazquez@test.com",
+            subPrincipalPhone="04244545454",
+            nTeachers=22,
+            nAdministrativeStaff=10,
+            nLaborStaff=3,
+            nStudents=500,
+            nGrades=6,
+            nSections=18,
+            schoolShift="3"
+        )
+        res = self.client().post(
+            '/requestsfindschool',
+            data=json.dumps(reqData),
+            content_type='application/json')
+        json_res = json.loads(
+            res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(
+            {'code': [{'msg': 'Duplicated school code', 'status': '5'}]}, json_res)
+
     def test_create_sponsor_user_on_approve_request(self):
 
         reciprocalFields = [

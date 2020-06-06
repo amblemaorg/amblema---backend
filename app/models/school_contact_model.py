@@ -9,7 +9,9 @@ from mongoengine import (
     Document,
     EmbeddedDocument,
     fields,
-    signals)
+    signals,
+    Q)
+from marshmallow import ValidationError
 
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
@@ -71,12 +73,31 @@ class SchoolContact(Document):
         self.updatedAt = datetime.utcnow()
 
     @classmethod
+    def pre_save(cls, sender, document, **kwargs):
+        if not document.id:
+            school = SchoolUser.objects(
+                isDeleted=False, code=document.code).first()
+            if school:
+                raise ValidationError(
+                    {"code": [{"status": "5",
+                               "msg": "Duplicated school code"}]}
+                )
+            school = SchoolUser.objects(
+                isDeleted=False, email=document.email).first()
+            if school:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                "msg": "Duplicated school email"}]}
+                )
+
+    @classmethod
     def post_save(cls, sender, document, **kwargs):
         if document.id:
             oldRequest = SchoolContact.objects.get(id=document.id)
             if document.status != oldRequest.status and document.status == '2':
                 project = Project()
-                schoolUser = SchoolUser.objects(email=document.email).first()
+                schoolUser = SchoolUser.objects.filter(
+                    (Q(email=document.email) | Q(code=document.code)) & Q(isDeleted=False)).first()
                 if not schoolUser:
                     schoolUser = SchoolUser(
                         name=document.name,
@@ -152,3 +173,5 @@ class SchoolContact(Document):
 
 signals.pre_save_post_validation.connect(
     SchoolContact.post_save, sender=SchoolContact)
+signals.pre_save.connect(
+    SchoolContact.pre_save, sender=SchoolContact)

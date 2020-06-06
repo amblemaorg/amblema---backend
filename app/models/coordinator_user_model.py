@@ -9,7 +9,7 @@ from mongoengine import fields, EmbeddedDocument, signals
 
 from app.models.user_model import User
 from app.models.shared_embedded_documents import (
-    DocumentReference, ProjectReference, Link)
+    DocumentReference, ProjectReference, SchoolReference, Link)
 from app.helpers.error_helpers import RegisterNotFound
 
 
@@ -72,8 +72,9 @@ class CoordinatorUser(User):
             projectRef.sponsor = DocumentReference(id=str(project.sponsor.id),
                                                    name=project.sponsor.name)
         if project.school:
-            projectRef.school = DocumentReference(id=str(project.school.id),
-                                                  name=project.school.name)
+            projectRef.school = SchoolReference(id=str(project.school.id),
+                                                name=project.school.name,
+                                                code=project.school.code)
         self.projects.append(projectRef)
         self.save()
 

@@ -157,7 +157,7 @@ class TeacherPecaTest(unittest.TestCase):
         )
         self.pecaProject.save()
 
-    def test_create_teacher(self):
+    def test_create_and_return_teachers(self):
 
         # create A
         requestDataA = {
@@ -175,7 +175,7 @@ class TeacherPecaTest(unittest.TestCase):
             "status": "1"
         }
         res = self.client().post(
-            '/pecaprojects/teachers/{}'.format(self.pecaProject.pk),
+            '/schools/teachers/{}'.format(self.school.pk),
             data=json.dumps(requestDataA),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -203,7 +203,7 @@ class TeacherPecaTest(unittest.TestCase):
             "status": "1"
         }
         res = self.client().post(
-            '/pecaprojects/teachers/{}'.format(self.pecaProject.pk),
+            '/schools/teachers/{}'.format(self.school.pk),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -214,9 +214,18 @@ class TeacherPecaTest(unittest.TestCase):
         self.assertEqual("Lara",
                          result['addressState']['name'])
 
+        # get teachers
+        res = self.client().get(
+            '/schools/teachers/{}'.format(self.school.pk))
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(2,
+                         len(result['records']))
+
         # create duplicate
         res = self.client().post(
-            '/pecaprojects/teachers/{}'.format(self.pecaProject.pk),
+            '/schools/teachers/{}'.format(self.school.pk),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 400)
@@ -225,8 +234,8 @@ class TeacherPecaTest(unittest.TestCase):
         requestDataA['firstName'] = "Maria Teresa"
 
         res = self.client().put(
-            '/pecaprojects/teachers/{}/{}'.format(
-                self.pecaProject.pk, teacherA['id']),
+            '/schools/teachers/{}/{}'.format(
+                self.school.pk, teacherA['id']),
             data=json.dumps(requestDataA),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -241,8 +250,8 @@ class TeacherPecaTest(unittest.TestCase):
         requestDataA['cardId'] = "20928889"
 
         res = self.client().put(
-            '/pecaprojects/teachers/{}/{}'.format(
-                self.pecaProject.pk, teacherA['id']),
+            '/schools/teachers/{}/{}'.format(
+                self.school.pk, teacherA['id']),
             data=json.dumps(requestDataA),
             content_type='application/json')
         self.assertEqual(res.status_code, 400)
@@ -250,13 +259,13 @@ class TeacherPecaTest(unittest.TestCase):
         # delete teacher A
 
         res = self.client().delete(
-            '/pecaprojects/teachers/{}/{}'.format(
-                self.pecaProject.pk, teacherA['id']))
+            '/schools/teachers/{}/{}'.format(
+                self.school.pk, teacherA['id']))
         self.assertEqual(res.status_code, 200)
 
         res = self.client().delete(
-            '/pecaprojects/teachers/{}/{}'.format(
-                self.pecaProject.pk, teacherA['id']))
+            '/schools/teachers/{}/{}'.format(
+                self.school.pk, teacherA['id']))
         self.assertEqual(res.status_code, 404)
 
     def tearDown(self):

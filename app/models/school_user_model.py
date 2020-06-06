@@ -6,12 +6,13 @@ from datetime import datetime
 from mongoengine import fields
 
 from app.models.user_model import User
-from app.models.shared_embedded_documents import ProjectReference, DocumentReference
+from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference, ImageStatus
+from app.models.teacher_model import Teacher
 from app.models.teacher_testimonial_model import TeacherTestimonial
 
 
 class SchoolUser(User):
-    code = fields.StringField(required=True)
+    code = fields.StringField(required=True, unique_c=True)
     phone = fields.StringField(required=True)
     image = fields.URLField(null=True)
     schoolType = fields.StringField(null=True, max_length=1)
@@ -33,6 +34,8 @@ class SchoolUser(User):
     nSections = fields.IntField(null=True)
     schoolShift = fields.StringField(max_length=1, null=True)
     project = fields.EmbeddedDocumentField(ProjectReference)
+    teachers = fields.EmbeddedDocumentListField(Teacher)
+    slider = fields.EmbeddedDocumentListField(ImageStatus)
     phase = fields.StringField(max_length=1, default="1")
     teachersTestimonials = fields.EmbeddedDocumentListField(TeacherTestimonial)
 
@@ -41,9 +44,10 @@ class SchoolUser(User):
         projectRef = ProjectReference(
             id=str(project.id),
             code=project.code.zfill(7),
-            school=DocumentReference(
+            school=SchoolReference(
                 id=str(self.pk),
-                name=self.name))
+                name=self.name,
+                code=self.code))
         if project.coordinator:
             projectRef.coordinator = DocumentReference(id=str(project.coordinator.id),
                                                        name=project.coordinator.name)

@@ -15,7 +15,7 @@ from app.helpers.ma_schema_validators import (
     not_blank, only_numbers, OneOf, Range, validate_url, validate_email)
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
-from app.schemas.shared_schemas import ProjectReferenceSchema, ImageStatusSchema
+from app.schemas.shared_schemas import ProjectReferenceSchema
 from app.models.peca_project_model import TeacherLink
 from app.schemas.peca_amblecoins_schema import AmblecoinsPecaSchema
 from app.schemas.peca_olympics_schema import OlympicsSchema
@@ -58,42 +58,6 @@ class StudentSchema(Schema):
     lapse1 = fields.Nested(DiagnosticSchema(), dump_only=True)
     lapse2 = fields.Nested(DiagnosticSchema(), dump_only=True)
     lapse3 = fields.Nested(DiagnosticSchema(), dump_only=True)
-
-
-class TeacherSchema(Schema):
-    id = fields.Str(dump_only=True)
-    firstName = fields.Str()
-    lastName = fields.Str()
-    cardId = fields.Str(validate=only_numbers)
-    cardType = fields.Str(
-        validate=OneOf(
-            ('1', '2'),
-            ('V', 'E')
-        ))
-    gender = fields.Str(
-        required=True,
-        validate=OneOf(
-            ('1', '2'),
-            ('female', 'male')
-        ))
-    email = fields.Str(required=True, validate=validate_email)
-    phone = fields.Str(validate=only_numbers)
-    addressState = MAReferenceField(document=State)
-    addressMunicipality = MAReferenceField(
-        document=Municipality)
-    address = fields.Str()
-    addressCity = fields.Str()
-    status = fields.Str(
-        required=True,
-        validate=OneOf(
-            ('1', '2'),
-            ('active', 'inactive')
-        ))
-    annualPreparationStatus = fields.Str(
-        dump_only=True
-    )
-    createdAt = fields.DateTime(dump_only=True)
-    updatedAt = fields.DateTime(dump_only=True)
 
 
 class TeacherLinkSchema(Schema):
@@ -145,8 +109,6 @@ class SchoolSchema(Schema):
     instagram = fields.Str()
     twitter = fields.Str()
     sections = fields.List(fields.Nested(SectionSchema()), dump_only=True)
-    teachers = fields.List(fields.Nested(TeacherSchema()), dump_only=True)
-    slider = fields.List(fields.Nested(ImageStatusSchema()), dump_only=True)
 
 
 class LapseSchema(Schema):

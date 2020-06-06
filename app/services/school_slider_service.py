@@ -6,7 +6,7 @@ import re
 from flask import current_app
 from marshmallow import ValidationError
 
-from app.models.peca_project_model import PecaProject
+from app.models.school_user_model import SchoolUser
 from app.models.shared_embedded_documents import ImageStatus
 from app.schemas.shared_schemas import ImageStatusSchema
 
@@ -15,15 +15,27 @@ from app.models.request_content_approval_model import RequestContentApproval
 
 
 class SchoolSliderService():
+    def get(self, schoolId):
 
-    def save(self, pecaId, userId, jsonData):
-        from app.models.project_model import Project
+        school = SchoolUser.objects(
+            isDeleted=False, id=schoolId).first()
+
+        if school:
+            schema = ImageStatusSchema()
+            return {"records": schema.dump(school.slider, many=True)}, 200
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"recordId": schoolId})
+
+    def save(self, schoolId, userId, jsonData):
         from app.models.user_model import User
+        from app.models.shared_embedded_documents import Approval
 
-        peca = PecaProject.objects(
-            isDeleted=False, id=pecaId).first()
+        school = SchoolUser.objects(
+            isDeleted=False, id=schoolId).first()
 
-        if peca:
+        if school:
             try:
                 schema = ImageStatusSchema()
                 data = schema.load(jsonData)
@@ -35,18 +47,24 @@ class SchoolSliderService():
                                            payload={"userId":  userId})
 
                 image = ImageStatus()
-                image.pecaId = pecaId
+                data['schoolId'] = schoolId
                 for field in schema.dump(data).keys():
                     image[field] = data[field]
                 try:
-                    peca.school.slider.append(image)
-                    peca.save()
-                    RequestContentApproval(
-                        project=peca.project,
+                    request = RequestContentApproval(
+                        project=school.project,
                         user=user,
                         type="4",
                         detail=schema.dump(image)
                     ).save()
+                    image.approvalHistory = Approval(
+                        id=str(request.id),
+                        user=user,
+                        detail=data
+                    )
+                    school.slider.append(image)
+                    school.save()
+
                     return schema.dump(image), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -56,24 +74,24 @@ class SchoolSliderService():
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"recordId": pecaId})
+                                   payload={"recordId": schoolId})
 
-    def update(self, pecaId, sliderId, jsonData):
+    def update(self, schoolId, sliderId, jsonData):
 
-        peca = PecaProject.objects(
+        school = SchoolUser.objects(
             isDeleted=False,
-            id=pecaId,
-            school__slider__id=sliderId,
-            school__slider__isDeleted=False).first()
+            id=schoolId,
+            slider__id=sliderId,
+            slider__isDeleted=False).first()
 
-        if peca:
+        if school:
             try:
                 schema = ImageStatusSchema()
                 data = schema.load(jsonData, partial=True)
 
                 hasChanged = False
 
-                for slider in peca.school.slider:
+                for slider in school.slider:
                     if str(slider.id) == sliderId and not slider.isDeleted:
                         for field in schema.dump(data).keys():
                             if slider[field] != data[field]:
@@ -82,7 +100,7 @@ class SchoolSliderService():
 
                         if hasChanged:
                             try:
-                                peca.save()
+                                school.save()
                                 return schema.dump(slider), 200
                             except Exception as e:
                                 return {'status': 0, 'message': str(e)}, 400
@@ -92,26 +110,26 @@ class SchoolSliderService():
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sliderId": sliderId})
+                                   payload={"schoolId": schoolId, "sliderId": sliderId})
 
-    def delete(self, pecaId, sliderId):
+    def delete(self, schoolId, sliderId):
         """
         Delete (change isDeleted to False) a record
         """
 
-        peca = PecaProject.objects(
+        school = SchoolUser.objects(
             isDeleted=False,
-            id=pecaId,
-            school__slider__id=sliderId,
-            school__slider__isDeleted=False).first()
+            id=schoolId,
+            slider__id=sliderId,
+            slider__isDeleted=False).first()
 
-        if peca:
+        if school:
             try:
-                for slider in peca.school.slider:
+                for slider in school.slider:
                     if str(slider.id) == sliderId and not slider.isDeleted:
                         slider.isDeleted = True
                         try:
-                            peca.save()
+                            school.save()
                             return {"msg": "Record successfully deleted"}, 200
                         except Exception as e:
                             return {'status': 0, 'message': str(e)}, 400
@@ -120,4 +138,4 @@ class SchoolSliderService():
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sliderId": sliderId})
+                                   payload={"schoolId": schoolId, "sliderId": sliderId})

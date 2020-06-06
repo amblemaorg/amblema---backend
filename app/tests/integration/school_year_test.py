@@ -80,7 +80,7 @@ class SchoolYearTest(unittest.TestCase):
         self.sponsor.save()
 
         self.school = SchoolUser(
-            name="School",
+            name="School 1",
             code="0002",
             phone="02343432323",
             schoolType="1",
@@ -150,18 +150,58 @@ class SchoolYearTest(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         schoolyear = json.loads(res.data.decode('utf8').replace("'", '"'))
 
+        # create second school
+        self.school2 = SchoolUser(
+            name="School 2",
+            code="0003",
+            phone="02343432323",
+            schoolType="1",
+            principalFirstName="Maria",
+            principalLastName="Gonzalez",
+            principalEmail="testemail@test.com",
+            principalPhone="04244664646",
+            nTeachers=20,
+            nAdministrativeStaff=20,
+            nLaborStaff=20,
+            nStudents=20,
+            nGrades=20,
+            nSections=20,
+            schoolShift="1",
+            email="someschoolemail@test.com",
+            password="12345678",
+            userType="3",
+            role=Role.objects(devName="school").first(),
+            addressState=self.state,
+            addressMunicipality=self.municipality
+        )
+        self.school2.save()
+
         # create project
-        requestData = {
-            "sponsor": str(self.sponsor.id),
-            "coordinator": str(self.coordinator.id),
-            "school": str(self.school.id)
-        }
-        res = self.client().post(
-            '/projects',
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 201)
-        project = json.loads(res.data.decode('utf8').replace("'", '"'))
+        project = Project(
+            coordinator=self.coordinator,
+            sponsor=self.sponsor,
+            school=self.school,
+            phase="2"  # approved
+        )
+        project.save()
+
+        # create project 2
+        project2 = Project(
+            coordinator=self.coordinator,
+            sponsor=self.sponsor,
+            school=self.school2,
+            phase="1"  # in steps
+        )
+        project2.save()
+
+        # get available schools
+        res = self.client().get(
+            '/enrollment')
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(0,
+                         len(result['enrolledSchools']))
+        self.assertEqual(1,
+                         len(result['availableSchools']))
 
         # enroll school
         res = self.client().put(
@@ -175,6 +215,15 @@ class SchoolYearTest(unittest.TestCase):
         project = Project.objects(id=project['id']).first()
         self.assertEqual(1, len(project.schoolYears))
 
+        # get available schools
+        res = self.client().get(
+            '/enrollment')
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(1,
+                         len(result['enrolledSchools']))
+        self.assertEqual(0,
+                         len(result['availableSchools']))
+
         # delete school
         res = self.client().put(
             '/enrollment/{}?action=delete'.format(project['id']),
@@ -183,6 +232,15 @@ class SchoolYearTest(unittest.TestCase):
 
         project = Project.objects(id=project['id']).first()
         self.assertEqual(0, len(project.schoolYears))
+
+        # get available schools
+        res = self.client().get(
+            '/enrollment')
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(0,
+                         len(result['enrolledSchools']))
+        self.assertEqual(1,
+                         len(result['availableSchools']))
 
     def tearDown(self):
         """teardown all initialized variables."""

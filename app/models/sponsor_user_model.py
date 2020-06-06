@@ -7,7 +7,7 @@ from mongoengine import fields
 
 from app.models.user_model import User
 from app.models.shared_embedded_documents import (
-    ProjectReference, DocumentReference)
+    ProjectReference, DocumentReference, SchoolReference)
 
 
 class SponsorUser(User):
@@ -42,8 +42,9 @@ class SponsorUser(User):
             projectRef.coordinator = DocumentReference(id=str(project.coordinator.id),
                                                        name=project.coordinator.name)
         if project.school:
-            projectRef.school = DocumentReference(id=str(project.school.id),
-                                                  name=project.school.name)
+            projectRef.school = SchoolReference(id=str(project.school.id),
+                                                name=project.school.name,
+                                                code=project.school.code)
         self.projects.append(projectRef)
         self.save()
 

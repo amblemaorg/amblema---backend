@@ -35,7 +35,9 @@ class StepsApprovalService(GenericServices):
             documentFiles = getFileFields(self.Model)
             if files and documentFiles:
                 validFiles = validate_files(files, documentFiles)
-                folder = self.Model.__name__.lower()
+                folder = "projects/{}/stepsapproval/{}".format(
+                    jsonData['project'], jsonData['stepId']
+                )
                 uploadedfiles = upload_files(validFiles, folder)
                 jsonData.update(uploadedfiles)
             data = schema.load(jsonData)

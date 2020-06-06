@@ -5,6 +5,7 @@ from datetime import datetime
 from app.models.peca_project_model import PecaProject
 from app.models.shared_embedded_documents import ProjectReference
 from app.models.project_model import Project, Approval, CheckElement
+from app.models.school_user_model import SchoolUser
 
 from flask import current_app
 from mongoengine import (
@@ -31,6 +32,7 @@ class RequestContentApproval(Document):
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         from app.schemas.peca_activities_schema import ActivityFieldsSchema
+        from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
         from app.models.project_model import Project
         # before create
         if not document.id:
@@ -62,15 +64,6 @@ class RequestContentApproval(Document):
         if document.id is not None:
             oldDocument = document.__class__.objects(id=document.id).first()
             if document.status != oldDocument.status:
-                # slider
-                if document.type == "4":
-                    peca = PecaProject.objects(
-                        id=document.detail['pecaId']).first()
-                    for slider in peca.school.slider:
-                        if str(slider.id) == document.detail['id']:
-                            slider.approvalStatus = document.status
-                            break
-                    peca.save()
                 # activities
                 if document.type == "3":
                     fields = ['date', 'uploadedFile', 'checklist']
@@ -109,6 +102,38 @@ class RequestContentApproval(Document):
                             testimonial.approvalStatus = document.status
                             break
                     school.save()
+
+                # slider
+                if document.type == "4":
+                    school = SchoolUser.objects(
+                        id=document.detail['schoolId']).first()
+                    for slider in school.slider:
+                        if str(slider.id) == document.detail['id']:
+                            slider.approvalStatus = document.status
+                            slider.approvalHistory['status'] = document.status
+                            break
+                    school.save()
+
+                # initial workshop
+                if document.type == "5":
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    initialWorkshop = peca['lapse{}'.format(
+                        document.detail['lapse'])].initialWorkshop
+                    for history in initialWorkshop.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = document.status
+                            initialWorkshop.isInApproval = False
+                            if document.status == "2":  # approved
+                                schema = InitialWorkshopPecaSchema(
+                                    partial=True)
+                                data = schema.load(document.detail)
+                                for field in schema.dump(data).keys():
+                                    initialWorkshop[field] = data[field]
+                            peca['lapse{}'.format(
+                                document.detail['lapse'])].initialWorkshop = initialWorkshop
+                            peca.save()
+                            break
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
@@ -215,7 +240,7 @@ class RequestContentApproval(Document):
                                     break
                             if step.devName in reciprocalFields:
                                 for reciprocalStep in project.stepsProgress.steps:
-                                    if reciprocalStep.devName == reciprocalFields[document.stepDevName]:
+                                    if reciprocalStep.devName == reciprocalFields[document.detail['stepDevName']]:
                                         reciprocalStep.status = "1"  # pending
                                         for reciprocalApproval in reciprocalStep.approvalHistory:
                                             if reciprocalApproval.id == str(document.id):

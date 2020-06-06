@@ -235,7 +235,7 @@ class Project(Document):
                     myStep.updatedAt = datetime.utcnow()
                     self.save()
                     if self.checkConfirm():
-                        self.createPeca()
+                        self.phase = "2"
                 break
 
     def createPeca(self):
@@ -256,7 +256,8 @@ class Project(Document):
             } if self.sponsor else {},
             school={
                 "id": str(self.school.id),
-                "name": self.school.name
+                "name": self.school.name,
+                "code": self.school.code
             } if self.school else {}
         )
         return reference

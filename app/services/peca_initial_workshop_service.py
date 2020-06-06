@@ -5,6 +5,9 @@ from marshmallow import ValidationError
 
 from app.models.peca_project_model import PecaProject
 from app.models.peca_initial_workshop_model import InitialWorkshopPeca
+from app.models.request_content_approval_model import RequestContentApproval
+from app.models.shared_embedded_documents import Approval
+from app.models.user_model import User
 from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.handler_files import validate_files, upload_files
@@ -32,7 +35,7 @@ class InitialWorkshopService():
                                    status_code=404,
                                    payload={"pecaId": pecaId})
 
-    def save(self, pecaId, lapse, jsonData, files=None):
+    def save(self, pecaId, lapse, jsonData, userId, files=None):
 
         peca = PecaProject.objects(
             isDeleted=False,
@@ -47,6 +50,12 @@ class InitialWorkshopService():
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
                                            payload={"initialWorkshop lapse: ": lapse})
+
+                user = User.objects(id=userId, isDeleted=False).first()
+                if not user:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"userId":  userId})
                 if 'images' in jsonData:
                     self.filesPath = "school_years/{}/pecas/{}/{}".format(
                         peca.schoolYear.pk,
@@ -62,10 +71,28 @@ class InitialWorkshopService():
 
                 initialWorkshop = peca['lapse{}'.format(
                     lapse)].initialWorkshop
-
-                for field in schema.dump(data).keys():
-                    initialWorkshop[field] = data[field]
+                if initialWorkshop.isInApproval:
+                    return {
+                        "status": "0",
+                        "msg": "Record has a pending approval request"
+                    }, 400
                 try:
+                    jsonData['pecaId'] = pecaId
+                    jsonData['lapse'] = lapse
+                    request = RequestContentApproval(
+                        project=peca.project,
+                        user=user,
+                        type="5",
+                        detail=jsonData
+                    ).save()
+                    initialWorkshop.isInApproval = True
+                    initialWorkshop.approvalHistory.append(
+                        Approval(
+                            id=str(request.id),
+                            user=user.id,
+                            detail=jsonData
+                        )
+                    )
                     peca['lapse{}'.format(
                         lapse)].initialWorkshop = initialWorkshop
                     peca.save()

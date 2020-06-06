@@ -15,5 +15,6 @@ class PecaInitialWorkshopCtrl(Resource):
         return self.service.get(pecaId, lapse)
 
     def post(self, pecaId, lapse):
+        userId = request.args.get('userId')
         jsonData = request.get_json()
-        return self.service.save(pecaId, lapse, jsonData, None)
+        return self.service.save(pecaId, lapse, jsonData, userId, None)

@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, Approval
 
 
 class CheckElement(EmbeddedDocument):
@@ -39,16 +39,6 @@ class ActivityFields(EmbeddedDocument):
     meta = {'allow_inheritance': True}
 
 
-class Approval(EmbeddedDocument):
-    id = fields.StringField()
-    user = fields.ReferenceField('User')
-    comments = fields.StringField()
-    detail = fields.DictField()
-    status = fields.StringField(max_length=1, default="1")
-    createdAt = fields.DateTimeField(default=datetime.utcnow)
-    updatedAt = fields.DateTimeField(default=datetime.utcnow)
-
-
 class ActivityPeca(ActivityFields):
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
 
@@ -73,6 +63,8 @@ class ActivityPeca(ActivityFields):
                         approved = False
             if approved:
                 self.approve()
+        if self.approvalType == "5":
+            self.approve()
 
     def clean(self):
         self.updatedAt = datetime.utcnow()

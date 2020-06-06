@@ -158,6 +158,45 @@ class ContactRequestTest(unittest.TestCase):
             email="ueconcepcion@test.com").only('email').first()
         self.assertIsNotNone(schoolUser)
 
+        # test duplicate school code
+        reqData = dict(
+            name="U.E.N Concepcion",
+            code="316",
+            email="ueconcepcion@test2.com",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            address="calle 9 entre 1 y 2",
+            phone="02524433434",
+            schoolType="1",
+            principalFirstName="Marlene",
+            principalLastName="Mejia",
+            principalEmail="mmejia@test.com",
+            principalPhone="04242772727",
+            subPrincipalFirstName="Nelly",
+            subPrincipalLastName="Velazquez",
+            subPrincipalEmail="nvelazquez@test.com",
+            subPrincipalPhone="04244545454",
+            nTeachers=22,
+            nAdministrativeStaff=10,
+            nLaborStaff=3,
+            nStudents=500,
+            nGrades=6,
+            nSections=18,
+            schoolShift="3",
+            hasSponsor=False
+        )
+
+        res = self.client().post(
+            '/schoolscontacts',
+            data=json.dumps(reqData),
+            content_type='application/json')
+        json_res = json.loads(
+            res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(
+            {'code': [{'msg': 'Duplicated school code', 'status': '5'}]}, json_res)
+
     def test_endpoint_sponsor_contact(self):
 
         # with school
@@ -221,6 +260,60 @@ class ContactRequestTest(unittest.TestCase):
             res.data.decode('utf8').replace("'", '"'))
 
         self.assertEqual('uelibertador@test.com', json_res['school']['email'])
+
+        # duplicate school code
+        reqData = dict(
+            schoolName="U.E.N Libertador",
+            schoolCode="315",
+            schoolEmail="uelibertador@test2.com",
+            schoolAddressState=str(self.state.pk),
+            schoolAddressMunicipality=str(self.municipality.pk),
+            schoolAddressCity="Barquisimeto",
+            schoolAddressZoneType="1",
+            schoolAddressZone="La Granja",
+            schoolAddress="calle 9 entre 1 y 2",
+            schoolPhone="02524433434",
+            schoolType="1",
+            schoolPrincipalFirstName="Marlene",
+            schoolPrincipalLastName="Mejia",
+            schoolPrincipalEmail="mmejia@test.com",
+            schoolPrincipalPhone="04242772727",
+            schoolSubPrincipalFirstName="Nelly",
+            schoolSubPrincipalLastName="Velazquez",
+            schoolSubPrincipalEmail="nvelazquez@test.com",
+            schoolSubPrincipalPhone="04244545454",
+            schoolNTeachers=22,
+            schoolNAdministrativeStaff=10,
+            schoolNLaborStaff=3,
+            schoolNStudents=500,
+            schoolNGrades=6,
+            schoolNSections=18,
+            schoolShift="3",
+            hasSchool=True,
+            email="iamsponsor@test.com",
+            name="Sponsor C.A.",
+            rif="282882822",
+            companyType="1",
+            companyPhone="02524433434",
+            addressState=str(self.state.pk),
+            addressMunicipality=str(self.municipality.pk),
+            addressCity="Barquisimeto",
+            address="calle 9 entre 1 y 2",
+            contactFirstName="Contact FirstName",
+            contactLastName="Contact Lastname",
+            contactEmail="someemail@test.com",
+            contactPhone="04242772727"
+        )
+
+        res = self.client().post(
+            '/sponsorscontacts',
+            data=json.dumps(reqData),
+            content_type='application/json')
+        json_res = json.loads(
+            res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(
+            {'schoolCode': [{'msg': 'Duplicated school code', 'status': '5'}]}, json_res)
 
         schoolUser = User.objects(
             email="uelibertador@test.com").only('email').first()

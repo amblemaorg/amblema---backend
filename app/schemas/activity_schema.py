@@ -34,8 +34,9 @@ class ActivitySchema(Schema):
         allow_none=True)
     approvalType = fields.Str(
         validate=OneOf(
-            ["1", "2", "3", "4"],
-            ["onlyAdmin", "fillAllFields", "approvalRequest", "internalApproval"]
+            ["1", "2", "3", "4", "5"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest",
+                "internalApproval", "not required"]
         ), required=True)
     status = fields.Str(
         validate=OneOf(
@@ -99,6 +100,12 @@ class ActivitySchema(Schema):
             and "checklist" in data and data["checklist"] == []
         ):
             errors["checklist"] = [{"status": "12", "msg": "Out of range"}]
+        if (
+            "approvalType" in data
+            and data['approvalType'] == "2"
+            and not data['hasChecklist']
+        ):
+            errors["checklist"] = [{"status": "2", "msg": "Field is required"}]
         if errors:
             raise ValidationError(errors)
 

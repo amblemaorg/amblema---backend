@@ -35,7 +35,10 @@ class ProjectService():
             documentFiles = getFileFields(StepControl)
             if files and documentFiles:
                 validFiles = validate_files(files, documentFiles)
-                uploadedfiles = upload_files(validFiles)
+                filesPath = "projects/{}/steps/{}".format(
+                    projectId, jsonData['id']
+                )
+                uploadedfiles = upload_files(validFiles, filesPath)
                 jsonData.update(uploadedfiles)
             data = schema.load(jsonData)
             project = Project.objects(

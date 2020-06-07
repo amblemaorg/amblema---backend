@@ -101,7 +101,7 @@ class TeacherTestimonialService():
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
                 else:
-                    return {'status': 0, 'message': 'Supero la cantidad maxima de testimonios'}, 400
+                    return {'status': 0, 'message': 'Exceeded the maximum number of testimonials'}, 400
 
             except ValidationError as err:
                 return err.normalized_messages(), 400

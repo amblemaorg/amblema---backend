@@ -344,8 +344,8 @@ def create_app(config_instance):
     api.add_resource(NumberActiveSchoolsController,
                      '/statistics/numberactiveschools/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(TeacherTestimonialController,
-                     '/teachertestimonial/<string:schoolId>')
+                     '/schools/teacherstestimonials/<string:schoolId>')
     api.add_resource(TeacherTestimonialHandlerController,
-                     '/teachertestimonial/<string:schoolId>/<string:testimonialId>')
+                     '/schools/teacherstestimonials/<string:schoolId>/<string:testimonialId>')
 
     return app

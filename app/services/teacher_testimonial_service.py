@@ -12,9 +12,8 @@ from app.models.teacher_testimonial_model import TeacherTestimonial
 from app.models.school_user_model import SchoolUser
 from app.models.user_model import User
 from app.models.request_content_approval_model import RequestContentApproval
-from app.models.peca_project_model import Teacher
+from app.models.teacher_model import Teacher
 from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
-from app.schemas.peca_project_schema import TeacherSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
@@ -81,6 +80,15 @@ class TeacherTestimonialService():
                     for field in schema.dump(data).keys():
                         testimonial[field] = data[field]
                     try:
+                        teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
+                        if teacher:
+                            testimonial.firstName = teacher.firstName
+                            testimonial.lastName = teacher.lastName
+                        else:
+                            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"teacherId": testimonial.teacherId})
+                        
                         school.teachersTestimonials.append(testimonial)
                         school.save()
                         RequestContentApproval(
@@ -121,6 +129,14 @@ class TeacherTestimonialService():
                     
                     if hasChanged:
                         try:
+                            teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
+                            if teacher:
+                                testimonial.firstName = teacher.firstName
+                                testimonial.lastName = teacher.lastName
+                            else:
+                                raise RegisterNotFound(message="Record not found",
+                                    status_code=404,
+                                    payload={"teacherId": testimonial.teacherId})
                             school.save()
                             return schema.dump(testimonial), 200
                         except Exception as e:

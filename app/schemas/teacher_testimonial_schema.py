@@ -12,14 +12,11 @@ from app.models.teacher_testimonial_model import TeacherTestimonial
 class TeacherTestimonialSchema(Schema):
     id = fields.Str(dump_only=True)
     teacherId = fields.Str(required=True, validate=not_blank)
-    firstName = fields.Str(required=True, validate=not_blank)
-    lastName = fields.Str(required=True, validate=not_blank)
-    #image = MAImageField(
-    #    required=True,
-    #    validate=(not_blank, validate_image),
-    #    folder='teachertestimonial')
+    firstName = fields.Str()
+    lastName = fields.Str()
     image = MAImageField(
-        validate=validate_image,
+        required=True,
+        validate=(not_blank, validate_image),
         folder='teachertestimonial')
     function = fields.Str(required=True, validate=not_blank)
     description = fields.Str(required=True, validate=not_blank)

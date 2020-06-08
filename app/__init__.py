@@ -134,6 +134,9 @@ from app.controllers.statistics_controller import (
     UserSummaryController, DiagnosticReportController, UserReportController, OlympicsReportCtrl, ActiveSponsorsGraphicController, InactiveSponsorsGraphicController, NumberActiveSchoolsController
 )
 from app.controllers.diagnostic_controller import DiagnosticController
+from app.controllers.teacher_testimonial_controller import (
+    TeacherTestimonialController, TeacherTestimonialHandlerController
+)
 db = MongoEngine()
 
 
@@ -340,5 +343,9 @@ def create_app(config_instance):
                      '/statistics/inactivesponsorsgraphic/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(NumberActiveSchoolsController,
                      '/statistics/numberactiveschools/<string:startPeriodId>/<string:endPeriodId>')
+    api.add_resource(TeacherTestimonialController,
+                     '/schools/teacherstestimonials/<string:schoolId>')
+    api.add_resource(TeacherTestimonialHandlerController,
+                     '/schools/teacherstestimonials/<string:schoolId>/<string:testimonialId>')
 
     return app

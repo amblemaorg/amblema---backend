@@ -93,6 +93,15 @@ class RequestContentApproval(Document):
                                     break
                             break
                     peca.save()
+                # testimonials
+                if document.type == "2":
+                    school = SchoolUser.objects(
+                        id=str(document.project.school['id'])).first()
+                    for testimonial in school.teachersTestimonials:
+                        if str(testimonial.id) == document.detail['id']:
+                            testimonial.approvalStatus = document.status
+                            break
+                    school.save()
 
                 # slider
                 if document.type == "4":

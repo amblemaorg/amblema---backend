@@ -8,6 +8,7 @@ from mongoengine import fields
 from app.models.user_model import User
 from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference, ImageStatus
 from app.models.teacher_model import Teacher
+from app.models.teacher_testimonial_model import TeacherTestimonial
 
 
 class SchoolUser(User):
@@ -36,6 +37,7 @@ class SchoolUser(User):
     teachers = fields.EmbeddedDocumentListField(Teacher)
     slider = fields.EmbeddedDocumentListField(ImageStatus)
     phase = fields.StringField(max_length=1, default="1")
+    teachersTestimonials = fields.EmbeddedDocumentListField(TeacherTestimonial)
 
     def addProject(self, project):
 

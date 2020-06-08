@@ -9,6 +9,7 @@ from app.schemas import fields
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf, Range, validate_image, validate_email)
+from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
 
 
 class SchoolUserSchema(UserSchema):
@@ -69,6 +70,7 @@ class SchoolUserSchema(UserSchema):
         )
     )
     project = fields.Nested(ProjectReferenceSchema, dump_only=True)
+    teachersTestimonials = fields.List(fields.Nested(TeacherTestimonialSchema))
 
     class Meta:
         unknown = EXCLUDE

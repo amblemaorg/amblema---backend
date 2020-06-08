@@ -349,8 +349,8 @@ class PecaActivitiesTest(unittest.TestCase):
         }
         res = self.client().put(
             '/requestscontentapproval/{}'.format(request1['id']),
-            data=requestData,
-            content_type='multipart/form-data')
+            data=json.dumps(requestData),
+            content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         # check activity history in peca
@@ -409,8 +409,8 @@ class PecaActivitiesTest(unittest.TestCase):
         }
         res = self.client().put(
             '/requestscontentapproval/{}'.format(request2['id']),
-            data=requestData,
-            content_type='multipart/form-data')
+            data=json.dumps(requestData),
+            content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         # check activity history in peca

@@ -7,11 +7,12 @@ from flask_restful import Resource
 from app.services.generic_service import GenericServices
 from app.models.request_content_approval_model import RequestContentApproval
 from app.schemas.request_content_approval_schema import RequestContentApprovalSchema
+from app.services.request_content_approval_service import RequestContentApprovalService
 from app.helpers.handler_request import getQueryParams
 
 
 class ReqContentApprovalController(Resource):
-    service = GenericServices(
+    service = RequestContentApprovalService(
         Model=RequestContentApproval,
         Schema=RequestContentApprovalSchema
     )
@@ -23,7 +24,7 @@ class ReqContentApprovalController(Resource):
 
 
 class ReqContentApprovalHandlerController(Resource):
-    service = GenericServices(
+    service = RequestContentApprovalService(
         Model=RequestContentApproval,
         Schema=RequestContentApprovalSchema
     )
@@ -32,7 +33,7 @@ class ReqContentApprovalHandlerController(Resource):
         return self.service.getRecord(id)
 
     def put(self, id):
-        jsonData = request.form.to_dict()
+        jsonData = request.get_json()
         return self.service.updateRecord(
             recordId=id,
             jsonData=jsonData,

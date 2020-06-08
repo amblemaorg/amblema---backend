@@ -29,7 +29,7 @@ class RequestContentApprovalSchema(Schema):
             ('1', '2', '3', '4', '5'),
             ('steps', 'testimonials', 'activities', 'slider', 'initialWorkshop')
         ), required=True)
-    user = MAReferenceField(document=User, fields=["id", "name", "userType"])
+    user = MAReferenceField(document=User, fields=["id", "name"])
     comments = fields.Str()
     status = fields.Str(
         validate=OneOf(

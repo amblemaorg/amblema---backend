@@ -17,7 +17,8 @@ from app.models.peca_setting_model import (
     AnnualConvention,
     AnnualPreparation,
     EnvironmentalProject,
-    MathOlympic)
+    MathOlympic,
+    SpecialLapseActivity)
 
 from app.models.goal_setting_model import GoalSetting, GradeSetting
 
@@ -44,6 +45,7 @@ class SchoolYear(Document):
             annualConvention=AnnualConvention(),
             annualPreparation=AnnualPreparation(),
             mathOlympic=MathOlympic(),
+            specialLapseActivity=SpecialLapseActivity(),
             activities=[]
         )
 

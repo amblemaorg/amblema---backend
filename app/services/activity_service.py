@@ -348,6 +348,21 @@ class ActivityService():
                     }
                     records['lapse{}'.format(i+1)].append(schema.dump(data))
 
+                specialLapseActivity = schoolYear.pecaSetting['lapse{}'.format(
+                    i+1)].specialLapseActivity
+                if (
+                    (not filters)
+                ):
+
+                    data = {
+                        "id": "speciallapseactivity",
+                        "name": "Actividad especial de lapso",
+                        "devName": "specialLapseActivity",
+                        "isStandard": True,
+                        "status": specialLapseActivity.status
+                    }
+                    records['lapse{}'.format(i+1)].append(schema.dump(data))
+
                 for activity in schoolYear.pecaSetting['lapse{}'.format(i+1)].activities:
                     if (
                         not activity.isDeleted and (
@@ -598,6 +613,12 @@ class ActivityService():
                         if bulk_operations:
                             PecaProject._get_collection() \
                                 .bulk_write(bulk_operations, ordered=False)
+                    elif data['id'] == "specialLapseActivity":
+                        found = True
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].specialLapseActivity.status = data['status']
+                        specialLapseActivity = schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].specialLapseActivity
 
                 else:
                     from app.models.peca_activities_model import ActivityPeca, CheckElement

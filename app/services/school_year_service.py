@@ -17,6 +17,23 @@ from app.services.generic_service import GenericServices
 
 class SchoolYearService(GenericServices):
 
+    def getAllRecords(self, filters=None, only=None, exclude=()):
+        """
+        get all available records
+        """
+        schema = self.Schema(only=only, exclude=exclude)
+
+        if filters:
+            filterList = []
+            for f in filters:
+                filterList.append(Q(**{f['field']: f['value']}))
+            records = self.Model.objects(isDeleted=False).filter(
+                reduce(operator.and_, filterList)).all()
+        else:
+            records = self.Model.objects(isDeleted=False).all()
+
+        return {"dates": schema.dump(records, many=True)}, 200
+
     def saveRecord(self, jsonData, files=None):
         schema = self.Schema()
         try:
@@ -24,9 +41,14 @@ class SchoolYearService(GenericServices):
             oldSchoolYear = SchoolYear.objects(
                 isDeleted=False, status="1").first()
             if oldSchoolYear:
+                if oldSchoolYear.endDate > datetime.date.today():
+                    return {
+                        "status": "0",
+                        "msg": "Current school year has not finished yet"
+                    }, 400
                 date = datetime.datetime.now()
                 newSchoolYear = SchoolYear(
-                    name=data['name'],
+                    name="{} - {}".format(date.year, date.year+1),
                     startDate=date,
                     endDate=date.replace(date.year + 1),
                     pecaSetting=oldSchoolYear.pecaSetting
@@ -37,7 +59,7 @@ class SchoolYearService(GenericServices):
             else:
                 date = datetime.datetime.now()
                 newSchoolYear = SchoolYear(
-                    name=data['name'],
+                    name="{} - {}".format(date.year, date.year+1),
                     startDate=date,
                     endDate=date.replace(date.year + 1)
                 )

@@ -15,6 +15,7 @@ from app.models.peca_annual_convention_model import AnnualConventionPeca
 from app.models.peca_lapse_planning_model import LapsePlanningPeca
 from app.models.peca_initial_workshop_model import InitialWorkshopPeca
 from app.models.peca_activities_model import ActivityPeca
+from app.models.peca_schedule_model import ScheduleActivity
 
 
 class Diagnostic(EmbeddedDocument):
@@ -111,6 +112,7 @@ class PecaProject(Document):
     lapse1 = fields.EmbeddedDocumentField(Lapse)
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)
+    schedule = fields.EmbeddedDocumentListField(ScheduleActivity)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

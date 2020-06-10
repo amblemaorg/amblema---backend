@@ -106,7 +106,7 @@ class SchoolYearTest(unittest.TestCase):
 
     def test_create_school_year(self):
         requestData = {
-            "name": "2020-2021"
+            "name": "2020 - 2021"
         }
         # create schoolyear
         res = self.client().post(
@@ -128,6 +128,21 @@ class SchoolYearTest(unittest.TestCase):
             '/schoolyears',
             data=json.dumps(requestData),
             content_type='application/json')
+        self.assertEqual(res.status_code, 400)
+
+        schoolYear = SchoolYear.objects(id=result1['id']).first()
+        schoolYear.endDate = schoolYear.endDate.replace(
+            schoolYear.endDate.year - 1)
+        schoolYear.save()
+
+        # create new schoolyear
+        requestData = {
+            "name": "2021 - 2022"
+        }
+        res = self.client().post(
+            '/schoolyears',
+            data=json.dumps(requestData),
+            content_type='application/json')
         self.assertEqual(res.status_code, 201)
         result2 = json.loads(res.data.decode('utf8').replace("'", '"'))
 
@@ -140,7 +155,7 @@ class SchoolYearTest(unittest.TestCase):
 
     def test_enroll_school(self):
         requestData = {
-            "name": "2020-2021"
+            "name": "2020 - 2021"
         }
         # create schoolyear
         res = self.client().post(
@@ -210,7 +225,7 @@ class SchoolYearTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(
-            '2020-2021', result['schoolYears'][0]['schoolYear']['name'])
+            '2020 - 2021', result['schoolYears'][0]['schoolYear']['name'])
 
         project = Project.objects(id=project['id']).first()
         self.assertEqual(1, len(project.schoolYears))

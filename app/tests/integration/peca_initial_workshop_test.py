@@ -278,8 +278,8 @@ class PecaInitialWorkshopTest(unittest.TestCase):
         res = self.client().put(
             '/requestscontentapproval/{}'.format(
                 resultPeca['lapse1']['initialWorkshop']['approvalHistory'][0]['id']),
-            data=requestData,
-            content_type='multipart/form-data')
+            data=json.dumps(requestData),
+            content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         # check peca
@@ -332,8 +332,8 @@ class PecaInitialWorkshopTest(unittest.TestCase):
         res = self.client().put(
             '/requestscontentapproval/{}'.format(
                 resultPeca['lapse1']['initialWorkshop']['approvalHistory'][1]['id']),
-            data=requestData,
-            content_type='multipart/form-data')
+            data=json.dumps(requestData),
+            content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         # check peca

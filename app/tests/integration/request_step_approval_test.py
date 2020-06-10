@@ -140,7 +140,8 @@ class StepApprovalTest(unittest.TestCase):
 
         res = self.client().put(
             '/requestscontentapproval/{}'.format(approval_request['id']),
-            data={"status": "2"})
+            data=json.dumps({"status": "2"}),
+            content_type="application/json")
         self.assertEqual(res.status_code, 200)
 
         self.project = Project.objects.get(id=self.project.pk)

@@ -205,8 +205,8 @@ class SchoolPecaTest(unittest.TestCase):
         res = self.client().put(
             '/requestscontentapproval/{}'.format(
                 result['records'][0]['id']),
-            data={'status': '2'},
-            content_type='multipart/form-data')
+            data=json.dumps({'status': '2'}),
+            content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         # get sliders

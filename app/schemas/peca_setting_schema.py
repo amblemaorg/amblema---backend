@@ -99,6 +99,11 @@ class MathOlympicSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
 
 
+class SpecialLapseActivitySchema(Schema):
+    name = fields.Str(dump_only=True)
+    isStandard = fields.Bool(dump_only=True)
+
+
 class LapseSchema(Schema):
     initialWorshop = fields.Nested(InicialWorkshopSchema)
     lapsePlanning = fields.Nested(LapsePlanningSchema)
@@ -106,6 +111,7 @@ class LapseSchema(Schema):
     annualConvention = fields.Nested(AnnualConventionSchema)
     annualPreparation = fields.Nested(AnnualPreparationSchema)
     mathOlympic = fields.Nested(MathOlympicSchema)
+    specialLapseActivity = fields.Nested(SpecialLapseActivitySchema)
     activities = fields.List(fields.Nested(ActivitySchema))
 
     @post_load

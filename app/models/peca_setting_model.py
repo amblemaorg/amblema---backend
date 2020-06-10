@@ -71,6 +71,12 @@ class MathOlympic(EmbeddedDocument):
     isStandard = fields.BooleanField(default=True)
 
 
+class SpecialLapseActivity(EmbeddedDocument):
+    name = fields.StringField(default="Actividad especial de lapso")
+    status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
+
+
 class Lapse(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
     ambleCoins = fields.EmbeddedDocumentField(AmbleCoins)
@@ -78,6 +84,7 @@ class Lapse(EmbeddedDocument):
     annualConvention = fields.EmbeddedDocumentField(AnnualConvention)
     annualPreparation = fields.EmbeddedDocumentField(AnnualPreparation)
     mathOlympic = fields.EmbeddedDocumentField(MathOlympic)
+    specialLapseActivity = fields.EmbeddedDocumentField(SpecialLapseActivity)
     activities = fields.EmbeddedDocumentListField(Activity)
 
 

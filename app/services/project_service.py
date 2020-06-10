@@ -122,7 +122,7 @@ class ProjectService():
 
     def handlerProjectBeforeCreate(self, document):
 
-        from app.models.project_model import StepControl, StepsProgress, CheckElement, Approval
+        from app.models.project_model import StepControl, StepsProgress, CheckElement, Approval, Project
         from app.schemas.school_user_schema import SchoolUserSchema
         from app.schemas.coordinator_user_schema import CoordinatorUserSchema
         from app.schemas.sponsor_user_schema import SponsorUserSchema
@@ -134,6 +134,15 @@ class ProjectService():
         if not (document.school or document.sponsor or document.coordinator):
             raise ValidationError(
                 message="At least an sponsor, school or coordinator is required")
+        if document.school:
+            duplicated = Project.objects(
+                isDeleted=False, school=document.school.id).first()
+            if duplicated:
+                raise ValidationError(
+                    {"school": [{"status": "5",
+                                 "msg": "Duplicated school project"}]}
+                )
+
         initialSteps = StepsProgress()
         steps = Step.objects(schoolYear=str(year.id),
                              isDeleted=False, status="1").all()
@@ -229,7 +238,7 @@ class ProjectService():
             document.school.addProject(document)
 
     def handlerProjectBeforeUpdate(self, document, oldDocument):
-        from app.models.project_model import Approval
+        from app.models.project_model import Approval, Project
         from app.schemas.school_user_schema import SchoolUserSchema
         from app.schemas.coordinator_user_schema import CoordinatorUserSchema
         from app.schemas.sponsor_user_schema import SponsorUserSchema
@@ -256,6 +265,14 @@ class ProjectService():
                         )
 
         if document.school != oldDocument.school:
+            if document.school:
+                duplicated = Project.objects(
+                    isDeleted=False, school=document.school.id, id__ne=document.id).first()
+                if duplicated:
+                    raise ValidationError(
+                        {"school": [{"status": "5",
+                                     "msg": "Duplicated school project"}]}
+                    )
             if oldDocument.school:
                 oldDocument.school.removeProject()
             if document.school:

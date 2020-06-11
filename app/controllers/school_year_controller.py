@@ -18,7 +18,7 @@ class SchoolYearController(Resource):
 
     def get(self):
         filters = getQueryParams(request)
-        return self.service.getAllRecords(filters=filters)
+        return self.service.getAllRecords(filters=filters, only=('id', 'name', 'status'))
 
     def post(self):
         jsonData = request.get_json()

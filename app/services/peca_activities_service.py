@@ -85,7 +85,11 @@ class ActivitiesPecaService():
                             return {
                                 "status": 0, "message": "An activity approval is pending"
                             }, 400
-                        data = schema.dump(data)
+                        act = activity
+                        for key in data.keys():
+                            act[key] = data[key]
+                        data = schema.dump(act)
+
                         data['pecaId'] = pecaId
                         data['lapse'] = lapse
                         data['id'] = activityId

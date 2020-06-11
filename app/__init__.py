@@ -121,6 +121,9 @@ from app.controllers.peca_initial_workshop_controller import (
 from app.controllers.peca_activities_controller import (
     PecaActivitiesCtrl
 )
+from app.controllers.peca_schedule_controller import (
+    ScheduleController
+)
 from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
 )
@@ -333,6 +336,8 @@ def create_app(config_instance):
                      '/pecaprojects/initialworkshop/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaActivitiesCtrl,
                      '/pecaprojects/activities/<string:pecaId>/<string:lapse>/<string:activityId>')
+    api.add_resource(ScheduleController,
+                     '/pecaprojects/schedule/<string:pecaId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')

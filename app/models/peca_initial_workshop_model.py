@@ -16,17 +16,19 @@ class Image(EmbeddedDocument):
 
 class InitialWorkshopPeca(EmbeddedDocument):
     name = fields.StringField(default="Taller inicial")
-    agreementFile = fields.EmbeddedDocumentField(
-        Link)
-    agreementDescription = fields.StringField()
-    planningMeetingFile = fields.EmbeddedDocumentField(
-        Link)
-    planningMeetingDescription = fields.StringField()
-    teachersMeetingFile = fields.EmbeddedDocumentField(
-        Link)
-    teachersMeetingDescription = fields.StringField()
+    # agreementFile = fields.EmbeddedDocumentField(
+    #    Link)
+    #agreementDescription = fields.StringField()
+    # planningMeetingFile = fields.EmbeddedDocumentField(
+    #    Link)
+    #planningMeetingDescription = fields.StringField()
+    # teachersMeetingFile = fields.EmbeddedDocumentField(
+    #    Link)
+    #teachersMeetingDescription = fields.StringField()
     isStandard = fields.BooleanField(default=True)
     description = fields.StringField()
     images = fields.EmbeddedDocumentListField(Image)
+    workshopPlace = fields.StringField()
+    workshopDate = fields.DateTimeField()
     isInApproval = fields.BooleanField(default=False)
     approvalHistory = fields.EmbeddedDocumentListField(Approval)

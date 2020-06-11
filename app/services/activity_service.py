@@ -248,9 +248,7 @@ class ActivityService():
                 initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
                     i+1)].initialWorkshop
                 if (
-                    (not filters) or
-                    ('status' in filters and filters['status']
-                     == '1' and initialWorkshop.status == '1')
+                    (not filters)
                 ):
                     data = {
                         "id": 'initialWorkshop',
@@ -418,22 +416,11 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].initialWorkshop.status = data['status']
-                        initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
-                            data['lapse'])].initialWorkshop
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
                             schoolYear=schoolYear.id, isDeleted=False)
                         if data['status'] == "1":
-                            initialWorkshopStg = schoolYear.pecaSetting['lapse{}'.format(
-                                data['lapse'])].initialWorkshop
-                            initialWorkshop = InitialWorkshopPeca(
-                                agreementFile=initialWorkshopStg.agreementFile,
-                                agreementDescription=initialWorkshopStg.agreementDescription,
-                                planningMeetingFile=initialWorkshopStg.planningMeetingFile,
-                                planningMeetingDescription=initialWorkshopStg.planningMeetingDescription,
-                                teachersMeetingFile=initialWorkshopStg.teachersMeetingFile,
-                                teachersMeetingDescription=initialWorkshopStg.teachersMeetingDescription
-                            )
+                            initialWorkshop = InitialWorkshopPeca()
 
                         for peca in pecaProjects:
                             # is active

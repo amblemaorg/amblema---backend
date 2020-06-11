@@ -456,9 +456,6 @@ class PecaActivitiesTest(unittest.TestCase):
         #####################################
 
         requestData = {
-            "status": "3",
-        }
-        requestData = {
             "checklist": json.dumps([
                 {
                     "id": peca['lapse1']['activities'][0]['id'],

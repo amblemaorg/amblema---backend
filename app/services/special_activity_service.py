@@ -8,7 +8,7 @@ from flask import current_app
 from marshmallow import ValidationError
 from mongoengine import Q
 
-from app.models.special_activity_model import SpecialActivity
+from app.models.special_activity_model import (SpecialActivity, ItemSpecialActivity)
 from app.models.peca_project_model import PecaProject, Lapse
 from app.schemas.special_activity_schema import SpecialActivitySchema
 from app.models.user_model import User
@@ -36,35 +36,140 @@ class SpecialActivityService():
                                            status_code=404,
                                            payload={"userId":  userId})
                 
-                if lapse != "0":
-                    print(peca['lapse{}'.format(lapse)])
+                if lapse in ("1", "2", "3"):
                     specialActivity = SpecialActivity()
                     for field in schema.dump(data).keys():
-                        specialActivity[field] = data[field]
-                    print(specialActivity.activityDate)
-                    print(specialActivity.itemsActivities)
+                        if field == "itemsActivities":
+                            for item in data[field]:
+                                itemActivitity = ItemSpecialActivity()
+                                itemActivitity.name = item["name"]
+                                itemActivitity.description = item["description"]
+                                itemActivitity.quantity = item["quantity"]
+                                itemActivitity.unitPrice = item["unitPrice"]
+                                itemActivitity.tax = item["tax"]
+                                itemActivitity.subtotal = item["subtotal"]
+                                specialActivity[field].append(itemActivitity)
+                        else:
+                            specialActivity[field] = data[field]
+                        
                     try:                        
                         if not peca['lapse{}'.format(lapse)]:
-                            print("ALGO")
                             peca['lapse{}'.format(lapse)] = Lapse()
-                        peca['lapse{}'.format(lapse)].specialActivity = SpecialActivity()
                         peca['lapse{}'.format(lapse)].specialActivity = specialActivity
-                        print(peca['lapse{}'.format(lapse)].specialActivity.activityDate)
                         peca.save()
                         RequestContentApproval(
                             project=peca.project,
                             user=user,
-                            type="2",
+                            type="6",
                             detail=schema.dump(specialActivity)
                         ).save()
                         return schema.dump(specialActivity), 200
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
                 else:
-                    return {'status': 0, 'message': 'debe colocar un lapso'}, 400
+                    return {'status': 0, 'message': 'The lapse is not valid'}, 400
             except ValidationError as err:
                 return err.normalized_messages(), 400
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"pecaId": pecaId})
+    
+    def get(self, pecaId, lapse):
+
+        peca = PecaProject.objects(id=pecaId, isDeleted=False).only("lapse{}".format(lapse)).first()
+
+        if peca:
+            if lapse in ("1", "2", "3"):
+                if peca['lapse{}'.format(lapse)].specialActivity and not peca['lapse{}'.format(lapse)].specialActivity.isDeleted:
+                    specialActivity = SpecialActivity()
+
+                    specialActivity.id = peca['lapse{}'.format(lapse)].specialActivity.id
+                    specialActivity.name = peca['lapse{}'.format(lapse)].specialActivity.name
+                    specialActivity.activityDate = peca['lapse{}'.format(lapse)].specialActivity.activityDate
+                    specialActivity.approvalStatus = peca['lapse{}'.format(lapse)].specialActivity.approvalStatus
+                    specialActivity.itemsActivities = peca['lapse{}'.format(lapse)].specialActivity.itemsActivities
+                    specialActivity.total = peca['lapse{}'.format(lapse)].specialActivity.total
+                    specialActivity.isDeleted = peca['lapse{}'.format(lapse)].specialActivity.isDeleted
+                    specialActivity.createdAt = peca['lapse{}'.format(lapse)].specialActivity.createdAt
+                    specialActivity.updatedAt = peca['lapse{}'.format(lapse)].specialActivity.updatedAt
+
+                    schema = SpecialActivitySchema()
+                    return schema.dump(specialActivity), 200
+                else:
+                    return {'status': 0, 'message': 'There is no special activity in the lapse'}, 400
+            else:
+                return {'status': 0, 'message': 'The lapse is not valid'}, 400
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"pecaId": pecaId})
+    
+    def update(self, pecaId, lapse, jsonData):
+
+        peca = PecaProject.objects(id=pecaId, isDeleted=False).only("lapse{}".format(lapse)).first()
+        
+        if peca:
+            try:
+                schema = SpecialActivitySchema()
+                data = schema.load(jsonData)
+                hasChanged = False
+
+                if lapse in ("1", "2", "3"):
+                    specialActivity = peca['lapse{}'.format(lapse)].specialActivity
+                    if specialActivity and not specialActivity.isDeleted:
+                        for field in schema.dump(data).keys():
+                            if field == "itemsActivities":
+                                del specialActivity[field][:]
+                                for item in data[field]:
+                                    itemActivitity = ItemSpecialActivity()
+                                    itemActivitity.name = item["name"]
+                                    itemActivitity.description = item["description"]
+                                    itemActivitity.quantity = item["quantity"]
+                                    itemActivitity.unitPrice = item["unitPrice"]
+                                    itemActivitity.tax = item["tax"]
+                                    itemActivitity.subtotal = item["subtotal"]
+                                    specialActivity[field].append(itemActivitity)
+                                    hasChanged = True
+                            else:
+                                if specialActivity[field] != data[field]:
+                                    hasChanged = True
+                                    specialActivity[field] = data[field]
+                        
+                        if hasChanged:
+                            try:
+                                peca.save()
+                                return schema.dump(specialActivity), 200
+                            except Exception as e:
+                                return {'status': 0, 'message': str(e)}, 400
+                    else:
+                        return {'status': 0, 'message': 'There is no special activity in the lapse'}, 400
+                else:
+                    return {'status': 0, 'message': 'The lapse is not valid'}, 400
+
+                
+            except ValidationError as err:
+                return err.normalized_messages(), 400
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"pecaId": pecaId})
+    
+    def delete(self, pecaId, lapse):
+        """
+        Delete (change isDeleted to True) a record
+        """
+        
+        peca = PecaProject.objects(id=pecaId, isDeleted=False).only("lapse{}".format(lapse)).first()
+
+        if peca:
+            try:
+                peca['lapse{}'.format(lapse)].specialActivity.isDeleted = True
+                peca.save()
+                return {"message": "Record deleted successfully"}, 200
+            except Exception as e:
+                return {'status': 0, 'message': str(e)}, 400
+        else:
+            raise RegisterNotFound(message="Record not found",
+            status_code=404,
+            payload={"pecaId": pecaId})

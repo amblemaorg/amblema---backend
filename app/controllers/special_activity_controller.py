@@ -15,7 +15,14 @@ class SpecialActivityController(Resource):
     def post(self, pecaId, lapse):
         userId = request.args.get('userId')
         jsonData = request.get_json()
-        print(pecaId)
-        print(lapse)
-        print(jsonData)
         return self.service.save(pecaId, lapse, userId, jsonData)
+    
+    def get(self, pecaId, lapse):
+        return self.service.get(pecaId, lapse)
+    
+    def put(self, pecaId, lapse):
+        jsonData = request.get_json()
+        return self.service.update(pecaId, lapse, jsonData)
+
+    def delete(self, pecaId, lapse):
+        return self.service.delete(pecaId, lapse)

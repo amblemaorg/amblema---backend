@@ -13,6 +13,7 @@ from app.models.project_model import Project
 from app.schemas.project_schema import ProjectSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.services.generic_service import GenericServices
+from app.models.peca_setting_model import EnvironmentalProject
 
 
 class SchoolYearService(GenericServices):
@@ -52,7 +53,9 @@ class SchoolYearService(GenericServices):
                     startDate=date,
                     endDate=date.replace(date.year + 1),
                     pecaSetting=oldSchoolYear.pecaSetting
-                ).save()
+                )
+                newSchoolYear.pecaSetting.environmentalProject = EnvironmentalProject()
+                newSchoolYear.save()
                 oldSchoolYear.status = "2"
                 oldSchoolYear.endDate = date
                 oldSchoolYear.save()

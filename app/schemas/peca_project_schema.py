@@ -24,6 +24,7 @@ from app.schemas.peca_annual_convention_schema import AnnualConventionSchema
 from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema
 from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
 from app.schemas.peca_activities_schema import ActivityPecaSchema
+from app.schemas.peca_schedule_schema import ScheduleActivitySchema
 
 
 class DiagnosticSchema(Schema):
@@ -133,5 +134,6 @@ class PecaProjectSchema(Schema):
     lapse1 = fields.Nested(LapseSchema)
     lapse2 = fields.Nested(LapseSchema)
     lapse3 = fields.Nested(LapseSchema)
+    schedule = fields.List(fields.Nested(ScheduleActivitySchema))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

@@ -69,30 +69,40 @@ class InitialWorkshopService():
 
                 data = schema.load(jsonData)
 
+                approval = False
+                if 'description' in data or 'images' in data:
+                    approval = True
+
                 initialWorkshop = peca['lapse{}'.format(
                     lapse)].initialWorkshop
-                if initialWorkshop.isInApproval:
-                    return {
-                        "status": "0",
-                        "msg": "Record has a pending approval request"
-                    }, 400
+
+                if approval:
+                    if initialWorkshop.isInApproval:
+                        return {
+                            "status": "0",
+                            "msg": "Record has a pending approval request"
+                        }, 400
                 try:
-                    jsonData['pecaId'] = pecaId
-                    jsonData['lapse'] = lapse
-                    request = RequestContentApproval(
-                        project=peca.project,
-                        user=user,
-                        type="5",
-                        detail=jsonData
-                    ).save()
-                    initialWorkshop.isInApproval = True
-                    initialWorkshop.approvalHistory.append(
-                        Approval(
-                            id=str(request.id),
-                            user=user.id,
+                    if approval:
+                        jsonData['pecaId'] = pecaId
+                        jsonData['lapse'] = lapse
+                        request = RequestContentApproval(
+                            project=peca.project,
+                            user=user,
+                            type="5",
                             detail=jsonData
+                        ).save()
+                        initialWorkshop.isInApproval = True
+                        initialWorkshop.approvalHistory.append(
+                            Approval(
+                                id=str(request.id),
+                                user=user.id,
+                                detail=jsonData
+                            )
                         )
-                    )
+                    else:
+                        for field in data.keys():
+                            initialWorkshop[field] = data[field]
                     peca['lapse{}'.format(
                         lapse)].initialWorkshop = initialWorkshop
                     peca.save()

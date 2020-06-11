@@ -30,12 +30,12 @@ ImageSchema.image = MAImageField(
 
 class InicialWorkshopSchema(Schema):
     name = fields.Str(dump_only=True)
-    agreementFile = fields.Nested(FileSchema())
-    agreementDescription = fields.Str()
-    planningMeetingFile = fields.Nested(FileSchema())
-    planningMeetingDescription = fields.Str()
-    teachersMeetingFile = fields.Nested(FileSchema())
-    teachersMeetingDescription = fields.Str()
+    #agreementFile = fields.Nested(FileSchema())
+    #agreementDescription = fields.Str()
+    #planningMeetingFile = fields.Nested(FileSchema())
+    #planningMeetingDescription = fields.Str()
+    #teachersMeetingFile = fields.Nested(FileSchema())
+    #teachersMeetingDescription = fields.Str()
     isStandard = fields.Bool(dump_only=True)
 
     @post_load

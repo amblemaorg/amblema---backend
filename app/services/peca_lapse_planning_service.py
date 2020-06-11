@@ -1,5 +1,7 @@
 # app/services/peca_lapse_planning_service.py
 
+import copy
+
 from flask import current_app
 from marshmallow import ValidationError
 
@@ -61,12 +63,20 @@ class LapsePlanningService():
 
                 lapsePlanning = peca['lapse{}'.format(
                     lapse)].lapsePlanning
+                oldLapsePlanning = copy.copy(lapsePlanning)
 
                 for field in schema.dump(data).keys():
                     lapsePlanning[field] = data[field]
                 try:
                     peca['lapse{}'.format(
                         lapse)].lapsePlanning = lapsePlanning
+                    if lapsePlanning.meetingDate != oldLapsePlanning.meetingDate:
+                        peca.scheduleActivity(
+                            devName="lapseplanning__meetingDate",
+                            subject="Planificación de lapso {}".format(lapse),
+                            startTime=lapsePlanning.meetingDate,
+                            description="Fecha de reunión"
+                        )
                     peca.save()
                     return schema.dump(lapsePlanning), 200
                 except Exception as e:

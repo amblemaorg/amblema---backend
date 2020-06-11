@@ -238,6 +238,58 @@ class PecaAmblecoinsTest(unittest.TestCase):
         self.assertEqual('Fecha de elaboración',
                          resultPeca['schedule'][1]['Description'])
 
+        ############################
+        # LAPSE PLANNING
+        ############################
+        # enable lapse planning for lapse1
+        requestData = dict(
+            proposalFundationFile=(io.BytesIO(
+                b'hi everyone'), 'proposalFundationFile.pdf'),
+            proposalFundationDescription="Some description",
+            meetingDescription="Some description"
+        )
+        res = self.client().post(
+            '/pecasetting/lapseplanning/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = {
+            "id": 'lapsePlanning',
+            "lapse": "1",
+            "isStandard": True,
+            "status": "1"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # update data lapse planning in peca
+        requestData = {
+            "attachedFile": (io.BytesIO(
+                b'hi everyone'), 'proposalFundationFile.pdf'),
+            "meetingDate": "2020-07-17T00:00:00.000Z",
+            "status": "2"
+        }
+        res = self.client().post(
+            '/pecaprojects/lapseplanning/{}/{}'.format(
+                self.pecaProject.id, 1),
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca schedule
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(3, len(resultPeca['schedule']))
+        self.assertEqual('Planificación de lapso 1',
+                         resultPeca['schedule'][2]['Subject'])
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

@@ -32,15 +32,17 @@ class ImageSchema(Schema):
 
 class InitialWorkshopPecaSchema(Schema):
     name = fields.Str(dump_only=True)
-    agreementFile = fields.Nested(FileSchema(), dump_only=True)
-    agreementDescription = fields.Str(dump_only=True)
-    planningMeetingFile = fields.Nested(FileSchema(), dump_only=True)
-    planningMeetingDescription = fields.Str(dump_only=True)
-    teachersMeetingFile = fields.Nested(FileSchema(), dump_only=True)
-    teachersMeetingDescription = fields.Str(dump_only=True)
+    #agreementFile = fields.Nested(FileSchema(), dump_only=True)
+    #agreementDescription = fields.Str(dump_only=True)
+    #planningMeetingFile = fields.Nested(FileSchema(), dump_only=True)
+    #planningMeetingDescription = fields.Str(dump_only=True)
+    #teachersMeetingFile = fields.Nested(FileSchema(), dump_only=True)
+    #teachersMeetingDescription = fields.Str(dump_only=True)
     isStandard = fields.Bool(dump_only=True)
     description = fields.Str()
     images = fields.List(fields.Nested(ImageSchema))
+    workshopPlace = fields.Str()
+    workshopDate = fields.DateTime()
     isInApproval = fields.Boolean(dump_only=True)
     approvalHistory = fields.List(
         fields.Nested(ApprovalSchema), dump_only=True)

@@ -6,6 +6,7 @@ from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_setting_model import InitialWorshop
+from app.models.peca_initial_workshop_model import InitialWorkshopPeca
 from app.schemas.peca_setting_schema import InicialWorkshopSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
@@ -55,16 +56,16 @@ class InicialWorkshopService():
                         bulk_operations = []
                         for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
 
-                            initialWorkshopPeca = peca['lapse{}'.format(
-                                lapse)].initialWorkshop
-                            initialWorkshopPeca.agreementFile = initialWorkshop.agreementFile
-                            initialWorkshopPeca.agreementDescription = initialWorkshop.agreementDescription
-                            initialWorkshopPeca.planningMeetingFile = initialWorkshop.planningMeetingFile
-                            initialWorkshopPeca.planningMeetingDescription = initialWorkshop.planningMeetingDescription
-                            initialWorkshopPeca.teachersMeetingFile = initialWorkshop.teachersMeetingFile
-                            initialWorkshopPeca.teachersMeetingDescription = initialWorkshop.teachersMeetingDescription
+                            # initialWorkshopPeca = peca['lapse{}'.format(
+                            #    lapse)].initialWorkshop
+                            #initialWorkshopPeca.agreementFile = initialWorkshop.agreementFile
+                            #initialWorkshopPeca.agreementDescription = initialWorkshop.agreementDescription
+                            #initialWorkshopPeca.planningMeetingFile = initialWorkshop.planningMeetingFile
+                            #initialWorkshopPeca.planningMeetingDescription = initialWorkshop.planningMeetingDescription
+                            #initialWorkshopPeca.teachersMeetingFile = initialWorkshop.teachersMeetingFile
+                            #initialWorkshopPeca.teachersMeetingDescription = initialWorkshop.teachersMeetingDescription
                             peca['lapse{}'.format(
-                                lapse)].initialWorkshop = initialWorkshopPeca
+                                lapse)].initialWorkshop = InitialWorkshopPeca()
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:

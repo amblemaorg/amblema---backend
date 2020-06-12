@@ -36,12 +36,26 @@ class PecaProjectService():
         return {"records": schema.dump(records, many=True)}, 200
 
     def get(self, id):
+        from app.models.school_user_model import SchoolUser
+        from app.schemas.school_user_schema import TeacherTestimonialSchema
+        from app.schemas.teacher_schema import TeacherSchema
+        from app.schemas.shared_schemas import ImageStatusSchema
 
         pecaProject = PecaProject.objects(
             isDeleted=False, id=id).first()
         if pecaProject:
             schema = PecaProjectSchema()
-            return schema.dump(pecaProject), 200
+            data = schema.dump(pecaProject)
+            school = SchoolUser.objects(
+                id=pecaProject.project.school.id).first()
+            data['school']['teachers'] = TeacherSchema().dump(
+                school.teachers, many=True)
+            data['school']['slider'] = ImageStatusSchema().dump(
+                school.slider, many=True)
+            data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(
+                school.teachersTestimonials, many=True
+            )
+            return data, 200
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,

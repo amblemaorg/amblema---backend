@@ -127,6 +127,7 @@ class LapseSchema(Schema):
 
 
 class PecaProjectSchema(Schema):
+    id = fields.Str(dump_only=True)
     #schoolYear = fields.Str()
     schoolYearName = fields.Str()
     project = fields.Nested(ProjectReferenceSchema)

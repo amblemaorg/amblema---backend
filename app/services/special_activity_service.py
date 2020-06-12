@@ -52,16 +52,17 @@ class SpecialActivityService():
                         else:
                             specialActivity[field] = data[field]
                         
-                    try:                        
-                        if not peca['lapse{}'.format(lapse)]:
-                            peca['lapse{}'.format(lapse)] = Lapse()
+                    try:
                         peca['lapse{}'.format(lapse)].specialActivity = specialActivity
                         peca.save()
+                        data['pecaId'] = pecaId
+                        data['lapse'] = lapse
+                        data['id'] = specialActivity.id
                         RequestContentApproval(
                             project=peca.project,
                             user=user,
                             type="6",
-                            detail=schema.dump(specialActivity)
+                            detail=data
                         ).save()
                         return schema.dump(specialActivity), 200
                     except Exception as e:
@@ -164,9 +165,12 @@ class SpecialActivityService():
 
         if peca:
             try:
-                peca['lapse{}'.format(lapse)].specialActivity.isDeleted = True
-                peca.save()
-                return {"message": "Record deleted successfully"}, 200
+                if peca['lapse{}'.format(lapse)].specialActivity:
+                    peca['lapse{}'.format(lapse)].specialActivity.isDeleted = True
+                    peca.save()
+                    return {"message": "Record deleted successfully"}, 200
+                else:
+                    return {'status': 0, 'message': 'There is no special activity in the lapse'}, 400
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400
         else:

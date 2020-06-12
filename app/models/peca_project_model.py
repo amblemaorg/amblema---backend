@@ -125,5 +125,30 @@ class PecaProject(Document):
         if not document.id:
             service.initPecaSetting(document)
 
+    def scheduleActivity(self, devName, subject, startTime, description):
+        from app.models.peca_schedule_model import ScheduleActivity
+
+        try:
+            found = False
+            for act in self.schedule:
+                if act.devName == devName:
+                    act.startDate = startTime
+                    act.endTime = startTime
+                    found = True
+                    break
+            if not found:
+                self.schedule.append(
+                    ScheduleActivity(
+                        devName=devName,
+                        subject=subject,
+                        startTime=startTime,
+                        endTime=startTime,
+                        description=description
+                    )
+                )
+
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400
+
 
 signals.pre_save.connect(PecaProject.pre_save, sender=PecaProject)

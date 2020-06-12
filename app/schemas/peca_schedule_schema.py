@@ -10,7 +10,7 @@ from app.helpers.ma_schema_validators import not_blank, OneOf
 class ScheduleActivitySchema(Schema):
     id = fields.Str(data_key="Id")
     subject = fields.Str(data_key="Subject")
-    startTime = fields.Str(data_key="StartTime")
+    startTime = fields.Str(data_key="StartTime", required=True)
     endTime = fields.Str(data_key="EndTime")
     description = fields.Str(data_key="Description")
 

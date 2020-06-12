@@ -1,5 +1,8 @@
 # app/services/peca_activities_service.py
 
+import copy
+import datetime
+
 from flask import current_app
 from marshmallow import ValidationError
 
@@ -60,6 +63,7 @@ class ActivitiesPecaService():
 
                 activity = peca['lapse{}'.format(lapse)].activities.filter(
                     id=activityId).first()
+                oldActivity = copy.copy(activity)
                 if not activity:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
@@ -92,7 +96,7 @@ class ActivitiesPecaService():
 
                         data['pecaId'] = pecaId
                         data['lapse'] = lapse
-                        data['id'] = activityId
+                        #data['id'] = activityId
                         request = RequestContentApproval(
                             project=peca.project,
                             user=user,
@@ -107,6 +111,15 @@ class ActivitiesPecaService():
                                 detail=data
                             )
                         )
+                        if activity.hasDate and 'date' in data and data['date']:
+                            schAct = schema.load(jsonData)
+                            peca.scheduleActivity(
+                                devName="activities__{}".format(activityId),
+                                subject=activity.name,
+                                startTime=schAct['date'],
+                                description=""
+                            )
+
                     else:
                         # approve only on fill all fields
                         if activity.approvalType == "2":
@@ -115,11 +128,13 @@ class ActivitiesPecaService():
                         for field in data.keys():
                             activity[field] = data[field]
                         activity.checkStatus()
-
-                    for oldActivity in peca['lapse{}'.format(lapse)].activities:
-                        if str(oldActivity.id) == activityId:
-                            oldActivity = activity
-                            break
+                        if activity.hasDate and activity.date != oldActivity.date:
+                            peca.scheduleActivity(
+                                devName="activities__{}".format(activityId),
+                                subject=activity.name,
+                                startTime=activity.date,
+                                description=""
+                            )
                     peca.save()
                     return ActivityPecaSchema().dump(activity), 200
 

@@ -52,6 +52,7 @@ class ScheduleService():
                 activity = ScheduleActivity()
                 for key in data.keys():
                     activity[key] = data[key]
+                activity.endTime = activity.startTime
                 try:
                     peca.schedule.append(activity)
                     peca.save()

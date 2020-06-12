@@ -17,8 +17,8 @@ class SchoolReference(EmbeddedDocument):
 
 
 class ProjectReference(EmbeddedDocument):
-    id = fields.StringField(required=True)
-    code = fields.StringField(required=True)
+    id = fields.StringField()
+    code = fields.StringField()
     coordinator = fields.EmbeddedDocumentField(DocumentReference)
     sponsor = fields.EmbeddedDocumentField(DocumentReference)
     school = fields.EmbeddedDocumentField(SchoolReference)

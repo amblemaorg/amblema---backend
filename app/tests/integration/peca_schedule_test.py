@@ -1,4 +1,4 @@
-# app/test/integration/peca_activities_test.py
+# app/test/integration/peca_schedule_test.py
 
 
 import unittest
@@ -17,10 +17,9 @@ from app.models.peca_project_model import PecaProject, Lapse
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
-from resources.images import test_image
 
 
-class PecaActivitiesTest(unittest.TestCase):
+class PecaAmblecoinsTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -161,7 +160,136 @@ class PecaActivitiesTest(unittest.TestCase):
         )
         self.pecaProject.save()
 
-    def test_activities_peca(self):
+    def test_schedule_peca(self):
+
+        # enable ambleCoins for lapse1
+        requestData = dict(
+            teachersMeetingFile=(io.BytesIO(b'hi everyone'),
+                                 'teachersMeetingFile.pdf'),
+            teachersMeetingDescription="Some description",
+            piggyBankDescription="Some description",
+            piggyBankSlider=json.dumps(
+                [{"image": "http://localhost:10505/resources/images/learningmodules/5e4edc7edb90150c560b2dc1.png",
+                  "description": "some description"}]
+            )
+        )
+        res = self.client().post(
+            '/pecasetting/amblecoins/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = {
+            "id": 'ambleCoins',
+            "lapse": "1",
+            "isStandard": True,
+            "status": "1"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # add section to school
+        requestData = {
+            "grade": "1",
+            "name": "A"
+        }
+        res = self.client().post(
+            '/pecaprojects/sections/{}'.format(self.pecaProject.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check section on ambleCoins
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        resultSection = resultPeca['lapse1']['ambleCoins']['sections'][0]
+        self.assertEqual('1', resultSection['status'])
+
+        # set data to ambleCoins in peca
+        resultSection['status'] = "2"
+        requestData = {
+            "meetingDate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+            "elaborationDate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+            "sections": [
+                resultSection
+            ]
+        }
+        res = self.client().put(
+            '/pecaprojects/amblecoins/{}/{}'.format(self.pecaProject.id, 1),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca schedule
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(2, len(resultPeca['schedule']))
+        self.assertEqual('Fecha de reunión',
+                         resultPeca['schedule'][0]['Description'])
+        self.assertEqual('Fecha de elaboración',
+                         resultPeca['schedule'][1]['Description'])
+
+        ############################
+        # LAPSE PLANNING
+        ############################
+        # enable lapse planning for lapse1
+        requestData = dict(
+            proposalFundationFile=(io.BytesIO(
+                b'hi everyone'), 'proposalFundationFile.pdf'),
+            proposalFundationDescription="Some description",
+            meetingDescription="Some description"
+        )
+        res = self.client().post(
+            '/pecasetting/lapseplanning/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = {
+            "id": 'lapsePlanning',
+            "lapse": "1",
+            "isStandard": True,
+            "status": "1"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # update data lapse planning in peca
+        requestData = {
+            "attachedFile": (io.BytesIO(
+                b'hi everyone'), 'proposalFundationFile.pdf'),
+            "meetingDate": "2020-07-17T00:00:00.000Z",
+            "status": "2"
+        }
+        res = self.client().post(
+            '/pecaprojects/lapseplanning/{}/{}'.format(
+                self.pecaProject.id, 1),
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca schedule
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(3, len(resultPeca['schedule']))
+        self.assertEqual('Planificación de lapso 1',
+                         resultPeca['schedule'][2]['Subject'])
+
         ################################
         # create activities for lapse 1
         ################################
@@ -216,95 +344,11 @@ class PecaActivitiesTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         activity2Id = result['id']
 
-        requestData = dict(
-            name="Activity test 3",
-            hasText="true",
-            hasDate="true",
-            hasFile="true",
-            hasVideo="true",
-            hasChecklist="true",
-            hasUpload="true",
-            text="some text",
-            file=(io.BytesIO(
-                b'hi everyone'), 'activityFile.pdf'),
-            video=json.dumps(
-                {"name": "somename", "url": "https://youtube.com"}),
-            checklist=json.dumps([{"name": "objectve 1"}]),
-            approvalType="1",
-            status="1"
-        )
-        res = self.client().post(
-            '/pecasetting/activities/1',
-            data=requestData,
-            content_type='multipart/form-data')
-        self.assertEqual(res.status_code, 200)
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        activity3Id = result['id']
-
-        # check activity on peca
         res = self.client().get(
             '/pecaprojects/{}'.format(self.pecaProject.id)
         )
         self.assertEqual(res.status_code, 200)
         peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('Activity test 1',
-                         peca['lapse1']['activities'][0]['name'])
-        self.assertEqual('Activity test 2',
-                         peca['lapse1']['activities'][1]['name'])
-        self.assertEqual('Activity test 3',
-                         peca['lapse1']['activities'][2]['name'])
-
-        # disable activity 3
-        requestData = {
-            "id": activity3Id,
-            "lapse": "1",
-            "isStandard": False,
-            "status": "2"
-        }
-        res = self.client().post(
-            '/pecasetting/activities',
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        # check activity on peca
-        res = self.client().get(
-            '/pecaprojects/{}'.format(self.pecaProject.id)
-        )
-        self.assertEqual(res.status_code, 200)
-        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(2,
-                         len(peca['lapse1']['activities']))
-
-        # enable activity 3
-        requestData = {
-            "id": activity3Id,
-            "lapse": "1",
-            "isStandard": False,
-            "status": "1"
-        }
-        res = self.client().post(
-            '/pecasetting/activities',
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        # check activity on peca
-        res = self.client().get(
-            '/pecaprojects/{}'.format(self.pecaProject.id)
-        )
-        self.assertEqual(res.status_code, 200)
-        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('Activity test 1',
-                         peca['lapse1']['activities'][0]['name'])
-        self.assertEqual('Activity test 2',
-                         peca['lapse1']['activities'][1]['name'])
-        self.assertEqual('Activity test 3',
-                         peca['lapse1']['activities'][2]['name'])
-
-        #####################################
-        # test activity with approval request
-        #####################################
 
         # send approval request for activity 1
         requestData = {
@@ -332,124 +376,16 @@ class PecaActivitiesTest(unittest.TestCase):
         request1 = json.loads(res.data.decode('utf8').replace("'", '"'))
         request1 = request1['approvalHistory'][0]
 
-        # check activity history in peca
+        # check activity on schedule
         res = self.client().get(
             '/pecaprojects/{}'.format(self.pecaProject.id)
         )
         self.assertEqual(res.status_code, 200)
         peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('2',
-                         peca['lapse1']['activities'][0]['status'])
-        self.assertEqual('1',
-                         peca['lapse1']['activities'][0]['approvalHistory'][0]['status'])
-
-        # reject request 1
-        requestData = {
-            "status": "3"
-        }
-        res = self.client().put(
-            '/requestscontentapproval/{}'.format(request1['id']),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        # check activity history in peca
-        res = self.client().get(
-            '/pecaprojects/{}'.format(self.pecaProject.id)
-        )
-        self.assertEqual(res.status_code, 200)
-        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('1',
-                         peca['lapse1']['activities'][0]['status'])
-        self.assertEqual('3',
-                         peca['lapse1']['activities'][0]['approvalHistory'][0]['status'])
-
-        # send approval request2 for activity 1
-        requestData = {
-            "checklist": json.dumps([
-                {
-                    "id": peca['lapse1']['activities'][0]['id'],
-                    "name": peca['lapse1']['activities'][0]['name'],
-                    "checked": True
-                }
-            ]),
-            "date": "2020-07-17T00:00:00.000Z",
-            "uploadedFile": (io.BytesIO(
-                b'hi everyone'), 'activityFile2.pdf')
-        }
-        res = self.client().put(
-            '/pecaprojects/activities/{}/{}/{}?userId={}'.format(
-                self.pecaProject.id,
-                1,
-                activity1Id,
-                self.coordinator.pk
-            ),
-            data=requestData,
-            content_type='multipart/form-data')
-        self.assertEqual(res.status_code, 200)
-        request2 = json.loads(res.data.decode('utf8').replace("'", '"'))
-        request2 = request2['approvalHistory'][1]
-        # check activity history in peca
-        res = self.client().get(
-            '/pecaprojects/{}'.format(self.pecaProject.id)
-        )
-        self.assertEqual(res.status_code, 200)
-        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-
-        self.assertEqual('2',
-                         peca['lapse1']['activities'][0]['status'])
-        self.assertEqual('1',
-                         peca['lapse1']['activities'][0]['approvalHistory'][1]['status'])
-        self.assertEqual('activityFile2.pdf',
-                         peca['lapse1']['activities'][0]['approvalHistory'][1]['detail']['uploadedFile']['name'])
-
-        # accept request 2
-        requestData = {
-            "status": "2"
-        }
-        res = self.client().put(
-            '/requestscontentapproval/{}'.format(request2['id']),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        # check activity history in peca
-        res = self.client().get(
-            '/pecaprojects/{}'.format(self.pecaProject.id)
-        )
-        self.assertEqual(res.status_code, 200)
-        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('3',
-                         peca['lapse1']['activities'][0]['status'])
-        self.assertEqual('2',
-                         peca['lapse1']['activities'][0]['approvalHistory'][1]['status'])
-
-        #####################################
-        # test activity only admin
-        #####################################
-
-        requestData = {
-            "status": "3",
-        }
-        res = self.client().put(
-            '/pecaprojects/activities/{}/{}/{}?userId={}'.format(
-                self.pecaProject.pk,
-                1,
-                activity3Id,
-                self.coordinator.pk
-            ),
-            data=requestData,
-            content_type='multipart/form-data')
-        self.assertEqual(res.status_code, 200)
-
-        # check activity
-        res = self.client().get(
-            '/pecaprojects/{}'.format(self.pecaProject.id)
-        )
-        self.assertEqual(res.status_code, 200)
-        peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('3',
-                         peca['lapse1']['activities'][2]['status'])
+        self.assertEqual(4,
+                         len(peca['schedule']))
+        self.assertEqual('Activity test 1',
+                         peca['schedule'][3]['Subject'])
 
         #####################################
         # test activity fill all fields
@@ -478,14 +414,16 @@ class PecaActivitiesTest(unittest.TestCase):
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
-        # check activity in peca
+        # check activity on schedule
         res = self.client().get(
             '/pecaprojects/{}'.format(self.pecaProject.id)
         )
         self.assertEqual(res.status_code, 200)
         peca = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('3',
-                         peca['lapse1']['activities'][1]['status'])
+        self.assertEqual(5,
+                         len(peca['schedule']))
+        self.assertEqual('Activity test 2',
+                         peca['schedule'][4]['Subject'])
 
     def tearDown(self):
         """teardown all initialized variables."""

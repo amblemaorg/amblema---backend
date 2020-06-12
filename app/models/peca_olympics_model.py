@@ -6,6 +6,7 @@ from bson import ObjectId
 from mongoengine import EmbeddedDocument, fields
 
 from app.models.shared_embedded_documents import Link
+from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 
 class Section(EmbeddedDocument):
@@ -26,3 +27,4 @@ class Olympics(EmbeddedDocument):
     students = fields.EmbeddedDocumentListField(Student)
     file = fields.EmbeddedDocumentField(Link)
     description = fields.StringField()
+    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)

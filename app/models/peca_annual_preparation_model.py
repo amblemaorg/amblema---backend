@@ -4,6 +4,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
+from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 
 class Teacher(EmbeddedDocument):
@@ -22,3 +23,4 @@ class AnnualPreparationPeca(EmbeddedDocument):
     step3Description = fields.StringField()
     step4Description = fields.StringField()
     teachers = fields.EmbeddedDocumentListField(Teacher)
+    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)

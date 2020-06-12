@@ -6,6 +6,7 @@ from bson import ObjectId
 from mongoengine import EmbeddedDocument, fields
 
 from app.models.shared_embedded_documents import Link, Approval
+from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 
 class Image(EmbeddedDocument):
@@ -32,3 +33,4 @@ class InitialWorkshopPeca(EmbeddedDocument):
     workshopDate = fields.DateTimeField()
     isInApproval = fields.BooleanField(default=False)
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
+    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)

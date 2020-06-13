@@ -260,7 +260,7 @@ class StepApprovalTest(unittest.TestCase):
             user=self.coordinator.pk,
             type="1",
             detail={
-                "stepId": str(self.project.stepsProgress.steps[1].id),
+                "stepId": str(self.project.stepsProgress.steps[2].id),
                 "stepUploadedFile": {
                     "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
             }
@@ -268,7 +268,7 @@ class StepApprovalTest(unittest.TestCase):
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
         self.assertEqual(
-            str(reqStepApproval.pk), self.project.stepsProgress.steps[1].approvalHistory[0].id)
+            str(reqStepApproval.pk), self.project.stepsProgress.steps[2].approvalHistory[0].id)
 
         # check fill of the step fields on approval
         self.assertEqual(
@@ -283,11 +283,11 @@ class StepApprovalTest(unittest.TestCase):
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
         self.assertEqual(
-            "3", self.project.stepsProgress.steps[1].status)
+            "3", self.project.stepsProgress.steps[2].status)
 
-        self.assertEqual("3", self.project.stepsProgress.steps[2].status)
+        self.assertEqual("3", self.project.stepsProgress.steps[3].status)
         self.assertEqual(
-            "2", self.project.stepsProgress.steps[2]['approvalHistory'][0].status)
+            "2", self.project.stepsProgress.steps[3]['approvalHistory'][0].status)
 
     def tearDown(self):
         """teardown all initialized variables."""

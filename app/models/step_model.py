@@ -36,10 +36,11 @@ class Step(Document):
     schoolYear = fields.ReferenceField('SchoolYear', required=True)
     status = fields.StringField(default='1', max_length=1)
     isStandard = fields.BooleanField(default=False)
+    sort = fields.IntField()
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
-    meta = {'collection': 'steps'}
+    meta = {'collection': 'steps', 'ordering': ['+tag', '+sort']}
 
     def clean(self):
         self.updatedAt = datetime.utcnow()

@@ -16,6 +16,7 @@ from app.services.generic_service import GenericServices
 from resources.images import path_images
 from resources.files import files_path
 
+
 class WebContentView(MethodView):
     service = WebContentService(
         Model=WebContent,
@@ -49,35 +50,37 @@ class PostView(MethodView):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
 
-class PostViewPaginated(MethodView) :
+
+class PostViewPaginated(MethodView):
     service = GenericServices(
         Model=Post,
         Schema=PostSchema
     )
 
-    def get(self, page_number) :
+    def get(self, page_number):
         page_size = 8
         filters = getQueryParams(request)
         filtersWithOperator = []
-        finalFilters = [{ "field": "status", "value": "1" }]
+        finalFilters = [{"field": "status", "value": "1"}]
 
-        if filters != None :
-            for f in filters :
-                if f['field'] == 'title' or f['field'] == 'text' :
+        if filters != None:
+            for f in filters:
+                if f['field'] == 'title' or f['field'] == 'text':
                     filtersWithOperator.append(f)
-                elif f['field'] == 'page_size' :
+                elif f['field'] == 'page_size':
                     page_size = int(f['value'])
-                else :
+                else:
                     finalFilters.append(f)
 
             queryfilter = MongoQueryFilter()
             filtersWithOperator = queryfilter.assignOperatorToFilters(
-                filtersWithOperator, 
+                filtersWithOperator,
                 'icontains'
             )
             finalFilters.extend(filtersWithOperator)
 
         return self.service.getPaginatedRecords(filters=finalFilters, page=page_number, page_size=page_size)
+
 
 class PostHandlerView(MethodView):
     service = GenericServices(
@@ -149,7 +152,7 @@ web_content_blueprint.add_url_rule(
 )
 
 web_content_blueprint.add_url_rule(
-    '/resources/files/<string:folder>/<string:filename>',
+    '/resources/files/<path:folder>/<string:filename>',
     view_func=fileView,
     methods=['GET']
 )

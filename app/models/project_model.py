@@ -43,6 +43,7 @@ class StepFields(EmbeddedDocument):
     date = fields.DateTimeField(null=True)
     uploadedFile = fields.EmbeddedDocumentField(
         Link, is_file=True, null=True, default=None)
+    sort = fields.IntField()
     isStandard = fields.BooleanField(default=False)
     status = fields.StringField(default="1", max_length=1)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

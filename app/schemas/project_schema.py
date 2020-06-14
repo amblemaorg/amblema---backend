@@ -46,6 +46,7 @@ class StepFieldsSchema(Schema):
         required=True)
     date = fields.DateTime()
     uploadedFile = fields.Nested(FileSchema)
+    sort = fields.Int()
     isStandard = fields.Bool(dump_only=True)
     status = fields.Str(
         validate=OneOf(

@@ -23,6 +23,13 @@ class StepsService():
         if not document.isStandard:
             document.devName = re.sub(
                 r'[\W_]', '_', document.name.strip().lower())
+        if not document.sort:
+            last = document.__class__.objects(
+                tag=document.tag).order_by('-sort').first()
+            if last:
+                document.sort = last.sort + 1
+            else:
+                document.sort = 1
 
     def handler_steps_before_upd(self, document, oldDocument):
         from app.models.project_model import Project, StepControl, CheckElement
@@ -52,6 +59,7 @@ class StepsService():
                     file=document.file,
                     video=document.video,
                     approvalType=document.approvalType,
+                    sort=document.sort,
                     isStandard=document.isStandard,
                     createdAt=document.createdAt,
                     updatedAt=document.updatedAt
@@ -96,6 +104,7 @@ class StepsService():
                 or document.file != oldDocument.file
                 or document.video != oldDocument.video
                 or document.checklist != oldDocument.checklist
+                or document.sort != oldDocument.sort
             )
         ):
             if document.checklist == oldDocument.checklist:
@@ -113,7 +122,8 @@ class StepsService():
                     set__stepsProgress__steps__S__name=document.name,
                     set__stepsProgress__steps__S__text=document.text,
                     set__stepsProgress__steps__S__file=document.file,
-                    set__stepsProgress__steps__S__video=document.video
+                    set__stepsProgress__steps__S__video=document.video,
+                    set__stepsProgress__steps__S__sort=document.sort
                 )
             if document.checklist != oldDocument.checklist:
                 projects = Project.objects(
@@ -165,6 +175,7 @@ class StepsService():
                 file=document.file,
                 video=document.video,
                 approvalType=document.approvalType,
+                sort=document.sort,
                 isStandard=document.isStandard,
                 createdAt=document.createdAt,
                 updatedAt=document.updatedAt

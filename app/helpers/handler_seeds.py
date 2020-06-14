@@ -617,7 +617,9 @@ def create_initial_steps():
 
     checklistInitialWorkshop = Step(
         name="Taller inicial",
+        devName="coordinatorInitialWorkshop",
         tag="2",
+        isStandard=True,
         hasText=True,
         hasChecklist=True,
         text="some description",

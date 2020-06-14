@@ -41,7 +41,7 @@ class StepHandlerController(Resource):
             recordId=id,
             jsonData=jsonData,
             files=request.files,
-            partial=["name", "tag", "text", "date", "file", "schoolYear"])
+            partial=True)
 
     def delete(self, id):
         return self.service.deleteRecord(id)

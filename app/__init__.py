@@ -140,6 +140,9 @@ from app.controllers.diagnostic_controller import DiagnosticController
 from app.controllers.teacher_testimonial_controller import (
     TeacherTestimonialController, TeacherTestimonialHandlerController
 )
+from app.controllers.special_activity_controller import (
+    SpecialActivityController
+)
 db = MongoEngine()
 
 
@@ -352,5 +355,7 @@ def create_app(config_instance):
                      '/schools/teacherstestimonials/<string:schoolId>')
     api.add_resource(TeacherTestimonialHandlerController,
                      '/schools/teacherstestimonials/<string:schoolId>/<string:testimonialId>')
+    api.add_resource(SpecialActivityController,
+                     '/pecaprojects/lapses/specialsactivities/<string:pecaId>/<string:lapse>')
 
     return app

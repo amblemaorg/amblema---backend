@@ -14,6 +14,7 @@ from app.schemas.activity_schema import ActivitySummarySchema, ActivityHandleSta
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
+from app.models.special_activity_model import SpecialActivity
 
 
 class ActivityService():
@@ -604,9 +605,29 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].specialLapseActivity.status = data['status']
-                        specialLapseActivity = schoolYear.pecaSetting['lapse{}'.format(
-                            data['lapse'])].specialLapseActivity
+                        
+                        bulk_operations = []
 
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False)
+                        
+                        if data['status'] == "1":
+                            specialActivity = SpecialActivity()
+                        
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                peca['lapse{}'.format(data['lapse'])].specialActivity = specialActivity
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(data['lapse'])].specialActivity = None
+                            
+                            bulk_operations.append(UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
+                
                 else:
                     from app.models.peca_activities_model import ActivityPeca, CheckElement
                     for activity in schoolYear.pecaSetting['lapse{}'.format(data['lapse'])].activities:

@@ -134,6 +134,15 @@ class RequestContentApproval(Document):
                                 document.detail['lapse'])].initialWorkshop = initialWorkshop
                             peca.save()
                             break
+                # specialActivity
+                if document.type == "6":
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    for specialActivity in peca['lapse{}'.format(document.detail['lapse'])].specialActivity:
+                        if str(specialActivity.id) == document.detail['id']:
+                            specialActivity.approvalStatus = document.status
+                            break
+                    peca.save()
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):

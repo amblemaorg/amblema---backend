@@ -71,6 +71,7 @@ class StepSchema(Schema):
         )
     )
     isStandard = fields.Bool(dump_only=True)
+    sort = fields.Int()
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

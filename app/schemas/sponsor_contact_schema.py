@@ -64,10 +64,12 @@ class SponsorContactSchema(Schema):
     schoolPrincipalLastName = fields.Str()
     schoolPrincipalEmail = fields.Str(validate=validate_email)
     schoolPrincipalPhone = fields.Str(validate=only_numbers)
-    schoolSubPrincipalFirstName = fields.Str()
-    schoolSubPrincipalLastName = fields.Str()
-    schoolSubPrincipalEmail = fields.Str(validate=validate_email)
-    schoolSubPrincipalPhone = fields.Str(validate=only_numbers)
+    schoolSubPrincipalFirstName = fields.Str(allow_none=True)
+    schoolSubPrincipalLastName = fields.Str(allow_none=True)
+    schoolSubPrincipalEmail = fields.Str(
+        allow_none=True, validate=validate_email)
+    schoolSubPrincipalPhone = fields.Str(
+        allow_none=True, validate=only_numbers)
     schoolNTeachers = fields.Int(validate=Range(min=0))
     schoolNAdministrativeStaff = fields.Int(
         validate=Range(min=0))

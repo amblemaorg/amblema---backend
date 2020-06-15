@@ -6,6 +6,7 @@ from flask_restful import Resource
 
 from app.services.generic_service import GenericServices
 from app.services.project_service import ProjectService
+from app.services.project_handler_service import ProjectHandlerService
 from app.models.project_model import Project
 from app.schemas.project_schema import ProjectSchema
 from app.helpers.handler_request import getQueryParams
@@ -32,7 +33,7 @@ class ProjectController(Resource):
 
 class ProjectHandlerController(Resource):
 
-    service = GenericServices(
+    service = ProjectHandlerService(
         Model=Project,
         Schema=ProjectSchema)
 

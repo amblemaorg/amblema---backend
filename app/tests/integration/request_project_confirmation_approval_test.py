@@ -167,7 +167,7 @@ class RequestProjectConfirmationTest(unittest.TestCase):
             user=self.coordinator.id,
             type="1",
             detail={
-                "stepId": str(self.project.stepsProgress.steps[0].id),
+                "stepId": str(self.project.stepsProgress.steps[1].id),
                 "stepUploadedFile": {
                     "url": "https://somedomail.com/somefile.pdf", "name": "my file.pdf"}
             }
@@ -175,7 +175,7 @@ class RequestProjectConfirmationTest(unittest.TestCase):
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
         self.assertEqual(
-            str(reqStepApproval.pk), self.project.stepsProgress.steps[0].approvalHistory[0].id)
+            str(reqStepApproval.pk), self.project.stepsProgress.steps[1].approvalHistory[0].id)
 
         # check fill of the step fields on approval
         self.assertEqual(
@@ -190,11 +190,11 @@ class RequestProjectConfirmationTest(unittest.TestCase):
         reqStepApproval.save()
         self.project = Project.objects.get(id=self.project.pk)
         self.assertEqual(
-            "3", self.project.stepsProgress.steps[0].status)
+            "3", self.project.stepsProgress.steps[1].status)
 
-        self.assertEqual("3", self.project.stepsProgress.steps[1].status)
+        self.assertEqual("3", self.project.stepsProgress.steps[2].status)
         self.assertEqual(
-            "2", self.project.stepsProgress.steps[1]['approvalHistory'][0].status)
+            "2", self.project.stepsProgress.steps[2]['approvalHistory'][0].status)
 
         self.project = Project.objects.get(id=self.project.pk)
         self.assertEqual(0, self.project.stepsProgress.general)

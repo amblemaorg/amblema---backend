@@ -301,9 +301,9 @@ class ProjectService():
                 for step in document.stepsProgress.steps:
                     if (
                         step.devName in (
-                            "findSchool",
-                            "coordinatorFillSchoolForm",
-                            "schoolFillSchoollForm")
+                            "findCoordinator",
+                            "sponsorFillCoordinatorForm",
+                            "schoolFillCoordinatorForm")
                     ):
                         step.status = "3"
                         step.approvalHistory.append(

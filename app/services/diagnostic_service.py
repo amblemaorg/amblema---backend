@@ -10,6 +10,7 @@ from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
 from app.models.peca_student_model import Diagnostic
 from app.schemas.peca_student_schema import DiagnosticSchema
+from app.schemas.peca_section_schema import DiagnosticsSchema
 from app.helpers.error_helpers import RegisterNotFound
 
 
@@ -73,7 +74,9 @@ class DiagnosticService():
                                     lapse)] = diagnostic
                                 section.refreshDiagnosticsSummary()
                                 peca.save()
-                                return schema.dump(diagnostic), 200
+                                return {
+                                    "student": schema.dump(diagnostic),
+                                    "sectionSummary": DiagnosticsSchema().dump(section.diagnostics)}, 200
 
             except ValidationError as err:
                 return err.normalized_messages(), 400

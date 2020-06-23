@@ -6,6 +6,7 @@ from bson import ObjectId
 
 from flask import current_app
 from mongoengine import fields, EmbeddedDocument
+from app.models.shared_embedded_documents import Approval
 
 from app.models.peca_activity_yearbook_model import ActivityYearbook
 
@@ -20,14 +21,14 @@ class ItemSpecialActivity(EmbeddedDocument):
 
 
 class SpecialActivity(EmbeddedDocument):
-    id = fields.ObjectIdField(default=fields.ObjectId)
     name = fields.StringField(default="Actividad especial de lapso")
-    activityDate = fields.DateTimeField(required=True)
+    activityDate = fields.DateTimeField()
     # approvalStatus = ("1": "pending", "2": "approved", "3": "rejected", "4": "cancelled")
-    approvalStatus = fields.StringField(default='1', max_length=1)
     itemsActivities = fields.EmbeddedDocumentListField(ItemSpecialActivity)
     total = fields.FloatField(default=0.0)
     isDeleted = fields.BooleanField(default=False)
+    approvalHistory = fields.EmbeddedDocumentListField(Approval)
+    isInApproval = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     yearbook = fields.EmbeddedDocumentField(

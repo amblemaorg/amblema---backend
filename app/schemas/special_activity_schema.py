@@ -5,6 +5,8 @@ from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
 from app.helpers.ma_schema_validators import (OneOf, not_blank)
+from app.schemas.shared_schemas import ApprovalSchema
+from app.models.special_activity_model import ItemSpecialActivity
 
 
 class ItemSpecialActivitySchema(Schema):
@@ -14,6 +16,14 @@ class ItemSpecialActivitySchema(Schema):
     unitPrice = fields.Float(default=0.0)
     tax = fields.Float(default=0.0)
     subtotal = fields.Float(default=0.0)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return ItemSpecialActivity(**data)
 
 
 class SpecialActivitySchema(Schema):
@@ -27,6 +37,13 @@ class SpecialActivitySchema(Schema):
         ))
     itemsActivities = fields.List(fields.Nested(ItemSpecialActivitySchema))
     total = fields.Float(default=0.0)
+    isInApproval = fields.Boolean(dump_only=True)
+    approvalHistory = fields.List(
+        fields.Nested(ApprovalSchema), dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
     isDeleted = fields.Bool(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True

@@ -34,6 +34,11 @@ class RequestContentApproval(Document):
         from app.schemas.peca_activities_schema import ActivityFieldsSchema
         from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
         from app.schemas.special_activity_schema import SpecialActivitySchema
+        from app.schemas.peca_yearbook_schema import YearbookSchema
+        from app.schemas.peca_activity_yearbook_schema import ActivityYearbookSchema
+        from app.models.school_user_model import SchoolUser
+        from app.models.sponsor_user_model import SponsorUser
+        from app.models.coordinator_user_model import CoordinatorUser
         from app.models.project_model import Project
         # before create
         if not document.id:
@@ -65,6 +70,15 @@ class RequestContentApproval(Document):
         if document.id is not None:
             oldDocument = document.__class__.objects(id=document.id).first()
             if document.status != oldDocument.status:
+                # testimonials
+                if document.type == "2":
+                    school = SchoolUser.objects(
+                        id=str(document.project.school['id'])).first()
+                    for testimonial in school.teachersTestimonials:
+                        if str(testimonial.id) == document.detail['id']:
+                            testimonial.approvalStatus = document.status
+                            break
+                    school.save()
                 # activities
                 if document.type == "3":
                     fields = ['date', 'uploadedFile', 'checklist']
@@ -94,16 +108,6 @@ class RequestContentApproval(Document):
                                     break
                             break
                     peca.save()
-                # testimonials
-                if document.type == "2":
-                    school = SchoolUser.objects(
-                        id=str(document.project.school['id'])).first()
-                    for testimonial in school.teachersTestimonials:
-                        if str(testimonial.id) == document.detail['id']:
-                            testimonial.approvalStatus = document.status
-                            break
-                    school.save()
-
                 # slider
                 if document.type == "4":
                     school = SchoolUser.objects(
@@ -152,6 +156,86 @@ class RequestContentApproval(Document):
                                     specialActivity[field] = data[field]
                             break
                     peca.save()
+                # yearbook
+                if document.type == "7":
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+
+                    if document.status == "2":  # approved
+                        school = SchoolUser.objects(
+                            id=peca.project.school.id).first()
+                        sponsor = SponsorUser.objects(
+                            id=peca.project.sponsor.id).first()
+                        coordinator = CoordinatorUser.objects(
+                            id=peca.project.coordinator.id).first()
+
+                        schema = YearbookSchema(
+                            partial=True)
+                        data = schema.load(document.detail)
+                        for field in schema.dump(data).keys():
+                            peca.yearbook[field] = data[field]
+
+                        if school.yearbook != peca.yearbook.school or school.historicalReview != peca.yearbook.historicalReview:
+                            if school.yearbook != peca.yearbook.school:
+                                school.yearbook = peca.yearbook.school
+                                school.image = peca.yearbook.school.image
+                            if school.historicalReview != peca.yearbook.historicalReview:
+                                school.historicalReview = peca.yearbook.historicalReview
+                            school.save()
+                        if sponsor.yearbook != peca.yearbook.sponsor:
+                            sponsor.yearbook = peca.yearbook.sponsor
+                            sponsor.image = peca.yearbook.sponsor.image
+                            sponsor.save()
+                        if coordinator.yearbook != peca.yearbook.coordinator:
+                            coordinator.yearbook = peca.yearbook.coordinator
+                            coordinator.image = peca.yearbook.coordinator.image
+                            coordinator.save()
+
+                        for lapse in [1, 2, 3]:
+                            for activity in document.detail['lapse{}'.format(lapse)]['activities']:
+                                found = False
+                                yearActivity = ActivityYearbookSchema().load(activity)
+                                if activity['id'] == 'initialWorkshop':
+                                    peca['lapse{}'.format(
+                                        lapse)].initialWorkshop.yearbook = yearActivity
+                                    found = True
+                                elif activity['id'] == 'ambleCoins':
+                                    peca['lapse{}'.format(
+                                        lapse)].ambleCoins.yearbook = yearActivity
+                                    found = True
+                                elif activity['id'] == 'lapsePlanning':
+                                    peca['lapse{}'.format(
+                                        lapse)].lapsePlanning.yearbook = yearActivity
+                                    found = True
+                                elif activity['id'] == 'annualConvention':
+                                    peca['lapse{}'.format(
+                                        lapse)].annualConvention.yearbook = yearActivity
+                                    found = True
+                                elif activity['id'] == 'olympics':
+                                    peca['lapse{}'.format(
+                                        lapse)].olympics.yearbook = yearActivity
+                                    found = True
+                                elif activity['id'] == 'specialActivity':
+                                    peca['lapse{}'.format(
+                                        lapse)].specialActivity.yearbook = yearActivity
+                                    found = True
+                                elif activity['id'] == 'specialActivity':
+                                    peca['lapse{}'.format(
+                                        lapse)].specialActivity.yearbook = yearActivity
+                                    found = True
+                                if not found:
+                                    for pecaAct in peca['lapse{}'.format(lapse)].activities:
+                                        if activity['id'] == pecaAct.id:
+                                            pecaAct.yearbook = yearActivity
+
+                        for history in peca.yearbook.approvalHistory:
+                            if history.id == str(document.id):
+                                history.status = document.status
+                        peca.yearbook.isInApproval = False
+                        peca.save()
+                    elif document.status in ('3', '4'):  # rejected or cancelled
+                        peca.yearbook.isInApproval = False
+                        peca.save()
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):

@@ -37,17 +37,20 @@ class PecaProjectService():
 
     def get(self, id):
         from app.models.school_user_model import SchoolUser
+        from app.models.sponsor_user_model import SponsorUser
+        from app.models.coordinator_user_model import CoordinatorUser
         from app.schemas.school_user_schema import TeacherTestimonialSchema
         from app.schemas.teacher_schema import TeacherSchema
         from app.schemas.shared_schemas import ImageStatusSchema
+        from app.schemas.peca_yearbook_schema import YearbookSchema
 
-        pecaProject = PecaProject.objects(
+        peca = PecaProject.objects(
             isDeleted=False, id=id).first()
-        if pecaProject:
+        if peca:
             schema = PecaProjectSchema()
-            data = schema.dump(pecaProject)
+            data = schema.dump(peca)
             school = SchoolUser.objects(
-                id=pecaProject.project.school.id).first()
+                id=peca.project.school.id).first()
             data['school']['teachers'] = TeacherSchema().dump(
                 school.teachers, many=True)
             data['school']['slider'] = ImageStatusSchema().dump(
@@ -55,6 +58,124 @@ class PecaProjectService():
             data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(
                 school.teachersTestimonials, many=True
             )
+            sponsor = SponsorUser.objects.get(id=peca.project.sponsor.id)
+            coordinator = CoordinatorUser.objects.get(
+                id=peca.project.coordinator.id)
+
+            if not peca.yearbook.historicalReview.image:
+                data['yearbook']['historicalReview']['content'] = school.historicalReview.content
+                data['yearbook']['historicalReview']['image'] = school.historicalReview.image
+            if not peca.yearbook.school.image:
+                data['yearbook']['school']['name'] = school.name
+                data['yearbook']['school']['image'] = school.image
+                data['yearbook']['school']['content'] = school.yearbook.content
+            if not peca.yearbook.sponsor.image:
+                data['yearbook']['sponsor']['name'] = sponsor.name
+                data['yearbook']['sponsor']['image'] = sponsor.image
+                data['yearbook']['sponsor']['content'] = sponsor.yearbook.content
+            if not peca.yearbook.coordinator.image:
+                data['yearbook']['coordinator']['name'] = coordinator.name
+                data['yearbook']['coordinator']['image'] = coordinator.image
+                data['yearbook']['coordinator']['content'] = coordinator.yearbook.content
+
+            data['yearbook']['lapse1'] = {
+                'diagnosticSummary': [],
+                'activities': []
+            }
+            data['yearbook']['lapse2'] = {
+                'diagnosticSummary': [],
+                'activities': []
+            }
+            data['yearbook']['lapse3'] = {
+                'diagnosticSummary': [],
+                'activities': []
+            }
+
+            for section in sorted(
+                    peca.school.sections.filter(isDeleted=False), key=lambda x: (x['grade'], x['name'])):
+
+                summary = section.diagnostics
+                for i in range(1, 4):
+                    data['yearbook']['lapse{}'.format(i)]['diagnosticSummary'].append(
+                        {
+                            'grade': section.grade,
+                            'name': section.name,
+                            'wordsPerMin': summary['lapse{}'.format(i)]['wordsPerMin'],
+                            'wordsPerMinIndex': summary['lapse{}'.format(i)]['wordsPerMinIndex'],
+                            'multiplicationsPerMin': summary['lapse{}'.format(i)]['multiplicationsPerMin'],
+                            'multiplicationsPerMinIndex': summary['lapse{}'.format(i)]['multiplicationsPerMinIndex'],
+                            'operationsPerMin': summary['lapse{}'.format(i)]['operationsPerMin'],
+                            'operationsPerMinIndex': summary['lapse{}'.format(i)]['operationsPerMinIndex']
+                        }
+                    )
+            for i in range(1, 4):
+                lapse = peca['lapse{}'.format(i)]
+                lapseData = data['yearbook']['lapse{}'.format(i)]
+
+                if lapse.initialWorkshop:
+                    lapseData['activities'].append(
+                        {
+                            'id': 'initialWorkshop',
+                            'name': 'Taller inicial',
+                            'description': lapse.initialWorkshop.yearbook.description,
+                            'images': lapse.initialWorkshop.yearbook.images
+                        }
+                    )
+
+                if lapse.ambleCoins:
+                    lapseData['activities'].append(
+                        {
+                            'id': 'ambleCoins',
+                            'name': 'AmbLeMonedas',
+                            'description': lapse.ambleCoins.yearbook.description,
+                            'images': lapse.ambleCoins.yearbook.images
+                        }
+                    )
+                if lapse.lapsePlanning:
+                    lapseData['activities'].append(
+                        {
+                            'id': 'lapsePlanning',
+                            'name': 'Planificación de lapso',
+                            'description': lapse.lapsePlanning.yearbook.description,
+                            'images': lapse.lapsePlanning.yearbook.images
+                        }
+                    )
+                if lapse.annualConvention:
+                    lapseData['activities'].append(
+                        {
+                            'id': 'annualConvention',
+                            'name': 'Convención anual',
+                            'description': lapse.annualConvention.yearbook.description,
+                            'images': lapse.annualConvention.yearbook.images
+                        }
+                    )
+                if lapse.olympics:
+                    lapseData['activities'].append(
+                        {
+                            'id': 'olympics',
+                            'name': 'Olimpiadas matemáticas',
+                            'description': lapse.olympics.yearbook.description,
+                            'images': lapse.olympics.yearbook.images
+                        }
+                    )
+                if lapse.specialActivity:
+                    lapseData['activities'].append(
+                        {
+                            'id': 'specialActivity',
+                            'name': 'Actividad especial de lapso {}'.format(i),
+                            'description': lapse.specialActivity.yearbook.description,
+                            'images': lapse.specialActivity.yearbook.images
+                        }
+                    )
+                for activity in lapse.activities:
+                    lapseData['activities'].append(
+                        {
+                            'id': str(activity.id),
+                            'name': activity.name,
+                            'description': activity.yearbook.description,
+                            'images': activity.yearbook.images
+                        }
+                    )
             return data, 200
         else:
             raise RegisterNotFound(message="Record not found",

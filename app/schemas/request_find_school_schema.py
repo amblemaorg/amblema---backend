@@ -8,6 +8,7 @@ from app.models.project_model import Project
 from app.models.state_model import State, Municipality
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range, validate_email
+from app.schemas.shared_schemas import CoordinateSchema
 
 
 class ReqFindSchoolSchema(Schema):
@@ -30,6 +31,7 @@ class ReqFindSchoolSchema(Schema):
             ('sector', 'neighborhood', 'hamlet')
         ))
     addressZone = fields.Str(allow_none=True)
+    coordinate = fields.Nested(CoordinateSchema)
     phone = fields.Str(required=True, validate=(not_blank, only_numbers))
     schoolType = fields.Str(
         required=True,

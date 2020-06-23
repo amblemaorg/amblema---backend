@@ -3,12 +3,13 @@
 
 from datetime import datetime
 
-from mongoengine import fields
+from mongoengine import fields, EmbeddedDocument
 
 from app.models.user_model import User
-from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference, ImageStatus
+from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference, ImageStatus, Coordinate
 from app.models.teacher_model import Teacher
 from app.models.teacher_testimonial_model import TeacherTestimonial
+from app.models.peca_yearbook_model import Entity
 
 
 class SchoolUser(User):
@@ -18,6 +19,7 @@ class SchoolUser(User):
     schoolType = fields.StringField(null=True, max_length=1)
     addressZoneType = fields.StringField(max_length=1, null=True)
     addressZone = fields.StringField(null=True)
+    coordinate = fields.EmbeddedDocumentField(Coordinate)
     principalFirstName = fields.StringField()
     principalLastName = fields.StringField()
     principalEmail = fields.EmailField()
@@ -38,6 +40,8 @@ class SchoolUser(User):
     slider = fields.EmbeddedDocumentListField(ImageStatus)
     phase = fields.StringField(max_length=1, default="1")
     teachersTestimonials = fields.EmbeddedDocumentListField(TeacherTestimonial)
+    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
+    historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
 
     def addProject(self, project):
 

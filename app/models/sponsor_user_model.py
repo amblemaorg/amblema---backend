@@ -8,6 +8,7 @@ from mongoengine import fields
 from app.models.user_model import User
 from app.models.shared_embedded_documents import (
     ProjectReference, DocumentReference, SchoolReference)
+from app.models.peca_yearbook_model import Entity
 
 
 class SponsorUser(User):
@@ -23,6 +24,7 @@ class SponsorUser(User):
     webSite = fields.URLField()
     projects = fields.EmbeddedDocumentListField(ProjectReference)
     phase = fields.StringField(max_length=1, default="1")
+    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
 
     def findProject(self, projectId):
         project = self.projects.filter(id=projectId).first()

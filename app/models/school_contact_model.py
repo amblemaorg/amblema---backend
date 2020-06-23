@@ -17,6 +17,7 @@ from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.project_model import Project
 from app.models.role_model import Role
+from app.models.shared_embedded_documents import Coordinate
 
 
 class SchoolContact(Document):
@@ -31,6 +32,7 @@ class SchoolContact(Document):
     addressCity = fields.StringField()
     addressZoneType = fields.StringField(max_length=1, null=True)
     addressZone = fields.StringField(null=True)
+    coordinate = fields.EmbeddedDocumentField(Coordinate)
     phone = fields.StringField(required=True)
     schoolType = fields.StringField(required=True, max_length=1)
     principalFirstName = fields.StringField(required=True)
@@ -112,6 +114,7 @@ class SchoolContact(Document):
                         addressZoneType=document.addressZoneType,
                         addressZone=document.addressZone,
                         address=document.address,
+                        coordinate=document.coordinate,
                         status='1',
                         code=document.code,
                         schoolType=document.schoolType,

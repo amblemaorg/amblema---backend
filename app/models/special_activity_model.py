@@ -8,6 +8,8 @@ from flask import current_app
 from mongoengine import fields, EmbeddedDocument
 from app.models.shared_embedded_documents import Approval
 
+from app.models.peca_activity_yearbook_model import ActivityYearbook
+
 
 class ItemSpecialActivity(EmbeddedDocument):
     name = fields.StringField(required=True)
@@ -29,3 +31,5 @@ class SpecialActivity(EmbeddedDocument):
     isInApproval = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())

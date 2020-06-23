@@ -16,7 +16,6 @@ from app.helpers.ma_schema_validators import (
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 from app.schemas.shared_schemas import ProjectReferenceSchema
-from app.models.peca_project_model import TeacherLink
 from app.schemas.peca_amblecoins_schema import AmblecoinsPecaSchema
 from app.schemas.peca_olympics_schema import OlympicsSchema
 from app.schemas.peca_annual_preparation_schema import AnnualPreparationSchema
@@ -26,63 +25,8 @@ from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
 from app.schemas.peca_activities_schema import ActivityPecaSchema
 from app.schemas.peca_schedule_schema import ScheduleActivitySchema
 from app.schemas.special_activity_schema import SpecialActivitySchema
-
-
-class DiagnosticSchema(Schema):
-    multiplicationsPerMin = fields.Int(min=0)
-    multiplicationsPerMinIndex = fields.Float(dump_only=True)
-    operationsPerMin = fields.Int(min=0)
-    operationsPerMinIndex = fields.Float(dump_only=True)
-    wordsPerMin = fields.Int(min=0)
-    wordsPerMinIndex = fields.Float(dump_only=True)
-    readingDate = fields.DateTime(dump_only=True)
-    mathDate = fields.DateTime(dump_only=True)
-    logicDate = fields.DateTime(dump_only=True)
-
-
-class StudentSchema(Schema):
-    id = fields.Str(dump_only=True)
-    firstName = fields.Str(required=True)
-    lastName = fields.Str(required=True)
-    cardId = fields.Str(validate=only_numbers)
-    cardType = fields.Str(
-        validate=OneOf(
-            ('1', '2'),
-            ('V', 'E')
-        ))
-    birthdate = fields.DateTime(required=True)
-    gender = fields.Str(
-        required=True,
-        validate=OneOf(
-            ('1', '2'),
-            ('female', 'male')
-        ))
-    lapse1 = fields.Nested(DiagnosticSchema(), dump_only=True)
-    lapse2 = fields.Nested(DiagnosticSchema(), dump_only=True)
-    lapse3 = fields.Nested(DiagnosticSchema(), dump_only=True)
-
-
-class TeacherLinkSchema(Schema):
-    id = fields.Str()
-    firstName = fields.Str()
-    lastName = fields.Str()
-
-    @post_load
-    def make_action(self, data, **kwargs):
-        return TeacherLink(**data)
-
-
-class SectionSchema(Schema):
-    id = fields.Str(dump_only=True)
-    grade = fields.Str(
-        required=True,
-        validate=OneOf(
-            ('0', '1', '2', '3', '4', '5', '6'),
-            ('preschool', '1', '2', '3', '4', '5', '6')
-        ))
-    name = fields.Str(required=True)
-    students = fields.List(fields.Nested(StudentSchema()), dump_only=True)
-    teacher = fields.Nested(TeacherLinkSchema())
+from app.schemas.peca_section_schema import SectionSchema
+from app.schemas.peca_yearbook_schema import YearbookSchema
 
 
 class SchoolSchema(Schema):
@@ -138,5 +82,6 @@ class PecaProjectSchema(Schema):
     lapse2 = fields.Nested(LapseSchema)
     lapse3 = fields.Nested(LapseSchema)
     schedule = fields.List(fields.Nested(ScheduleActivitySchema))
+    yearbook = fields.Nested(YearbookSchema())
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

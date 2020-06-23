@@ -9,7 +9,7 @@ from flask import current_app
 
 from app.helpers.ma_schema_fields import MAImageField, MAReferenceField
 from app.helpers.ma_schema_validators import validate_url, not_blank, validate_image, OneOf
-from app.models.shared_embedded_documents import Link, CheckTemplate
+from app.models.shared_embedded_documents import Link, CheckTemplate, Coordinate
 from app.models.user_model import User
 
 
@@ -99,3 +99,12 @@ class ImageStatusSchema(Schema):
     approvalHistory = fields.Nested(ApprovalSchema, dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+
+class CoordinateSchema(Schema):
+    latitude = fields.Float()
+    longitude = fields.Float()
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Coordinate(**data)

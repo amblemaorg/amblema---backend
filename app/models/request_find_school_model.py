@@ -10,6 +10,7 @@ from app.models.user_model import User
 from app.models.project_model import Project, Approval
 from app.models.school_user_model import SchoolUser
 from app.models.role_model import Role
+from app.models.shared_embedded_documents import Coordinate
 
 
 class RequestFindSchool(Document):
@@ -26,6 +27,7 @@ class RequestFindSchool(Document):
     addressCity = fields.StringField()
     addressZoneType = fields.StringField(max_length=1, null=True)
     addressZone = fields.StringField(null=True)
+    coordinate = fields.EmbeddedDocumentField(Coordinate)
     phone = fields.StringField(required=True)
     schoolType = fields.StringField(required=True, max_length=1)
     principalFirstName = fields.StringField(required=True)
@@ -97,6 +99,7 @@ class RequestFindSchool(Document):
                         addressZoneType=document.addressZoneType,
                         addressZone=document.addressZone,
                         address=document.address,
+                        coordinate=document.coordinate,
                         status='1',
                         code=document.code,
                         schoolType=document.schoolType,

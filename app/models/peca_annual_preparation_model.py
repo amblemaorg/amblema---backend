@@ -4,6 +4,7 @@ from datetime import datetime
 from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
+from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 
 class Teacher(EmbeddedDocument):

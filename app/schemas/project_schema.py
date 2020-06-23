@@ -114,7 +114,7 @@ class ProjectSchema(Schema):
     phase = fields.Str(validate=OneOf(
         ('1', '2'),
         ('in_steps', 'in_peca')
-    ), dump_only=True)
+    ))
     status = fields.Str(validate=OneOf(
         ('1', '2'),
         ('active', 'inactive')

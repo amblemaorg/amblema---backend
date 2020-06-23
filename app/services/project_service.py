@@ -84,10 +84,27 @@ class ProjectService():
             if peca.schoolYear.id == str(schoolYear.id):
                 return peca
 
+        reference = project.getReference()
+        if not reference.coordinator:
+            raise ValidationError(
+                {"coordinator": [{"status": "2",
+                                  "msg": "Required field"}]}
+            )
+        if not reference.school:
+            raise ValidationError(
+                {"school": [{"status": "2",
+                             "msg": "Required field"}]}
+            )
+        if not reference.sponsor:
+            raise ValidationError(
+                {"sponsor": [{"status": "2",
+                              "msg": "Required field"}]}
+            )
+
         pecaProject = PecaProject(
             schoolYear=schoolYear,
             schoolYearName=schoolYear.name,
-            project=project.getReference(),
+            project=reference,
             school={
                 "name": project.school.name,
                 "code": project.school.code,
@@ -243,6 +260,23 @@ class ProjectService():
         from app.schemas.coordinator_user_schema import CoordinatorUserSchema
         from app.schemas.sponsor_user_schema import SponsorUserSchema
 
+        # validate phase changed
+        if document.phase != oldDocument.phase and document.phase == "2":
+            if not document.sponsor:
+                raise ValidationError(
+                    {"sponsor": [{"status": "2",
+                                  "msg": "Required field"}]}
+                )
+            if not document.school:
+                raise ValidationError(
+                    {"school": [{"status": "2",
+                                 "msg": "Required field"}]}
+                )
+            if not document.coordinator:
+                raise ValidationError(
+                    {"coordinator": [{"status": "2",
+                                      "msg": "Required field"}]}
+                )
         if document.sponsor != oldDocument.sponsor:
             if oldDocument.sponsor:
                 oldDocument.sponsor.removeProject(document)

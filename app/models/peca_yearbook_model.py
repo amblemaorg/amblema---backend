@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
-from app.models.peca_activity_yearbook_model import ActivityYearbook
+from app.models.shared_embedded_documents import Approval
 
 
 class Entity(EmbeddedDocument):
@@ -15,9 +15,10 @@ class Entity(EmbeddedDocument):
 
 
 class Yearbook(EmbeddedDocument):
-    historicalReview = fields.EmbeddedDocumentField(ActivityYearbook)
-    sponsor = fields.EmbeddedDocumentField(Entity)
-    school = fields.EmbeddedDocumentField(Entity)
-    coordinator = fields.EmbeddedDocumentField(Entity)
+    historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
+    sponsor = fields.EmbeddedDocumentField(Entity, default=Entity())
+    school = fields.EmbeddedDocumentField(Entity, default=Entity())
+    coordinator = fields.EmbeddedDocumentField(Entity, default=Entity())
     isInApproval = fields.BooleanField(default=False)
+    approvalHistory = fields.EmbeddedDocumentListField(Approval)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

@@ -27,4 +27,5 @@ class Olympics(EmbeddedDocument):
     students = fields.EmbeddedDocumentListField(Student)
     file = fields.EmbeddedDocumentField(Link)
     description = fields.StringField()
-    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())

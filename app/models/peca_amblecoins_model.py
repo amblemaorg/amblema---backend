@@ -18,4 +18,5 @@ class AmblecoinsPeca(EmbeddedDocument):
     meetingDate = fields.DateTimeField()
     elaborationDate = fields.DateTimeField()
     sections = fields.EmbeddedDocumentListField(AmbleSection)
-    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())

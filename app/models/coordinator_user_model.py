@@ -11,6 +11,7 @@ from app.models.user_model import User
 from app.models.shared_embedded_documents import (
     DocumentReference, ProjectReference, SchoolReference, Link)
 from app.helpers.error_helpers import RegisterNotFound
+from app.models.peca_yearbook_model import Entity
 
 
 class Answer(EmbeddedDocument):
@@ -51,6 +52,7 @@ class CoordinatorUser(User):
     instructed = fields.BooleanField(required=True, default=False)
     curriculum = fields.EmbeddedDocumentField(Link)
     phase = fields.StringField(max_length=1, default="1")
+    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName

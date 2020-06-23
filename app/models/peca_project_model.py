@@ -18,56 +18,7 @@ from app.models.peca_activities_model import ActivityPeca
 from app.models.peca_schedule_model import ScheduleActivity
 from app.models.peca_yearbook_model import Yearbook
 from app.models.special_activity_model import SpecialActivity
-
-
-class Diagnostic(EmbeddedDocument):
-    multiplicationsPerMin = fields.IntField()
-    multiplicationsPerMinIndex = fields.FloatField()
-    operationsPerMin = fields.IntField()
-    operationsPerMinIndex = fields.FloatField()
-    wordsPerMin = fields.IntField()
-    wordsPerMinIndex = fields.FloatField()
-    mathDate = fields.DateTimeField()
-    logicDate = fields.DateTimeField()
-    readingDate = fields.DateTimeField()
-
-    def calculateIndex(self, setting):
-        if self.multiplicationsPerMin:
-            self.multiplicationsPerMinIndex = self.multiplicationsPerMin / \
-                setting.multiplicationsPerMin
-        if self.operationsPerMin:
-            self.operationsPerMinIndex = self.operationsPerMin / setting.operationsPerMin
-        if self.wordsPerMin:
-            self.wordsPerMinIndex = self.wordsPerMin / setting.wordsPerMin
-
-
-class Student(EmbeddedDocument):
-    id = fields.ObjectIdField(default=fields.ObjectId)
-    firstName = fields.StringField()
-    lastName = fields.StringField()
-    cardId = fields.StringField()
-    cardType = fields.StringField()
-    birthdate = fields.DateTimeField()
-    gender = fields.StringField(max_length=1)
-    lapse1 = fields.EmbeddedDocumentField(Diagnostic)
-    lapse2 = fields.EmbeddedDocumentField(Diagnostic)
-    lapse3 = fields.EmbeddedDocumentField(Diagnostic)
-    isDeleted = fields.BooleanField(default=False)
-
-
-class TeacherLink(EmbeddedDocument):
-    id = fields.StringField()
-    firstName = fields.StringField()
-    lastName = fields.StringField()
-
-
-class Section(EmbeddedDocument):
-    id = fields.ObjectIdField(default=fields.ObjectId)
-    grade = fields.StringField(max_length=1)
-    name = fields.StringField()
-    isDeleted = fields.BooleanField(default=False)
-    students = fields.EmbeddedDocumentListField(Student)
-    teacher = fields.EmbeddedDocumentField(TeacherLink)
+from app.models.peca_section_model import Section
 
 
 class School(EmbeddedDocument):
@@ -116,7 +67,7 @@ class PecaProject(Document):
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)
     schedule = fields.EmbeddedDocumentListField(ScheduleActivity)
-    yearbook = fields.EmbeddedDocumentField(Yearbook)
+    yearbook = fields.EmbeddedDocumentField(Yearbook, default=Yearbook())
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

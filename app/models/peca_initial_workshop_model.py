@@ -33,4 +33,5 @@ class InitialWorkshopPeca(EmbeddedDocument):
     workshopDate = fields.DateTimeField()
     isInApproval = fields.BooleanField(default=False)
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
-    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())

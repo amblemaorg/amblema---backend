@@ -18,5 +18,6 @@ class LapsePlanningPeca(EmbeddedDocument):
     attachedFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     meetingDate = fields.DateTimeField()
-    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())
     status = fields.StringField(default="1", max_length=1)

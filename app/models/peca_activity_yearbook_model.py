@@ -7,5 +7,7 @@ from mongoengine import EmbeddedDocument, fields
 
 
 class ActivityYearbook(EmbeddedDocument):
-    content = fields.StringField()
+    id = fields.StringField()
+    name = fields.StringField()
+    description = fields.StringField()
     images = fields.ListField(fields.URLField())

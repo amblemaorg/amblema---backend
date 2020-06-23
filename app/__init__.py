@@ -143,6 +143,7 @@ from app.controllers.teacher_testimonial_controller import (
 from app.controllers.special_activity_controller import (
     SpecialActivityController
 )
+from app.controllers.peca_yearbook_controller import PecaYearbookController
 db = MongoEngine()
 
 
@@ -338,6 +339,8 @@ def create_app(config_instance):
                      '/pecaprojects/activities/<string:pecaId>/<string:lapse>/<string:activityId>')
     api.add_resource(ScheduleController,
                      '/pecaprojects/schedule/<string:pecaId>')
+    api.add_resource(PecaYearbookController,
+                     '/pecaprojects/yearbook/<string:pecaId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
     api.add_resource(UserReportController, '/statistics/usersreport/<string:userType>/<string:status>',
                      '/statistics/usersreport/<string:userType>')

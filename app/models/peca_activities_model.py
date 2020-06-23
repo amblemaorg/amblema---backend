@@ -42,7 +42,8 @@ class ActivityFields(EmbeddedDocument):
 
 class ActivityPeca(ActivityFields):
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
-    yearbook = fields.EmbeddedDocumentField(ActivityYearbook)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())
 
     def approve(self):
         self.status = "3"

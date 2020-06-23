@@ -8,8 +8,8 @@ from marshmallow import ValidationError
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
-from app.models.peca_project_model import Diagnostic
-from app.schemas.peca_project_schema import DiagnosticSchema
+from app.models.peca_student_model import Diagnostic
+from app.schemas.peca_student_schema import DiagnosticSchema
 from app.helpers.error_helpers import RegisterNotFound
 
 
@@ -65,17 +65,15 @@ class DiagnosticService():
                         diagnostic.logicDate = datetime.utcnow()
                 diagnostic.calculateIndex(setting)
 
-                try:
-                    for section in peca.school.sections:
-                        if str(section.id) == sectionId and not section.isDeleted:
-                            for student in section.students:
-                                if str(student.id) == studentId and not student.isDeleted:
-                                    student['lapse{}'.format(
-                                        lapse)] = diagnostic
-                                    peca.save()
-                                    return schema.dump(diagnostic), 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
+                for section in peca.school.sections:
+                    if str(section.id) == sectionId and not section.isDeleted:
+                        for student in section.students:
+                            if str(student.id) == studentId and not student.isDeleted:
+                                student['lapse{}'.format(
+                                    lapse)] = diagnostic
+                                section.refreshDiagnosticsSummary()
+                                peca.save()
+                                return schema.dump(diagnostic), 200
 
             except ValidationError as err:
                 return err.normalized_messages(), 400
@@ -116,6 +114,7 @@ class DiagnosticService():
                                         lapse)].operationsPerMin = None
                                     student['lapse{}'.format(
                                         lapse)].operationsPerMinIndex = None
+                                section.refreshDiagnosticsSummary()
                                 peca.save()
                                 return "Record deleted successfully", 200
             except Exception as e:

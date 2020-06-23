@@ -237,9 +237,9 @@ class SchoolPecaTest(unittest.TestCase):
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(70,
-                         result['wordsPerMin'])
+                         result['student']['wordsPerMin'])
         self.assertEqual(1,
-                         result['wordsPerMinIndex'])
+                         result['student']['wordsPerMinIndex'])
         self.pecaProject = PecaProject.objects.get(id=self.pecaProject.id)
         self.assertEqual(
             70, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMin)
@@ -282,14 +282,14 @@ class SchoolPecaTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
 
         self.assertEqual(15,
-                         result['operationsPerMin'])
+                         result['student']['operationsPerMin'])
         self.assertEqual(0.5,
-                         result['operationsPerMinIndex'])
+                         result['student']['operationsPerMinIndex'])
 
         self.assertEqual(80,
-                         result['multiplicationsPerMin'])
+                         result['student']['multiplicationsPerMin'])
         self.assertEqual(2,
-                         result['multiplicationsPerMinIndex'])
+                         result['student']['multiplicationsPerMinIndex'])
         self.pecaProject = PecaProject.objects.get(id=self.pecaProject.id)
 
         self.assertEqual(

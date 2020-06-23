@@ -5,11 +5,12 @@ from flask import current_app
 from marshmallow import ValidationError
 
 from app.models.peca_project_model import PecaProject
-from app.models.peca_project_model import Section
+from app.models.peca_section_model import Section
 from app.models.peca_amblecoins_model import AmbleSection
 from app.schemas.peca_project_schema import SectionSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
+from app.models.school_year_model import SchoolYear
 
 
 class SectionService():
@@ -49,6 +50,9 @@ class SectionService():
                                    "msg": "Duplicated record found: {}".format(section.name)}]}
                     )
                 try:
+                    schoolYear = peca.schoolYear.fetch()
+                    section.goals = schoolYear.pecaSetting.goalSetting['grade{}'.format(
+                        section.grade)]
                     peca.school.sections.append(section)
 
                     for i in range(1, 4):
@@ -105,7 +109,11 @@ class SectionService():
                     id=sectionId, isDeleted=False).first()
 
                 for field in schema.dump(data).keys():
-                    section[field] = data[field]
+                    if section[field] != data[field]:
+                        section[field] = data[field]
+                        if field == 'grade':
+                            section.goals = peca.schoolYear.fetch(
+                            ).pecaSetting.goalSetting['grade{}'.format(section.grade)]
                 if self.checkForDuplicated(peca, section):
                     raise ValidationError(
                         {"name": [{"status": "5",

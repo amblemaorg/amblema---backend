@@ -9,6 +9,7 @@ from app.models.user_model import User
 from app.models.shared_embedded_documents import ProjectReference, DocumentReference, SchoolReference, ImageStatus
 from app.models.teacher_model import Teacher
 from app.models.teacher_testimonial_model import TeacherTestimonial
+from app.models.peca_yearbook_model import Entity
 
 
 class SchoolUser(User):
@@ -38,6 +39,8 @@ class SchoolUser(User):
     slider = fields.EmbeddedDocumentListField(ImageStatus)
     phase = fields.StringField(max_length=1, default="1")
     teachersTestimonials = fields.EmbeddedDocumentListField(TeacherTestimonial)
+    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
+    historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
 
     def addProject(self, project):
 

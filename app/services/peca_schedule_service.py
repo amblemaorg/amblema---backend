@@ -42,7 +42,7 @@ class ScheduleService():
         peca = PecaProject.objects(
             isDeleted=False,
             id=pecaId,
-        ).only('schedule').first()
+        ).first()
 
         if peca:
             try:

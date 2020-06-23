@@ -6,8 +6,8 @@ from marshmallow import ValidationError
 from mongoengine.queryset.visitor import Q
 
 from app.models.peca_project_model import PecaProject
-from app.models.peca_project_model import Student, Diagnostic
-from app.schemas.peca_project_schema import StudentSchema
+from app.models.peca_student_model import Student, Diagnostic
+from app.schemas.peca_student_schema import StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
 
 

@@ -7,6 +7,8 @@ from bson import ObjectId
 from flask import current_app
 from mongoengine import fields, EmbeddedDocument
 
+from app.models.peca_activity_yearbook_model import ActivityYearbook
+
 
 class ItemSpecialActivity(EmbeddedDocument):
     name = fields.StringField(required=True)
@@ -28,3 +30,5 @@ class SpecialActivity(EmbeddedDocument):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())

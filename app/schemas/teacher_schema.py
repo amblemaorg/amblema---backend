@@ -3,7 +3,7 @@
 
 import json
 
-from marshmallow import Schema, post_load, pre_load
+from marshmallow import Schema, EXCLUDE, post_load, pre_load
 from app.schemas import fields
 from flask import current_app
 
@@ -46,3 +46,7 @@ class TeacherSchema(Schema):
     )
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True

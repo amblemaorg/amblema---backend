@@ -6,6 +6,7 @@ from bson import ObjectId
 from mongoengine import EmbeddedDocument, fields
 
 from app.models.shared_embedded_documents import Link, Approval
+from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 
 class CheckElement(EmbeddedDocument):
@@ -41,6 +42,8 @@ class ActivityFields(EmbeddedDocument):
 
 class ActivityPeca(ActivityFields):
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
+    yearbook = fields.EmbeddedDocumentField(
+        ActivityYearbook, default=ActivityYearbook())
 
     def approve(self):
         self.status = "3"

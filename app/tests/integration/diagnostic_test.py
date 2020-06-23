@@ -160,6 +160,11 @@ class SchoolPecaTest(unittest.TestCase):
                     {
                         "grade": "1",
                         "name": "A",
+                        "goals": {
+                            "wordsPerMin": 70,
+                            "operationsPerMin": 30,
+                            "multiplicationsPerMin": 40
+                        },
                         "students": [
                             {
                                 "firstName": "Danel",

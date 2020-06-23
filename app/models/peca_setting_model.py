@@ -7,6 +7,7 @@ from app.models.learning_module_model import Image
 from app.models.activity_model import Activity
 from app.models.goal_setting_model import GoalSetting
 from app.models.environmental_project_model import EnvironmentalProject
+from app.models.monitoring_activity_model import MonitoringActivity
 
 
 class InitialWorshop(EmbeddedDocument):
@@ -94,3 +95,4 @@ class PecaSetting(EmbeddedDocument):
     lapse3 = fields.EmbeddedDocumentField(Lapse)
     environmentalProject = fields.EmbeddedDocumentField(EnvironmentalProject)
     goalSetting = fields.EmbeddedDocumentField(GoalSetting)
+    monitoringActivities = fields.EmbeddedDocumentField(MonitoringActivity)

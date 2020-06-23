@@ -21,6 +21,7 @@ from app.models.peca_setting_model import (
     SpecialLapseActivity)
 
 from app.models.goal_setting_model import GoalSetting, GradeSetting
+from app.models.monitoring_activity_model import MonitoringActivity
 
 
 class SchoolYear(Document):
@@ -62,6 +63,7 @@ class SchoolYear(Document):
             lapse2=lapse,
             lapse3=lapse,
             goalSetting=goalSetting,
-            environmentalProject=EnvironmentalProject()
+            environmentalProject=EnvironmentalProject(),
+            monitoringActivities=MonitoringActivity()
         )
         self.pecaSetting = pecaSetting

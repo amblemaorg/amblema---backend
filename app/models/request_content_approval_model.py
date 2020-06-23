@@ -33,6 +33,7 @@ class RequestContentApproval(Document):
     def pre_save(cls, sender, document, **kwargs):
         from app.schemas.peca_activities_schema import ActivityFieldsSchema
         from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
+        from app.schemas.special_activity_schema import SpecialActivitySchema
         from app.models.project_model import Project
         # before create
         if not document.id:
@@ -138,9 +139,17 @@ class RequestContentApproval(Document):
                 if document.type == "6":
                     peca = PecaProject.objects(
                         id=document.detail['pecaId']).first()
-                    for specialActivity in peca['lapse{}'.format(document.detail['lapse'])].specialActivity:
-                        if str(specialActivity.id) == document.detail['id']:
-                            specialActivity.approvalStatus = document.status
+                    specialActivity = peca['lapse{}'.format(
+                        document.detail['lapse'])].specialActivity
+                    for history in specialActivity.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = document.status
+                            specialActivity.isInApproval = False
+                            if document.status == '2':  # approved
+                                schema = SpecialActivitySchema(partial=True)
+                                data = schema.load(document.detail)
+                                for field in schema.dump(data).keys():
+                                    specialActivity[field] = data[field]
                             break
                     peca.save()
 

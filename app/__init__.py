@@ -337,6 +337,8 @@ def create_app(config_instance):
                      '/pecaprojects/lapseplanning/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaInitialWorkshopCtrl,
                      '/pecaprojects/initialworkshop/<string:pecaId>/<string:lapse>')
+    api.add_resource(SpecialActivityController,
+                     '/pecaprojects/specialsactivities/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaActivitiesCtrl,
                      '/pecaprojects/activities/<string:pecaId>/<string:lapse>/<string:activityId>')
     api.add_resource(ScheduleController,
@@ -358,8 +360,6 @@ def create_app(config_instance):
                      '/schools/teacherstestimonials/<string:schoolId>')
     api.add_resource(TeacherTestimonialHandlerController,
                      '/schools/teacherstestimonials/<string:schoolId>/<string:testimonialId>')
-    api.add_resource(SpecialActivityController,
-                     '/pecaprojects/lapses/specialsactivities/<string:pecaId>/<string:lapse>')
     api.add_resource(MonitoringActivitiesController,
                      '/pecasetting/monitoringactivities')
 

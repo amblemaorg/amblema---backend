@@ -4,7 +4,7 @@
 from marshmallow import validate, EXCLUDE
 
 from app.schemas.user_schema import UserSchema
-from app.schemas.shared_schemas import ProjectReferenceSchema
+from app.schemas.shared_schemas import ProjectReferenceSchema, CoordinateSchema
 from app.schemas import fields
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
@@ -35,6 +35,7 @@ class SchoolUserSchema(UserSchema):
             ('sector', 'neighborhood', 'hamlet')
         ))
     addressZone = fields.Str(allow_none=True)
+    coordinate = fields.Nested(CoordinateSchema)
     principalFirstName = fields.Str()
     principalLastName = fields.Str()
     principalEmail = fields.Str(validate=validate_email)

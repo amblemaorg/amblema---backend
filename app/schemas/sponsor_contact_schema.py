@@ -13,6 +13,7 @@ from marshmallow import (
 from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range, validate_email
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
+from app.schemas.shared_schemas import CoordinateSchema
 
 
 class SponsorContactSchema(Schema):
@@ -54,6 +55,7 @@ class SponsorContactSchema(Schema):
             ('sector', 'neighborhood', 'hamlet')
         ))
     schoolAddressZone = fields.Str(allow_none=True)
+    schoolCoordinate = fields.Nested(CoordinateSchema)
     schoolPhone = fields.Str(validate=(not_blank, only_numbers))
     schoolType = fields.Str(
         validate=OneOf(

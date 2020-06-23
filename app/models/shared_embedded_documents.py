@@ -55,3 +55,8 @@ class ImageStatus(EmbeddedDocument):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+
+class Coordinate(EmbeddedDocument):
+    latitude = fields.FloatField()
+    longitude = fields.FloatField()

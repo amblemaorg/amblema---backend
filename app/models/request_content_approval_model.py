@@ -33,6 +33,7 @@ class RequestContentApproval(Document):
     def pre_save(cls, sender, document, **kwargs):
         from app.schemas.peca_activities_schema import ActivityFieldsSchema
         from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
+        from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema
         from app.schemas.special_activity_schema import SpecialActivitySchema
         from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.peca_activity_yearbook_schema import ActivityYearbookSchema
@@ -236,6 +237,24 @@ class RequestContentApproval(Document):
                     elif document.status in ('3', '4'):  # rejected or cancelled
                         peca.yearbook.isInApproval = False
                         peca.save()
+                 # lapse planning
+                if document.type == "8":
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    lapsePlanning = peca['lapse{}'.format(
+                        document.detail['lapse'])].lapsePlanning
+                    for history in lapsePlanning.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = document.status
+                            lapsePlanning.isInApproval = False
+                            if document.status == "2":  # approved
+                                schema = LapsePlanningPecaSchema(
+                                    partial=True)
+                                data = schema.load(document.detail)
+                                for field in schema.dump(data).keys():
+                                    lapsePlanning[field] = data[field]
+                            peca.save()
+                            break
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):

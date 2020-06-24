@@ -16,4 +16,5 @@ class PecaLapsePlanningCtrl(Resource):
 
     def post(self, pecaId, lapse):
         jsonData = request.form.to_dict()
-        return self.service.save(pecaId, lapse, jsonData, request.files)
+        userId = request.args.get('userId')
+        return self.service.save(pecaId, lapse, jsonData, userId, request.files)

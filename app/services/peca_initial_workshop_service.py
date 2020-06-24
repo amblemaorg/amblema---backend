@@ -2,6 +2,8 @@
 
 from flask import current_app
 from marshmallow import ValidationError
+import os
+import os.path
 
 from app.models.peca_project_model import PecaProject
 from app.models.peca_initial_workshop_model import InitialWorkshopPeca
@@ -13,11 +15,12 @@ from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.handler_images import upload_image
 from app.helpers.document_metadata import getFileFields
+from resources.images import path_images
 
 
 class InitialWorkshopService():
 
-    filesPath = 'initial_workshop'
+    filesFolder = 'initial_workshop'
 
     def get(self, pecaId, lapse):
         peca = PecaProject.objects(
@@ -56,16 +59,30 @@ class InitialWorkshopService():
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
                                            payload={"userId":  userId})
+
+                initialWorkshop = peca['lapse{}'.format(
+                    lapse)].initialWorkshop
+
+                if initialWorkshop.isInApproval and ('description' in jsonData or 'images' in jsonData):
+                    return {
+                        "status": "0",
+                        "msg": "Record has a pending approval request"
+                    }, 400
+
                 if 'images' in jsonData:
-                    self.filesPath = "school_years/{}/pecas/{}/{}".format(
+                    self.filesFolder = "school_years/{}/pecas/{}/{}".format(
                         peca.schoolYear.pk,
                         peca.pk,
-                        self.filesPath
+                        self.filesFolder
                     )
+                    DIR = path_images + '/' + self.filesFolder
+                    self.filesFolder = self.filesFolder + \
+                        '/{}'.format(len([name for name in os.listdir(DIR)])
+                                     if os.path.exists(DIR) else 1)
                     for image in jsonData['images']:
                         if str(image['image']).startswith('data'):
                             image['image'] = upload_image(
-                                image['image'], self.filesPath, None)
+                                image['image'], self.filesFolder, None)
 
                 data = schema.load(jsonData)
 
@@ -73,15 +90,6 @@ class InitialWorkshopService():
                 if 'description' in data or 'images' in data:
                     approval = True
 
-                initialWorkshop = peca['lapse{}'.format(
-                    lapse)].initialWorkshop
-
-                if approval:
-                    if initialWorkshop.isInApproval:
-                        return {
-                            "status": "0",
-                            "msg": "Record has a pending approval request"
-                        }, 400
                 try:
                     if approval:
                         jsonData['pecaId'] = pecaId

@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
-from app.models.shared_embedded_documents import Link
+from app.models.shared_embedded_documents import Link, Approval
 from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 
@@ -18,6 +18,7 @@ class LapsePlanningPeca(EmbeddedDocument):
     attachedFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     meetingDate = fields.DateTimeField()
+    isInApproval = fields.BooleanField(default=False)
+    approvalHistory = fields.EmbeddedDocumentListField(Approval)
     yearbook = fields.EmbeddedDocumentField(
         ActivityYearbook, default=ActivityYearbook())
-    status = fields.StringField(default="1", max_length=1)

@@ -3,6 +3,8 @@
 from flask import current_app
 from marshmallow import ValidationError
 import copy
+import os
+import os.path
 
 from app.models.peca_project_model import PecaProject
 from app.models.peca_yearbook_model import Yearbook
@@ -15,6 +17,7 @@ from app.models.user_model import User
 from app.models.peca_activities_model import Approval
 from app.models.request_content_approval_model import RequestContentApproval
 from app.helpers.handler_images import upload_image
+from resources.images import path_images
 
 
 class YearbookService():
@@ -43,6 +46,10 @@ class YearbookService():
                     peca.pk,
                     self.filesPath
                 )
+                DIR = path_images + '/' + self.filesPath
+                self.filesPath = self.filesPath + \
+                    '/{}'.format(len([name for name in os.listdir(DIR)])
+                                 if os.path.exists(DIR) else 1)
                 if str(jsonData['historicalReview']['image']).startswith('data'):
                     jsonData['historicalReview']['image'] = upload_image(
                         jsonData['historicalReview']['image'], self.filesPath, None)

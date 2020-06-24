@@ -268,14 +268,11 @@ class PecaAmblecoinsTest(unittest.TestCase):
 
         # update data lapse planning in peca
         requestData = {
-            "attachedFile": (io.BytesIO(
-                b'hi everyone'), 'proposalFundationFile.pdf'),
-            "meetingDate": "2020-07-17T00:00:00.000Z",
-            "status": "2"
+            "meetingDate": "2020-07-17T00:00:00.000Z"
         }
         res = self.client().post(
-            '/pecaprojects/lapseplanning/{}/{}'.format(
-                self.pecaProject.id, 1),
+            '/pecaprojects/lapseplanning/{}/{}?userId={}'.format(
+                self.pecaProject.id, 1, self.coordinator.id),
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)

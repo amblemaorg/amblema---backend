@@ -37,7 +37,7 @@ class TeacherTestimonialService():
                 schema = TeacherTestimonialSchema()
                 return {"records": schema.dump(testimonials, many=True)}, 200
             else:
-                return {'status': 0, 'message': 'Exceeded the maximum number of testimonials'}, 400
+                return {'status': 0, 'message': 'There are no testimonials'}, 400
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,

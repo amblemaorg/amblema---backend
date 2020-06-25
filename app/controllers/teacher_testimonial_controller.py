@@ -30,8 +30,9 @@ class TeacherTestimonialHandlerController(Resource):
         return self.service.get(schoolId, testimonialId)
 
     def put(self, schoolId, testimonialId):
+        userId = request.args.get('userId')
         jsonData = request.get_json()
-        return self.service.update(schoolId, testimonialId, jsonData)
+        return self.service.update(schoolId, userId, testimonialId, jsonData)
 
     def delete(self, schoolId, testimonialId):
         return self.service.delete(schoolId, testimonialId)

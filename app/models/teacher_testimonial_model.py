@@ -6,6 +6,7 @@ from bson import ObjectId
 
 from flask import current_app
 from mongoengine import fields, EmbeddedDocument
+from app.models.shared_embedded_documents import Approval
 
 
 class TeacherTestimonial(EmbeddedDocument):
@@ -23,3 +24,5 @@ class TeacherTestimonial(EmbeddedDocument):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+    approvalHistory = fields.EmbeddedDocumentListField(Approval)
+    isInApproval = fields.BooleanField(default=False)

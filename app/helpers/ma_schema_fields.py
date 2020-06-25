@@ -74,3 +74,23 @@ class MAImageField(fields.Field):
             size = None if not 'size' in self.metadata else self.metadata['size']
             return upload_image(value, self.metadata['folder'], size)
         return value
+
+    def _serialize(self, value, attr, data, **kwargs):
+        if value and isinstance(value, str) and value.startswith("/resources/"):
+            value = current_app.config.get('SERVER_URL') + value
+        return value
+
+
+def serialize_links(element):
+    '''Recursive function for add server url to images and files'''
+
+    if isinstance(element, list):
+        for i in range(len(element)):
+            a = serialize_links(element[i])
+            element[i] = a
+    elif isinstance(element, dict):
+        for k, v in element.items():
+            element[k] = serialize_links(v)
+    elif isinstance(element, str) and element.startswith('/resources/'):
+        element = current_app.config.get('SERVER_URL') + element
+    return element

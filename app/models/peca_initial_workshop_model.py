@@ -10,7 +10,7 @@ from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 
 class Image(EmbeddedDocument):
-    image = fields.URLField()
+    image = fields.StringField()
     description = fields.StringField()
     status = fields.StringField()
 

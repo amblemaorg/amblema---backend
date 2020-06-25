@@ -13,7 +13,7 @@ from marshmallow import (
 from app.schemas import fields
 from app.helpers.ma_schema_validators import (
     not_blank, only_numbers, OneOf, validate_image, validate_email)
-from app.helpers.ma_schema_fields import MAReferenceField, MAImageField
+from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
 
 

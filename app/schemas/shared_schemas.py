@@ -3,7 +3,7 @@
 
 import json
 
-from marshmallow import Schema, post_load, pre_load
+from marshmallow import Schema, post_load, pre_load, post_dump
 from app.schemas import fields
 from flask import current_app
 
@@ -11,6 +11,7 @@ from app.helpers.ma_schema_fields import MAImageField, MAReferenceField
 from app.helpers.ma_schema_validators import validate_url, not_blank, validate_image, OneOf
 from app.models.shared_embedded_documents import Link, CheckTemplate, Coordinate
 from app.models.user_model import User
+from app.helpers.ma_schema_fields import serialize_links
 
 
 class ReferenceSchema(Schema):
@@ -48,6 +49,12 @@ class FileSchema(Schema):
             data = json.loads(data)
         return data
 
+    @post_dump
+    def process_dump(self, data, **kwargs):
+        if 'url' in data and data['url'].startswith('/resources/'):
+            data['url'] = current_app.config.get('SERVER_URL') + data['url']
+        return data
+
     @post_load
     def make_document(self, data, **kwargs):
         return Link(**data)
@@ -76,6 +83,11 @@ class ApprovalSchema(Schema):
     status = fields.Str(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+    @post_dump
+    def process_dump(self, data, **kwargs):
+        data['detail'] = serialize_links(data['detail'])
+        return data
 
 
 class ImageStatusSchema(Schema):

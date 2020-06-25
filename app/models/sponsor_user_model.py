@@ -20,7 +20,7 @@ class SponsorUser(User):
     contactLastName = fields.StringField()
     contactEmail = fields.EmailField()
     contactPhone = fields.StringField()
-    image = fields.URLField(null=True)
+    image = fields.StringField(null=True)
     webSite = fields.URLField()
     projects = fields.EmbeddedDocumentListField(ProjectReference)
     phase = fields.StringField(max_length=1, default="1")

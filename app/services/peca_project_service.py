@@ -14,6 +14,7 @@ from app.schemas.peca_project_schema import PecaProjectSchema, SchoolSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
+from app.helpers.ma_schema_fields import serialize_links
 
 
 class PecaProjectService():
@@ -64,18 +65,22 @@ class PecaProjectService():
 
             if not peca.yearbook.historicalReview.image:
                 data['yearbook']['historicalReview']['content'] = school.historicalReview.content
-                data['yearbook']['historicalReview']['image'] = school.historicalReview.image
+                data['yearbook']['historicalReview']['image'] = serialize_links(
+                    school.historicalReview.image)
             if not peca.yearbook.school.image:
                 data['yearbook']['school']['name'] = school.name
-                data['yearbook']['school']['image'] = school.image
+                data['yearbook']['school']['image'] = serialize_links(
+                    school.image)
                 data['yearbook']['school']['content'] = school.yearbook.content
             if not peca.yearbook.sponsor.image:
                 data['yearbook']['sponsor']['name'] = sponsor.name
-                data['yearbook']['sponsor']['image'] = sponsor.image
+                data['yearbook']['sponsor']['image'] = serialize_links(
+                    sponsor.image)
                 data['yearbook']['sponsor']['content'] = sponsor.yearbook.content
             if not peca.yearbook.coordinator.image:
                 data['yearbook']['coordinator']['name'] = coordinator.name
-                data['yearbook']['coordinator']['image'] = coordinator.image
+                data['yearbook']['coordinator']['image'] = serialize_links(
+                    coordinator.image)
                 data['yearbook']['coordinator']['content'] = coordinator.yearbook.content
 
             data['yearbook']['lapse1'] = {
@@ -118,7 +123,7 @@ class PecaProjectService():
                             'id': 'initialWorkshop',
                             'name': 'Taller inicial',
                             'description': lapse.initialWorkshop.yearbook.description,
-                            'images': lapse.initialWorkshop.yearbook.images
+                            'images': serialize_links(lapse.initialWorkshop.yearbook.images)
                         }
                     )
 
@@ -128,7 +133,7 @@ class PecaProjectService():
                             'id': 'ambleCoins',
                             'name': 'AmbLeMonedas',
                             'description': lapse.ambleCoins.yearbook.description,
-                            'images': lapse.ambleCoins.yearbook.images
+                            'images': serialize_links(lapse.ambleCoins.yearbook.images)
                         }
                     )
                 if lapse.lapsePlanning:
@@ -137,7 +142,7 @@ class PecaProjectService():
                             'id': 'lapsePlanning',
                             'name': 'Planificación de lapso',
                             'description': lapse.lapsePlanning.yearbook.description,
-                            'images': lapse.lapsePlanning.yearbook.images
+                            'images': serialize_links(lapse.lapsePlanning.yearbook.images)
                         }
                     )
                 if lapse.annualConvention:
@@ -146,7 +151,7 @@ class PecaProjectService():
                             'id': 'annualConvention',
                             'name': 'Convención anual',
                             'description': lapse.annualConvention.yearbook.description,
-                            'images': lapse.annualConvention.yearbook.images
+                            'images': serialize_links(lapse.annualConvention.yearbook.images)
                         }
                     )
                 if lapse.olympics:
@@ -155,7 +160,7 @@ class PecaProjectService():
                             'id': 'olympics',
                             'name': 'Olimpiadas matemáticas',
                             'description': lapse.olympics.yearbook.description,
-                            'images': lapse.olympics.yearbook.images
+                            'images': serialize_links(lapse.olympics.yearbook.images)
                         }
                     )
                 if lapse.specialActivity:
@@ -164,7 +169,7 @@ class PecaProjectService():
                             'id': 'specialActivity',
                             'name': 'Actividad especial de lapso {}'.format(i),
                             'description': lapse.specialActivity.yearbook.description,
-                            'images': lapse.specialActivity.yearbook.images
+                            'images': serialize_links(lapse.specialActivity.yearbook.images)
                         }
                     )
                 for activity in lapse.activities:
@@ -173,7 +178,7 @@ class PecaProjectService():
                             'id': str(activity.id),
                             'name': activity.name,
                             'description': activity.yearbook.description,
-                            'images': activity.yearbook.images
+                            'images': serialize_links(activity.yearbook.images)
                         }
                     )
             return data, 200

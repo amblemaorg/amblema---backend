@@ -159,6 +159,23 @@ class ProjectService():
                     {"school": [{"status": "5",
                                  "msg": "Duplicated school project"}]}
                 )
+        # validate phase changed
+        if document.phase == "2":
+            if not document.sponsor:
+                raise ValidationError(
+                    {"sponsor": [{"status": "2",
+                                  "msg": "Required field"}]}
+                )
+            if not document.school:
+                raise ValidationError(
+                    {"school": [{"status": "2",
+                                 "msg": "Required field"}]}
+                )
+            if not document.coordinator:
+                raise ValidationError(
+                    {"coordinator": [{"status": "2",
+                                      "msg": "Required field"}]}
+                )
 
         initialSteps = StepsProgress()
         steps = Step.objects(schoolYear=str(year.id),

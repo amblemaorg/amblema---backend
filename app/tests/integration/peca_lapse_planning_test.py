@@ -201,12 +201,11 @@ class PecaLapsePlanningTest(unittest.TestCase):
         requestData = {
             "attachedFile": (io.BytesIO(
                 b'hi everyone'), 'proposalFundationFile.pdf'),
-            "meetingDate": "2020-07-17T00:00:00.000Z",
-            "status": "2"
+            "meetingDate": "2020-07-17T00:00:00.000Z"
         }
         res = self.client().post(
-            '/pecaprojects/lapseplanning/{}/{}'.format(
-                self.pecaProject.id, 1),
+            '/pecaprojects/lapseplanning/{}/{}?userId={}'.format(
+                self.pecaProject.id, 1, self.coordinator.id),
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
@@ -218,7 +217,20 @@ class PecaLapsePlanningTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('proposalFundationFile.pdf',
-                         resultPeca['lapse1']['lapsePlanning']['attachedFile']['name'])
+                         resultPeca['lapse1']['lapsePlanning']['approvalHistory'][0]['detail']['attachedFile']['name'])
+
+        # send with pending approval
+        requestData = {
+            "attachedFile": (io.BytesIO(
+                b'hi everyone'), 'proposalFundationFile2.pdf'),
+            "meetingDate": "2020-07-17T00:00:00.000Z"
+        }
+        res = self.client().post(
+            '/pecaprojects/lapseplanning/{}/{}?userId={}'.format(
+                self.pecaProject.id, 1, self.coordinator.id),
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 400)
 
         # edit lapsePlanning
         requestData = dict(
@@ -243,6 +255,71 @@ class PecaLapsePlanningTest(unittest.TestCase):
                          resultPeca['lapse1']['lapsePlanning']['proposalFundationFile']['name'])
         self.assertEqual('Some description edited',
                          resultPeca['lapse1']['lapsePlanning']['proposalFundationDescription'])
+        # approve request
+        requestData = {
+            "status": "2"
+        }
+        res = self.client().put(
+            '/requestscontentapproval/{}'.format(
+                resultPeca['lapse1']['lapsePlanning']['approvalHistory'][0]['id']),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('proposalFundationFile.pdf',
+                         resultPeca['lapse1']['lapsePlanning']['attachedFile']['name'])
+
+        # Cancel
+        # update data lapse planning in peca
+        requestData = {
+            "attachedFile": (io.BytesIO(
+                b'hi everyone'), 'proposalFundationFileUpdated.pdf'),
+            "meetingDate": "2020-07-17T00:00:00.000Z",
+            "status": "2"
+        }
+        res = self.client().post(
+            '/pecaprojects/lapseplanning/{}/{}?userId={}'.format(
+                self.pecaProject.id, 1, self.coordinator.id),
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual('proposalFundationFileUpdated.pdf',
+                         resultPeca['lapse1']['lapsePlanning']['approvalHistory'][1]['detail']['attachedFile']['name'])
+
+        # cancel
+        requestData = {
+            "status": "4"
+        }
+        res = self.client().put(
+            '/requestscontentapproval/{}'.format(
+                resultPeca['lapse1']['lapsePlanning']['approvalHistory'][1]['id']),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(False,
+                         resultPeca['lapse1']['lapsePlanning']['isInApproval'])
+        self.assertEqual("4",
+                         resultPeca['lapse1']['lapsePlanning']['approvalHistory'][1]['status'])
 
     def tearDown(self):
         """teardown all initialized variables."""

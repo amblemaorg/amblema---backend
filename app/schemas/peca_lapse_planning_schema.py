@@ -5,7 +5,7 @@ from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf
-from app.schemas.shared_schemas import FileSchema, ReferenceSchema
+from app.schemas.shared_schemas import FileSchema, ReferenceSchema, ApprovalSchema
 from app.models.peca_olympics_model import Section
 
 
@@ -17,12 +17,9 @@ class LapsePlanningPecaSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     attachedFile = fields.Nested(FileSchema())
     meetingDate = fields.DateTime()
-    status = fields.Str(
-        validate=(
-            OneOf(
-                ["1", "2"],
-                ["pending", "approved", ]
-            )))
+    isInApproval = fields.Boolean(dump_only=True)
+    approvalHistory = fields.List(
+        fields.Nested(ApprovalSchema), dump_only=True)
 
     class Meta:
         unknown = EXCLUDE

@@ -58,8 +58,8 @@ def upload_files(files, folder=''):
             path = files_path
         Path(path).mkdir(parents=True, exist_ok=True)
         file['file'].save(os.path.join(path, filename))
-        fileUrl = current_app.config.get(
-            'SERVER_URL') + '/resources/files/' + ((folder+'/') if folder else folder) + filename
+        fileUrl = '/resources/files/' + \
+            ((folder+'/') if folder else folder) + filename
 
         uploaded_files.update(
             {file['field']: {'name': filename, 'url': fileUrl}})

@@ -46,7 +46,7 @@ class CoordinatorUser(User):
     profession = fields.StringField(null=True)
     isReferred = fields.BooleanField()
     referredName = fields.StringField(null=True)
-    image = fields.URLField(null=True)
+    image = fields.StringField(null=True)
     learning = fields.EmbeddedDocumentListField(LearningMod)
     nCoins = fields.IntField(default=0)
     instructed = fields.BooleanField(required=True, default=False)

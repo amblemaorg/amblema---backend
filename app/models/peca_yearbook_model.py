@@ -10,7 +10,7 @@ from app.models.shared_embedded_documents import Approval
 
 class Entity(EmbeddedDocument):
     name = fields.StringField()
-    image = fields.URLField(null=True)
+    image = fields.StringField(null=True)
     content = fields.StringField()
 
 

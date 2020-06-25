@@ -46,7 +46,7 @@ def upload_image(imageBase64, folder, size=None):
 
         upload(dataImage, nameImage, pathImage, ext)
 
-        return current_app.config.get('SERVER_URL') + urlImage
+        return urlImage
 
     else:
         raise CSTM_Exception(message="Invalid image format",

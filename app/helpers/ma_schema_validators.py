@@ -62,7 +62,8 @@ def validate_url(data):
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
         r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
+    if data and isinstance(data, str) and data.startswith("/resources/"):
+        data = current_app.config.get('SERVER_URL') + data
     if data and not re.match(regex, data):
         raise ValidationError({"status": "10", "msg": "Invalid url address"})
 

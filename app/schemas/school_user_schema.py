@@ -8,7 +8,7 @@ from app.schemas.shared_schemas import ProjectReferenceSchema, CoordinateSchema
 from app.schemas import fields
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers, OneOf, Range, validate_image, validate_email)
+    not_blank, only_letters, only_numbers, OneOf, Range, validate_image, validate_email, Length)
 from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
 
 
@@ -71,7 +71,7 @@ class SchoolUserSchema(UserSchema):
         )
     )
     project = fields.Nested(ProjectReferenceSchema, dump_only=True)
-    teachersTestimonials = fields.List(fields.Nested(TeacherTestimonialSchema))
+    teachersTestimonials = fields.List(fields.Nested(TeacherTestimonialSchema), validate=Length(max=4))
 
     class Meta:
         unknown = EXCLUDE

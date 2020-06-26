@@ -4,7 +4,8 @@
 from flask import current_app
 from marshmallow import ValidationError
 
-from app.models.monitoring_activity_model import (MonitoringActivity, DetailActivity)
+from app.models.monitoring_activity_model import (
+    MonitoringActivity, DetailActivity)
 from app.schemas.monitoring_activity_schema import MonitoringActivitySchema
 from app.models.school_year_model import SchoolYear
 from app.helpers.error_helpers import RegisterNotFound
@@ -13,15 +14,17 @@ from app.helpers.error_helpers import RegisterNotFound
 class MonitoringActivitiesService():
 
     def get(self):
-        schoolYear = SchoolYear.objects(isDeleted=False, status="1").only("pecaSetting").first()
+        schoolYear = SchoolYear.objects(
+            isDeleted=False, status="1").only("pecaSetting").first()
 
         if schoolYear:
             schema = MonitoringActivitySchema()
             monitoringActivities = schoolYear.pecaSetting.monitoringActivities
             return schema.dump(monitoringActivities), 200
         else:
-            raise RegisterNotFound(message="Active school year not found", status_code=404)
-    
+            raise RegisterNotFound(
+                message="Active school year not found", status_code=404)
+
     def save(self, jsonData):
 
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
@@ -33,15 +36,14 @@ class MonitoringActivitiesService():
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
                 monitoringActivities = MonitoringActivity()
-                
+
                 for field in schema.dump(data).keys():
                     for item in data[field]:
-                        print(data[field])
                         detail = DetailActivity()
                         detail.image = item['image']
                         detail.description = item['description']
                         monitoringActivities[field].append(detail)
-                                
+
                 try:
                     schoolYear.pecaSetting.monitoringActivities = monitoringActivities
                     schoolYear.save()
@@ -51,4 +53,5 @@ class MonitoringActivitiesService():
             except ValidationError as err:
                 return err.normalized_messages(), 400
         else:
-            raise RegisterNotFound(message="Active school year not found", status_code=404)
+            raise RegisterNotFound(
+                message="Active school year not found", status_code=404)

@@ -56,6 +56,19 @@ class OlympicsService():
                         raise RegisterNotFound(message="Record not found",
                                                status_code=404,
                                                payload={"student: ": jsonData["student"]})
+                    olympics = peca['lapse{}'.format(
+                        lapse)].olympics
+
+                    for enrolledStudent in olympics.students:
+                        if enrolledStudent.id == str(student.id):
+                            return {
+                                "student": [
+                                    {
+                                        "status": "5",
+                                        "msg": "Duplicated record found"
+                                    }]
+                            }, 400
+
                     jsonData['id'] = str(student.id)
                     jsonData['name'] = student.firstName + \
                         ' ' + student.lastName
@@ -66,9 +79,6 @@ class OlympicsService():
 
                 data = schema.load(jsonData)
 
-                olympics = peca['lapse{}'.format(
-                    lapse)].olympics
-
                 student = Student()
                 for field in data.keys():
                     student[field] = data[field]
@@ -78,7 +88,7 @@ class OlympicsService():
                     peca['lapse{}'.format(
                         lapse)].olympics = olympics
                     peca.save()
-                    return schema.dump(olympics), 200
+                    return schema.dump(student), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
 

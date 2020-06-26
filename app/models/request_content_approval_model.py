@@ -42,6 +42,7 @@ class RequestContentApproval(Document):
         from app.models.sponsor_user_model import SponsorUser
         from app.models.coordinator_user_model import CoordinatorUser
         from app.models.project_model import Project
+        from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
         # before create
         if not document.id:
             # steps
@@ -76,10 +77,28 @@ class RequestContentApproval(Document):
                 if document.type == "2":
                     school = SchoolUser.objects(
                         id=str(document.project.school['id'])).first()
-                    for testimonial in school.teachersTestimonials:
-                        if str(testimonial.id) == document.detail['id']:
-                            testimonial.approvalStatus = document.status
+                    testimonial = school.teachersTestimonials.filter(id=document.detail['id'], isDeleted=False).first()
+                    for history in testimonial.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = document.status
+                            testimonial.isInApproval = False
+                            if document.status == '2':  # approved
+                                testimonial.approvalStatus = document.status
+                                schema = TeacherTestimonialSchema(partial=True)
+                                data = schema.load(document.detail)
+                                for field in schema.dump(data).keys():
+                                    testimonial[field] = data[field]
+                                
+                                teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
+                                if teacher:
+                                    testimonial.firstName = teacher.firstName
+                                    testimonial.lastName = teacher.lastName
+                                else:
+                                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"teacherId": testimonial.teacherId})
                             break
+
                     school.save()
                 # activities
                 elif document.type == "3":

@@ -17,13 +17,14 @@ from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
+from app.models.shared_embedded_documents import Approval
 
 
 class TeacherTestimonialService():
 
     def get_all(self, schoolId, access):
 
-        school = SchoolUser.objects(id=schoolId, isDeleted=False).only("teachersTestimonials").first()
+        school = SchoolUser.objects(id=schoolId, isDeleted=False).first()
         
         if school:
             testimonials = []
@@ -35,6 +36,8 @@ class TeacherTestimonialService():
             if testimonials:
                 schema = TeacherTestimonialSchema()
                 return {"records": schema.dump(testimonials, many=True)}, 200
+            else:
+                return {'status': 0, 'message': 'There are no testimonials'}, 400
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -66,6 +69,7 @@ class TeacherTestimonialService():
             try:
                 schema = TeacherTestimonialSchema()
                 data = schema.load(jsonData)
+                schema.validate(jsonData)
 
                 user = User.objects(id=str(userId), isDeleted=False).first()
                 if not user:
@@ -89,14 +93,27 @@ class TeacherTestimonialService():
                                    status_code=404,
                                    payload={"teacherId": testimonial.teacherId})
                         
-                        school.teachersTestimonials.append(testimonial)
-                        school.save()
-                        RequestContentApproval(
+                        jsonData['id'] = str(testimonial.id)
+                        jsonData['image'] = testimonial.image
+                        request = RequestContentApproval(
                             project=school.project,
                             user=user,
                             type="2",
-                            detail=schema.dump(testimonial)
+                            detail=jsonData
                         ).save()
+
+                        testimonial.isInApproval = True
+                        testimonial.approvalHistory.append(
+                            Approval(
+                                id=str(request.id),
+                                user=user.id,
+                                detail=jsonData
+                            )
+                        )
+
+                        school.teachersTestimonials.append(testimonial)
+                        school.save()
+
                         return schema.dump(testimonial), 200
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
@@ -110,37 +127,45 @@ class TeacherTestimonialService():
                                    status_code=404,
                                    payload={"schoolId": schoolId})
     
-    def update(self, schoolId, testimonialId, jsonData):
+    def update(self, schoolId, userId, testimonialId, jsonData):
 
         school = SchoolUser.objects(id=schoolId, isDeleted=False).first()
         
         if school:
             try:
                 schema = TeacherTestimonialSchema()
-                data = schema.load(jsonData)
-                hasChanged = False
+                schema.validate(jsonData)
+
+                user = User.objects(id=str(userId), isDeleted=False).first()
+                if not user:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"userId":  userId})
 
                 testimonial = school.teachersTestimonials.filter(id=testimonialId, isDeleted=False).first()
                 if testimonial:
-                    for field in schema.dump(data).keys():
-                        if testimonial[field] != data[field]:
-                            hasChanged = True
-                            testimonial[field] = data[field]
-                    
-                    if hasChanged:
-                        try:
-                            teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
-                            if teacher:
-                                testimonial.firstName = teacher.firstName
-                                testimonial.lastName = teacher.lastName
-                            else:
-                                raise RegisterNotFound(message="Record not found",
-                                    status_code=404,
-                                    payload={"teacherId": testimonial.teacherId})
-                            school.save()
-                            return schema.dump(testimonial), 200
-                        except Exception as e:
-                            return {'status': 0, 'message': str(e)}, 400
+                    try:
+                        jsonData['id'] = str(testimonial.id)
+                        request = RequestContentApproval(
+                            project=school.project,
+                            user=user,
+                            type="2",
+                            detail=jsonData
+                        ).save()
+
+                        testimonial.isInApproval = True
+                        testimonial.approvalHistory.append(
+                            Approval(
+                                id=str(request.id),
+                                user=user.id,
+                                detail=jsonData
+                            )
+                        )
+
+                        school.save()
+                        return schema.dump(testimonial), 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
                 else:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404, payload={"testimonialId": testimonialId})
@@ -156,15 +181,27 @@ class TeacherTestimonialService():
         Delete (change isDeleted to True) a record
         """
         
-        school = SchoolUser.objects(id=schoolId, isDeleted=False, teachersTestimonials__id= testimonialId, teachersTestimonials__isDeleted=False).only("teachersTestimonials").first()
+        school = SchoolUser.objects(id=schoolId, isDeleted=False).first()
 
         if school:
-            try:
-                SchoolUser.objects(id=schoolId, isDeleted=False, teachersTestimonials__id= testimonialId, teachersTestimonials__isDeleted=False).update(set__teachersTestimonials__S__isDeleted=True)
-                return {"message": "Record deleted successfully"}, 200
-            except Exception as e:
-                return {'status': 0, 'message': str(e)}, 400
+
+            found = False
+            for testimonial in school.teachersTestimonials:
+                if str(testimonial.id) == testimonialId:
+                    found = True
+                    try:
+                        school.teachersTestimonials.remove(testimonial)
+                        school.save()
+                        return {"message": "Record deleted successfully"}, 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
+            
+            if not found:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"testimonialId": testimonialId})
+
         else:
             raise RegisterNotFound(message="Record not found",
             status_code=404,
-            payload={"schoolId": schoolId, "testimonialId": testimonialId})
+            payload={"schoolId": schoolId})

@@ -12,13 +12,13 @@ from mongoengine import (EmbeddedDocument, Document, fields)
 
 
 class SliderElement(EmbeddedDocument):
-    url = fields.URLField()
+    url = fields.StringField()
     description = fields.StringField(max_length=71)
     type = fields.StringField(max_length=1)
 
 
 class Image(EmbeddedDocument):
-    image = fields.URLField(required=True)
+    image = fields.StringField(required=True)
     description = fields.StringField(required=True, max_length=56)
 
 

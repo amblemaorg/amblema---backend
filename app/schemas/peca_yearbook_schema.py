@@ -32,7 +32,7 @@ class YearbookSchema(Schema):
     school = fields.Nested(EntitySchema)
     coordinator = fields.Nested(EntitySchema)
     isInApproval = fields.Bool()
-    approvalHistory = fields.List(fields.Nested(ApprovalSchema))
+    approvalHistory = fields.List(fields.Nested(ApprovalSchema()))
     updatedAt = fields.DateTime()
 
     class Meta:

@@ -31,7 +31,7 @@ class SliderElementSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         slider = SliderElement(**data)
-        if str(data["url"]).startswith(current_app.config.get("SERVER_URL")):
+        if str(data["url"]).startswith('/resources/images'):
             slider.type = "1"
         else:
             slider.type = "2"

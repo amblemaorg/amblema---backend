@@ -10,4 +10,4 @@ class ActivityYearbook(EmbeddedDocument):
     id = fields.StringField()
     name = fields.StringField()
     description = fields.StringField()
-    images = fields.ListField(fields.URLField())
+    images = fields.ListField(fields.StringField())

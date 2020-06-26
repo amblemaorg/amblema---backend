@@ -15,7 +15,7 @@ from app.models.peca_yearbook_model import Entity
 class SchoolUser(User):
     code = fields.StringField(required=True, unique_c=True)
     phone = fields.StringField(required=True)
-    image = fields.URLField(null=True)
+    image = fields.StringField(null=True)
     schoolType = fields.StringField(null=True, max_length=1)
     addressZoneType = fields.StringField(max_length=1, null=True)
     addressZone = fields.StringField(null=True)

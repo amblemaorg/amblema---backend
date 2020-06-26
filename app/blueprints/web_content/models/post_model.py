@@ -4,7 +4,7 @@
 from datetime import datetime
 from flask_mongoengine import Document
 from mongoengine import (
-    #Document,
+    # Document,
     StringField,
     BooleanField,
     DateTimeField,
@@ -19,8 +19,8 @@ from app.helpers.ma_schema_fields import MAImageField
 class Post(Document):
     title = StringField(required=True)
     tag = StringField(max_length=1)
-    image = URLField(required=True)
-    image2 = URLField(required=True)
+    image = StringField(required=True)
+    image2 = StringField(required=True)
     text = StringField(required=True)
     status = StringField(max_length=1)
     isDeleted = BooleanField(default=False)

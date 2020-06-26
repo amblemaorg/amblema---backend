@@ -26,7 +26,7 @@ class ProjectReference(EmbeddedDocument):
 
 class Link(EmbeddedDocument):
     name = fields.StringField()
-    url = fields.URLField(required=True)
+    url = fields.StringField(required=True)
 
 
 class CheckTemplate(EmbeddedDocument):
@@ -47,7 +47,7 @@ class Approval(EmbeddedDocument):
 class ImageStatus(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
     schoolId = fields.StringField()
-    image = fields.URLField()
+    image = fields.StringField()
     description = fields.StringField()
     approvalStatus = fields.StringField(default="1", max_length=1)
     visibilityStatus = fields.StringField(default="2", max_length=1)

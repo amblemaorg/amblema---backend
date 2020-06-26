@@ -70,9 +70,10 @@ class MAImageField(fields.Field):
           size: optional size limit of image, in MB
         """
         if str(value).startswith('data'):
-
             size = None if not 'size' in self.metadata else self.metadata['size']
             return upload_image(value, self.metadata['folder'], size)
+        elif str(value).startswith(current_app.config.get('SERVER_URL')):
+            value = value.replace(current_app.config.get('SERVER_URL'), '')
         return value
 
     def _serialize(self, value, attr, data, **kwargs):

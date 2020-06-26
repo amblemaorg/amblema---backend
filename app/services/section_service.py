@@ -7,7 +7,7 @@ from marshmallow import ValidationError
 from app.models.peca_project_model import PecaProject
 from app.models.peca_section_model import Section
 from app.models.peca_amblecoins_model import AmbleSection
-from app.schemas.peca_project_schema import SectionSchema
+from app.schemas.peca_school_schema import SectionSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
 from app.models.school_year_model import SchoolYear

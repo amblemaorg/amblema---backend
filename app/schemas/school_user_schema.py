@@ -4,7 +4,7 @@
 from marshmallow import validate, EXCLUDE
 
 from app.schemas.user_schema import UserSchema
-from app.schemas.shared_schemas import ProjectReferenceSchema, CoordinateSchema
+from app.schemas.shared_schemas import ProjectReferenceSchema, CoordinateSchema, ImageStatusSchema
 from app.schemas import fields
 from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
@@ -48,6 +48,9 @@ class SchoolUserSchema(UserSchema):
     nAdministrativeStaff = fields.Int(allow_none=True,
                                       validate=Range(min=0))
     nLaborStaff = fields.Int(allow_none=True, validate=Range(min=0))
+    facebook = fields.Str(allow_none=True)
+    instagram = fields.Str(allow_none=True)
+    twitter = fields.Str(allow_none=True)
     nStudents = fields.Int(allow_none=True, validate=Range(min=0))
     nGrades = fields.Int(allow_none=True, validate=Range(min=0))
     nSections = fields.Int(allow_none=True, validate=Range(min=0))
@@ -71,7 +74,9 @@ class SchoolUserSchema(UserSchema):
         )
     )
     project = fields.Nested(ProjectReferenceSchema, dump_only=True)
-    teachersTestimonials = fields.List(fields.Nested(TeacherTestimonialSchema), validate=Length(max=4))
+    slider = fields.List(fields.Nested(ImageStatusSchema), dump_only=True)
+    teachersTestimonials = fields.List(fields.Nested(
+        TeacherTestimonialSchema), validate=Length(max=4))
 
     class Meta:
         unknown = EXCLUDE

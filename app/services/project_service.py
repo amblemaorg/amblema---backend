@@ -114,11 +114,19 @@ class ProjectService():
                 "principalLastName": project.school.principalLastName,
                 "principalEmail": project.school.principalEmail,
                 "principalPhone": project.school.principalPhone,
+                "subPrincipalFirstName": project.school.subPrincipalFirstName,
+                "subPrincipalLastName": project.school.subPrincipalLastName,
+                "subPrincipalEmail": project.school.subPrincipalEmail,
+                "subPrincipalPhone": project.school.subPrincipalPhone,
                 "nTeachers": project.school.nTeachers,
                 "nGrades": project.school.nGrades,
                 "nStudents": project.school.nStudents,
                 "nAdministrativeStaff": project.school.nAdministrativeStaff,
                 "nLaborStaff": project.school.nLaborStaff,
+                "facebook": project.school.facebook,
+                "instagram": project.school.instagram,
+                "twitter": project.school.twitter,
+                "slider": project.school.slider,
                 "sections": [
                 ]
             }

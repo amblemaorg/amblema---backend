@@ -187,41 +187,6 @@ class PecaProjectService():
                                    status_code=404,
                                    payload={"recordId": id})
 
-    def updateSchool(self, id, jsonData):
-        pecaProject = PecaProject.objects(
-            isDeleted=False, id=id).first()
-        if pecaProject:
-            try:
-                schema = SchoolSchema(partial=True)
-                data = schema.load(jsonData)
-                for field in schema.dump(data).keys():
-                    pecaProject.school[field] = data[field]
-                try:
-                    pecaProject.save()
-                    return schema.dump(pecaProject.school), 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
-            except ValidationError as err:
-                return err.normalized_messages(), 400
-        else:
-            raise RegisterNotFound(message="Record not found",
-                                   status_code=404,
-                                   payload={"recordId": id})
-
-    def getSchool(self, id):
-        pecaProject = PecaProject.objects(
-            isDeleted=False, id=id).first()
-        if pecaProject:
-            try:
-                schema = SchoolSchema()
-                return schema.dump(pecaProject.school), 200
-            except ValidationError as err:
-                return err.normalized_messages(), 400
-        else:
-            raise RegisterNotFound(message="Record not found",
-                                   status_code=404,
-                                   payload={"recordId": id})
-
     def initPecaSetting(self, peca):
         from app.models.school_year_model import SchoolYear
         from app.models.peca_amblecoins_model import AmblecoinsPeca, AmbleSection

@@ -10,6 +10,7 @@ from app import create_app, db
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_setting_model import InitialWorshop, LapsePlanning
+from app.models.monitoring_activity_model import MonitoringActivity
 
 
 class PecaSettings(unittest.TestCase):
@@ -678,6 +679,136 @@ class PecaSettings(unittest.TestCase):
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 400)
+    
+    def test_endpoint_monitoring_activity_setting(self):
+
+        # create monitoring activity
+        requestData = {
+            "mathActivities": [
+                {
+                    "image": "http://localhost:10505/resources/images/monitoringactivities/5ef609f587194701a82ef7c7.jpg",
+                    "description": "imagen de matematicas uno"
+                }
+            ],
+            "readingActivities": [
+                {
+                    "image": "http://localhost:10505/resources/images/monitoringactivities/5ef609f587194701a82ef7c6.jpg",
+                    "description": "imagen de lectura uno"
+                }
+            ],
+            "environmentActivities": [
+                {
+                    "image": "http://localhost:10505/resources/images/monitoringactivities/5ef609f587194701a82ef7c8.jpg",
+                    "description": "imagen de ambiente uno"
+                },
+                {
+                    "image": "http://localhost:10505/resources/images/monitoringactivities/5ef609f587194701a82ef7c9.jpg",
+                    "description": "imagen de ambiente dos"
+                }
+            ]
+        }
+        res = self.client().post(
+            '/pecasetting/monitoringactivities',
+            data=json.dumps(requestData),
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual("imagen de matematicas uno", result['mathActivities'][0]['description'])
+        self.assertEqual("imagen de lectura uno", result['readingActivities'][0]['description'])
+        self.assertEqual("imagen de ambiente dos", result['environmentActivities'][1]['description'])
+        monitoringActivity = result
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
+        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
+        self.assertEqual(2,len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
+
+        # get monitoring activity
+        res = self.client().get(
+            '/pecasetting/monitoringactivities'
+        )
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(monitoringActivity['mathActivities'][0]['description'], result['mathActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['mathActivities'][0]['image'], result['mathActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['readingActivities'][0]['description'], result['readingActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['readingActivities'][0]['image'], result['readingActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['environmentActivities'][0]['description'], result['environmentActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['environmentActivities'][0]['image'], result['environmentActivities'][0]['image'])
+
+        # update monitoring activity
+        requestData = {
+            "mathActivities": [
+                {
+                    "image": "http://localhost:10505/resources/images/monitoringactivities/5ef609f587194701a82ef7c7.jpg",
+                    "description": "imagen de matematicas uno actualizada"
+                }
+            ],
+            "readingActivities": [
+                {
+                    "image": "http://localhost:10505/resources/images/monitoringactivities/5ef609f587194701a82ef7c6.jpg",
+                    "description": "imagen de lectura uno actualizada"
+                }
+            ],
+            "environmentActivities": [
+                {
+                    "image": "http://localhost:10505/resources/images/monitoringactivities/5ef609f587194701a82ef7c8.jpg",
+                    "description": "imagen de ambiente uno actualizada"
+                }
+            ]
+        }
+        res = self.client().post(
+            '/pecasetting/monitoringactivities',
+            data=json.dumps(requestData),
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual("imagen de matematicas uno actualizada", result['mathActivities'][0]['description'])
+        self.assertEqual("imagen de lectura uno actualizada", result['readingActivities'][0]['description'])
+        self.assertEqual("imagen de ambiente uno actualizada", result['environmentActivities'][0]['description'])
+        monitoringActivity = result
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
+        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
+        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
+
+        # get monitoring activity
+        res = self.client().get(
+            '/pecasetting/monitoringactivities'
+        )
+        self.assertEqual(res.status_code, 200)
+
+        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(monitoringActivity['mathActivities'][0]['description'], result['mathActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['mathActivities'][0]['image'], result['mathActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['readingActivities'][0]['description'], result['readingActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['readingActivities'][0]['image'], result['readingActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['environmentActivities'][0]['description'], result['environmentActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['environmentActivities'][0]['image'], result['environmentActivities'][0]['image'])
+
+         # delete monitoring activity
+        requestData = {
+            "mathActivities": [],
+            "readingActivities": [],
+            "environmentActivities": []
+        }
+        res = self.client().post(
+            '/pecasetting/monitoringactivities',
+            data=json.dumps(requestData),
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 200)
+
+        schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
+        self.assertEqual(0,len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
+        self.assertEqual(0,len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
+        self.assertEqual(0,len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
 
     def tearDown(self):
         """teardown all initialized variables."""

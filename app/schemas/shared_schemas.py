@@ -9,7 +9,7 @@ from flask import current_app
 
 from app.helpers.ma_schema_fields import MAImageField, MAReferenceField
 from app.helpers.ma_schema_validators import validate_url, not_blank, validate_image, OneOf
-from app.models.shared_embedded_documents import Link, CheckTemplate, Coordinate
+from app.models.shared_embedded_documents import Link, CheckTemplate, Coordinate, ImageStatus
 from app.models.user_model import User
 from app.helpers.ma_schema_fields import serialize_links
 
@@ -91,26 +91,16 @@ class ApprovalSchema(Schema):
 
 
 class ImageStatusSchema(Schema):
-    id = fields.Str(dump_only=True)
-    schoolId = fields.Str(dump_only=True)
+    id = fields.Str()
     image = MAImageField(
         validate=(not_blank, validate_image),
         folder='schools',
         size=800)
     description = fields.Str()
-    approvalStatus = fields.Str(
-        validate=OneOf(
-            ('1', '2', '3'),
-            ("pending", "approved", "rejected")
-        ))
-    visibilityStatus = fields.Str(
-        validate=OneOf(
-            ('1', '2', '3'),
-            ("active", "inactive")
-        ))
-    approvalHistory = fields.Nested(ApprovalSchema, dump_only=True)
-    createdAt = fields.DateTime(dump_only=True)
-    updatedAt = fields.DateTime(dump_only=True)
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return ImageStatus(**data)
 
 
 class CoordinateSchema(Schema):

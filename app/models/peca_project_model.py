@@ -18,33 +18,7 @@ from app.models.peca_activities_model import ActivityPeca
 from app.models.peca_schedule_model import ScheduleActivity
 from app.models.peca_yearbook_model import Yearbook
 from app.models.special_activity_model import SpecialActivity
-from app.models.peca_section_model import Section
-
-
-class School(EmbeddedDocument):
-    name = fields.StringField()
-    code = fields.StringField()
-    addressState = fields.ReferenceField('State')
-    addressMunicipality = fields.ReferenceField('Municipality')
-    address = fields.StringField()
-    addressCity = fields.StringField()
-    principalFirstName = fields.StringField()
-    principalLastName = fields.StringField()
-    principalEmail = fields.EmailField()
-    principalPhone = fields.StringField()
-    subPrincipalFirstName = fields.StringField()
-    subPrincipalLastName = fields.StringField()
-    subPrincipalEmail = fields.EmailField()
-    subPrincipalPhone = fields.StringField()
-    nTeachers = fields.IntField()
-    nGrades = fields.IntField()
-    nStudents = fields.IntField()
-    nAdministrativeStaff = fields.IntField()
-    nLaborStaff = fields.IntField()
-    facebook = fields.URLField()
-    instagram = fields.StringField()
-    twitter = fields.StringField()
-    sections = fields.EmbeddedDocumentListField(Section)
+from app.models.peca_school_model import School
 
 
 class Lapse(EmbeddedDocument):

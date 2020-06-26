@@ -46,15 +46,8 @@ class Approval(EmbeddedDocument):
 
 class ImageStatus(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
-    schoolId = fields.StringField()
     image = fields.StringField()
     description = fields.StringField()
-    approvalStatus = fields.StringField(default="1", max_length=1)
-    visibilityStatus = fields.StringField(default="2", max_length=1)
-    approvalHistory = fields.EmbeddedDocumentField(Approval)
-    isDeleted = fields.BooleanField(default=False)
-    createdAt = fields.DateTimeField(default=datetime.utcnow)
-    updatedAt = fields.DateTimeField(default=datetime.utcnow)
 
 
 class Coordinate(EmbeddedDocument):

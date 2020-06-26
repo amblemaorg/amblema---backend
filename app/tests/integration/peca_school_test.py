@@ -1,4 +1,4 @@
-# app/tests/school_peca_test.py
+# app/tests/peca_school_test.py
 
 
 import unittest
@@ -16,9 +16,10 @@ from app.models.peca_project_model import PecaProject
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
+from resources.images import test_image
 
 
-class SchoolPecaTest(unittest.TestCase):
+class PecaSchoolTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -160,67 +161,114 @@ class SchoolPecaTest(unittest.TestCase):
     def test_update_peca_school(self):
 
         requestData = {
-            "subPrincipalFirstName": "new Name"
+            "subPrincipalFirstName": "new Name",
+            "slider": [
+                {
+                    "description": "first image",
+                    "image": test_image
+                },
+                {
+                    "description": "second image",
+                    "image": test_image
+                }
+            ]
         }
         res = self.client().put(
-            '/pecaprojects/school/{}'.format(self.pecaProject.id),
+            '/pecaprojects/school/{}?userId={}'.format(
+                self.pecaProject.id, self.coordinator.id),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual("new Name",
-                         result['subPrincipalFirstName'])
+                         result['approvalHistory'][0]['detail']['subPrincipalFirstName'])
+        self.assertEqual("first image",
+                         result['approvalHistory'][0]['detail']['slider'][0]['description'])
 
         res = self.client().get(
-            '/pecaprojects/school/{}'.format(self.pecaProject.id))
+            '/pecaprojects/{}'.format(self.pecaProject.id))
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual("new Name",
-                         result['subPrincipalFirstName'])
+                         result['school']['approvalHistory'][0]['detail']['subPrincipalFirstName'])
+        self.assertEqual("first image",
+                         result['school']['approvalHistory'][0]['detail']['slider'][0]['description'])
 
-        # slider save image
-        requestData = dict(
-            image="https://someserver.com/image.jpg",
-            description="some description"
-        )
-        res = self.client().post(
-            '/schools/schoolsliders/{}?userId={}'.format(
-                self.school.id,
-                self.coordinator.id),
-            data=requestData,
-            content_type='multipart/form-data')
-        self.assertEqual(res.status_code, 200)
-        self.school = SchoolUser.objects(id=self.school.id).first()
-        self.assertEqual('1', self.school.slider[0].approvalStatus)
+        # request in approval
+        requestData = {
+            "subPrincipalFirstName": "new Name",
+            "slider": [
+                {
+                    "description": "first image",
+                    "image": test_image
+                }
+            ]
+        }
+        res = self.client().put(
+            '/pecaprojects/school/{}?userId={}'.format(
+                self.pecaProject.id, self.coordinator.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 400)
 
         # get approval request
         res = self.client().get(
             '/requestscontentapproval')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('some description',
-                         result['records'][0]['detail']['description'])
+        request = result['records'][0]
+        self.assertEqual("new Name",
+                         request['detail']['subPrincipalFirstName'])
+        self.assertEqual("first image",
+                         request['detail']['slider'][0]['description'])
+        self.assertEqual('4', request['type'])
 
         # approve request
         res = self.client().put(
             '/requestscontentapproval/{}'.format(
-                result['records'][0]['id']),
+                request['id']),
             data=json.dumps({'status': '2'}),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # get sliders
+        # check peca
         res = self.client().get(
-            '/schools/schoolsliders/{}'.format(self.school.id))
-        self.assertEqual(res.status_code, 200)
+            '/pecaprojects/{}'.format(self.pecaProject.id))
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(1,
-                         len(result['records']))
-        self.assertEqual("2", result['records'][0]
-                         ['approvalHistory']['status'])
+        self.assertEqual("new Name",
+                         result['school']['subPrincipalFirstName'])
+        self.assertEqual("first image",
+                         result['school']['slider'][0]['description'])
 
-        self.school = SchoolUser.objects(id=self.school.id).first()
-        self.assertEqual('2', self.school.slider[0].approvalStatus)
+        # check school
+        res = self.client().get(
+            '/users/{}?userType=4'.format(self.school.id))
+        resultSchool = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual("new Name",
+                         resultSchool['subPrincipalFirstName'])
+        self.assertEqual("first image",
+                         resultSchool['slider'][0]['description'])
+        self.assertEqual(2, len(resultSchool['slider']))
+
+        # delete image
+        requestData = resultSchool
+        requestData['slider'].remove(requestData['slider'][1])
+        res = self.client().put(
+            '/pecaprojects/school/{}?userId={}'.format(
+                self.pecaProject.id, self.coordinator.id),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check school
+        res = self.client().get(
+            '/users/{}?userType=4'.format(self.school.id))
+        resultSchool = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual("new Name",
+                         resultSchool['subPrincipalFirstName'])
+        self.assertEqual("first image",
+                         resultSchool['slider'][0]['description'])
+        self.assertEqual(1, len(resultSchool['slider']))
 
     def tearDown(self):
         """teardown all initialized variables."""

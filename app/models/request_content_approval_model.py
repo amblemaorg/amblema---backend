@@ -37,6 +37,7 @@ class RequestContentApproval(Document):
         from app.schemas.special_activity_schema import SpecialActivitySchema
         from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.peca_activity_yearbook_schema import ActivityYearbookSchema
+        from app.schemas.peca_school_schema import SchoolSchema
         from app.models.school_user_model import SchoolUser
         from app.models.sponsor_user_model import SponsorUser
         from app.models.coordinator_user_model import CoordinatorUser
@@ -81,7 +82,7 @@ class RequestContentApproval(Document):
                             break
                     school.save()
                 # activities
-                if document.type == "3":
+                elif document.type == "3":
                     fields = ['date', 'uploadedFile', 'checklist']
                     peca = PecaProject.objects(
                         id=document.detail['pecaId']).first()
@@ -109,19 +110,28 @@ class RequestContentApproval(Document):
                                     break
                             break
                     peca.save()
-                # slider
-                if document.type == "4":
-                    school = SchoolUser.objects(
-                        id=document.detail['schoolId']).first()
-                    for slider in school.slider:
-                        if str(slider.id) == document.detail['id']:
-                            slider.approvalStatus = document.status
-                            slider.approvalHistory['status'] = document.status
-                            break
-                    school.save()
-
+                # school
+                elif document.type == "4":
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    for history in peca.school.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = document.status
+                            history.comments = document.comments
+                            peca.school.isInApproval = False
+                            if history.status == '2':  # approved
+                                school = SchoolUser.objects(
+                                    id=peca.project.school.id).first()
+                                schema = SchoolSchema(partial=True)
+                                data = schema.load(document.detail)
+                                for field in data.keys():
+                                    peca.school[field] = data[field]
+                                    school[field] = data[field]
+                                school.save()
+                                break
+                    peca.save()
                 # initial workshop
-                if document.type == "5":
+                elif document.type == "5":
                     peca = PecaProject.objects(
                         id=document.detail['pecaId']).first()
                     initialWorkshop = peca['lapse{}'.format(
@@ -141,7 +151,7 @@ class RequestContentApproval(Document):
                             peca.save()
                             break
                 # specialActivity
-                if document.type == "6":
+                elif document.type == "6":
                     peca = PecaProject.objects(
                         id=document.detail['pecaId']).first()
                     specialActivity = peca['lapse{}'.format(
@@ -158,7 +168,7 @@ class RequestContentApproval(Document):
                             break
                     peca.save()
                 # yearbook
-                if document.type == "7":
+                elif document.type == "7":
                     peca = PecaProject.objects(
                         id=document.detail['pecaId']).first()
 
@@ -238,7 +248,7 @@ class RequestContentApproval(Document):
                         peca.yearbook.isInApproval = False
                         peca.save()
                  # lapse planning
-                if document.type == "8":
+                elif document.type == "8":
                     peca = PecaProject.objects(
                         id=document.detail['pecaId']).first()
                     lapsePlanning = peca['lapse{}'.format(

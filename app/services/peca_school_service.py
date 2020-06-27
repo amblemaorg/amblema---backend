@@ -100,6 +100,7 @@ class SchoolService():
                                 "msg": "Record has a pending approval request"
                             }, 400
                         jsonData['pecaId'] = pecaId
+                        jsonData['slider'] = schema.dump(data)['slider']
                         request = RequestContentApproval(
                             project=peca.project,
                             user=user,

@@ -76,7 +76,7 @@ class SchoolUserSchema(UserSchema):
     project = fields.Nested(ProjectReferenceSchema, dump_only=True)
     slider = fields.List(fields.Nested(ImageStatusSchema), dump_only=True)
     teachersTestimonials = fields.List(fields.Nested(
-        TeacherTestimonialSchema), validate=Length(max=4))
+        TeacherTestimonialSchema), validate=Length(max=4), dump_only=True)
 
     class Meta:
         unknown = EXCLUDE

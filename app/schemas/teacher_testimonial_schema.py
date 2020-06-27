@@ -18,7 +18,7 @@ class TeacherTestimonialSchema(Schema):
         required=True,
         validate=(not_blank, validate_image),
         folder='teachertestimonial')
-    function = fields.Str(required=True, validate=not_blank)
+    position = fields.Str(required=True, validate=not_blank)
     description = fields.Str(required=True, validate=not_blank)
     approvalStatus = fields.Str(
         validate=OneOf(

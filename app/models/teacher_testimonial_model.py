@@ -15,7 +15,7 @@ class TeacherTestimonial(EmbeddedDocument):
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
     image = fields.StringField()
-    function = fields.StringField(required=True)
+    position = fields.StringField(required=True)
     description = fields.StringField(required=True)
     # approvalStatus = ("1": "pending", "2": "approved", "3": "rejected", "4": "cancelled")
     approvalStatus = fields.StringField(default='1', max_length=1)

@@ -20,7 +20,7 @@ from app.models.teacher_model import Teacher
 
 
 class TeacherTestimonialTest(unittest.TestCase):
-    
+
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -173,13 +173,13 @@ class TeacherTestimonialTest(unittest.TestCase):
 
         )
         self.pecaProject.save()
-    
+
     def test_teacher_testimonials(self):
 
         # create teacher testimonial A
         requestDataA = {
             "teacherId": str(self.school.teachers[0].id),
-            "function": "Profesor de Biologia",
+            "position": "Profesor de Biologia",
             "description": "Testimonio test A",
             "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
         }
@@ -200,7 +200,7 @@ class TeacherTestimonialTest(unittest.TestCase):
         # create teacher testimonial B
         requestDataB = {
             "teacherId": str(self.school.teachers[0].id),
-            "function": "Profesor de Biologia",
+            "position": "Profesor de Biologia",
             "description": "Testimonio test B",
             "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
         }
@@ -223,7 +223,7 @@ class TeacherTestimonialTest(unittest.TestCase):
             "status": "2"
         }
         res = self.client().put('/requestscontentapproval/{}'.format(
-                testimonialA['approvalHistory'][0]['id']),
+            testimonialA['approvalHistory'][0]['id']),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -245,7 +245,7 @@ class TeacherTestimonialTest(unittest.TestCase):
             "status": "4"
         }
         res = self.client().put('/requestscontentapproval/{}'.format(
-                testimonialB['approvalHistory'][0]['id']),
+            testimonialB['approvalHistory'][0]['id']),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -288,7 +288,7 @@ class TeacherTestimonialTest(unittest.TestCase):
         # update teacher testimonial A
         requestDataA = {
             "teacherId": str(self.school.teachers[0].id),
-            "function": "Profesor de Biologia",
+            "position": "Profesor de Biologia",
             "description": "Actualizar testimonio test A",
             "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
         }
@@ -311,7 +311,7 @@ class TeacherTestimonialTest(unittest.TestCase):
             "status": "2"
         }
         res = self.client().put('/requestscontentapproval/{}'.format(
-                testimonialA['approvalHistory'][1]['id']),
+            testimonialA['approvalHistory'][1]['id']),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -341,7 +341,7 @@ class TeacherTestimonialTest(unittest.TestCase):
                 self.school.pk, testimonialB['id'])
         )
         self.assertEqual(res.status_code, 404)
-    
+
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

@@ -12,7 +12,15 @@ from flask_jwt_extended import (
 
 from app.blueprints.auth import auth_blueprint
 from app.models.user_model import User
+from app.models.school_user_model import SchoolUser
+from app.models.sponsor_user_model import SponsorUser
+from app.models.coordinator_user_model import CoordinatorUser
+from app.models.admin_user_model import AdminUser
 from app.schemas.user_schema import UserSchema
+from app.schemas.school_user_schema import SchoolUserSchema
+from app.schemas.sponsor_user_schema import SponsorUserSchema
+from app.schemas.coordinator_user_schema import CoordinatorUserSchema
+from app.schemas.admin_user_schema import AdminUserSchema
 from app.models.project_model import Project
 from app.models.school_year_model import SchoolYear
 from .schemas import RecoverySchema, ChangePasswordSchema, LoginSchema
@@ -28,7 +36,9 @@ class LoginView(MethodView):
         try:
             jsonData = request.get_json()
             data = schema.load(jsonData)
-            user = User.objects(email=data['email'], isDeleted=False).first()
+            user = User.objects(email=data['email'], isDeleted=False).only(
+                'id', 'role', 'userType', 'password').first()
+            schema = UserSchema()
             if not user:
                 return {
                     "email": [
@@ -42,8 +52,20 @@ class LoginView(MethodView):
             if user.role.status == "2":
                 return {"role": [{"status": "15", "msg": "No authorized"}]}, 400
 
-            userSchema = UserSchema(only=("id", "email", "name", "userType"))
-            userJson = userSchema.dump(user)
+            if user.userType == '1':  # admin
+                user = AdminUser.objects(id=user.id).first()
+                schema = AdminUserSchema()
+            elif user.userType == '2':  # coordinator
+                user = CoordinatorUser.objects(id=user.id).first()
+                schema = CoordinatorUserSchema()
+            elif user.userType == '3':  # sponsor
+                user = SponsorUser.objects(id=user.id).first()
+                schema = SponsorUserSchema()
+            elif user.userType == '4':  # school
+                user = SchoolUser.objects(id=user.id).first()
+                schema = SchoolUserSchema()
+
+            userJson = schema.dump(user)
             permissions = user.get_permissions()
             projectsJson = []
             projects = []

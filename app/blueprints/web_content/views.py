@@ -25,8 +25,8 @@ class WebContentView(MethodView):
     def get(self):
         page = None
         if 'page' in request.args:
-            page = [request.args.get('page')]
-        return self.service.getAllRecords(only=page)
+            page = request.args.get('page')
+        return self.service.getAllRecords(page=page)
 
     def post(self):
         jsonData = request.get_json()

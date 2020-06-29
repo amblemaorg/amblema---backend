@@ -9,6 +9,8 @@ from app.models.peca_project_model import PecaProject
 from app.models.peca_student_model import Student, Diagnostic
 from app.schemas.peca_student_schema import StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
+from app.models.school_user_model import SchoolUser
+from app.models.school_year_model import SchoolYear
 
 
 class StudentService():
@@ -40,7 +42,14 @@ class StudentService():
                     PecaProject.objects(
                         id=pecaId,
                         school__sections__id=sectionId
-                    ).update(push__school__sections__S__students=student)
+                    ).update(
+                        push__school__sections__S__students=student,
+                        inc__school__nStudents=1)
+                    SchoolUser.objects(id=peca.project.school.id).update(
+                        inc__school__nStudents=1)
+                    SchoolYear.objects(isDeleted=False, status="1").update(
+                        inc__nStudents=1)
+
                     return schema.dump(student), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -60,7 +69,7 @@ class StudentService():
             school__sections__isDeleted=False,
             school__sections__students__id=studentId,
             school__sections__students__isDeleted=False
-        ).only('school__sections').first()
+        ).first()
 
         if peca:
             try:
@@ -107,7 +116,7 @@ class StudentService():
             school__sections__isDeleted=False,
             school__sections__students__id=studentId,
             school__sections__students__isDeleted=False
-        ).only('school__sections').first()
+        ).first()
 
         if peca:
 
@@ -117,6 +126,11 @@ class StudentService():
                         for student in section.students:
                             if str(student.id) == studentId and not student.isDeleted:
                                 student.isDeleted = True
+                                peca.school.nStudents -= 1
+                                SchoolUser.objects(id=peca.project.school.id).update(
+                                    dec__school__nStudents=1)
+                                SchoolYear.objects(isDeleted=False, status="1").update(
+                                    dec__nStudents=1)
                 peca.save()
                 return "Record deleted successfully", 200
             except Exception as e:

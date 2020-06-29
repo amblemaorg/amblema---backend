@@ -18,7 +18,7 @@ from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
 
 
-class SchoolPecaTest(unittest.TestCase):
+class DiagnosticTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -240,11 +240,21 @@ class SchoolPecaTest(unittest.TestCase):
                          result['student']['wordsPerMin'])
         self.assertEqual(1,
                          result['student']['wordsPerMinIndex'])
-        self.pecaProject = PecaProject.objects.get(id=self.pecaProject.id)
+        self.pecaProject.reload()
         self.assertEqual(
             70, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMin)
         self.assertEqual(
             1, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMinIndex)
+        self.assertEqual(
+            0, self.pecaProject.school.sections[0].diagnostics.lapse1.operationsPerMinIndex)
+
+        self.schoolYear.reload()
+        self.assertEqual(
+            1, self.schoolYear.diagnostics.lapse1.wordsPerMinIndex)
+        self.assertEqual(
+            0, self.schoolYear.diagnostics.lapse1.operationsPerMinIndex)
+        self.assertEqual(
+            0, self.schoolYear.diagnostics.lapse1.multiplicationsPerMinIndex)
 
         # delete
         res = self.client().delete(
@@ -260,6 +270,13 @@ class SchoolPecaTest(unittest.TestCase):
             None, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMin)
         self.assertEqual(
             None, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMinIndex)
+        self.schoolYear.reload()
+        self.assertEqual(
+            0, self.schoolYear.diagnostics.lapse1.wordsPerMinIndex)
+        self.assertEqual(
+            0, self.schoolYear.diagnostics.lapse1.operationsPerMinIndex)
+        self.assertEqual(
+            0, self.schoolYear.diagnostics.lapse1.multiplicationsPerMinIndex)
 
     def test_math_diagnostics(self):
 

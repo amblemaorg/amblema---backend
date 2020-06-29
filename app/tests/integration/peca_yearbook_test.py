@@ -181,8 +181,11 @@ class PecaYearbookTest(unittest.TestCase):
                                 "gender": "1",
                                 "lapse1": {
                                     "multiplicationsPerMin": 20,
+                                    "multiplicationsPerMinIndex": 1,
                                     "operationsPerMin": 30,
-                                    "wordsPerMin": 40
+                                    "operationsPerMinIndex": 1,
+                                    "wordsPerMin": 40,
+                                    "wordsPerMinIndex": 1
                                 },
                                 "lapse2": {
                                     "multiplicationsPerMin": None,
@@ -202,8 +205,11 @@ class PecaYearbookTest(unittest.TestCase):
                                 "gender": "1",
                                 "lapse1": {
                                     "multiplicationsPerMin": 10,
+                                    "multiplicationsPerMinIndex": 0.5,
                                     "operationsPerMin": 20,
-                                    "wordsPerMin": 30
+                                    "operationsPerMinIndex": 0.6667,
+                                    "wordsPerMin": 30,
+                                    "wordsPerMinIndex": 0.75
                                 },
                                 "lapse2": {
                                     "multiplicationsPerMin": None,

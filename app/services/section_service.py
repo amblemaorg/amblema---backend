@@ -64,6 +64,15 @@ class SectionService():
                                     grade=section.grade
                                 )
                             )
+                    peca.school.nSections += 1
+                    grades = []
+                    for section in peca.school.sections:
+                        if section.grade not in grades:
+                            grades.append(section.grade)
+                    peca.school.nGrades = len(grades)
+                    school.nSections = peca.school.nSections
+                    school.nGrades = peca.school.nGrades
+                    school.save()
 
                     peca.save()
                     return schema.dump(section), 200
@@ -153,18 +162,30 @@ class SectionService():
         ).first()
 
         if peca:
+            school = SchoolUser.objects(
+                id=peca.project.school.id, isDeleted=False).first()
 
             try:
                 for oldSection in peca.school.sections:
                     if str(oldSection.id) == sectionId:
                         oldSection.isDeleted = True
+                        break
                 for i in range(1, 4):
                     if peca['lapse{}'.format(i)].ambleCoins:
                         for oldSection in peca['lapse{}'.format(i)].ambleCoins.sections:
                             if oldSection.id == sectionId:
                                 peca['lapse{}'.format(i)].ambleCoins.sections.remove(
                                     oldSection)
+                peca.school.nSections -= 1
+                grades = []
+                for section in peca.school.sections:
+                    if section.grade not in grades:
+                        grades.append(section.grade)
+                peca.school.nGrades = len(grades)
                 peca.save()
+                school.nSections = peca.school.nSections
+                school.nGrades = peca.school.nGrades
+                school.save()
                 return "Record deleted successfully", 200
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400

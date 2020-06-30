@@ -68,6 +68,7 @@ class MathOlympic(EmbeddedDocument):
     file = fields.EmbeddedDocumentField(
         Link, is_file=True)
     description = fields.StringField()
+    date = fields.DateTimeField(null=True)
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
 

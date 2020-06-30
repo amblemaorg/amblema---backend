@@ -79,5 +79,11 @@ class PecaProject(Document):
         except Exception as e:
             return {'status': 0, 'message': str(e)}, 400
 
+    def scheduleRemoveActivity(self, devName):
+        for act in self.schedule:
+            if act.devName == devName:
+                self.schedule.remove(act)
+                break
+
 
 signals.pre_save.connect(PecaProject.pre_save, sender=PecaProject)

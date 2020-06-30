@@ -588,14 +588,24 @@ class ActivityService():
                                     file=schoolYear.pecaSetting['lapse{}'.format(
                                         data['lapse'])].mathOlympic.file,
                                     description=schoolYear.pecaSetting['lapse{}'.format(
-                                        data['lapse'])].mathOlympic.description
+                                        data['lapse'])].mathOlympic.description,
+                                    date=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].mathOlympic.date
                                 )
                                 peca['lapse{}'.format(
                                     data['lapse'])].olympics = olympics
+                                if olympics.date:
+                                    peca.scheduleActivity(
+                                        devName="olympics__date",
+                                        subject="Olimpíadas matemáticas",
+                                        startTime=olympics.date,
+                                        description="Fecha del evento"
+                                    )
                             # is inactive
                             else:
                                 peca['lapse{}'.format(
                                     data['lapse'])].olympics = None
+                                peca.scheduleRemoveActivity('olympics__date')
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:
@@ -605,29 +615,32 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].specialLapseActivity.status = data['status']
-                        
+
                         bulk_operations = []
 
                         pecaProjects = PecaProject.objects(
                             schoolYear=schoolYear.id, isDeleted=False)
-                        
+
                         if data['status'] == "1":
                             specialActivity = SpecialActivity()
-                        
+
                         for peca in pecaProjects:
                             # is active
                             if data['status'] == "1":
-                                peca['lapse{}'.format(data['lapse'])].specialActivity = specialActivity
+                                peca['lapse{}'.format(
+                                    data['lapse'])].specialActivity = specialActivity
                             # is inactive
                             else:
-                                peca['lapse{}'.format(data['lapse'])].specialActivity = None
-                            
-                            bulk_operations.append(UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
-                        
+                                peca['lapse{}'.format(
+                                    data['lapse'])].specialActivity = None
+
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+
                         if bulk_operations:
                             PecaProject._get_collection() \
                                 .bulk_write(bulk_operations, ordered=False)
-                
+
                 else:
                     from app.models.peca_activities_model import ActivityPeca, CheckElement
                     for activity in schoolYear.pecaSetting['lapse{}'.format(data['lapse'])].activities:

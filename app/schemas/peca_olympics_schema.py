@@ -50,6 +50,7 @@ class OlympicsSchema(Schema):
     students = fields.List(fields.Nested(StudentSchema()))
     file = fields.Nested(FileSchema(), dump_only=True)
     description = fields.Str(dump_only=True)
+    date = fields.DateTime(dump_only=True)
 
     class Meta:
         unknown = EXCLUDE

@@ -146,7 +146,7 @@ web_content_blueprint.add_url_rule(
 )
 
 web_content_blueprint.add_url_rule(
-    '/resources/images/<string:folder>/<string:imageId>',
+    '/resources/images/<path:folder>/<string:imageId>',
     view_func=imagesView,
     methods=['GET']
 )

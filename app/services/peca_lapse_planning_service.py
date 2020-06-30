@@ -74,16 +74,16 @@ class LapsePlanningService():
                 documentFiles = getFileFields(LapsePlanningPeca)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
-                    self.filesFolder = "school_years/{}/pecas/{}/{}".format(
+                    folder = "school_years/{}/pecas/{}/{}".format(
                         peca.schoolYear.pk,
                         peca.pk,
                         self.filesFolder
                     )
-                    DIR = files_path + '/' + self.filesFolder
-                    self.filesFolder = self.filesFolder + \
-                        '/{}'.format(len([name for name in os.listdir(DIR)])
+                    DIR = files_path + '/' + folder
+                    folder = folder + \
+                        '/{}'.format(len([name for name in os.listdir(DIR)]) + 1
                                      if os.path.exists(DIR) else 1)
-                    uploadedfiles = upload_files(validFiles, self.filesFolder)
+                    uploadedfiles = upload_files(validFiles, folder)
                     jsonData.update(uploadedfiles)
 
                 data = schema.load(jsonData)

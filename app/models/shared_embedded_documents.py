@@ -53,3 +53,23 @@ class ImageStatus(EmbeddedDocument):
 class Coordinate(EmbeddedDocument):
     latitude = fields.FloatField()
     longitude = fields.FloatField()
+
+
+class DiagnosticSummary(EmbeddedDocument):
+    wordsPerMin = fields.IntField(default=0)
+    wordsPerMinIndex = fields.FloatField(default=0)
+    multiplicationsPerMin = fields.IntField(default=0)
+    multiplicationsPerMinIndex = fields.FloatField(default=0)
+    operationsPerMin = fields.IntField(default=0)
+    operationsPerMinIndex = fields.FloatField(default=0)
+
+
+class Diagnostics(EmbeddedDocument):
+    lapse1 = fields.EmbeddedDocumentField(
+        DiagnosticSummary, default=DiagnosticSummary())
+    lapse2 = fields.EmbeddedDocumentField(
+        DiagnosticSummary, default=DiagnosticSummary())
+    lapse3 = fields.EmbeddedDocumentField(
+        DiagnosticSummary, default=DiagnosticSummary())
+    summary = fields.EmbeddedDocumentField(
+        DiagnosticSummary, default=DiagnosticSummary())

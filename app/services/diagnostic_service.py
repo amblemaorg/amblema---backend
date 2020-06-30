@@ -73,7 +73,11 @@ class DiagnosticService():
                                 student['lapse{}'.format(
                                     lapse)] = diagnostic
                                 section.refreshDiagnosticsSummary()
+                                peca.school.refreshDiagnosticsSummary()
                                 peca.save()
+                                schoolYear = peca.schoolYear.fetch()
+                                schoolYear.refreshDiagnosticsSummary()
+                                schoolYear.save()
                                 return {
                                     "student": schema.dump(diagnostic),
                                     "sectionSummary": DiagnosticsSchema().dump(section.diagnostics)}, 200
@@ -95,7 +99,7 @@ class DiagnosticService():
             school__sections__isDeleted=False,
             school__sections__students__id=studentId,
             school__sections__students__isDeleted=False
-        ).only('school__sections').first()
+        ).only('school__sections', 'school__diagnostics', 'schoolYear').first()
 
         if peca:
             try:
@@ -118,7 +122,12 @@ class DiagnosticService():
                                     student['lapse{}'.format(
                                         lapse)].operationsPerMinIndex = None
                                 section.refreshDiagnosticsSummary()
+                                peca.school.refreshDiagnosticsSummary()
+                                peca.school.diagnostics.lapse1.wordsPerMinIndex = 0
                                 peca.save()
+                                schoolYear = peca.schoolYear.fetch()
+                                schoolYear.refreshDiagnosticsSummary()
+                                schoolYear.save()
                                 return "Record deleted successfully", 200
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400

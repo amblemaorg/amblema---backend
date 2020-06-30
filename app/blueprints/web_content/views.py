@@ -25,8 +25,8 @@ class WebContentView(MethodView):
     def get(self):
         page = None
         if 'page' in request.args:
-            page = [request.args.get('page')]
-        return self.service.getAllRecords(only=page)
+            page = request.args.get('page')
+        return self.service.getAllRecords(page=page)
 
     def post(self):
         jsonData = request.get_json()
@@ -146,7 +146,7 @@ web_content_blueprint.add_url_rule(
 )
 
 web_content_blueprint.add_url_rule(
-    '/resources/images/<string:folder>/<string:imageId>',
+    '/resources/images/<path:folder>/<string:imageId>',
     view_func=imagesView,
     methods=['GET']
 )

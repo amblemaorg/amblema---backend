@@ -12,6 +12,7 @@ from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.document_metadata import getUniqueFields, getFileFields
 from app.helpers.handler_files import validate_files, upload_files
 from app.services.generic_service import GenericServices
+from app.blueprints.web_content.models.web_content import WebContent
 
 
 class UserService(GenericServices):
@@ -44,6 +45,14 @@ class UserService(GenericServices):
                 record.setHashPassword()
                 record.save()
                 record.sendRegistrationEmail(password)
+                if self.Model.__name__ == 'SchoolUser':
+                    WebContent.objects().update(
+                        inc__homePage__nSchools=1
+                    )
+                elif self.Model.__name__ == 'SponsorUser':
+                    WebContent.objects().update(
+                        inc__homePage__nSponsors=1
+                    )
                 return schema.dump(record), 201
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400
@@ -92,3 +101,25 @@ class UserService(GenericServices):
             return schema.dump(record), 200
         except ValidationError as err:
             return err.messages, 400
+
+    def deleteRecord(self, recordId):
+        """
+        Delete (change status False) a record
+        """
+        record = self.getOr404(recordId)
+        try:
+            record.isDeleted = True
+            record.save()
+            if self.Model.__name__ == 'SchoolUser':
+                WebContent.objects().update(
+                    dec__homePage__nSchools=1
+                )
+            elif self.Model.__name__ == 'SponsorUser':
+                WebContent.objects().update(
+                    dec__homePage__nSponsors=1
+                )
+
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400
+
+        return {"message": "Record deleted successfully"}, 200

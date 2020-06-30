@@ -27,6 +27,9 @@ class TeacherService():
                                    payload={"recordId": schoolId})
 
     def save(self, schoolId, jsonData):
+        from app.models.peca_project_model import PecaProject
+        from app.models.school_year_model import SchoolYear
+        from app.blueprints.web_content.models.web_content import WebContent
 
         school = SchoolUser.objects(
             isDeleted=False, id=schoolId).first()
@@ -46,7 +49,17 @@ class TeacherService():
                     )
                 try:
                     school.teachers.append(teacher)
+                    school.nTeachers += 1
                     school.save()
+                    period = SchoolYear.objects(
+                        isDeleted=False, status="1").first()
+                    if period:
+                        PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
+                            inc__school__nTeachers=1
+                        )
+                    WebContent.objects().update(
+                        inc__homePage__nTeachers=1
+                    )
                     return schema.dump(teacher), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -103,6 +116,9 @@ class TeacherService():
         """
         Delete (change isDeleted to True) a record
         """
+        from app.models.peca_project_model import PecaProject
+        from app.models.school_year_model import SchoolYear
+        from app.blueprints.web_content.models.web_content import WebContent
 
         school = SchoolUser.objects(
             Q(id=schoolId)
@@ -119,7 +135,19 @@ class TeacherService():
                         id=schoolId,
                         teachers__id=teacherId,
                         teachers__isDeleted__ne=True
-                    ).update(set__teachers__S__isDeleted=True)
+                    ).update(
+                        set__teachers__S__isDeleted=True,
+                        dec__nTeachers=1)
+                    period = SchoolYear.objects(
+                        isDeleted=False, status="1").first()
+                    if period:
+                        PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
+                            inc__school__nTeachers=1
+                        )
+                    WebContent.objects().update(
+                        inc__homePage__nTeachers=1
+                    )
+
                     return "Record deleted successfully", 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

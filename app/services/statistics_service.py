@@ -8,6 +8,7 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.peca_project_model import PecaProject
 from flask import current_app
 from mongoengine.connection import get_db
+from app.models.school_year_model import SchoolYear
 
 
 class StatisticsService():
@@ -37,3 +38,38 @@ class StatisticsService():
             count += len(school.teachers.filter(isDeleted=False))
 
         return count
+
+    def get_count_students(self):
+        oldSchoolYear = SchoolYear.objects(isDeleted=False, status="2").only(
+            'nStudents', 'createdAt').order_by('-createdAt').first()
+        if oldSchoolYear and oldSchoolYear.nStudents:
+            return oldSchoolYear.nStudents
+        else:
+            schoolYear = SchoolYear.objects(
+                isDeleted=False, status="1").only('nStudents').first()
+            if schoolYear and schoolYear.nStudents:
+                return schoolYear.nStudents
+            else:
+                return 0
+
+    def get_diagnostics_last_five_years(self):
+
+        periods = SchoolYear.objects(isDeleted=False).order_by('createdAt')[:5]
+        data = {
+            'wordsPerMinIndex': [],
+            'multiplicationsPerMinIndex': [],
+            'operationsPerMinIndex': []
+        }
+        for period in periods:
+            for diag in data.keys():
+                for lapse in [1, 2, 3]:
+
+                    data[diag].append(
+                        {
+                            'label': period.name,
+                            'serie': 'Lapso {}'.format(lapse),
+                            'value': period.diagnostics['lapse{}'.format(
+                                lapse)][diag]
+                        }
+                    )
+        return data

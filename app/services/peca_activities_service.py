@@ -72,13 +72,13 @@ class ActivitiesPecaService():
                 documentFiles = getFileFields(ActivityFields)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
-                    self.filesPath = "school_years/{}/pecas/{}/{}/{}".format(
+                    folder = "school_years/{}/pecas/{}/{}/{}".format(
                         peca.schoolYear.pk,
                         peca.pk,
                         self.filesPath,
                         activityId
                     )
-                    uploadedfiles = upload_files(validFiles, self.filesPath)
+                    uploadedfiles = upload_files(validFiles, folder)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
 

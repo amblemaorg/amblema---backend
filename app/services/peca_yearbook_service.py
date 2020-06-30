@@ -41,27 +41,27 @@ class YearbookService():
                                            status_code=404,
                                            payload={"userId":  userId})
 
-                self.filesPath = "school_years/{}/pecas/{}/{}".format(
+                folder = "school_years/{}/pecas/{}/{}".format(
                     peca.schoolYear.pk,
                     peca.pk,
                     self.filesPath
                 )
-                DIR = path_images + '/' + self.filesPath
-                self.filesPath = self.filesPath + \
-                    '/{}'.format(len([name for name in os.listdir(DIR)])
+                DIR = path_images + '/' + folder
+                folder = folder + \
+                    '/{}'.format(len([name for name in os.listdir(DIR)]) + 1
                                  if os.path.exists(DIR) else 1)
                 if str(jsonData['historicalReview']['image']).startswith('data'):
                     jsonData['historicalReview']['image'] = upload_image(
-                        jsonData['historicalReview']['image'], self.filesPath, None)
+                        jsonData['historicalReview']['image'], folder, None)
                 if str(jsonData['sponsor']['image']).startswith('data'):
                     jsonData['sponsor']['image'] = upload_image(
-                        jsonData['sponsor']['image'], self.filesPath, None)
+                        jsonData['sponsor']['image'], folder, None)
                 if str(jsonData['school']['image']).startswith('data'):
                     jsonData['school']['image'] = upload_image(
-                        jsonData['school']['image'], self.filesPath, None)
+                        jsonData['school']['image'], folder, None)
                 if str(jsonData['coordinator']['image']).startswith('data'):
                     jsonData['coordinator']['image'] = upload_image(
-                        jsonData['coordinator']['image'], self.filesPath, None)
+                        jsonData['coordinator']['image'], folder, None)
                 for lapse in [1, 2, 3]:
                     for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
                         act = jsonData['lapse{}'.format(
@@ -70,7 +70,7 @@ class YearbookService():
                             img = act['images'][image]
                             if str(img).startswith('data'):
                                 img = upload_image(
-                                    img, self.filesPath, None)
+                                    img, folder, None)
                                 jsonData['lapse{}'.format(
                                     lapse)]['activities'][activity]['images'][image] = img
 

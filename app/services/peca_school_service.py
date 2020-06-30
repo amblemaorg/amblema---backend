@@ -55,20 +55,19 @@ class SchoolService():
                 newSchool = copy.copy(school)
 
                 if 'slider' in jsonData:
-                    self.filesFolder = "school_years/{}/pecas/{}/{}".format(
+                    folder = "school_years/{}/pecas/{}/{}".format(
                         peca.schoolYear.pk,
                         peca.pk,
                         self.filesFolder
                     )
-                    DIR = path_images + '/' + self.filesFolder
-                    self.filesFolder = self.filesFolder + \
-                        '/{}'.format(len([name for name in os.listdir(DIR)])
+                    DIR = path_images + '/' + folder
+                    folder = folder + \
+                        '/{}'.format(len([name for name in os.listdir(DIR)]) + 1
                                      if os.path.exists(DIR) else 1)
-
                     for image in jsonData['slider']:
                         if str(image['image']).startswith('data'):
                             image['image'] = upload_image(
-                                image['image'], self.filesFolder, None)
+                                image['image'], folder, None)
 
                 data = schema.load(jsonData)
 

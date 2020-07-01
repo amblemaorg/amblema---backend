@@ -99,6 +99,7 @@ from app.controllers.peca_project_controller import (
     PecaProjectHandlerController
 )
 from app.controllers.peca_school_controller import SchoolController
+from app.controllers.peca_activities_slider_controller import ActivitiesSliderController
 from app.controllers.peca_amblecoins_controller import (
     PecaAmblecoinsController
 )
@@ -310,6 +311,8 @@ def create_app(config_instance):
                      '/schools/teachers/<string:schoolId>/<string:teacherId>')
     api.add_resource(SchoolController,
                      '/pecaprojects/school/<string:pecaId>')
+    api.add_resource(ActivitiesSliderController,
+                     '/pecaprojects/activitiesslider/<string:pecaId>')
     api.add_resource(SectionController,
                      '/pecaprojects/sections/<string:pecaId>')
     api.add_resource(SectionHandlerController,

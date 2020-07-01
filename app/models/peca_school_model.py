@@ -6,6 +6,7 @@ from mongoengine import EmbeddedDocument, fields
 
 from app.models.peca_section_model import Section
 from app.models.shared_embedded_documents import Approval, ImageStatus, Diagnostics
+from app.models.peca_activities_slider_model import ActivitiesSlider
 
 
 class School(EmbeddedDocument):
@@ -34,6 +35,8 @@ class School(EmbeddedDocument):
     twitter = fields.StringField(null=True)
     sections = fields.EmbeddedDocumentListField(Section)
     slider = fields.EmbeddedDocumentListField(ImageStatus)
+    activitiesSlider = fields.EmbeddedDocumentField(
+        ActivitiesSlider, default=ActivitiesSlider())
     diagnostics = fields.EmbeddedDocumentField(
         Diagnostics, default=Diagnostics())
     isInApproval = fields.BooleanField(default=False)

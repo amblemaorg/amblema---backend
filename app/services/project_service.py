@@ -75,6 +75,7 @@ class ProjectService():
         from app.models.peca_project_model import PecaProject
         from app.models.school_year_model import SchoolYear
         from app.models.project_model import ResumePeca, ResumeSchoolYear
+        from app.models.peca_activities_slider_model import ActivitiesSlider
 
         # create peca project
 
@@ -127,6 +128,7 @@ class ProjectService():
                 "instagram": project.school.instagram,
                 "twitter": project.school.twitter,
                 "slider": project.school.slider,
+                "activitiesSlider": ActivitiesSlider(slider=project.school.slider),
                 "sections": [
                 ]
             }

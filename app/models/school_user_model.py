@@ -41,6 +41,7 @@ class SchoolUser(User):
     project = fields.EmbeddedDocumentField(ProjectReference)
     teachers = fields.EmbeddedDocumentListField(Teacher)
     slider = fields.EmbeddedDocumentListField(ImageStatus)
+    activitiesSlider = fields.ListField(fields.StringField())
     phase = fields.StringField(max_length=1, default="1")
     teachersTestimonials = fields.EmbeddedDocumentListField(
         TeacherTestimonial, max_length=4)

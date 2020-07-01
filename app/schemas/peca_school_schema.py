@@ -18,6 +18,7 @@ from app.schemas.shared_schemas import ImageStatusSchema, ApprovalSchema
 from app.schemas.peca_section_schema import SectionSchema
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.models.state_model import State, Municipality
+from app.schemas.peca_activities_slider_schema import ActivitiesSliderSchema
 
 
 class SchoolSchema(Schema):
@@ -47,6 +48,7 @@ class SchoolSchema(Schema):
     twitter = fields.Str(allow_none=True)
     sections = fields.List(fields.Nested(SectionSchema()), dump_only=True)
     slider = fields.List(fields.Nested(ImageStatusSchema))
+    activitiesSlider = fields.Nested(ActivitiesSliderSchema, dump_only=True)
     isInApproval = fields.Bool(dump_only=True)
     approvalHistory = fields.List(
         fields.Nested(ApprovalSchema), dump_only=True)

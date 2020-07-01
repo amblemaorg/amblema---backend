@@ -43,6 +43,8 @@ class RequestContentApproval(Document):
         from app.models.coordinator_user_model import CoordinatorUser
         from app.models.project_model import Project
         from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
+        from app.schemas.peca_activities_slider_schema import ActivitiesSliderSchema
+
         # before create
         if not document.id:
             # steps
@@ -77,7 +79,8 @@ class RequestContentApproval(Document):
                 if document.type == "2":
                     school = SchoolUser.objects(
                         id=str(document.project.school['id'])).first()
-                    testimonial = school.teachersTestimonials.filter(id=document.detail['id'], isDeleted=False).first()
+                    testimonial = school.teachersTestimonials.filter(
+                        id=document.detail['id'], isDeleted=False).first()
                     for history in testimonial.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
@@ -88,15 +91,16 @@ class RequestContentApproval(Document):
                                 data = schema.load(document.detail)
                                 for field in schema.dump(data).keys():
                                     testimonial[field] = data[field]
-                                
-                                teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
+
+                                teacher = school.teachers.filter(
+                                    id=testimonial.teacherId, isDeleted=False).first()
                                 if teacher:
                                     testimonial.firstName = teacher.firstName
                                     testimonial.lastName = teacher.lastName
                                 else:
                                     raise RegisterNotFound(message="Record not found",
-                                           status_code=404,
-                                           payload={"teacherId": testimonial.teacherId})
+                                                           status_code=404,
+                                                           payload={"teacherId": testimonial.teacherId})
                             break
 
                     school.save()
@@ -282,6 +286,24 @@ class RequestContentApproval(Document):
                                 data = schema.load(document.detail)
                                 for field in schema.dump(data).keys():
                                     lapsePlanning[field] = data[field]
+                            peca.save()
+                            break
+                elif document.type == '9':
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    activitiesSlider = peca.school.activitiesSlider
+                    for history in activitiesSlider.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = document.status
+                            history.comments = document.comments
+                            activitiesSlider.isInApproval = False
+                            if document.status == '2':  # approved
+                                schema = ActivitiesSliderSchema()
+                                data = schema.load(document.detail)
+                                for field in data.keys():
+                                    activitiesSlider[field] = data[field]
+                                SchoolUser.objects(id=peca.project.school.id).update(
+                                    activitiesSlider=activitiesSlider.slider)
                             peca.save()
                             break
 

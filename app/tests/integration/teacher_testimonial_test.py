@@ -96,7 +96,7 @@ class TeacherTestimonialTest(unittest.TestCase):
             principalLastName="Ortega",
             principalEmail="testemail@test.com",
             principalPhone="04244664646",
-            nTeachers=20,
+            nTeachers=2,
             nAdministrativeStaff=20,
             nLaborStaff=20,
             nStudents=20,
@@ -121,6 +121,19 @@ class TeacherTestimonialTest(unittest.TestCase):
                     addressState=str(self.state.id),
                     addressMunicipality=str(self.municipality.id),
                     address="19th street",
+                    addressCity="Barquisimeto"
+                ),
+                Teacher(
+                    firstName="Juan",
+                    lastName="Perez",
+                    cardType="1",
+                    cardId="19105444",
+                    gender="2",
+                    email="juanp@test.com",
+                    phone="04245670901",
+                    addressState=str(self.state.id),
+                    addressMunicipality=str(self.municipality.id),
+                    address="Av 20 entre calles 15 y 16",
                     addressCity="Barquisimeto"
                 )
             ]
@@ -176,93 +189,53 @@ class TeacherTestimonialTest(unittest.TestCase):
 
     def test_teacher_testimonials(self):
 
-        # create teacher testimonial A
-        requestDataA = {
-            "teacherId": str(self.school.teachers[0].id),
-            "position": "Profesor de Biologia",
-            "description": "Testimonio test A",
-            "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+        # create teacher testimonials
+        requestData = {
+            "testimonials": [
+                {
+                    "teacherId": str(self.school.teachers[0].id),
+                    "position": "Profesor de Biologia",
+                    "description": "Testimonio test A",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[1].id),
+                    "position": "Profesor de Matematicas",
+                    "description": "Testimonio test B",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                }
+            ]
         }
         res = self.client().post(
             '/schools/teacherstestimonials/{}?userId={}'.format(
                 self.school.pk, self.coordinator.id),
-            data=json.dumps(requestDataA),
-            content_type='application/json'
-        )
-        self.assertEqual(res.status_code, 200)
-
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("Arelis", result['firstName'])
-        self.assertEqual("Crespo", result['lastName'])
-        self.assertEqual("Testimonio test A", result['description'])
-        testimonialA = result
-
-        # create teacher testimonial B
-        requestDataB = {
-            "teacherId": str(self.school.teachers[0].id),
-            "position": "Profesor de Biologia",
-            "description": "Testimonio test B",
-            "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
-        }
-        res = self.client().post(
-            '/schools/teacherstestimonials/{}?userId={}'.format(
-                self.school.pk, self.coordinator.id),
-            data=json.dumps(requestDataB),
-            content_type='application/json'
-        )
-        self.assertEqual(res.status_code, 200)
-
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("Arelis", result['firstName'])
-        self.assertEqual("Crespo", result['lastName'])
-        self.assertEqual("Testimonio test B", result['description'])
-        testimonialB = result
-
-        # approve request testimonial A
-        requestData = {
-            "status": "2"
-        }
-        res = self.client().put('/requestscontentapproval/{}'.format(
-            testimonialA['approvalHistory'][0]['id']),
             data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        # get teacher testimonial A
-        res = self.client().get(
-            '/schools/teacherstestimonials/{}/{}'.format(
-                self.school.pk, testimonialA['id'])
-        )
-        self.assertEqual(res.status_code, 200)
-
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("2", result['approvalStatus'])
-        self.assertEqual(False, result['isInApproval'])
-        self.assertEqual("2", result['approvalHistory'][0]['status'])
-
-        # cancel request testimonial B
-        requestData = {
-            "status": "4"
-        }
-        res = self.client().put('/requestscontentapproval/{}'.format(
-            testimonialB['approvalHistory'][0]['id']),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        # get teacher testimonial B
-        res = self.client().get(
-            '/schools/teacherstestimonials/{}/{}'.format(
-                self.school.pk, testimonialB['id'])
+            content_type='application/json'
         )
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual("1", result['approvalStatus'])
-        self.assertEqual(False, result['isInApproval'])
-        self.assertEqual("4", result['approvalHistory'][0]['status'])
+        self.assertEqual(True, result['isInApproval'])
+        self.assertEqual("1", result['approvalHistory'][0]['status'])
+        self.assertEqual(2, len(result['testimonials']))
+        self.assertEqual(self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
+        self.assertEqual(self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
+        self.assertEqual("Testimonio test A", result['testimonials'][0]['description'])
+        self.assertEqual("Testimonio test B", result['testimonials'][1]['description'])
+        testimonials = result
 
-        # get all teacher testimonial access peca
+        # approve request testimonials
+        requestData = {
+            "status": "2"
+        }
+        res = self.client().put('/requestscontentapproval/{}'.format(
+            testimonials['approvalHistory'][0]['id']),
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # get all teacher testimonials access peca
         res = self.client().get(
             '/schools/teacherstestimonials/{}?access={}'.format(
                 self.school.pk, "peca")
@@ -270,77 +243,127 @@ class TeacherTestimonialTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(2, len(result['records']))
-        self.assertEqual(testimonialA['id'], result['records'][0]['id'])
-        self.assertEqual(testimonialB['id'], result['records'][1]['id'])
+        self.assertEqual("2", result['approvalStatus'])
+        self.assertEqual(False, result['isInApproval'])
+        self.assertEqual("2", result['approvalHistory'][0]['status'])
+        self.assertEqual(2, len(result['testimonials']))
+        self.assertEqual(self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
+        self.assertEqual(self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
+        self.assertEqual("Testimonio test A", result['testimonials'][0]['description'])
+        self.assertEqual("Testimonio test B", result['testimonials'][1]['description'])
 
-        # get all teacher testimonial access web
-        res = self.client().get(
-            '/schools/teacherstestimonials/{}?access={}'.format(
-                self.school.pk, "web")
+        # update teacher testimonials
+        requestData = {
+            "testimonials": [
+                {
+                    "teacherId": str(self.school.teachers[0].id),
+                    "position": "Profesor de Biologia",
+                    "description": "Testimonio test AA",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[1].id),
+                    "position": "Profesor de Matematicas",
+                    "description": "Testimonio test B",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[0].id),
+                    "position": "Profesor de Biologia",
+                    "description": "Testimonio test C",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                }
+            ]
+        }
+        res = self.client().post(
+            '/schools/teacherstestimonials/{}?userId={}'.format(
+                self.school.pk, self.coordinator.id),
+            data=json.dumps(requestData),
+            content_type='application/json'
         )
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(1, len(result['records']))
-        self.assertEqual(testimonialA['id'], result['records'][0]['id'])
-
-        # update teacher testimonial A
-        requestDataA = {
-            "teacherId": str(self.school.teachers[0].id),
-            "position": "Profesor de Biologia",
-            "description": "Actualizar testimonio test A",
-            "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
-        }
-        res = self.client().put(
-            '/schools/teacherstestimonials/{}/{}?userId={}'.format(
-                self.school.pk, testimonialA['id'], self.coordinator.id),
-            data=json.dumps(requestDataA),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("Arelis", result['firstName'])
-        self.assertEqual("Crespo", result['lastName'])
-        self.assertEqual("Testimonio test A", result['description'])
+        self.assertEqual("1", result['approvalStatus'])
         self.assertEqual(True, result['isInApproval'])
-        testimonialA = result
+        self.assertEqual("1", result['approvalHistory'][1]['status'])
+        self.assertEqual(3, len(result['testimonials']))
+        self.assertEqual(self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
+        self.assertEqual(self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
+        self.assertEqual("Testimonio test AA", result['testimonials'][0]['description'])
+        self.assertEqual("Testimonio test B", result['testimonials'][1]['description'])
+        self.assertEqual("Testimonio test C", result['testimonials'][2]['description'])
+        testimonials = result
 
-        # approve request testimonial A
+        # cancel request testimonials
         requestData = {
-            "status": "2"
+            "status": "4"
         }
         res = self.client().put('/requestscontentapproval/{}'.format(
-            testimonialA['approvalHistory'][1]['id']),
+            testimonials['approvalHistory'][1]['id']),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # get teacher testimonial A
+        # get all teacher testimonials access web
         res = self.client().get(
-            '/schools/teacherstestimonials/{}/{}'.format(
-                self.school.pk, testimonialA['id'])
+            '/schools/teacherstestimonials/{}?access={}'.format(
+                self.school.pk, "web")
         )
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, 400)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("2", result['approvalStatus'])
-        self.assertEqual(False, result['isInApproval'])
-        self.assertEqual("2", result['approvalHistory'][1]['status'])
-        self.assertEqual("Actualizar testimonio test A", result['description'])
+        self.assertEqual(0, result['status'])
+        self.assertEqual("There are no testimonials", result['message'])
 
-        # delete teacher testimonial B
-        res = self.client().delete(
-            '/schools/teacherstestimonials/{}/{}'.format(
-                self.school.pk, testimonialB['id'])
+        # create teacher testimonials > 4
+        requestData = {
+            "testimonials": [
+                {
+                    "teacherId": str(self.school.teachers[0].id),
+                    "position": "Profesor de Biologia",
+                    "description": "Testimonio test AA",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[1].id),
+                    "position": "Profesor de Matematicas",
+                    "description": "Testimonio test B",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[0].id),
+                    "position": "Profesor de Biologia",
+                    "description": "Testimonio test C",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[0].id),
+                    "position": "Profesor de Biologia",
+                    "description": "Testimonio test AA",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[1].id),
+                    "position": "Profesor de Matematicas",
+                    "description": "Testimonio test B",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                },
+                {
+                    "teacherId": str(self.school.teachers[0].id),
+                    "position": "Profesor de Biologia",
+                    "description": "Testimonio test C",
+                    "image": "http://localhost:10505/resources/images/teachertestimonial/5ef49ae48a57c592db438227.jpg"
+                }
+            ]
+        }
+        res = self.client().post(
+            '/schools/teacherstestimonials/{}?userId={}'.format(
+                self.school.pk, self.coordinator.id),
+            data=json.dumps(requestData),
+            content_type='application/json'
         )
-        self.assertEqual(res.status_code, 200)
-
-        res = self.client().delete(
-            '/schools/teacherstestimonials/{}/{}'.format(
-                self.school.pk, testimonialB['id'])
-        )
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.status_code, 400)
 
     def tearDown(self):
         """teardown all initialized variables."""

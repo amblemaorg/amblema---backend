@@ -138,7 +138,7 @@ from app.controllers.statistics_controller import (
 )
 from app.controllers.diagnostic_controller import DiagnosticController
 from app.controllers.teacher_testimonial_controller import (
-    TeacherTestimonialController, TeacherTestimonialHandlerController
+    TeacherTestimonialController
 )
 from app.controllers.special_activity_controller import (
     SpecialActivityController
@@ -362,8 +362,6 @@ def create_app(config_instance):
                      '/statistics/numberactiveschools/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(TeacherTestimonialController,
                      '/schools/teacherstestimonials/<string:schoolId>')
-    api.add_resource(TeacherTestimonialHandlerController,
-                     '/schools/teacherstestimonials/<string:schoolId>/<string:testimonialId>')
     api.add_resource(MonitoringActivitiesController,
                      '/pecasetting/monitoringactivities')
 

@@ -20,19 +20,3 @@ class TeacherTestimonialController(Resource):
     def get(self, schoolId):
         access = request.args.get('access')
         return self.service.get_all(schoolId,access)
-
-
-class TeacherTestimonialHandlerController(Resource):
-
-    service = TeacherTestimonialService()
-
-    def get(self, schoolId, testimonialId):
-        return self.service.get(schoolId, testimonialId)
-
-    def put(self, schoolId, testimonialId):
-        userId = request.args.get('userId')
-        jsonData = request.get_json()
-        return self.service.update(schoolId, userId, testimonialId, jsonData)
-
-    def delete(self, schoolId, testimonialId):
-        return self.service.delete(schoolId, testimonialId)

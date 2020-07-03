@@ -79,28 +79,29 @@ class RequestContentApproval(Document):
                 if document.type == "2":
                     school = SchoolUser.objects(
                         id=str(document.project.school['id'])).first()
-                    testimonial = school.teachersTestimonials.filter(
-                        id=document.detail['id'], isDeleted=False).first()
-                    for history in testimonial.approvalHistory:
+                    teachersTestimonials = school.teachersTestimonials
+                    for history in teachersTestimonials.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
-                            testimonial.isInApproval = False
+                            teachersTestimonials.isInApproval = False
                             if document.status == '2':  # approved
-                                testimonial.approvalStatus = document.status
+                                teachersTestimonials.approvalStatus = document.status
                                 schema = TeacherTestimonialSchema(partial=True)
                                 data = schema.load(document.detail)
                                 for field in schema.dump(data).keys():
-                                    testimonial[field] = data[field]
-
-                                teacher = school.teachers.filter(
-                                    id=testimonial.teacherId, isDeleted=False).first()
-                                if teacher:
-                                    testimonial.firstName = teacher.firstName
-                                    testimonial.lastName = teacher.lastName
-                                else:
-                                    raise RegisterNotFound(message="Record not found",
-                                                           status_code=404,
-                                                           payload={"teacherId": testimonial.teacherId})
+                                    del teachersTestimonials[field][:]
+                                    for testimonial in data[field]:
+                                        teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
+                                        if teacher:
+                                            testimonial.firstName = teacher.firstName
+                                            testimonial.lastName = teacher.lastName
+                                        else:
+                                            raise RegisterNotFound(message="Record not found",
+                                                    status_code=404,
+                                                    payload={"teacherId": testimonial.teacherId})
+                                        teachersTestimonials[field].append(testimonial)
+                            elif document.status in ('3','4') and teachersTestimonials.approvalStatus == '1':
+                                teachersTestimonials.approvalStatus = document.status       
                             break
 
                     school.save()

@@ -9,19 +9,18 @@ from mongoengine import fields, EmbeddedDocument
 from app.models.shared_embedded_documents import Approval
 
 
-class TeacherTestimonial(EmbeddedDocument):
-    id = fields.ObjectIdField(default=fields.ObjectId)
+class Testimonial(EmbeddedDocument):
     teacherId = fields.StringField(required=True)
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
     image = fields.StringField()
     position = fields.StringField(required=True)
     description = fields.StringField(required=True)
-    # approvalStatus = ("1": "pending", "2": "approved", "3": "rejected", "4": "cancelled")
+
+
+class TeacherTestimonial(EmbeddedDocument):
     approvalStatus = fields.StringField(default='1', max_length=1)
-    # visibilityStatus = ("1": "active", "2": "inactive")
-    visibilityStatus = fields.StringField(default='1', max_length=1)
-    isDeleted = fields.BooleanField(default=False)
+    testimonials = fields.EmbeddedDocumentListField(Testimonial, max_length=4)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     approvalHistory = fields.EmbeddedDocumentListField(Approval)

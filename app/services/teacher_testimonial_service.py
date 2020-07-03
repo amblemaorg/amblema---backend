@@ -36,7 +36,6 @@ class TeacherTestimonialService():
             
             if testimonial.testimonials:
                 schema = TeacherTestimonialSchema()
-                #return {"testimonials": schema.dump(testimonial, many=True)}, 200
                 return schema.dump(testimonial), 200
             else:
                 return {'status': 0, 'message': 'There are no testimonials'}, 400
@@ -67,22 +66,20 @@ class TeacherTestimonialService():
                         return {"status": "0", "msg": "Record has a pending approval request"}, 400
                 else:
                     teachersTestimonials = TeacherTestimonial()
-                
-                i = 0
-                for field in schema.dump(data).keys():
-                    del teachersTestimonials[field][:]
-                    for testimonial in data[field]:
-                        teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
-                        if teacher:
-                            testimonial.firstName = teacher.firstName
-                            testimonial.lastName = teacher.lastName
-                        else:
-                            raise RegisterNotFound(message="Record not found",
-                                    status_code=404,
-                                    payload={"teacherId": testimonial.teacherId})
-                        teachersTestimonials[field].append(testimonial)
-                        jsonData[field][i]['image'] = teachersTestimonials[field][i].image
-                        i+=1
+                    i = 0
+                    for field in schema.dump(data).keys():
+                        del teachersTestimonials[field][:]
+                        for testimonial in data[field]:
+                            teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
+                            if teacher:
+                                testimonial.firstName = teacher.firstName
+                                testimonial.lastName = teacher.lastName
+                            else:
+                                raise RegisterNotFound(message="Record not found",
+                                        status_code=404,
+                                        payload={"teacherId": testimonial.teacherId})
+                            teachersTestimonials[field].append(testimonial)
+                            i+=1
 
                 try:
                     request = RequestContentApproval(
@@ -92,7 +89,6 @@ class TeacherTestimonialService():
                         detail=jsonData
                     ).save()
 
-                    teachersTestimonials.approvalStatus = "1"
                     teachersTestimonials.isInApproval = True
                     teachersTestimonials.approvalHistory.append(
                         Approval(
@@ -105,7 +101,6 @@ class TeacherTestimonialService():
                     school.teachersTestimonials = teachersTestimonials
                     school.save()
 
-                    #return {"testimonials": TestimonialSchema().dump(teachersTestimonials.testimonials, many=True)}, 200
                     return schema.dump(teachersTestimonials), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

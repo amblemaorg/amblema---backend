@@ -84,8 +84,8 @@ class RequestContentApproval(Document):
                         if history.id == str(document.id):
                             history.status = document.status
                             teachersTestimonials.isInApproval = False
-                            teachersTestimonials.approvalStatus = document.status
                             if document.status == '2':  # approved
+                                teachersTestimonials.approvalStatus = document.status
                                 schema = TeacherTestimonialSchema(partial=True)
                                 data = schema.load(document.detail)
                                 for field in schema.dump(data).keys():
@@ -100,6 +100,8 @@ class RequestContentApproval(Document):
                                                     status_code=404,
                                                     payload={"teacherId": testimonial.teacherId})
                                         teachersTestimonials[field].append(testimonial)
+                            elif document.status in ('3','4') and teachersTestimonials.approvalStatus == '1':
+                                teachersTestimonials.approvalStatus = document.status       
                             break
 
                     school.save()

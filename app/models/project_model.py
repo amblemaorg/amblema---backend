@@ -13,7 +13,7 @@ from mongoengine import (
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
-from app.models.shared_embedded_documents import Link, ProjectReference
+from app.models.shared_embedded_documents import Link, ProjectReference, ResumePeca
 from app.services.project_service import ProjectService
 from app.models.user_model import User
 
@@ -109,18 +109,6 @@ class StepsProgress(EmbeddedDocument):
             nApprovedSponsor/nSponsor, 4)*100
         self.coordinator = 100 if nCoordinator == 0 else round(
             nApprovedCoordinator/nCoordinator, 4)*100
-
-
-class ResumeSchoolYear(EmbeddedDocument):
-    id = fields.StringField()
-    name = fields.StringField()
-    status = fields.StringField(max_length=1)
-
-
-class ResumePeca(EmbeddedDocument):
-    pecaId = fields.StringField()
-    schoolYear = fields.EmbeddedDocumentField(ResumeSchoolYear)
-    createAt = fields.DateTimeField(default=datetime.utcnow)
 
 
 class Project(Document):
@@ -259,7 +247,8 @@ class Project(Document):
                 "id": str(self.school.id),
                 "name": self.school.name,
                 "code": self.school.code
-            } if self.school else {}
+            } if self.school else {},
+            schoolYears=self.schoolYears
         )
         return reference
 

@@ -151,6 +151,7 @@ class ActivityService():
                                 for activity in peca['lapse{}'.format(lapse)].activities:
                                     if str(activity.id) == id:
                                         activity.name = newActivity.name
+                                        activity.description = newActivity.description
                                         activity.devName = newActivity.devName
                                         activity.hasText = newActivity.hasText
                                         activity.hasDate = newActivity.hasDate
@@ -597,9 +598,10 @@ class ActivityService():
                                 if olympics.date:
                                     peca.scheduleActivity(
                                         devName="olympics__date",
+                                        activityId="mathOlympic",
                                         subject="Olimpíadas matemáticas",
                                         startTime=olympics.date,
-                                        description="Fecha del evento"
+                                        description=olympics.description
                                     )
                             # is inactive
                             else:

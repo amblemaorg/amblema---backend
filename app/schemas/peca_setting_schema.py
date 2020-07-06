@@ -31,6 +31,7 @@ ImageSchema.image = MAImageField(
 
 class InicialWorkshopSchema(Schema):
     name = fields.Str(dump_only=True)
+    description = fields.Str()
     #agreementFile = fields.Nested(FileSchema())
     #agreementDescription = fields.Str()
     #planningMeetingFile = fields.Nested(FileSchema())
@@ -38,6 +39,10 @@ class InicialWorkshopSchema(Schema):
     #teachersMeetingFile = fields.Nested(FileSchema())
     #teachersMeetingDescription = fields.Str()
     isStandard = fields.Bool(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -51,6 +56,10 @@ class LapsePlanningSchema(Schema):
     meetingDescription = fields.Str()
     isStandard = fields.Bool(dump_only=True)
 
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
     @post_load
     def make_document(self, data, **kwargs):
         return LapsePlanning(**data)
@@ -58,11 +67,16 @@ class LapsePlanningSchema(Schema):
 
 class AmbleCoinsSchema(Schema):
     name = fields.Str(dump_only=True)
+    description = fields.Str()
     teachersMeetingFile = fields.Nested(FileSchema())
     teachersMeetingDescription = fields.Str()
     piggyBankDescription = fields.Str()
     piggyBankSlider = fields.List(fields.Nested(ImageSchema()))
     isStandard = fields.Bool(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
     @pre_load
     def process_input(self, data, **kwargs):
@@ -79,11 +93,20 @@ class AnnualPreparationSchema(Schema):
     step4Description = fields.Str()
     isStandard = fields.Bool(dump_only=True)
 
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
 
 class AnnualConventionSchema(Schema):
     name = fields.Str(dump_only=True)
+    description = fields.Str()
     checklist = fields.List(fields.Nested(CheckTemplateSchema()))
     isStandard = fields.Bool(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
     @pre_load
     def process_input(self, data, **kwargs):
@@ -100,10 +123,19 @@ class MathOlympicSchema(Schema):
     date = fields.DateTime(allow_none=True)
     isStandard = fields.Bool(dump_only=True)
 
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
 
 class SpecialLapseActivitySchema(Schema):
     name = fields.Str(dump_only=True)
+    description = fields.Str()
     isStandard = fields.Bool(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
 
 
 class LapseSchema(Schema):

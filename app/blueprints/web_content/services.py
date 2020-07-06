@@ -6,12 +6,18 @@ import operator
 
 from marshmallow import ValidationError
 from mongoengine import Q
+from flask import current_app
 
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.document_metadata import getUniqueFields
 from app.services.generic_service import GenericServices
 from app.blueprints.web_content.models.web_content import WebContent, WebContentSchema
 from app.services.statistics_service import StatisticsService
+from app.models.school_user_model import SchoolUser
+from app.schemas.school_user_schema import SchoolUserSchema
+from app.models.peca_project_model import PecaProject
+from app.models.school_year_model import SchoolYear
+from app.models.project_model import Project
 
 
 class WebContentService(GenericServices):
@@ -55,3 +61,137 @@ class WebContentService(GenericServices):
                 return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:
             return err.messages, 400
+
+
+class SchoolPageContentService():
+
+    def getAllRecords(self):
+        schema = SchoolUserSchema(
+            partial=True, only=('id', 'name', 'coordinate'))
+        schools = SchoolUser.objects(
+            isDeleted=False, coordinate__exists=True, project__schoolYears__exists=True, project__schoolYears__0__exists=True)[:5]
+        return {"records": schema.dump(schools, many=True)}
+
+    def get(self, id):
+
+        currentPeriod = SchoolYear.objects(isDeleted=False, status="1").first()
+
+        school = SchoolUser.objects(id=id, isDeleted=False).first()
+        nearbySchools = SchoolUser.objects(
+            id__ne=id,
+            isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True)[:3]
+        pecasIds = [peca.pecaId for peca in school.project.schoolYears]
+        pecas = PecaProject.objects(
+            id__in=pecasIds, isDeleted=False).order_by('createdAt')[:5]
+        currentPeca = pecas[len(pecas)-1]
+
+        diagnostics = {
+            'wordsPerMinIndex': [],
+            'multiplicationsPerMinIndex': [],
+            'operationsPerMinIndex': []
+        }
+        for peca in pecas:
+            for diag in diagnostics.keys():
+                for lapse in [1, 2, 3]:
+                    diagnostics[diag].append(
+                        {
+                            'label': peca.schoolYearName,
+                            'serie': 'Lapso {}'.format(lapse),
+                            'value': peca.school.diagnostics['lapse{}'.format(
+                                lapse)][diag]
+                        }
+                    )
+        olympicsDescription = ""
+        for lapse in [1, 2, 3]:
+            if currentPeriod.pecaSetting['lapse{}'.format(lapse)].mathOlympic.status == "1":
+                olympicsDescription = currentPeriod.pecaSetting['lapse{}'.format(
+                    lapse)].mathOlympic.description
+
+        actsId = {}
+        activities = []
+        nextActivities = []
+        for lapse in [1, 2, 3]:
+            setting = currentPeriod.pecaSetting['lapse{}'.format(lapse)]
+            if setting.initialWorkshop.status == "1" and 'initialWorkShop' not in actsId:
+                actsId['initialWorkshop'] = setting.initialWorkshop
+                activities.append(
+                    {
+                        'name': setting.initialWorkshop.name,
+                        'description': setting.initialWorkshop.description
+                    })
+            if setting.ambleCoins.status == "1" and 'ambleCoins' not in actsId:
+                actsId['ambleCoins'] = setting.ambleCoins
+                activities.append(
+                    {
+                        'name': setting.ambleCoins.name,
+                        'description': setting.ambleCoins.description
+                    })
+            if setting.annualConvention.status == "1" and 'annualConvention' not in actsId:
+                actsId['annualConvention'] = setting.annualConvention
+                activities.append(
+                    {
+                        'name': setting.annualConvention.name,
+                        'description': setting.annualConvention.description
+                    })
+            if setting.mathOlympic.status == "1" and 'mathOlympic' not in actsId:
+                actsId['mathOlympic'] = setting.mathOlympic
+                activities.append(
+                    {
+                        'name': setting.mathOlympic.name,
+                        'description': setting.mathOlympic.description
+                    })
+            if setting.specialLapseActivity.status == "1" and 'specialLapseActivity' not in actsId:
+                actsId['specialLapseActivity'] = setting.specialLapseActivity
+                activities.append(
+                    {
+                        'name': setting.specialLapseActivity.name,
+                        'description': setting.specialLapseActivity.description
+                    })
+            for genericAct in setting.activities:
+                if genericAct.status == "1" and str(genericAct.id) not in actsId:
+                    actsId[str(genericAct.id)] = genericAct
+                    activities.append(
+                        {
+                            'name': genericAct.name,
+                            'description': genericAct.description
+                        })
+        if currentPeriod.pecaSetting.environmentalProject.name:
+            activities.append(
+                {
+                    'name': currentPeriod.pecaSetting.environmentalProject.name,
+                    'description': currentPeriod.pecaSetting.environmentalProject.description
+                }
+            )
+        for act in currentPeca.schedule:
+            if act.activityId in actsId:
+                nextActivities.append({
+                    'name': actsId[act.activityId].name,
+                    'description': actsId[act.activityId].description,
+                    'date': act.startTime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+                })
+
+        schema = SchoolUserSchema(
+            partial=True, only=(
+                'id',
+                'name',
+                'slider',
+                'nTeachers',
+                'nAdministrativeStaff',
+                'nLaborStaff',
+                'olympicsSummary',
+                'activitiesSlider',
+                'teachersTestimonials'))
+        data = schema.dump(school)
+        data['coordinator'] = school.project.coordinator.name
+        data['sponsor'] = school.project.sponsor.name
+        data['address'] = '{}, {}, Venezuela'.format(
+            school.addressMunicipality.name, school.addressState.name)
+        data['nearbySchools'] = SchoolUserSchema(
+            partial=True, only=('id', 'name', 'image')).dump(nearbySchools, many=True)
+        data['nStudents'] = peca.school.nStudents
+        data['diagnostics'] = diagnostics
+        data['olympicsSummary']['description'] = olympicsDescription
+        data['activities'] = activities
+        data['nextActivities'] = nextActivities
+
+        return data, 200

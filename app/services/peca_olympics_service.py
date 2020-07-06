@@ -1,5 +1,7 @@
 # app/services/peca_amblecoins_service.py
 
+import copy
+
 from flask import current_app
 from marshmallow import ValidationError
 
@@ -7,6 +9,7 @@ from app.models.peca_project_model import PecaProject
 from app.models.peca_olympics_model import Olympics, Student
 from app.schemas.peca_olympics_schema import OlympicsSchema, StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
+from app.models.school_user_model import SchoolUser
 
 
 class OlympicsService():
@@ -88,6 +91,20 @@ class OlympicsService():
                     peca['lapse{}'.format(
                         lapse)].olympics = olympics
                     peca.save()
+                    school = SchoolUser.objects(
+                        id=peca.project.school.id, isDeleted=False).first()
+                    school.olympicsSummary.inscribed += 1
+                    if student.status == "2":
+                        school.olympicsSummary.classified += 1
+                        if student.result:
+                            if student.result == "1":
+                                school.olympicsSummary.medalsGold += 1
+                            elif student.result == "2":
+                                school.olympicsSummary.medalsSilver += 1
+                            elif student.result == "3":
+                                school.olympicsSummary.medalsBronze += 1
+                    school.save()
+
                     return schema.dump(student), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -116,6 +133,7 @@ class OlympicsService():
                 data = schema.load(jsonData, partial=True)
                 record = peca['lapse{}'.format(
                     lapse)].olympics.students.filter(id=studentId).first()
+                oldRecord = copy.copy(record)
                 if not record:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
@@ -131,11 +149,29 @@ class OlympicsService():
                     for student in peca['lapse{}'.format(lapse)].olympics.students:
                         if student.id == studentId:
                             student = record
-                            break
-                    try:
-                        peca.save()
-                    except Exception as e:
-                        return {'status': 0, 'message': str(e)}, 400
+                            try:
+                                peca.save()
+                                if student.result != oldRecord.result:
+                                    school = SchoolUser.objects(
+                                        id=peca.project.school.id, isDeleted=False).first()
+                                    if oldRecord.result:
+                                        if oldRecord.result == "1":
+                                            school.olympicsSummary.medalsGold -= 1
+                                        elif oldRecord.result == "2":
+                                            school.olympicsSummary.medalsSilver -= 1
+                                        elif oldRecord.result == "3":
+                                            school.olympicsSummary.medalsBronze -= 1
+                                    if student.result:
+                                        if student.result == "1":
+                                            school.olympicsSummary.medalsGold += 1
+                                        elif student.result == "2":
+                                            school.olympicsSummary.medalsSilver += 1
+                                        elif student.result == "3":
+                                            school.olympicsSummary.medalsBronze += 1
+                                    school.save()
+                                break
+                            except Exception as e:
+                                return {'status': 0, 'message': str(e)}, 400
                 return schema.dump(record), 200
 
             except ValidationError as err:
@@ -174,6 +210,18 @@ class OlympicsService():
             if found:
                 try:
                     peca.save()
+                    school = SchoolUser.objects(
+                        id=peca.project.school.id, isDeleted=False).first()
+                    school.olympicsSummary.inscribed -= 1
+                    if record.result:
+                        school.olympicsSummary.classified -= 1
+                        if record.result == "1":
+                            school.olympicsSummary.medalsGold -= 1
+                        elif record.result == "2":
+                            school.olympicsSummary.medalsSilver -= 1
+                        elif record.result == "3":
+                            school.olympicsSummary.medalsBronze -= 1
+                    school.save()
                     return {"message": "Record deleted successfully"}, 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

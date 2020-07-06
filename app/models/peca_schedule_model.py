@@ -8,6 +8,7 @@ from mongoengine import EmbeddedDocument, fields
 class ScheduleActivity(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
     devName = fields.StringField()
+    activityId = fields.StringField()
     subject = fields.StringField()
     startTime = fields.DateTimeField()
     endTime = fields.DateTimeField()

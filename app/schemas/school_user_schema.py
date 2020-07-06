@@ -1,15 +1,23 @@
 # app/schemas/school_user_schema.py
 
 
-from marshmallow import validate, EXCLUDE
+from marshmallow import validate, EXCLUDE, Schema
 
 from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema, CoordinateSchema, ImageStatusSchema
 from app.schemas import fields
-from app.helpers.ma_schema_fields import MAImageField
+from app.helpers.ma_schema_fields import MAImageField, MAPointField
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf, Range, validate_image, validate_email, Length)
 from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
+
+
+class OlympicsSummarySchema(Schema):
+    inscribed = fields.Int()
+    classified = fields.Int()
+    medalsGold = fields.Int()
+    medalsSilver = fields.Int()
+    medalsBronze = fields.Int()
 
 
 class SchoolUserSchema(UserSchema):
@@ -35,7 +43,7 @@ class SchoolUserSchema(UserSchema):
             ('sector', 'neighborhood', 'hamlet')
         ))
     addressZone = fields.Str(allow_none=True)
-    coordinate = fields.Nested(CoordinateSchema)
+    coordinate = MAPointField()
     principalFirstName = fields.Str()
     principalLastName = fields.Str()
     principalEmail = fields.Str(validate=validate_email)
@@ -78,6 +86,7 @@ class SchoolUserSchema(UserSchema):
     activitiesSlider = fields.List(MAImageField(), dump_only=True)
     teachersTestimonials = fields.List(fields.Nested(
         TeacherTestimonialSchema), validate=Length(max=4), dump_only=True)
+    olympicsSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
 
     class Meta:
         unknown = EXCLUDE

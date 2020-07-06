@@ -64,31 +64,13 @@ class CoordinatorUser(User):
         return project
 
     def addProject(self, project):
-        projectRef = ProjectReference(
-            id=str(project.id),
-            code=project.code.zfill(7),
-            coordinator=DocumentReference(
-                id=str(self.pk),
-                name=self.name))
-        if project.sponsor:
-            projectRef.sponsor = DocumentReference(id=str(project.sponsor.id),
-                                                   name=project.sponsor.name)
-        if project.school:
-            projectRef.school = SchoolReference(id=str(project.school.id),
-                                                name=project.school.name,
-                                                code=project.school.code)
-        self.projects.append(projectRef)
+        self.projects.append(project.getReference())
         self.save()
 
     def updateProject(self, project):
         for myProject in self.projects:
             if myProject.id == str(project.id):
-                if project.sponsor:
-                    myProject.sponsor = DocumentReference(id=str(project.sponsor.id),
-                                                          name=project.sponsor.name)
-                if project.school:
-                    myProject.school = DocumentReference(id=str(project.school.id),
-                                                         name=project.school.name)
+                myProject = project.getReference()
                 self.save()
                 break
 

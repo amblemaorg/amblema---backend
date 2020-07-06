@@ -74,7 +74,7 @@ class ProjectService():
     def createPeca(self, project):
         from app.models.peca_project_model import PecaProject
         from app.models.school_year_model import SchoolYear
-        from app.models.project_model import ResumePeca, ResumeSchoolYear
+        from app.models.shared_embedded_documents import ResumePeca, ResumeSchoolYear
         from app.models.peca_activities_slider_model import ActivitiesSlider
 
         # create peca project

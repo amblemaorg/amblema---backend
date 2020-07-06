@@ -101,6 +101,7 @@ class LapseSchema(Schema):
 
 class EnvironmentalProjectSchema(Schema):
     name = fields.Str(required=True)
+    description = fields.Str()
     lapse1 = fields.Nested(LapseSchema())
     lapse2 = fields.Nested(LapseSchema())
     lapse3 = fields.Nested(LapseSchema())

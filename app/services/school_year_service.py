@@ -14,6 +14,9 @@ from app.schemas.project_schema import ProjectSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.services.generic_service import GenericServices
 from app.models.peca_setting_model import EnvironmentalProject
+from app.models.school_user_model import SchoolUser
+from app.models.sponsor_user_model import SponsorUser
+from app.models.coordinator_user_model import CoordinatorUser
 
 
 class SchoolYearService(GenericServices):
@@ -112,6 +115,26 @@ class SchoolYearService(GenericServices):
                 project.save()
                 peca.isDeleted = True
                 peca.save()
+                reference = project.getReference()
+                SchoolUser.objects(isDeleted=False, id=project.school.id).update(
+                    project=reference)
+                sponsor = SponsorUser.objects(
+                    isDeleted=False, id=project.sponsor.id).first()
+                if sponsor:
+                    for project in sponsor.projects:
+                        if project.id == str(project.id):
+                            project = reference
+                            sponsor.save()
+                            break
+                coordinator = CoordinatorUser.objects(
+                    isDeleted=False, id=project.coordinator.id).first()
+                if coordinator:
+                    for project in coordinator.projects:
+                        if project.id == str(project.id):
+                            project = reference
+                            coordinator.save()
+                            break
+
                 return {'msg': 'Record deleted'}, 200
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400
@@ -130,6 +153,25 @@ class SchoolYearService(GenericServices):
 
             try:
                 project.createPeca()
+                reference = project.getReference()
+                SchoolUser.objects(isDeleted=False, id=project.school.id).update(
+                    project=reference)
+                sponsor = SponsorUser.objects(
+                    isDeleted=False, id=project.sponsor.id).first()
+                if sponsor:
+                    for project in sponsor.projects:
+                        if project.id == str(project.id):
+                            project = reference
+                            sponsor.save()
+                            break
+                coordinator = CoordinatorUser.objects(
+                    isDeleted=False, id=project.coordinator.id).first()
+                if coordinator:
+                    for project in coordinator.projects:
+                        if project.id == str(project.id):
+                            project = reference
+                            coordinator.save()
+                            break
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400

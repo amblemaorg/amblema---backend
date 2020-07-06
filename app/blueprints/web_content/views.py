@@ -9,7 +9,7 @@ from flask import send_from_directory
 from app.blueprints.web_content import web_content_blueprint
 from app.blueprints.web_content.models.web_content import WebContent, WebContentSchema
 from app.blueprints.web_content.models.post_model import Post, PostSchema
-from app.blueprints.web_content.services import WebContentService
+from app.blueprints.web_content.services import WebContentService, SchoolPageContentService
 from app.helpers.handler_request import getQueryParams
 from app.helpers.query_filter import MongoQueryFilter
 from app.services.generic_service import GenericServices
@@ -34,6 +34,20 @@ class WebContentView(MethodView):
         if 'page' in request.args:
             page = [request.args.get('page')]
         return self.service.saveRecord(jsonData, only=page)
+
+
+class SchoolPagesView(MethodView):
+    service = SchoolPageContentService()
+
+    def get(self):
+        return self.service.getAllRecords()
+
+
+class SchoolPageView(MethodView):
+    service = SchoolPageContentService()
+
+    def get(self, id):
+        return self.service.get(id)
 
 
 class PostView(MethodView):
@@ -115,6 +129,8 @@ class FileView(MethodView):
 
 
 webContentView = WebContentView.as_view('webContentView')
+schoolPageView = SchoolPageView.as_view('schoolPageView')
+schoolPagesView = SchoolPagesView.as_view('schoolPagesView')
 postView = PostView.as_view('postView')
 postViewPaginated = PostViewPaginated.as_view('postViewPaginated')
 postHandlerView = PostHandlerView.as_view('postHandlerView')
@@ -125,6 +141,18 @@ web_content_blueprint.add_url_rule(
     '/webcontent',
     view_func=webContentView,
     methods=['POST', 'GET']
+)
+
+web_content_blueprint.add_url_rule(
+    '/schoolspage',
+    view_func=schoolPagesView,
+    methods=['GET']
+)
+
+web_content_blueprint.add_url_rule(
+    '/schoolspage/<string:id>',
+    view_func=schoolPageView,
+    methods=['GET']
 )
 
 web_content_blueprint.add_url_rule(

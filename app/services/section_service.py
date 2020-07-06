@@ -51,8 +51,9 @@ class SectionService():
                     )
                 try:
                     schoolYear = peca.schoolYear.fetch()
-                    section.goals = schoolYear.pecaSetting.goalSetting['grade{}'.format(
-                        section.grade)]
+                    if section.grade != "0":
+                        section.goals = schoolYear.pecaSetting.goalSetting['grade{}'.format(
+                            section.grade)]
                     peca.school.sections.append(section)
 
                     for i in range(1, 4):

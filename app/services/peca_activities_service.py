@@ -115,6 +115,7 @@ class ActivitiesPecaService():
                             schAct = schema.load(jsonData)
                             peca.scheduleActivity(
                                 devName="activities__{}".format(activityId),
+                                activityId=str(activityId),
                                 subject=activity.name,
                                 startTime=schAct['date'],
                                 description=""
@@ -131,6 +132,7 @@ class ActivitiesPecaService():
                         if activity.hasDate and activity.date != oldActivity.date:
                             peca.scheduleActivity(
                                 devName="activities__{}".format(activityId),
+                                activityId=str(activityId),
                                 subject=activity.name,
                                 startTime=activity.date,
                                 description=""

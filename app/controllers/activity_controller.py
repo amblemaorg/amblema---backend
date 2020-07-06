@@ -3,6 +3,7 @@
 
 from flask import request
 from flask_restful import Resource
+from app.helpers.handler_authorization import (jwt_required)
 
 from app.services.activity_service import ActivityService, Activity, ActivitySchema
 from app.services.amblecoin_service import AmbleCoinService

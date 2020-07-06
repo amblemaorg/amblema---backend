@@ -20,6 +20,7 @@ class ActivitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
     devName = fields.Str(dump_only=True)
+    description = fields.Str()
     hasText = fields.Bool(required=True, default=False)
     hasDate = fields.Bool(required=True, default=False)
     hasFile = fields.Bool(required=True, default=False)

@@ -34,31 +34,13 @@ class SponsorUser(User):
 
     def addProject(self, project):
 
-        projectRef = ProjectReference(
-            id=str(project.id),
-            code=project.code.zfill(7),
-            sponsor=DocumentReference(
-                id=str(self.pk),
-                name=self.name))
-        if project.coordinator:
-            projectRef.coordinator = DocumentReference(id=str(project.coordinator.id),
-                                                       name=project.coordinator.name)
-        if project.school:
-            projectRef.school = SchoolReference(id=str(project.school.id),
-                                                name=project.school.name,
-                                                code=project.school.code)
-        self.projects.append(projectRef)
+        self.projects.append(project.getReference())
         self.save()
 
     def updateProject(self, project):
         for myProject in self.projects:
             if myProject.id == str(project.id):
-                if project.coordinator:
-                    myProject.coordinator = DocumentReference(id=str(project.coordinator.id),
-                                                              name=project.coordinator.name)
-                if project.school:
-                    myProject.school = DocumentReference(id=str(project.school.id),
-                                                         name=project.school.name)
+                myProject = project.getReference()
                 self.save()
                 break
 

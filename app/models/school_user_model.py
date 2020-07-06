@@ -51,8 +51,7 @@ class SchoolUser(User):
     slider = fields.EmbeddedDocumentListField(ImageStatus)
     activitiesSlider = fields.ListField(fields.StringField())
     phase = fields.StringField(max_length=1, default="1")
-    teachersTestimonials = fields.EmbeddedDocumentListField(
-        TeacherTestimonial, max_length=4)
+    teachersTestimonials = fields.EmbeddedDocumentField(TeacherTestimonial)
     yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
     olympicsSummary = fields.EmbeddedDocumentField(

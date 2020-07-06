@@ -54,7 +54,7 @@ class PecaProject(Document):
         if not document.id:
             service.initPecaSetting(document)
 
-    def scheduleActivity(self, devName, subject, startTime, description):
+    def scheduleActivity(self, devName, activityId, subject, startTime, description):
         from app.models.peca_schedule_model import ScheduleActivity
 
         try:
@@ -69,6 +69,7 @@ class PecaProject(Document):
                 self.schedule.append(
                     ScheduleActivity(
                         devName=devName,
+                        activityId=activityId,
                         subject=subject,
                         startTime=startTime,
                         endTime=startTime,

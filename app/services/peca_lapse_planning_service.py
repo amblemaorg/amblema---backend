@@ -119,6 +119,7 @@ class LapsePlanningService():
                     if lapsePlanning.meetingDate != oldLapsePlanning.meetingDate:
                         peca.scheduleActivity(
                             devName="lapseplanning__meetingDate",
+                            activityId="lapsePlanning",
                             subject="Planificación de lapso {}".format(lapse),
                             startTime=lapsePlanning.meetingDate,
                             description="Fecha de reunión"

@@ -25,6 +25,22 @@ class MAPolygonField(fields.Field):
         return polygon
 
 
+class MAPointField(fields.Field):
+    def _serialize(self, value, attr, obj, **kwargs):
+        if not value:
+            return ""
+        coordinate = {}
+        coordinate['latitude'] = value["coordinates"][0]
+        coordinate['longitude'] = value["coordinates"][1]
+        return coordinate
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        if value:
+            value = {"type": "Point", "coordinates": [
+                value['latitude'], value['longitude']]}
+        return value
+
+
 class MAReferenceField(fields.Field):
     """Marshmallow field that validate a reference field
     """

@@ -49,11 +49,14 @@ class PecaProjectService():
             isDeleted=False, id=id).first()
         if peca:
             schema = PecaProjectSchema()
+            peca.school.sections = peca.school.sections.filter(isDeleted=False)
+            for section in peca.school.sections:
+                section.students = section.students.filter(isDeleted=False)
             data = schema.dump(peca)
             school = SchoolUser.objects(
                 id=peca.project.school.id).first()
             data['school']['teachers'] = TeacherSchema().dump(
-                school.teachers, many=True)
+                school.teachers.filter(isDeleted=False), many=True)
             data['school']['slider'] = ImageStatusSchema().dump(
                 school.slider, many=True)
             data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(

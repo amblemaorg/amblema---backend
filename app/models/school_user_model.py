@@ -12,6 +12,14 @@ from app.models.teacher_testimonial_model import TeacherTestimonial
 from app.models.peca_yearbook_model import Entity
 
 
+class OlympicsSummary(EmbeddedDocument):
+    inscribed = fields.IntField(default=0)
+    classified = fields.IntField(default=0)
+    medalsGold = fields.IntField(default=0)
+    medalsSilver = fields.IntField(default=0)
+    medalsBronze = fields.IntField(default=0)
+
+
 class SchoolUser(User):
     code = fields.StringField(required=True, unique_c=True)
     phone = fields.StringField(required=True)
@@ -19,7 +27,7 @@ class SchoolUser(User):
     schoolType = fields.StringField(null=True, max_length=1)
     addressZoneType = fields.StringField(max_length=1, null=True)
     addressZone = fields.StringField(null=True)
-    coordinate = fields.EmbeddedDocumentField(Coordinate)
+    coordinate = fields.PointField()
     principalFirstName = fields.StringField()
     principalLastName = fields.StringField()
     principalEmail = fields.EmailField()
@@ -46,34 +54,16 @@ class SchoolUser(User):
     teachersTestimonials = fields.EmbeddedDocumentField(TeacherTestimonial)
     yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
+    olympicsSummary = fields.EmbeddedDocumentField(
+        OlympicsSummary, default=OlympicsSummary())
 
     def addProject(self, project):
-
-        projectRef = ProjectReference(
-            id=str(project.id),
-            code=project.code.zfill(7),
-            school=SchoolReference(
-                id=str(self.pk),
-                name=self.name,
-                code=self.code))
-        if project.coordinator:
-            projectRef.coordinator = DocumentReference(id=str(project.coordinator.id),
-                                                       name=project.coordinator.name)
-        if project.sponsor:
-            projectRef.sponsor = DocumentReference(id=str(project.sponsor.id),
-                                                   name=project.sponsor.name)
-        self.project = projectRef
+        self.project = project.getReference()
         self.save()
 
     def updateProject(self, project):
-
         if self.project.id == str(project.id):
-            if project.coordinator:
-                self.project.coordinator = DocumentReference(id=str(project.coordinator.id),
-                                                             name=project.coordinator.name)
-            if project.sponsor:
-                self.project.sponsor = DocumentReference(id=str(project.sponsor.id),
-                                                         name=project.sponsor.name)
+            self.project = project.getReference()
             self.save()
 
     def removeProject(self):

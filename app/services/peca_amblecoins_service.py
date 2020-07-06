@@ -58,14 +58,16 @@ class AmblecoinsPecaService():
                     if ambleCoins.meetingDate != oldAmblecoins.meetingDate:
                         peca.scheduleActivity(
                             devName="amblecoins__meetingDate",
-                            subject="AmbleMonedas",
+                            activityId="",  # no showed on next activities web
+                            subject="AmbLeMonedas - reunión",
                             startTime=ambleCoins.meetingDate,
                             description="Fecha de reunión"
                         )
                     if ambleCoins.elaborationDate != oldAmblecoins.elaborationDate:
                         peca.scheduleActivity(
                             devName="amblecoins__elaborationDate",
-                            subject="AmbleMonedas",
+                            activityId="mathOlympic",  # showed on next activities web
+                            subject="AmbLeMonedas - elaboración",
                             startTime=ambleCoins.elaborationDate,
                             description="Fecha de elaboración"
                         )

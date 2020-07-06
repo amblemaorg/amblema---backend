@@ -12,6 +12,7 @@ from app.models.monitoring_activity_model import MonitoringActivity
 
 class InitialWorshop(EmbeddedDocument):
     name = fields.StringField(default="Taller inicial")
+    description = fields.StringField(default="")
     # agreementFile = fields.EmbeddedDocumentField(
     #    Link, is_file=True)
     #agreementDescription = fields.StringField()
@@ -37,6 +38,7 @@ class LapsePlanning(EmbeddedDocument):
 
 class AmbleCoins(EmbeddedDocument):
     name = fields.StringField(default="AmbLeMonedas")
+    description = fields.StringField(default="")
     teachersMeetingFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     teachersMeetingDescription = fields.StringField()
@@ -58,6 +60,7 @@ class AnnualPreparation(EmbeddedDocument):
 
 class AnnualConvention(EmbeddedDocument):
     name = fields.StringField(default="Convención anual")
+    description = fields.StringField(default="")
     checklist = fields.EmbeddedDocumentListField(CheckTemplate)
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
@@ -65,9 +68,9 @@ class AnnualConvention(EmbeddedDocument):
 
 class MathOlympic(EmbeddedDocument):
     name = fields.StringField(default="Olimpíadas matemáticas")
+    description = fields.StringField()
     file = fields.EmbeddedDocumentField(
         Link, is_file=True)
-    description = fields.StringField()
     date = fields.DateTimeField(null=True)
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
@@ -75,6 +78,7 @@ class MathOlympic(EmbeddedDocument):
 
 class SpecialLapseActivity(EmbeddedDocument):
     name = fields.StringField(default="Actividad especial de lapso")
+    description = fields.StringField(default="")
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
 

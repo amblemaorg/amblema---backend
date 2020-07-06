@@ -39,6 +39,7 @@ class Lapse(EmbeddedDocument):
 
 class EnvironmentalProject(EmbeddedDocument):
     name = fields.StringField()
+    description = fields.StringField(default="")
     lapse1 = fields.EmbeddedDocumentField(Lapse)
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)

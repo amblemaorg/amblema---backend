@@ -16,12 +16,25 @@ class SchoolReference(EmbeddedDocument):
     code = fields.StringField()
 
 
+class ResumeSchoolYear(EmbeddedDocument):
+    id = fields.StringField()
+    name = fields.StringField()
+    status = fields.StringField(max_length=1)
+
+
+class ResumePeca(EmbeddedDocument):
+    pecaId = fields.StringField()
+    schoolYear = fields.EmbeddedDocumentField(ResumeSchoolYear)
+    createAt = fields.DateTimeField(default=datetime.utcnow)
+
+
 class ProjectReference(EmbeddedDocument):
     id = fields.StringField()
     code = fields.StringField()
     coordinator = fields.EmbeddedDocumentField(DocumentReference)
     sponsor = fields.EmbeddedDocumentField(DocumentReference)
     school = fields.EmbeddedDocumentField(SchoolReference)
+    schoolYears = fields.EmbeddedDocumentListField(ResumePeca)
 
 
 class Link(EmbeddedDocument):

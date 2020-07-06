@@ -10,6 +10,7 @@ from app.models.shared_embedded_documents import Link, CheckTemplate
 class Activity(EmbeddedDocument):
     id = fields.ObjectIdField(default=fields.ObjectId)
     name = fields.StringField()
+    description = fields.StringField(default="")
     devName = fields.StringField()
     hasText = fields.BooleanField(required=True, default=False)
     hasDate = fields.BooleanField(required=True, default=False)

@@ -2,6 +2,7 @@
 
 from flask import current_app
 from marshmallow import ValidationError
+from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_setting_model import AmbleCoins
@@ -25,6 +26,7 @@ class AmbleCoinService():
             return schema.dump(ambleCoins), 200
 
     def save(self, lapse, jsonData, files=None):
+        from app.models.peca_project_model import PecaProject
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -49,6 +51,21 @@ class AmbleCoinService():
                     schoolYear.pecaSetting['lapse{}'.format(
                         lapse)].ambleCoins = ambleCoins
                     schoolYear.save()
+                    if ambleCoins.status == "1":
+                        bulk_operations = []
+                        for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+                            ambleCoinsPeca = peca['lapse{}'.format(
+                                lapse)].ambleCoins
+                            ambleCoinsPeca.teachersMeetingFile = ambleCoins.teachersMeetingFile
+                            ambleCoinsPeca.teachersMeetingDescription = ambleCoins.teachersMeetingDescription
+                            ambleCoinsPeca.piggyBankDescription = ambleCoins.piggyBankDescription
+                            ambleCoinsPeca.piggyBankSlider = ambleCoins.piggyBankSlider
+
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
                     return schema.dump(ambleCoins), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

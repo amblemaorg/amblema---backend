@@ -60,9 +60,10 @@ class MathOlympicService():
                             if mathOlympic.date and mathOlympic.date != olympicsPeca.date:
                                 peca.scheduleActivity(
                                     devName="olympics__date",
+                                    activityId="mathOlympic",
                                     subject="Olimpíadas matemáticas",
                                     startTime=mathOlympic.date,
-                                    description="Fecha del evento"
+                                    description=mathOlympic.description
                                 )
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))

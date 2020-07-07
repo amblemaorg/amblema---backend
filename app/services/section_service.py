@@ -197,14 +197,10 @@ class SectionService():
                                    payload={"pecaId": pecaId, "sectionId": sectionId})
 
     def checkForDuplicated(self, peca, newSection):
-        section = PecaProject.objects.filter(
-            id=peca.id,
-            school__sections__isDeleted=False,
-            school__sections__grade=newSection.grade,
-            school__sections__name=newSection.name
-        ).only('id').first()
-        if section:
-            return True
+
+        for section in peca.school.sections.filter(isDeleted=False):
+            if section.id != newSection.id and section.grade == newSection.grade and section.name == newSection.name:
+                return True
         return False
 
         """

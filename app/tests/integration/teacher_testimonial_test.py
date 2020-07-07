@@ -215,14 +215,18 @@ class TeacherTestimonialTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("1", result['approvalStatus'])
         self.assertEqual(True, result['isInApproval'])
         self.assertEqual("1", result['approvalHistory'][0]['status'])
-        self.assertEqual(2, len(result['testimonials']))
-        self.assertEqual(self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
-        self.assertEqual(self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
-        self.assertEqual("Testimonio test A", result['testimonials'][0]['description'])
-        self.assertEqual("Testimonio test B", result['testimonials'][1]['description'])
+        self.assertEqual(
+            2, len(result['approvalHistory'][0]['detail']['testimonials']))
+        self.assertEqual(
+            self.school.teachers[0].firstName, result['approvalHistory'][0]['detail']['testimonials'][0]['firstName'])
+        self.assertEqual(
+            self.school.teachers[1].firstName, result['approvalHistory'][0]['detail']['testimonials'][1]['firstName'])
+        self.assertEqual("Testimonio test A",
+                         result['approvalHistory'][0]['detail']['testimonials'][0]['description'])
+        self.assertEqual("Testimonio test B",
+                         result['approvalHistory'][0]['detail']['testimonials'][1]['description'])
         testimonials = result
 
         # approve request testimonials
@@ -243,14 +247,17 @@ class TeacherTestimonialTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("2", result['approvalStatus'])
         self.assertEqual(False, result['isInApproval'])
         self.assertEqual("2", result['approvalHistory'][0]['status'])
         self.assertEqual(2, len(result['testimonials']))
-        self.assertEqual(self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
-        self.assertEqual(self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
-        self.assertEqual("Testimonio test A", result['testimonials'][0]['description'])
-        self.assertEqual("Testimonio test B", result['testimonials'][1]['description'])
+        self.assertEqual(
+            self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
+        self.assertEqual(
+            self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
+        self.assertEqual("Testimonio test A",
+                         result['testimonials'][0]['description'])
+        self.assertEqual("Testimonio test B",
+                         result['testimonials'][1]['description'])
 
         # update teacher testimonials
         requestData = {
@@ -284,13 +291,16 @@ class TeacherTestimonialTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("2", result['approvalStatus'])
         self.assertEqual(True, result['isInApproval'])
         self.assertEqual("1", result['approvalHistory'][1]['status'])
-        self.assertEqual(len(testimonials['testimonials']), len(result['testimonials']))
-        self.assertEqual(self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
-        self.assertEqual(self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
-        self.assertEqual(testimonials['testimonials'][0]['description'], result['testimonials'][0]['description'])
+        self.assertEqual(2, len(
+            result['testimonials']))
+        self.assertEqual(
+            self.school.teachers[0].firstName, result['testimonials'][0]['firstName'])
+        self.assertEqual(
+            self.school.teachers[1].firstName, result['testimonials'][1]['firstName'])
+        self.assertEqual('Testimonio test AA',
+                         result['approvalHistory'][1]['detail']['testimonials'][0]['description'])
         testimonials = result
 
         # cancel request testimonials

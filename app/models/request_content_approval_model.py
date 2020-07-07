@@ -83,28 +83,15 @@ class RequestContentApproval(Document):
                     for history in teachersTestimonials.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
+                            history.comments = document.comments
                             teachersTestimonials.isInApproval = False
                             if document.status == '2':  # approved
-                                teachersTestimonials.approvalStatus = document.status
                                 schema = TeacherTestimonialSchema(partial=True)
                                 data = schema.load(document.detail)
-                                for field in schema.dump(data).keys():
-                                    del teachersTestimonials[field][:]
-                                    for testimonial in data[field]:
-                                        teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
-                                        if teacher:
-                                            testimonial.firstName = teacher.firstName
-                                            testimonial.lastName = teacher.lastName
-                                        else:
-                                            raise RegisterNotFound(message="Record not found",
-                                                    status_code=404,
-                                                    payload={"teacherId": testimonial.teacherId})
-                                        teachersTestimonials[field].append(testimonial)
-                            elif document.status in ('3','4') and teachersTestimonials.approvalStatus == '1':
-                                teachersTestimonials.approvalStatus = document.status       
+                                for field in data.keys():
+                                    teachersTestimonials[field] = data[field]
+                            school.save()
                             break
-
-                    school.save()
                 # activities
                 elif document.type == "3":
                     fields = ['date', 'uploadedFile', 'checklist']
@@ -289,6 +276,7 @@ class RequestContentApproval(Document):
                                     lapsePlanning[field] = data[field]
                             peca.save()
                             break
+                # activities slider
                 elif document.type == '9':
                     peca = PecaProject.objects(
                         id=document.detail['pecaId']).first()

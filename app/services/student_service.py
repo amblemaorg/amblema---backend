@@ -92,10 +92,7 @@ class StudentService():
                         for field in schema.dump(data).keys():
                             student[field] = data[field]
                         if self.checkForDuplicated(section, student):
-                            raise ValidationError(
-                                {"name": [{"status": "5",
-                                           "msg": "Duplicated record found: {}".format(student.firstName)}]}
-                            )
+                            return {"status": "1", "msg": "Duplicated record found"}, 400
                         try:
                             peca.save()
                             return schema.dump(student), 200

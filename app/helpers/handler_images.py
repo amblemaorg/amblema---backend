@@ -34,8 +34,9 @@ def upload_image(imageBase64, folder, size=None):
 
         imageBase64 = imageBase64.replace(" ", "+")
         if ext in [".jpe", ".jpeg"]:
-            ext = '.jpg'
-            dataImage = imageBase64.lstrip('data:image/jpeg;base64')
+            #ext = '.jpg'
+            dataImage = imageBase64.lstrip(
+                'data:image/{};base64'.format(ext[1:]))
         elif ext == ".png":
             dataImage = imageBase64.lstrip('data:image/png;base64')
         else:

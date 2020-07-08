@@ -77,36 +77,36 @@ class TeacherService():
             id=schoolId,
             teachers__id=teacherId,
             teachers__isDeleted=False
-        ).only('teachers').first()
+        ).first()
 
         if school:
-            try:
-                schema = TeacherSchema()
-                data = schema.load(jsonData)
-
-                teacher = school.teachers.filter(
-                    id=teacherId, isDeleted=False).first()
-
-                for field in schema.dump(data).keys():
-                    teacher[field] = data[field]
-                duplicated = self.checkForDuplicated(schoolId, teacher)
-                if duplicated:
-                    raise ValidationError(
-                        {duplicated: [{"status": "5",
-                                       "msg": "Duplicated record found"}]}
-                    )
+            teacher = school.teachers.filter(
+                isDeleted=False, id=teacherId).first()
+            if teacher:
                 try:
-                    SchoolUser.objects(
-                        id=schoolId,
-                        teachers__id=teacherId,
-                        teachers__isDeleted=False,
-                    ).update(set__teachers__S=teacher)
-                    return schema.dump(teacher), 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
+                    schema = TeacherSchema()
+                    data = schema.load(jsonData)
 
-            except ValidationError as err:
-                return err.normalized_messages(), 400
+                    for field in schema.dump(data).keys():
+                        teacher[field] = data[field]
+                    duplicated = self.checkForDuplicated(schoolId, teacher)
+                    if duplicated:
+                        raise ValidationError(
+                            {duplicated: [{"status": "5",
+                                           "msg": "Duplicated record found"}]}
+                        )
+                    try:
+                        school.save()
+                        return schema.dump(teacher), 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
+
+                except ValidationError as err:
+                    return err.normalized_messages(), 400
+            else:
+                RegisterNotFound(message="Record not found",
+                                 status_code=404,
+                                 payload={"teacherId": teacherId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -124,11 +124,12 @@ class TeacherService():
             Q(id=schoolId)
             & Q(teachers__isDeleted__ne=True)
             & Q(teachers__id=teacherId)
-        ).only('teachers').first()
+        ).first()
 
         if school:
-            try:
-                teacher = school.teachers.filter(id=teacherId).first()
+            teacher = school.teachers.filter(
+                id=teacherId, isDeleted=False).first()
+            if teacher:
                 teacher.isDeleted = True
                 try:
                     SchoolUser.objects(
@@ -151,9 +152,10 @@ class TeacherService():
                     return "Record deleted successfully", 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
-
-            except ValidationError as err:
-                return err.normalized_messages(), 400
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"teacherId": teacherId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -166,7 +168,7 @@ class TeacherService():
         ).only('teachers').first()
 
         if school:
-            for teacher in school.teachers:
+            for teacher in school.teachers.filter(isDeleted=False):
                 if teacher.email == newTeacher.email and teacher.id != newTeacher.id:
                     return 'email'
                 elif teacher.cardId == newTeacher.cardId and teacher.cardType == newTeacher.cardType and teacher.id != newTeacher.id:

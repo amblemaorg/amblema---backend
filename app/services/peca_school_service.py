@@ -7,6 +7,7 @@ import copy
 
 from flask import current_app
 from marshmallow import ValidationError
+from mongoengine import fields
 
 from app.models.peca_project_model import PecaProject
 from app.schemas.peca_project_schema import SchoolSchema
@@ -68,6 +69,8 @@ class SchoolService():
                         if str(image['image']).startswith('data'):
                             image['image'] = upload_image(
                                 image['image'], folder, None)
+                        if 'id' not in image:
+                            image['id'] = str(fields.ObjectId())
 
                 data = schema.load(jsonData)
 
@@ -99,7 +102,6 @@ class SchoolService():
                                 "msg": "Record has a pending approval request"
                             }, 400
                         jsonData['pecaId'] = pecaId
-                        jsonData['slider'] = schema.dump(data)['slider']
                         request = RequestContentApproval(
                             project=peca.project,
                             user=user,

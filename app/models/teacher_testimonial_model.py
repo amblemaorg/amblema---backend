@@ -10,6 +10,7 @@ from app.models.shared_embedded_documents import Approval
 
 
 class Testimonial(EmbeddedDocument):
+    id = fields.ObjectIdField(default=fields.ObjectId)
     teacherId = fields.StringField(required=True)
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
@@ -19,7 +20,6 @@ class Testimonial(EmbeddedDocument):
 
 
 class TeacherTestimonial(EmbeddedDocument):
-    approvalStatus = fields.StringField(default='1', max_length=1)
     testimonials = fields.EmbeddedDocumentListField(Testimonial, max_length=4)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

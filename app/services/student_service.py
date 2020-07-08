@@ -24,38 +24,45 @@ class StudentService():
             school__sections__isDeleted=False).first()
 
         if peca:
-            try:
-                schema = StudentSchema()
-                data = schema.load(jsonData)
-                student = Student()
-                for field in schema.dump(data).keys():
-                    student[field] = data[field]
-
-                for i in range(3):
-                    student['lapse{}'.format(i+1)] = Diagnostic()
-                if self.checkForDuplicated(peca.id, sectionId, student):
-                    raise ValidationError(
-                        {"name": [{"status": "5",
-                                   "msg": "Duplicated record found: {}".format(student.firstName)}]}
-                    )
+            section = peca.school.sections.filter(
+                isDeleted=False, id=sectionId).first()
+            if section:
                 try:
-                    PecaProject.objects(
-                        id=pecaId,
-                        school__sections__id=sectionId
-                    ).update(
-                        push__school__sections__S__students=student,
-                        inc__school__nStudents=1)
-                    SchoolUser.objects(id=peca.project.school.id).update(
-                        inc__school__nStudents=1)
-                    SchoolYear.objects(isDeleted=False, status="1").update(
-                        inc__nStudents=1)
+                    schema = StudentSchema()
+                    data = schema.load(jsonData)
+                    student = Student()
+                    for field in schema.dump(data).keys():
+                        student[field] = data[field]
 
-                    return schema.dump(student), 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
+                    for i in range(3):
+                        student['lapse{}'.format(i+1)] = Diagnostic()
+                    if self.checkForDuplicated(section, student):
+                        raise ValidationError(
+                            {"name": [{"status": "5",
+                                       "msg": "Duplicated record found: {}".format(student.firstName)}]}
+                        )
+                    try:
+                        PecaProject.objects(
+                            id=pecaId,
+                            school__sections__id=sectionId
+                        ).update(
+                            push__school__sections__S__students=student,
+                            inc__school__nStudents=1)
+                        SchoolUser.objects(id=peca.project.school.id).update(
+                            inc__school__nStudents=1)
+                        SchoolYear.objects(isDeleted=False, status="1").update(
+                            inc__nStudents=1)
 
-            except ValidationError as err:
-                return err.normalized_messages(), 400
+                        return schema.dump(student), 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
+
+                except ValidationError as err:
+                    return err.normalized_messages(), 400
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"sectionId": sectionId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -72,35 +79,39 @@ class StudentService():
         ).first()
 
         if peca:
-            try:
-                schema = StudentSchema()
-                data = schema.load(jsonData)
+            section = peca.school.sections.filter(
+                isDeleted=False, id=sectionId).first()
+            if section:
+                student = section.students.filter(
+                    isDeleted=False, id=studentId).first()
+                if student:
+                    try:
+                        schema = StudentSchema()
+                        data = schema.load(jsonData)
 
-                student = peca.school.sections.filter(
-                    id=sectionId, isDeleted=False).first().students.filter(
-                        id=studentId, isDeleted=False
-                ).first()
+                        for field in schema.dump(data).keys():
+                            student[field] = data[field]
+                        if self.checkForDuplicated(section, student):
+                            raise ValidationError(
+                                {"name": [{"status": "5",
+                                           "msg": "Duplicated record found: {}".format(student.firstName)}]}
+                            )
+                        try:
+                            peca.save()
+                            return schema.dump(student), 200
+                        except Exception as e:
+                            return {'status': 0, 'message': str(e)}, 400
 
-                for field in schema.dump(data).keys():
-                    student[field] = data[field]
-                if self.checkForDuplicated(pecaId, sectionId, student):
-                    raise ValidationError(
-                        {"name": [{"status": "5",
-                                   "msg": "Duplicated record found: {}".format(student.firstName)}]}
-                    )
-                try:
-                    for section in peca.school.sections:
-                        if str(section.id) == sectionId and not section.isDeleted:
-                            for student in section.students:
-                                if str(student.id) == studentId and not student.isDeleted:
-                                    student = student
-                    peca.save()
-                    return schema.dump(student), 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
-
-            except ValidationError as err:
-                return err.normalized_messages(), 400
+                    except ValidationError as err:
+                        return err.normalized_messages(), 400
+                else:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"studentId": studentId})
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"sectionId": sectionId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -141,20 +152,40 @@ class StudentService():
                                    status_code=404,
                                    payload={"pecaId": pecaId, "sectionId": sectionId, "studentId": studentId})
 
-    def checkForDuplicated(self, pecaId, sectionId, newStudent):
-        student = PecaProject.objects((
-            Q(id=pecaId)
-            & Q(school__sections__isDeleted=False)
-            & Q(school__sections__id=sectionId)
-            & Q(school__sections__students__firstName=newStudent.firstName)
-            & Q(school__sections__students__lastName=newStudent.lastName)
-            & Q(school__sections__students__birthdate=newStudent.birthdate)
-            & Q(school__sections__students__gender=newStudent.gender)
-        ) |
-            (
-            Q(school__sections__students__cardId__exists=True)
-            & Q(school__sections__students__cardId=newStudent.cardId)
-        )).only('id').first()
-        if student:
-            return True
+    def checkForDuplicated(self, section, newStudent):
+        for s in section.students.filter(isDeleted=False):
+            if (
+                (
+                    s.id != newStudent.id
+                    and s.firstName == newStudent.firstName
+                    and s.lastName == newStudent.lastName
+                    and s.birthdate == newStudent.birthdate
+                    and s.gender == newStudent.gender
+                ) or
+                (
+                    s.id != newStudent.id
+                    and s.cardId == newStudent.cardId
+                    and s.cardType == newStudent.cardType
+                )
+            ):
+                return True
         return False
+
+        '''section.students.filter(
+            id__ne=newStudent.id,
+            isDeleted=False,
+            firstName=newStudent.firstName,
+            lastName=newStudent.lastName,
+            birthdate=newStudent.birthdate,
+            gender=newStudent.gender
+        ).first()
+        if not students and newStudent.cardId:
+            students = section.students.filter(
+                isDeleted=False,
+                cardId=newStudent.cardId,
+                id__ne=newStudent.id
+            ).first()
+
+        if students:
+            return True
+        return False'''

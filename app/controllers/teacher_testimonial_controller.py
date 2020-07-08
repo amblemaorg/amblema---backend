@@ -16,7 +16,6 @@ class TeacherTestimonialController(Resource):
         userId = request.args.get('userId')
         jsonData = request.get_json()
         return self.service.save(schoolId, userId, jsonData)
-    
+
     def get(self, schoolId):
-        access = request.args.get('access')
-        return self.service.get_all(schoolId,access)
+        return self.service.get_all(schoolId)

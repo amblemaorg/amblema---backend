@@ -60,7 +60,7 @@ class PecaProjectService():
             data['school']['slider'] = ImageStatusSchema().dump(
                 school.slider, many=True)
             data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(
-                school.teachersTestimonials, many=True
+                school.teachersTestimonials
             )
             sponsor = SponsorUser.objects.get(id=peca.project.sponsor.id)
             coordinator = CoordinatorUser.objects.get(

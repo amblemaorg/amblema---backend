@@ -18,5 +18,6 @@ resources/files/*/*.pptx
 resources/files/school_years/
 resources/files/projects/
 resources/images/school_years/
+resources/images/schools/
 .coverage
 htmlcov/

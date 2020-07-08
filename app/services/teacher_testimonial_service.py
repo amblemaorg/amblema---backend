@@ -3,10 +3,12 @@
 
 from functools import reduce
 import operator
+import os.path
+import copy
 
 from flask import current_app
 from marshmallow import ValidationError
-from mongoengine import Q
+from mongoengine import Q, fields
 
 from app.models.teacher_testimonial_model import TeacherTestimonial
 from app.models.school_user_model import SchoolUser
@@ -18,87 +20,109 @@ from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.shared_embedded_documents import Approval
+from resources.images import path_images
+from app.helpers.handler_images import upload_image
 
 
 class TeacherTestimonialService():
 
-    def get_all(self, schoolId, access):
+    filesFolder = 'testimonials'
+
+    def get_all(self, schoolId):
 
         school = SchoolUser.objects(id=schoolId, isDeleted=False).first()
-        
+
         if school:
-            testimonial = TeacherTestimonial()
-            if school.teachersTestimonials:
-                if access == "web" and school.teachersTestimonials.approvalStatus == "2":
-                    testimonial = school.teachersTestimonials
-                elif access == "peca":
-                    testimonial = school.teachersTestimonials
-            
-            if testimonial.testimonials:
-                schema = TeacherTestimonialSchema()
-                return schema.dump(testimonial), 200
-            else:
-                return {'status': 0, 'message': 'There are no testimonials'}, 400
+            schema = TeacherTestimonialSchema()
+            return schema.dump(school.teachersTestimonials), 200
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"schoolId": schoolId})
-    
+
     def save(self, schoolId, userId, jsonData):
 
         school = SchoolUser.objects(id=str(schoolId), isDeleted=False).first()
 
         if school:
             try:
-                schema = TeacherTestimonialSchema()
-                data = schema.load(jsonData)
-                schema.validate(jsonData)
-
                 user = User.objects(id=str(userId), isDeleted=False).first()
                 if not user:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
                                            payload={"userId":  userId})
-                
+
+                schema = TeacherTestimonialSchema()
+
                 teachersTestimonials = school.teachersTestimonials
-                if teachersTestimonials:
-                    if teachersTestimonials.isInApproval:
-                        return {"status": "0", "msg": "Record has a pending approval request"}, 400
-                else:
-                    teachersTestimonials = TeacherTestimonial()
-                    i = 0
-                    for field in schema.dump(data).keys():
-                        del teachersTestimonials[field][:]
-                        for testimonial in data[field]:
-                            teacher = school.teachers.filter(id=testimonial.teacherId, isDeleted=False).first()
-                            if teacher:
-                                testimonial.firstName = teacher.firstName
-                                testimonial.lastName = teacher.lastName
-                            else:
-                                raise RegisterNotFound(message="Record not found",
-                                        status_code=404,
-                                        payload={"teacherId": testimonial.teacherId})
-                            teachersTestimonials[field].append(testimonial)
-                            i+=1
+                newTeachersTestimonials = copy.copy(teachersTestimonials)
+                if teachersTestimonials.isInApproval:
+                    return {"status": "0", "msg": "Record has a pending approval request"}, 400
 
-                try:
-                    request = RequestContentApproval(
-                        project=school.project,
-                        user=user,
-                        type="2",
-                        detail=jsonData
-                    ).save()
-
-                    teachersTestimonials.isInApproval = True
-                    teachersTestimonials.approvalHistory.append(
-                        Approval(
-                            id=str(request.id),
-                            user=user.id,
-                            detail=jsonData
-                        )
+                if 'testimonials' in jsonData:
+                    folder = "schools/{}/{}".format(
+                        schoolId,
+                        self.filesFolder
                     )
+                    DIR = path_images + '/' + folder
+                    folder = folder + \
+                        '/{}'.format(len([name for name in os.listdir(DIR)]) + 1
+                                     if os.path.exists(DIR) else 1)
+                    for testimonial in jsonData['testimonials']:
+                        teacher = school.teachers.filter(
+                            id=testimonial['teacherId'], isDeleted=False).first()
+                        if teacher:
+                            testimonial['firstName'] = teacher.firstName
+                            testimonial['lastName'] = teacher.lastName
+                        else:
+                            raise RegisterNotFound(message="Record not found",
+                                                   status_code=404,
+                                                   payload={"teacherId": testimonial['teacherId']})
+                        if 'id' not in testimonial:
+                            testimonial['id'] = str(fields.ObjectId())
+                        if str(testimonial['image']).startswith('data'):
+                            testimonial['image'] = upload_image(
+                                testimonial['image'], folder, None)
 
-                    school.teachersTestimonials = teachersTestimonials
+                data = schema.load(jsonData)
+
+                approvalRequired = False
+                oldTestimonials = {}
+                for testimonial in teachersTestimonials.testimonials:
+                    oldTestimonials[testimonial.id] = testimonial
+
+                for field in data.keys():
+                    if teachersTestimonials[field] != data[field]:
+                        if field == 'testimonials':
+                            for testimonial in data[field]:
+                                # testimonial was updated
+                                if testimonial.id in oldTestimonials and testimonial != oldTestimonials[testimonial.id]:
+                                    approvalRequired = True
+                                # new testimonial
+                                elif testimonial.id not in oldTestimonials:
+                                    approvalRequired = True
+                        newTeachersTestimonials[field] = data[field]
+                try:
+                    if approvalRequired:
+                        jsonData['schoolId'] = schoolId
+
+                        request = RequestContentApproval(
+                            project=school.project,
+                            user=user,
+                            type="2",
+                            detail=jsonData
+                        ).save()
+
+                        teachersTestimonials.isInApproval = True
+                        teachersTestimonials.approvalHistory.append(
+                            Approval(
+                                id=str(request.id),
+                                user=user.id,
+                                detail=jsonData
+                            )
+                        )
+                    else:
+                        teachersTestimonials.testimonials = newTeachersTestimonials.testimonials
                     school.save()
 
                     return schema.dump(teachersTestimonials), 200

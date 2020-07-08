@@ -148,24 +148,27 @@ class StatisticsOlympicsService():
             schoolSummary['grades'] = sorted(
                 schoolSummary['grades'], key=lambda x: (x['name']))
 
-            periods[str(peca.schoolYear.pk)]['schools'].append(schoolSummary)
+            if schoolSummary['grades']:
+                periods[str(peca.schoolYear.pk)]['schools'].append(
+                    schoolSummary)
 
         for key in periods.keys():
             period = periods[key]
-            periodSummary = {
-                'academicPeriod': [
-                    period['schoolYear'].startDate.strftime('%Y'),
-                    period['schoolYear'].endDate.strftime('%Y')
-                ],
-                'schools': sorted(
-                    period['schools'], key=lambda x: (x['meta']['name']))
-            }
-            reportData['allPeriods'].append(periodSummary)
-            reportData['finalScore']['enrolledStudents'] += period['total']['totalEnrolled']
-            reportData['finalScore']['classifiedStudents'] += period['total']['totalClassified']
-            reportData['finalScore']['studentsGoldMedal'] += period['total']['totalGoldMedals']
-            reportData['finalScore']['studentsSilverMedal'] += period['total']['totalSilverMedals']
-            reportData['finalScore']['studentsBronzeMedal'] += period['total']['totalBronzeMedals']
+            if period['schools']:
+                periodSummary = {
+                    'academicPeriod': [
+                        period['schoolYear'].startDate.strftime('%Y'),
+                        period['schoolYear'].endDate.strftime('%Y')
+                    ],
+                    'schools': sorted(
+                        period['schools'], key=lambda x: (x['meta']['name']))
+                }
+                reportData['allPeriods'].append(periodSummary)
+                reportData['finalScore']['enrolledStudents'] += period['total']['totalEnrolled']
+                reportData['finalScore']['classifiedStudents'] += period['total']['totalClassified']
+                reportData['finalScore']['studentsGoldMedal'] += period['total']['totalGoldMedals']
+                reportData['finalScore']['studentsSilverMedal'] += period['total']['totalSilverMedals']
+                reportData['finalScore']['studentsBronzeMedal'] += period['total']['totalBronzeMedals']
         reportData['allPeriods'] = sorted(
             reportData['allPeriods'], key=lambda x: (x['academicPeriod'][0]))
         return reportData, 200

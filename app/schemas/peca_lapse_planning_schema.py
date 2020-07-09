@@ -20,6 +20,12 @@ class LapsePlanningPecaSchema(Schema):
     isInApproval = fields.Boolean(dump_only=True)
     approvalHistory = fields.List(
         fields.Nested(ApprovalSchema), dump_only=True)
+    status = fields.Str(
+        validate=(
+            OneOf(
+                ["1", "2"],
+                ["pending", "approved", ]
+            )))
 
     class Meta:
         unknown = EXCLUDE

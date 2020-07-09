@@ -22,3 +22,4 @@ class LapsePlanningPeca(EmbeddedDocument):
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
     yearbook = fields.EmbeddedDocumentField(
         ActivityYearbook, default=ActivityYearbook())
+    status = fields.StringField(default="1", max_length=1)

@@ -81,6 +81,7 @@ class SchoolYearService(GenericServices):
           projectId: str
           action: str "add" or "delete"
         """
+        from app.models.request_content_approval_model import RequestContentApproval
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -105,6 +106,17 @@ class SchoolYearService(GenericServices):
                     "status": "0",
                     "msg": "School is not enrolled in active school year"
                 }, 400
+            entity = ''
+            contentRequest = RequestContentApproval.objects(
+                isDeleted=False, detail__pecaId=str(peca.id), status="1").first()
+            if contentRequest:
+                entity = 'RequestContentApproval'
+            if entity:
+                return {
+                    'status': '0',
+                    'entity': entity,
+                    'msg': 'Record has an active related entity'
+                }, 419
 
             try:
                 for resume in project.schoolYears:

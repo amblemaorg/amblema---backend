@@ -196,6 +196,7 @@ class ActivityService():
         Delete (change isDeleted to False) a record
         """
         from app.models.peca_project_model import PecaProject
+        from app.models.request_content_approval_model import RequestContentApproval
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -209,6 +210,20 @@ class ActivityService():
             for activity in activities:
                 if str(activity.id) == str(id) and not activity.isDeleted:
                     found = True
+
+                    # validate delete
+                    entity = ''
+                    contentRequest = RequestContentApproval.objects(
+                        isDeleted=False, type="3", detail__id=id, status="1").first()
+                    if contentRequest:
+                        entity = 'RequestContentApproval'
+                    if entity:
+                        return {
+                            'status': '0',
+                            'entity': entity,
+                            'msg': 'Record has an active related entity'
+                        }, 419
+
                     try:
                         activity.isDeleted = True
                         schoolYear.pecaSetting['lapse{}'.format(

@@ -130,6 +130,22 @@ class TeacherService():
             teacher = school.teachers.filter(
                 id=teacherId, isDeleted=False).first()
             if teacher:
+
+                period = SchoolYear.objects(
+                    isDeleted=False, status="1").first()
+                if period:
+                    peca = PecaProject.objects(
+                        project__school__id=str(school.id), isDeleted=False, schoolYear=period.id).first()
+                    if peca:
+                        sections = [section for section in peca.school.sections.filter(
+                            isDeleted=False) if section.teacher.id == teacherId]
+                        if sections:
+                            return {
+                                'status': '0',
+                                'entity': 'Section',
+                                'msg': 'Record has an active related entity'
+                            }, 419
+
                 teacher.isDeleted = True
                 try:
                     SchoolUser.objects(
@@ -139,8 +155,7 @@ class TeacherService():
                     ).update(
                         set__teachers__S__isDeleted=True,
                         dec__nTeachers=1)
-                    period = SchoolYear.objects(
-                        isDeleted=False, status="1").first()
+
                     if period:
                         PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
                             inc__school__nTeachers=1

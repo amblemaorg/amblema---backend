@@ -12,9 +12,8 @@ from marshmallow import (
 
 from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf, Range, validate_email)
-from app.helpers.ma_schema_fields import MAReferenceField
+from app.helpers.ma_schema_fields import MAReferenceField, MAPointField
 from app.models.state_model import State, Municipality
-from app.schemas.shared_schemas import CoordinateSchema
 
 
 class SchoolContactSchema(Schema):
@@ -35,7 +34,7 @@ class SchoolContactSchema(Schema):
             ('sector', 'neighborhood', 'hamlet')
         ))
     addressZone = fields.Str(allow_none=True)
-    coordinate = fields.Nested(CoordinateSchema)
+    coordinate = MAPointField()
     phone = fields.Str(required=True, validate=(not_blank, only_numbers))
     schoolType = fields.Str(
         required=True,

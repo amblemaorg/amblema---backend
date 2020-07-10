@@ -17,7 +17,6 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.school_user_model import SchoolUser
 from app.models.project_model import Project
 from app.models.role_model import Role
-from app.models.shared_embedded_documents import Coordinate
 
 
 class SponsorContact(Document):
@@ -47,7 +46,7 @@ class SponsorContact(Document):
     schoolAddressCity = fields.StringField()
     schoolAddressZoneType = fields.StringField(max_length=1, null=True)
     schoolAddressZone = fields.StringField(null=True)
-    schoolCoordinate = fields.EmbeddedDocumentField(Coordinate)
+    schoolCoordinate = fields.PointField()
     schoolPhone = fields.StringField()
     schoolType = fields.StringField(max_length=1)
     schoolPrincipalFirstName = fields.StringField()

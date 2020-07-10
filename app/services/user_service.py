@@ -106,7 +106,77 @@ class UserService(GenericServices):
         """
         Delete (change status False) a record
         """
+
+        from app.models.project_model import Project
+        from app.models.peca_project_model import PecaProject
+        from app.models.request_content_approval_model import RequestContentApproval
+        from app.models.request_find_coordinator_model import RequestFindCoordinator
+        from app.models.request_find_sponsor_model import RequestFindSponsor
+        from app.models.request_find_school_model import RequestFindSchool
+
         record = self.getOr404(recordId)
+
+        amblemaEntities = ['SchoolUser', 'SponsorUser', 'CoordinatorUser']
+        entity = ''
+        if self.Model.__name__ in amblemaEntities:
+            if self.Model.__name__ == 'SchoolUser':
+                project = Project.objects(
+                    school=recordId, isDeleted=False).first()
+                if project:
+                    entity = 'Project'
+                else:
+                    peca = PecaProject.objects(
+                        isDeleted=False, project__school__id=recordId).first()
+                    if peca:
+                        entity = 'PecaProject'
+            elif self.Model.__name__ == 'SponsorUser':
+
+                project = Project.objects(
+                    sponsor=recordId, isDeleted=False).first()
+                if project:
+                    entity = 'Project'
+                else:
+                    peca = PecaProject.objects(
+                        isDeleted=False, project__sponsor__id=recordId).first()
+                    if peca:
+                        entity = 'PecaProject'
+            elif self.Model.__name__ == 'CoordinatorUser':
+                project = Project.objects(
+                    coordinator=recordId, isDeleted=False).first()
+                if project:
+                    entity = 'Project'
+                else:
+                    peca = PecaProject.objects(
+                        isDeleted=False, project__coordinator__id=recordId).first()
+                    if peca:
+                        entity = 'PecaProject'
+            if not entity:
+                contentRequest = RequestContentApproval.objects(
+                    isDeleted=False, user=recordId, status="1").first()
+                if contentRequest:
+                    entity = 'RequestContentApproval'
+                else:
+                    findSchool = RequestFindSchool.objects(
+                        isDeleted=False, user=recordId, status="1").first()
+                    if findSchool:
+                        entity = 'RequestFindSchool'
+                    else:
+                        findSponsor = RequestFindSponsor.objects(
+                            isDeleted=False, user=recordId, status="1").first()
+                        if findSponsor:
+                            entity = 'RequestFindSponsor'
+                        else:
+                            findCoordinator = RequestFindCoordinator.objects(
+                                isDeleted=False, user=recordId, status="1").first()
+                            if findCoordinator:
+                                entity = 'RequestFindCoordinator'
+        if entity:
+            return {
+                'status': '0',
+                'entity': entity,
+                'msg': 'Record has an active related entity'
+            }, 419
+
         try:
             record.isDeleted = True
             record.save()

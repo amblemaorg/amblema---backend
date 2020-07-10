@@ -205,6 +205,13 @@ class ApprovalProcess(unittest.TestCase):
             addressZoneType="2",
             addressZone="Barrio Bolivar",
             address="calle 9 entre 1 y 2",
+            coordinate={
+                "type": "Point",
+                "coordinates": [
+                    10.0118875,
+                    -69.4665246
+                ]
+            },
             phone="02524433434",
             schoolType="1",
             principalFirstName="Marlene",

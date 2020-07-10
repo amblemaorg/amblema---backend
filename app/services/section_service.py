@@ -96,60 +96,67 @@ class SectionService():
         ).first()
 
         if peca:
-            try:
-                schema = SectionSchema()
-                school = SchoolUser.objects(
-                    id=peca.project.school.id, isDeleted=False).first()
-                if "teacher" in jsonData:
-                    teacher = school.teachers.filter(
-                        id=jsonData['teacher'], isDeleted=False).first()
-                    if not teacher:
-                        raise RegisterNotFound(message="Record not found",
-                                               status_code=404,
-                                               payload={"teacher": jsonData['teacher']})
-                    else:
-                        jsonData['teacher'] = {
-                            'id': str(teacher.id),
-                            'firstName': teacher.firstName,
-                            'lastName': teacher.lastName
-                        }
-                data = schema.load(jsonData)
-
-                section = peca.school.sections.filter(
-                    id=sectionId, isDeleted=False).first()
-
-                for field in schema.dump(data).keys():
-                    if section[field] != data[field]:
-                        section[field] = data[field]
-                        if field == 'grade':
-                            section.goals = peca.schoolYear.fetch(
-                            ).pecaSetting.goalSetting['grade{}'.format(section.grade)]
-                if self.checkForDuplicated(peca, section):
-                    raise ValidationError(
-                        {"name": [{"status": "5",
-                                   "msg": "Duplicated record found: {}".format(section.name)}]}
-                    )
+            section = peca.school.sections.filter(
+                isDeleted=False, id=sectionId).first()
+            if sectionId:
                 try:
-                    for oldSection in peca.school.sections:
-                        if str(oldSection.id) == sectionId:
-                            oldSection = section
-                    for i in range(1, 4):
-                        if peca['lapse{}'.format(i)].ambleCoins:
-                            for oldSection in peca['lapse{}'.format(i)].ambleCoins.sections:
-                                if oldSection.id == sectionId:
-                                    oldSection.name = section.name
-                                    oldSection.grade = section.grade
-                    peca.save()
-                    return schema.dump(section), 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
+                    schema = SectionSchema()
+                    school = SchoolUser.objects(
+                        id=peca.project.school.id, isDeleted=False).first()
+                    if "teacher" in jsonData:
+                        teacher = school.teachers.filter(
+                            id=jsonData['teacher'], isDeleted=False).first()
+                        if not teacher:
+                            raise RegisterNotFound(message="Record not found",
+                                                   status_code=404,
+                                                   payload={"teacher": jsonData['teacher']})
+                        else:
+                            jsonData['teacher'] = {
+                                'id': str(teacher.id),
+                                'firstName': teacher.firstName,
+                                'lastName': teacher.lastName
+                            }
+                    data = schema.load(jsonData)
 
-            except ValidationError as err:
-                return err.normalized_messages(), 400
+                    section = peca.school.sections.filter(
+                        id=sectionId, isDeleted=False).first()
+
+                    for field in schema.dump(data).keys():
+                        if section[field] != data[field]:
+                            section[field] = data[field]
+                            if field == 'grade':
+                                section.goals = peca.schoolYear.fetch(
+                                ).pecaSetting.goalSetting['grade{}'.format(section.grade)]
+                    if self.checkForDuplicated(peca, section):
+                        raise ValidationError(
+                            {"name": [{"status": "5",
+                                       "msg": "Duplicated record found: {}".format(section.name)}]}
+                        )
+                    try:
+                        for oldSection in peca.school.sections:
+                            if str(oldSection.id) == sectionId:
+                                oldSection = section
+                        for i in range(1, 4):
+                            if peca['lapse{}'.format(i)].ambleCoins:
+                                for oldSection in peca['lapse{}'.format(i)].ambleCoins.sections:
+                                    if oldSection.id == sectionId:
+                                        oldSection.name = section.name
+                                        oldSection.grade = section.grade
+                        peca.save()
+                        return schema.dump(section), 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
+
+                except ValidationError as err:
+                    return err.normalized_messages(), 400
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"sectionId": sectionId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sectionId": sectionId})
+                                   payload={"pecaId": pecaId})
 
     def delete(self, pecaId, sectionId):
         """
@@ -158,43 +165,54 @@ class SectionService():
 
         peca = PecaProject.objects.filter(
             id=pecaId,
-            school__sections__id=sectionId,
-            school__sections__isDeleted=False
+            isDeleted=False
         ).first()
 
         if peca:
-            school = SchoolUser.objects(
-                id=peca.project.school.id, isDeleted=False).first()
+            section = peca.school.sections.filter(
+                isDeleted=False, id=sectionId).first()
+            if section:
+                school = SchoolUser.objects(
+                    id=peca.project.school.id, isDeleted=False).first()
 
-            try:
-                for oldSection in peca.school.sections:
-                    if str(oldSection.id) == sectionId:
-                        oldSection.isDeleted = True
-                        break
-                for i in range(1, 4):
-                    if peca['lapse{}'.format(i)].ambleCoins:
-                        for oldSection in peca['lapse{}'.format(i)].ambleCoins.sections:
-                            if oldSection.id == sectionId:
-                                peca['lapse{}'.format(i)].ambleCoins.sections.remove(
-                                    oldSection)
-                peca.school.nSections -= 1
-                grades = []
-                for section in peca.school.sections:
-                    if section.grade not in grades:
-                        grades.append(section.grade)
-                peca.school.nGrades = len(grades)
-                peca.save()
-                school.nSections = peca.school.nSections
-                school.nGrades = peca.school.nGrades
-                school.save()
-                return "Record deleted successfully", 200
-            except Exception as e:
-                return {'status': 0, 'message': str(e)}, 400
+                students = section.students.filter(isDeleted=False)
+                if students:
+                    return {
+                        'status': '0',
+                        'entity': 'Student',
+                        'msg': 'Record has an active related entity'
+                    }, 419
 
+                try:
+                    section.isDeleted = True
+
+                    for i in range(1, 4):
+                        if peca['lapse{}'.format(i)].ambleCoins:
+                            for oldSection in peca['lapse{}'.format(i)].ambleCoins.sections:
+                                if oldSection.id == sectionId:
+                                    peca['lapse{}'.format(i)].ambleCoins.sections.remove(
+                                        oldSection)
+                    peca.school.nSections -= 1
+                    grades = []
+                    for section in peca.school.sections:
+                        if section.grade not in grades:
+                            grades.append(section.grade)
+                    peca.school.nGrades = len(grades)
+                    peca.save()
+                    school.nSections = peca.school.nSections
+                    school.nGrades = peca.school.nGrades
+                    school.save()
+                    return "Record deleted successfully", 200
+                except Exception as e:
+                    return {'status': 0, 'message': str(e)}, 400
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"sectionId": sectionId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sectionId": sectionId})
+                                   payload={"pecaId": pecaId})
 
     def checkForDuplicated(self, peca, newSection):
 

@@ -286,9 +286,11 @@ class ProjectService():
         from app.schemas.school_user_schema import SchoolUserSchema
         from app.schemas.coordinator_user_schema import CoordinatorUserSchema
         from app.schemas.sponsor_user_schema import SponsorUserSchema
+        from app.models.peca_project_model import PecaProject
+        from app.models.school_year_model import SchoolYear
 
-        # validate phase changed
-        if document.phase != oldDocument.phase and document.phase == "2":
+        # validate phase
+        if document.phase == "2":
             if not document.sponsor:
                 raise ValidationError(
                     {"sponsor": [{"status": "2",
@@ -309,21 +311,33 @@ class ProjectService():
                 oldDocument.sponsor.removeProject(document)
             if document.sponsor:
                 document.sponsor.addProject(document)
-                for step in document.stepsProgress.steps:
-                    if (
-                        step.devName in (
-                            "findSponsor",
-                            "coordinatorFillSponsorForm",
-                            "schoolFillSponsorForm")
-                    ):
-                        step.status = "3"
-                        step.approvalHistory.append(
-                            Approval(
-                                id="",
-                                data=SponsorUserSchema().dump(document.sponsor),
-                                status="2"
+                # steps
+                if document.phase == "1":
+                    for step in document.stepsProgress.steps:
+                        if (
+                            step.devName in (
+                                "findSponsor",
+                                "coordinatorFillSponsorForm",
+                                "schoolFillSponsorForm")
+                        ):
+                            step.status = "3"
+                            step.approvalHistory.append(
+                                Approval(
+                                    id="",
+                                    data=SponsorUserSchema().dump(document.sponsor),
+                                    status="2"
+                                )
                             )
-                        )
+                # peca
+                else:
+                    schoolYear = SchoolYear.objects(
+                        isDeleted=False, status="1").first()
+                    if schoolYear:
+                        currentPeca = PecaProject.objects(isDeleted=False, project__id=str(
+                            document.id), schoolYear=str(schoolYear.id)).first()
+                        if currentPeca:
+                            currentPeca.project = document.getReference()
+                            currentPeca.save()
 
         if document.school != oldDocument.school:
             if document.school:
@@ -338,67 +352,87 @@ class ProjectService():
                 oldDocument.school.removeProject()
             if document.school:
                 document.school.addProject(document)
-                for step in document.stepsProgress.steps:
-                    if (
-                        step.devName in (
-                            "findSchool",
-                            "coordinatorFillSchoolForm",
-                            "sponsorFillSchoollForm")
-                    ):
-                        step.status = "3"
-                        step.approvalHistory.append(
-                            Approval(
-                                id="",
-                                data=SchoolUserSchema().dump(document.school),
-                                status="2"
+                if document.phase == "1":
+                    for step in document.stepsProgress.steps:
+                        if (
+                            step.devName in (
+                                "findSchool",
+                                "coordinatorFillSchoolForm",
+                                "sponsorFillSchoollForm")
+                        ):
+                            step.status = "3"
+                            step.approvalHistory.append(
+                                Approval(
+                                    id="",
+                                    data=SchoolUserSchema().dump(document.school),
+                                    status="2"
+                                )
                             )
-                        )
+                else:
+                    schoolYear = SchoolYear.objects(
+                        isDeleted=False, status="1").first()
+                    if schoolYear:
+                        currentPeca = PecaProject.objects(isDeleted=False, project__id=str(
+                            document.id), schoolYear=str(schoolYear.id)).first()
+                        if currentPeca:
+                            currentPeca.project = document.getReference()
+                            currentPeca.save()
 
         if document.coordinator != oldDocument.coordinator:
             if oldDocument.coordinator:
                 oldDocument.coordinator.removeProject(document)
             if document.coordinator:
                 document.coordinator.addProject(document)
-                for step in document.stepsProgress.steps:
-                    if (
-                        step.devName in (
-                            "findCoordinator",
-                            "sponsorFillCoordinatorForm",
-                            "schoolFillCoordinatorForm")
-                    ):
-                        step.status = "3"
-                        step.approvalHistory.append(
-                            Approval(
-                                id="",
-                                data=CoordinatorUserSchema().dump(document.coordinator),
-                                status="2"
+                if document.phase == "1":
+                    for step in document.stepsProgress.steps:
+                        if (
+                            step.devName in (
+                                "findCoordinator",
+                                "sponsorFillCoordinatorForm",
+                                "schoolFillCoordinatorForm")
+                        ):
+                            step.status = "3"
+                            step.approvalHistory.append(
+                                Approval(
+                                    id="",
+                                    data=CoordinatorUserSchema().dump(document.coordinator),
+                                    status="2"
+                                )
                             )
-                        )
-                    if (
-                        step.devName == "corrdinatorCompleteTrainingModules"
-                        and document.coordinator.instructed
-                    ):
-                        step.status = "3"
-                    if (
-                        step.devName == "coordinatorSendCurriculum"
-                        and document.coordinator.curriculum
-                    ):
-                        step.status = "3"
-                        step.approvalHistory.append(
-                            Approval(
-                                id="",
-                                data={
-                                    "stepHasText": step.hasText,
-                                    "stepHasUpload": step.hasUpload,
-                                    "stepHasDate": step.hasDate,
-                                    "stepHasVideo": step.hasVideo,
-                                    "stepHasChecklist": step.hasChecklist,
-                                    "stepHasFile": step.hasFile,
-                                    "stepText": step.text,
-                                    "stepUploadedFile": document.coordinator.curriculum
-                                },
-                                status="2"
+                        if (
+                            step.devName == "corrdinatorCompleteTrainingModules"
+                            and document.coordinator.instructed
+                        ):
+                            step.status = "3"
+                        if (
+                            step.devName == "coordinatorSendCurriculum"
+                            and document.coordinator.curriculum
+                        ):
+                            step.status = "3"
+                            step.approvalHistory.append(
+                                Approval(
+                                    id="",
+                                    data={
+                                        "stepHasText": step.hasText,
+                                        "stepHasUpload": step.hasUpload,
+                                        "stepHasDate": step.hasDate,
+                                        "stepHasVideo": step.hasVideo,
+                                        "stepHasChecklist": step.hasChecklist,
+                                        "stepHasFile": step.hasFile,
+                                        "stepText": step.text,
+                                        "stepUploadedFile": document.coordinator.curriculum
+                                    },
+                                    status="2"
+                                )
                             )
-                        )
-
-        document.stepsProgress.updateProgress()
+                else:
+                    schoolYear = SchoolYear.objects(
+                        isDeleted=False, status="1").first()
+                    if schoolYear:
+                        currentPeca = PecaProject.objects(isDeleted=False, project__id=str(
+                            document.id), schoolYear=str(schoolYear.id)).first()
+                        if currentPeca:
+                            currentPeca.project = document.getReference()
+                            currentPeca.save()
+        if document.phase == "1":
+            document.stepsProgress.updateProgress()

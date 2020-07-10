@@ -22,3 +22,49 @@ class ProjectHandlerService(GenericServices):
         record.stepsProgress.steps = sorted(
             record.stepsProgress.steps, key=lambda x: (x['tag'], x['sort']))
         return schema.dump(record), 200
+
+    def deleteRecord(self, recordId):
+        """
+        Delete (change status False) a record
+        """
+
+        from app.models.request_content_approval_model import RequestContentApproval
+        from app.models.request_find_coordinator_model import RequestFindCoordinator
+        from app.models.request_find_sponsor_model import RequestFindSponsor
+        from app.models.request_find_school_model import RequestFindSchool
+
+        record = self.getOr404(recordId)
+
+        entity = ''
+        contentRequest = RequestContentApproval.objects(
+            isDeleted=False, project__id=recordId, status="1").first()
+        if contentRequest:
+            entity = 'RequestContentApproval'
+        else:
+            findSchool = RequestFindSchool.objects(
+                isDeleted=False, project=recordId, status="1").first()
+            if findSchool:
+                entity = 'RequestFindSchool'
+            else:
+                findSponsor = RequestFindSponsor.objects(
+                    isDeleted=False, project=recordId, status="1").first()
+                if findSponsor:
+                    entity = 'RequestFindSponsor'
+                else:
+                    findCoordinator = RequestFindCoordinator.objects(
+                        isDeleted=False, project=recordId, status="1").first()
+                    if findCoordinator:
+                        entity = 'RequestFindCoordinator'
+        if entity:
+            return {
+                'status': '0',
+                'entity': entity,
+                'msg': 'Record has an active related entity'
+            }, 419
+        try:
+            record.isDeleted = True
+            record.save()
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400
+
+        return {"message": "Record deleted successfully"}, 200

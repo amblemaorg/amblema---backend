@@ -6,6 +6,7 @@ import re
 from flask import current_app
 from mongoengine import ValidationError
 from app.models.school_year_model import SchoolYear
+from app.helpers.error_helpers import CSTM_Exception
 
 
 class StepsService():
@@ -42,7 +43,7 @@ class StepsService():
                 and document.status == "1")
         ):
             projects = Project.objects(
-                schoolYear=document.schoolYear, isDeleted=False, status='1').all()
+                schoolYear=document.schoolYear, isDeleted=False, status='1', phase='1').all()
             for project in projects:
                 stepCtrl = StepControl(
                     id=str(document.id),
@@ -71,7 +72,7 @@ class StepsService():
                 project.stepsProgress.steps.append(stepCtrl)
                 project.save()
 
-        # delete step for froject when step is inactive or deleted
+        # delete step for project when step is inactive or deleted
         if (
             (document.isDeleted
                 and oldDocument.isDeleted != document.isDeleted)
@@ -85,6 +86,7 @@ class StepsService():
             Project.objects(
                 schoolYear=document.schoolYear,
                 isDeleted=False, status='1',
+                phase='1',
                 stepsProgress__steps__id=str(document.id)).update(
                 pull__stepsProgress__steps__id=str(document.id))
 
@@ -129,6 +131,7 @@ class StepsService():
                 projects = Project.objects(
                     schoolYear=document.schoolYear,
                     isDeleted=False, status='1',
+                    phase='1',
                     stepsProgress__steps__id=str(document.id)
                 )
 
@@ -158,7 +161,7 @@ class StepsService():
 
         # initialize steps for in progress projects
         projects = Project.objects(
-            schoolYear=document.schoolYear, isDeleted=False, status='1').all()
+            schoolYear=document.schoolYear, isDeleted=False, status='1', phase='1').all()
         for project in projects:
             stepCtrl = StepControl(
                 id=str(document.pk),

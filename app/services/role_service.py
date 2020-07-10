@@ -35,10 +35,25 @@ class RoleService(GenericServices):
         """
         Delete (change status False) a record
         """
+        from app.models.user_model import User
+
         record = self.getOr404(recordId)
-        from flask import current_app
+
         if record.isStandard:
             return {'status': 0, 'message': 'Standard role can not be deleted'}, 400
+
+        entity = ''
+        user = User.objects(
+            isDeleted=False, userType__in=['1', '2', '3', '4'], role=recordId).first()
+        if user:
+            entity = 'AdminUser' if user.userType == '1' else 'CoordinatorUser' if user.userType == '2' else 'SponsorUser' if user.userType == '3' else 'SchoolUser'
+
+        if entity:
+            return {
+                'status': '0',
+                'entity': entity,
+                'msg': 'Record has an active related entity'
+            }, 419
         try:
             record.isDeleted = True
             record.save()

@@ -43,3 +43,31 @@ class Student(EmbeddedDocument):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+
+    def hasDiagnostics(self):
+        diags = [
+            'multiplicationsPerMin',
+            'operationsPerMin',
+            'wordsPerMin'
+        ]
+        for i in [1, 2, 3]:
+            for diag in diags:
+                if self['lapse{}'.format(i)][diag]:
+                    return True
+        return False
+
+    def deleteDiagnostics(self, lapses, diags):
+        '''
+        params: 
+        lapses: list [1,2,3]
+        diags: ['wordsPerMin', 'multiplicationsPerMin', 'operationsPerMin']
+        '''
+        dates = {
+            'wordsPerMin': 'readingDate',
+            'multiplicationsPerMin': 'mathDate',
+            'operationsPerMin': 'logicDate'
+        }
+        for i in lapses:
+            for diag in diags:
+                self['lapse{}'.format(i)][diag] = None
+                self['lapse{}'.format(i)][dates[diag]] = None

@@ -4,14 +4,14 @@
 from flask import request
 from flask_restful import Resource
 
-from app.services.generic_service import GenericServices
+from app.services.state_service import StateService
 from app.models.state_model import State, StateSchema
 from app.helpers.handler_request import getQueryParams
 
 
 class StateController(Resource):
-    
-    service = GenericServices(
+
+    service = StateService(
         Model=State,
         Schema=StateSchema)
 
@@ -23,16 +23,16 @@ class StateController(Resource):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
 
-    
+
 class StateHandlerController(Resource):
-    
-    service = GenericServices(
+
+    service = StateService(
         Model=State,
         Schema=StateSchema)
 
     def get(self, stateId):
         return self.service.getRecord(stateId)
-    
+
     def put(self, stateId):
         jsonData = request.get_json()
         return self.service.updateRecord(

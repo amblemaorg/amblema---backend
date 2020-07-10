@@ -107,3 +107,31 @@ class StepHandlerService(GenericServices):
         if records:
             return True
         return False
+
+    def deleteRecord(self, recordId):
+        """
+        Delete (change status False) a record
+        """
+        from app.models.request_content_approval_model import RequestContentApproval
+
+        record = self.getOr404(recordId)
+
+        # validate delete
+        entity = ''
+        contentRequest = RequestContentApproval.objects(
+            isDeleted=False, type="1", detail__stepId=recordId, status="1").first()
+        if contentRequest:
+            entity = 'RequestContentApproval'
+        if entity:
+            return {
+                'status': '0',
+                'entity': entity,
+                'msg': 'Record has an active related entity'
+            }, 419
+        try:
+            record.isDeleted = True
+            record.save()
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400
+
+        return {"message": "Record deleted successfully"}, 200

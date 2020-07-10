@@ -1,4 +1,4 @@
-# app/services/municipality_service.py
+# app/services/state_service.py
 
 
 from datetime import datetime
@@ -16,7 +16,7 @@ from app.helpers.document_metadata import getUniqueFields
 from app.services.generic_service import GenericServices
 
 
-class MunicipalityService(GenericServices):
+class StateService(GenericServices):
 
     def deleteRecord(self, recordId):
         """
@@ -36,38 +36,37 @@ class MunicipalityService(GenericServices):
 
         entity = ''
         user = User.objects(
-            isDeleted=False, userType__in=['1', '2', '3', '4'], addressMunicipality=recordId).first()
+            isDeleted=False, userType__in=['1', '2', '3', '4'], addressState=recordId).first()
         if user:
             entity = 'AdminUser' if user.userType == '1' else 'CoordinatorUser' if user.userType == '2' else 'SponsorUser' if user.userType == '3' else 'SchoolUser'
         if not entity:
             schoolContact = SchoolContact.objects(Q(isDeleted=False) & (
-                Q(addressMunicipality=recordId) | Q(sponsorAddressMunicipality=recordId))).first()
+                Q(addressState=recordId) | Q(sponsorAddressState=recordId))).first()
             if schoolContact:
                 entity = 'SchoolContact'
             else:
                 sponsorContact = SponsorContact.objects(Q(isDeleted=False) & (
-                    Q(addressMunicipality=recordId) | Q(schoolAddressMunicipality=recordId))).first()
+                    Q(addressState=recordId) | Q(schoolAddressState=recordId))).first()
                 if sponsorContact:
                     entity = 'SponsorContact'
                 else:
                     coordinatorContact = CoordinatorContact.objects(
-                        Q(isDeleted=False) & Q(addressMunicipality=recordId)).first()
+                        Q(isDeleted=False) & Q(addressState=recordId)).first()
                     if coordinatorContact:
                         entity = 'CoordinatorContact'
-
         if not entity:
             findSchool = RequestFindCoordinator.objects(
-                isDeleted=False, addressMunicipality=recordId).first()
+                isDeleted=False, addressState=recordId).first()
             if findSchool:
                 entity = 'RequestFindSchool'
             else:
                 findSponsor = RequestFindSponsor.objects(
-                    isDeleted=False, addressMunicipality=recordId).first()
+                    isDeleted=False, addressState=recordId).first()
                 if findSponsor:
                     entity = 'RequestFindSponsor'
                 else:
                     findCoordinator = RequestFindCoordinator.objects(
-                        isDeleted=False, addressMunicipality=recordId).first()
+                        isDeleted=False, addressState=recordId).first()
                     if findCoordinator:
                         entity = 'RequestFindCoordinator'
         if not entity:

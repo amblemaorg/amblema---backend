@@ -19,9 +19,7 @@ class StudentService():
 
         peca = PecaProject.objects(
             isDeleted=False,
-            id=pecaId,
-            school__sections__id=sectionId,
-            school__sections__isDeleted=False).first()
+            id=pecaId).first()
 
         if peca:
             section = peca.school.sections.filter(
@@ -66,16 +64,13 @@ class StudentService():
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sectionId": sectionId})
+                                   payload={"pecaId": pecaId})
 
     def update(self, pecaId, sectionId, studentId, jsonData):
 
         peca = PecaProject.objects.filter(
             id=pecaId,
-            school__sections__id=sectionId,
-            school__sections__isDeleted=False,
-            school__sections__students__id=studentId,
-            school__sections__students__isDeleted=False
+            isDeleted=False
         ).first()
 
         if peca:
@@ -112,42 +107,73 @@ class StudentService():
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sectionId": sectionId, "studentId": studentId})
+                                   payload={"pecaId": pecaId})
 
     def delete(self, pecaId, sectionId, studentId):
         """
         Delete (change isDeleted to True) a record
         """
-        peca = PecaProject.objects.filter(
+        peca = PecaProject.objects(
             id=pecaId,
-            school__sections__id=sectionId,
-            school__sections__isDeleted=False,
-            school__sections__students__id=studentId,
-            school__sections__students__isDeleted=False
+            isDeleted=False
         ).first()
-
         if peca:
+            section = peca.school.sections.filter(
+                isDeleted=False, id=sectionId).first()
+            if section:
+                student = section.students.filter(
+                    isDeleted=False, id=studentId).first()
+                if student:
+                    entity = ''
+                    # validate olympics
+                    for lapse in [1, 2, 3]:
+                        olympics = peca['lapse{}'.format(lapse)].olympics
+                        if olympics:
+                            enrolled = olympics.students.filter(
+                                id=studentId).first()
+                            if enrolled:
+                                entity = 'Olympics'
+                                break
+                    if entity:
+                        return {
+                            'status': '0',
+                            'entity': entity,
+                            'msg': 'Record has an active related entity'
+                        }, 419
 
-            try:
-                for section in peca.school.sections:
-                    if str(section.id) == sectionId and not section.isDeleted:
-                        for student in section.students:
-                            if str(student.id) == studentId and not student.isDeleted:
-                                student.isDeleted = True
-                                peca.school.nStudents -= 1
-                                SchoolUser.objects(id=peca.project.school.id).update(
-                                    dec__school__nStudents=1)
-                                SchoolYear.objects(isDeleted=False, status="1").update(
-                                    dec__nStudents=1)
-                peca.save()
-                return "Record deleted successfully", 200
-            except Exception as e:
-                return {'status': 0, 'message': str(e)}, 400
+                    try:
+                        schoolYear = peca.schoolYear.fetch()
 
+                        if student.hasDiagnostics():
+                            student.deleteDiagnostics(
+                                [1, 2, 3],
+                                ['wordsPerMin', 'multiplicationsPerMin', 'operationsPerMin'])
+                            section.refreshDiagnosticsSummary()
+                            peca.school.refreshDiagnosticsSummary()
+                            schoolYear.refreshDiagnosticsSummary()
+
+                        student.isDeleted = True
+                        peca.school.nStudents -= 1
+                        peca.save()
+                        SchoolUser.objects(id=peca.project.school.id).update(
+                            dec__school__nStudents=1)
+                        schoolYear.nStudents -= 1
+                        schoolYear.save()
+                        return "Record deleted successfully", 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
+                else:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"studentId": studentId})
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"sectionId": sectionId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sectionId": sectionId, "studentId": studentId})
+                                   payload={"pecaId": pecaId})
 
     def checkForDuplicated(self, section, newStudent):
         for s in section.students.filter(isDeleted=False):

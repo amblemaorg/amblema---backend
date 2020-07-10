@@ -4,25 +4,48 @@
 from mongoengine import (
     EmbeddedDocument,
     StringField,
+    URLField,
+    IntField,
     ListField,
     EmbeddedDocumentListField)
 from marshmallow import Schema, fields, post_load, EXCLUDE
 
-from app.helpers.ma_schema_validators import not_blank, validate_image
+from app.helpers.ma_schema_validators import not_blank, validate_image, validate_url
 from app.helpers.ma_schema_fields import MAImageField
 from app.blueprints.web_content.models.templates_model import (
     Testimonial, TestimonialSchema)
+
+
+class Sponsor(EmbeddedDocument):
+    id = StringField()
+    name = StringField()
+    image = StringField()
+    webSite = URLField()
+    position = IntField()
 
 
 class SponsorPage(EmbeddedDocument):
     backgroundImage = StringField(required=True)
     testimonials = EmbeddedDocumentListField(Testimonial, required=True)
     steps = ListField(StringField(), required=True)
+    sponsors = EmbeddedDocumentListField(Sponsor)
 
 
 """
 SCHEMAS FOR MODELS 
 """
+
+
+class SponsorSchema(Schema):
+    id = fields.Str()
+    name = fields.Str()
+    image = MAImageField(validate=(validate_image))
+    webSite = fields.Str(validate=(validate_url))
+    position = fields.Int()
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Sponsor(**data)
 
 
 class SponsorPageSchema(Schema):
@@ -33,6 +56,7 @@ class SponsorPageSchema(Schema):
     testimonials = fields.List(fields.Nested(
         TestimonialSchema), required=True, validate=not_blank)
     steps = fields.List(fields.String(validate=not_blank))
+    sponsors = fields.List(fields.Nested(SponsorSchema))
 
     @post_load
     def make_document(self, data, **kwargs):

@@ -35,6 +35,9 @@ class WebContentService(GenericServices):
                 statisticsService = StatisticsService()
                 data['homePage']['nStudents'] = statisticsService.get_count_students()
                 data['homePage']['diagnostics'] = statisticsService.get_diagnostics_last_five_years()
+            if page == 'sponsorPage':
+                data['sponsorPage']['sponsors'] = sorted(
+                    data['sponsorPage']['sponsors'], key=lambda x: (x['position']))
 
             return data, 200
 

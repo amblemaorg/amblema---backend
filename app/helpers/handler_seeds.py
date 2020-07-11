@@ -5,25 +5,43 @@ def create_entities():
     from app.models.entity_model import Entity
 
     Entity(
-        name="Rol",
+        name="PECA Actividades genéricas",
+        devName="ActivityPeca",
         actions=[
             {
-                "name": "role_view",
+                "name": "activity_peca_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "role_create",
+                "name": "activity_peca_edit",
+                "label": "Editar",
+                "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Slider de actividades",
+        devName="ActivitiesSlider",
+        actions=[
+            {
+                "name": "activities_slider_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "activities_slider_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "role_edit",
+                "name": "activities_slider_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "role_delete",
+                "name": "activities_slider_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -31,25 +49,145 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Municipio",
+        name="PECA AmbLeMonedas",
+        devName="AmblecoinsPeca",
         actions=[
             {
-                "name": "municipality_view",
+                "name": "amblecoins_peca_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "municipality_create",
+                "name": "amblecoins_peca_edit",
+                "label": "Editar",
+                "sort": 3
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Convención anual",
+        devName="AnnualConventionPeca",
+        actions=[
+            {
+                "name": "annual_convention_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "annual_convention_peca_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+        ]
+    ).save()
+
+    Entity(
+        name="PECA preparación anual",
+        devName="AnnualPreparationPeca",
+        actions=[
+            {
+                "name": "annual_preparation_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "annual_preparation_peca_edit",
+                "label": "Editar",
+                "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Taller inicial",
+        devName="InitialWorkshopPeca",
+        actions=[
+            {
+                "name": "initial_workshop_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "initial_workshop_edit",
+                "label": "Editar",
+                "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Planificación de lapso",
+        devName="LapsePlanningPeca",
+        actions=[
+            {
+                "name": "lapse_planning_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "lapse_planning_peca_edit",
+                "label": "Editar",
+                "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Olimpíadas",
+        devName="OlympicsPeca",
+        actions=[
+            {
+                "name": "olympics_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "olympics_peca_edit",
+                "label": "Editar",
+                "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Escuela",
+        devName="SchoolPeca",
+        actions=[
+            {
+                "name": "school_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "school_peca_edit",
+                "label": "Editar",
+                "sort": 3
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Docente",
+        devName="Teacher",
+        actions=[
+            {
+                "name": "teacher_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "teacher_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "municipality_edit",
+                "name": "teacher_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "municipality_delete",
+                "name": "teacher_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -57,25 +195,26 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Año Escolar",
+        name="PECA Testimonio de docentes",
+        devName="TeacherTestimonial",
         actions=[
             {
-                "name": "school_year_view",
+                "name": "teacher_testimonial_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "school_year_create",
+                "name": "teacher_testimonial_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "school_year_edit",
+                "name": "teacher_testimonial_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "school_year_delete",
+                "name": "teacher_testimonial_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -83,25 +222,26 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Usuario Coordinador",
+        name="PECA Sección",
+        devName="Section",
         actions=[
             {
-                "name": "coord_user_view",
+                "name": "section_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "coord_user_create",
+                "name": "section_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "coord_user_edit",
+                "name": "section_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "coord_user_delete",
+                "name": "section_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -109,25 +249,26 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Usuario Padrino",
+        name="PECA Estudiante",
+        devName="Student",
         actions=[
             {
-                "name": "sponsor_user_view",
+                "name": "student_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "sponsor_user_create",
+                "name": "student_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "sponsor_user_edit",
+                "name": "student_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "sponsor_user_delete",
+                "name": "student_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -135,7 +276,96 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Usuario Escuela",
+        name="PECA Anuario",
+        devName="Yearbook",
+        actions=[
+            {
+                "name": "yearbook_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "yearbook_edit",
+                "label": "Editar",
+                "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Actividad especial de lapso",
+        devName="SpecialActivity",
+        actions=[
+            {
+                "name": "special_activity_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "special_activity_edit",
+                "label": "Editar",
+                "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Usuario administrador",
+        devName="AdminUser",
+        actions=[
+            {
+                "name": "admin_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "admin_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
+                "name": "admin_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+            {
+                "name": "admin_delete",
+                "label": "Eliminar",
+                "sort": 4
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Usuario coordinador",
+        devName="CoordinatorUser",
+        actions=[
+            {
+                "name": "coordinator_user_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "coordinator_user_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
+                "name": "coordinator_user_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+            {
+                "name": "coordinator_user_delete",
+                "label": "Eliminar",
+                "sort": 4
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Usuario escuela",
+        devName="SchoolUser",
         actions=[
             {
                 "name": "school_user_view",
@@ -161,59 +391,8 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Contenido Web",
-        actions=[
-            {
-                "name": "web_content_view",
-                "label": "Ver",
-                "sort": 1
-            },
-            {
-                "name": "web_content_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
-                "name": "web_content_edit",
-                "label": "Editar",
-                "sort": 3
-            },
-            {
-                "name": "web_content_delete",
-                "label": "Eliminar",
-                "sort": 4
-            }
-        ]
-    ).save()
-
-    Entity(
-        name="Post",
-        actions=[
-            {
-                "name": "post_view",
-                "label": "Ver",
-                "sort": 1
-            },
-            {
-                "name": "post_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
-                "name": "post_edit",
-                "label": "Editar",
-                "sort": 3
-            },
-            {
-                "name": "post_delete",
-                "label": "Eliminar",
-                "sort": 4
-            }
-        ]
-    ).save()
-
-    Entity(
-        name="Módulo de aprendizaje",
+        name="Usuario padrino",
+        devName="SponsorUser",
         actions=[
             {
                 "name": "sponsor_user_view",
@@ -239,103 +418,77 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Solicitud de Contacto Escuela",
+        name="Proyecto ambiental",
+        devName="EnvironmentalProject",
         actions=[
             {
-                "name": "request_school_contact_view",
+                "name": "environmental_project_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "request_school_contact_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
-                "name": "request_school_contact_edit",
+                "name": "environmental_project_edit",
                 "label": "Editar",
-                "sort": 3
-            },
-            {
-                "name": "request_school_contact_delete",
-                "label": "Eliminar",
-                "sort": 4
+                "sort": 2
             }
         ]
     ).save()
 
     Entity(
-        name="Solicitud de Contacto Padrino",
+        name="Estrategias de seguimiento de actividades",
+        devName="MonitoringActivity",
         actions=[
             {
-                "name": "request_sponsor_contact_view",
+                "name": "monitoring_activity_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "request_sponsor_contact_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
-                "name": "request_sponsor_contact_edit",
+                "name": "monitoring_activity_edit",
                 "label": "Editar",
-                "sort": 3
-            },
-            {
-                "name": "request_sponsor_contact_delete",
-                "label": "Eliminar",
-                "sort": 4
+                "sort": 2
             }
         ]
     ).save()
 
     Entity(
-        name="Solicitud de Contacto Padrino",
+        name="Metas",
+        devName="GoalSetting",
         actions=[
             {
-                "name": "request_coord_contact_view",
+                "name": "goal_setting_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "request_coord_contact_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
-                "name": "request_coord_contact_edit",
+                "name": "goal_setting_edit",
                 "label": "Editar",
-                "sort": 3
-            },
-            {
-                "name": "request_coord_contact_delete",
-                "label": "Eliminar",
-                "sort": 4
+                "sort": 2
             }
         ]
     ).save()
 
     Entity(
-        name="Paso Previo PECA",
+        name="Módulos de aprendizaje",
+        devName="LearningModule",
         actions=[
             {
-                "name": "peca_step_view",
+                "name": "learning_module_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "peca_step_create",
+                "name": "learning_module_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "peca_step_edit",
+                "name": "learning_module_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "peca_step_delete",
+                "name": "learning_module_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -344,6 +497,7 @@ def create_entities():
 
     Entity(
         name="Proyecto",
+        devName="Project",
         actions=[
             {
                 "name": "project_view",
@@ -369,25 +523,21 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Solicitud de Aprobación Paso Previo PECA",
+        name="Solicitud de aprobación de contenido",
+        devName="RequestContentApproval",
         actions=[
             {
-                "name": "request_approval_step_view",
+                "name": "request_content_approval_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "request_approval_step_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
-                "name": "request_approval_step_edit",
+                "name": "request_content_approval_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "request_approval_step_delete",
+                "name": "request_content_approval_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -395,25 +545,26 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Solicitud Encontrar Coordinador",
+        name="Solicitud de creación de usuario",
+        devName="RequestFindUser",
         actions=[
             {
-                "name": "request_find_coord_view",
+                "name": "request_find_user_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "request_find_coord_create",
+                "name": "request_find_user_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "request_find_coord_edit",
+                "name": "request_find_user_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "request_find_coord_delete",
+                "name": "request_find_user_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -421,25 +572,43 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Solicitud Encontrar Padrino",
+        name="Solicitud de creación de proyectos",
+        devName="RequestCreateProject",
         actions=[
             {
-                "name": "request_find_sponsor_view",
+                "name": "request_create_project_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "request_find_sponsor_create",
-                "label": "Crear",
+                "name": "request_create_project_edit",
+                "label": "Editar",
                 "sort": 2
             },
             {
-                "name": "request_find_sponsor_edit",
+                "name": "request_create_project_delete",
+                "label": "Eliminar",
+                "sort": 3
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Solicitud de confirmación de proyectos",
+        devName="RequestProjectApproval",
+        actions=[
+            {
+                "name": "request_project_approval_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "request_project_approval_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "request_find_sponsor_delete",
+                "name": "request_project_approval_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -447,25 +616,26 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Solicitud Encontrar Escuela",
+        name="Rol",
+        devName="Role",
         actions=[
             {
-                "name": "request_find_school_view",
+                "name": "role_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "request_find_school_create",
+                "name": "role_create",
                 "label": "Crear",
                 "sort": 2
             },
             {
-                "name": "request_find_school_edit",
+                "name": "role_edit",
                 "label": "Editar",
                 "sort": 3
             },
             {
-                "name": "request_find_school_delete",
+                "name": "role_delete",
                 "label": "Eliminar",
                 "sort": 4
             }
@@ -473,33 +643,193 @@ def create_entities():
     ).save()
 
     Entity(
-        name="Configuración Taller Inicial",
+        name="Período escolar",
+        devName="SchoolYear",
         actions=[
             {
-                "name": "config_initial_workshop_view",
+                "name": "school_year_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "config_initial_workshop_edit",
-                "label": "Editar",
+                "name": "school_year_create",
+                "label": "Iniciar",
                 "sort": 2
+            },
+            {
+                "name": "school_year_enable_activity",
+                "label": "Habilitar actividades por lapso",
+                "sort": 3
+            },
+            {
+                "name": "school_year_enroll_school",
+                "label": "Inscribir escuelas",
+                "sort": 4
             }
         ]
     ).save()
 
     Entity(
-        name="Configuración Planificación de Lapso",
+        name="Municipio",
+        devName="Municipality",
         actions=[
             {
-                "name": "config_lapse_planning_view",
+                "name": "municipality_view",
                 "label": "Ver",
                 "sort": 1
             },
             {
-                "name": "config_lapse_planning_edit",
-                "label": "Editar",
+                "name": "municipality_create",
+                "label": "Crear",
                 "sort": 2
+            },
+            {
+                "name": "municipality_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+            {
+                "name": "municipality_delete",
+                "label": "Eliminar",
+                "sort": 4
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Pasos previos",
+        devName="Step",
+        actions=[
+            {
+                "name": "step_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "step_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
+                "name": "step_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+            {
+                "name": "step_delete",
+                "label": "Eliminar",
+                "sort": 4
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Actividades",
+        devName="Activity",
+        actions=[
+            {
+                "name": "activity_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "activity_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
+                "name": "activity_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+            {
+                "name": "activity_delete",
+                "label": "Eliminar",
+                "sort": 4
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Reportes",
+        devName="Report",
+        actions=[
+            {
+                "name": "report_diagnostics_view",
+                "label": "Diagnósticos",
+                "sort": 1
+            },
+            {
+                "name": "report_sponsors_view",
+                "label": "Padrinos",
+                "sort": 2
+            },
+            {
+                "name": "report_sponsor_actives_view",
+                "label": "Padrinos activos - inactivos",
+                "sort": 3
+            },
+            {
+                "name": "report_coordinator_view",
+                "label": "Coordinadores",
+                "sort": 4
+            },
+            {
+                "name": "report_school_view",
+                "label": "Escuelas",
+                "sort": 5
+            },
+            {
+                "name": "report_teacher_view",
+                "label": "Docentes",
+                "sort": 6
+            },
+            {
+                "name": "report_olympics_view",
+                "label": "Olimpíadas de matemáticas",
+                "sort": 7
+            },
+            {
+                "name": "report_enrolled_schools_view",
+                "label": "Escuelas inscritas",
+                "sort": 8
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="Web",
+        devName="Web",
+        actions=[
+            {
+                "name": "home_page_edit",
+                "label": "Configurar página inicio",
+                "sort": 1
+            },
+            {
+                "name": "about_us_page_edit",
+                "label": "Administrar página nosotros",
+                "sort": 2
+            },
+            {
+                "name": "sponsor_page_edit",
+                "label": "Administrar página padrinos",
+                "sort": 3
+            },
+            {
+                "name": "coordinator_page_edit",
+                "label": "Administrar página coordinadores",
+                "sort": 4
+            },
+            {
+                "name": "school_page_edit",
+                "label": "Administrar página escuelas",
+                "sort": 4
+            },
+            {
+                "name": "blog_page_edit",
+                "label": "Administrar blog",
+                "sort": 4
             }
         ]
     ).save()
@@ -805,23 +1135,25 @@ def create_standard_roles():
                 isStandard=True,
                 permissions=[]
             )
-            entities = Entity.objects(isDeleted=False)
-            for entity in entities:
-                permission = Permission(
-                    entityId=str(entity.id),
-                    entityName=entity.name
-                )
-                for action in entity.actions:
-                    permission.actions.append(
-                        ActionHandler(
-                            name=action.name,
-                            label=action.label,
-                            sort=1,
-                            allowed=True
-                        )
+        else:
+            role.permissions = []
+        entities = Entity.objects(isDeleted=False)
+        for entity in entities:
+            permission = Permission(
+                entityId=str(entity.id),
+                entityName=entity.name
+            )
+            for action in entity.actions:
+                permission.actions.append(
+                    ActionHandler(
+                        name=action.name,
+                        label=action.label,
+                        sort=action.sort,
+                        allowed=True
                     )
-                role.permissions.append(permission)
-            role.save()
+                )
+            role.permissions.append(permission)
+        role.save()
     return "ok"
 
 

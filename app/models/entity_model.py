@@ -20,6 +20,7 @@ class Action(EmbeddedDocument):
 
 class Entity(Document):
     name = fields.StringField(unique_c=True, required=True)
+    devName = fields.StringField()
     isDeleted = fields.BooleanField(default=False)
     actions = fields.EmbeddedDocumentListField(Action)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

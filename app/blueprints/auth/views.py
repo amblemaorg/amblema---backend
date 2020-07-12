@@ -34,6 +34,7 @@ class LoginView(MethodView):
         schema = LoginSchema()
 
         try:
+            site = request.args.get('site')
             jsonData = request.get_json()
             data = schema.load(jsonData)
             user = User.objects(email=data['email'], isDeleted=False).only(
@@ -123,13 +124,24 @@ class LoginView(MethodView):
             access_token = create_access_token(payload)
             refresh_token = create_refresh_token(payload)
 
-            resp = jsonify(
-                {'msg': 'You logged in successfully',
-                 'access_token': access_token,
-                 'refresh_token': refresh_token
-                 })
-            #set_access_cookies(resp, access_token)
-            #set_refresh_cookies(resp, refresh_token)
+            if site and site == 'peca':
+                token = {
+                    'msg': 'You logged in successfully',
+                    'token_access': {
+                        'access_token': access_token,
+                        'refresh_token': refresh_token
+                    }
+                }
+            else:
+                token = {
+                    'msg': 'You logged in successfully',
+                    'access_token': access_token,
+                    'refresh_token': refresh_token
+                }
+            resp = jsonify(token)
+
+            # set_access_cookies(resp, access_token)
+            # set_refresh_cookies(resp, refresh_token)
             return resp, 200
 
         except ValidationError as err:

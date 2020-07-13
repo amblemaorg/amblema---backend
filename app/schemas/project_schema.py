@@ -8,6 +8,7 @@ from marshmallow import (
     validate,
     pre_load,
     post_load,
+    post_dump,
     EXCLUDE)
 
 from app.schemas import fields
@@ -21,6 +22,7 @@ from app.models.user_model import User
 from app.models.school_year_model import SchoolYear
 from app.schemas.step_schema import FileSchema
 from app.schemas.shared_schemas import CheckSchema
+from app.helpers.ma_schema_fields import serialize_links
 
 
 class StepFieldsSchema(Schema):
@@ -77,6 +79,12 @@ class ApprovalSchema(Schema):
     status = fields.Str(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+    @post_dump
+    def process_dump(self, data, **kwargs):
+        if 'data' in data:
+            data['data'] = serialize_links(data['data'])
+        return data
 
 
 class StepControlSchema(StepFieldsSchema):

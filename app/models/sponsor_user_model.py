@@ -21,7 +21,7 @@ class SponsorUser(User):
     contactEmail = fields.EmailField()
     contactPhone = fields.StringField()
     image = fields.StringField(null=True)
-    webSite = fields.URLField()
+    webSite = fields.StringField()
     projects = fields.EmbeddedDocumentListField(ProjectReference)
     phase = fields.StringField(max_length=1, default="1")
     yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())

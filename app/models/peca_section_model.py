@@ -79,15 +79,15 @@ class Section(EmbeddedDocument):
                 self.diagnostics.summary[diag] = round(
                     (
                         self.diagnostics.lapse1[diag]
-                        + self.diagnostics.lapse2.diag
-                        + self.diagnostics.lapse3.diag
+                        + self.diagnostics.lapse2[diag]
+                        + self.diagnostics.lapse3[diag]
                     ) / 3,
                     3)
                 self.diagnostics.summary['{}Index'.format(diag)] = round(
                     (
-                        self.diagnostics.lapse1['{}Index']
-                        + self.diagnostics.lapse2['{}Index']
-                        + self.diagnostics.lapse3['{}Index']) / 3,
+                        self.diagnostics.lapse1['{}Index'.format(diag)]
+                        + self.diagnostics.lapse2['{}Index'.format(diag)]
+                        + self.diagnostics.lapse3['{}Index'.format(diag)]) / 3,
                     3)
             else:
                 self.diagnostics.summary[diag] = 0

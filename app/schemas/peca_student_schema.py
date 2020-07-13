@@ -26,6 +26,10 @@ class DiagnosticSchema(Schema):
     mathDate = fields.DateTime(dump_only=True)
     logicDate = fields.DateTime(dump_only=True)
 
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
 
 class StudentSchema(Schema):
     id = fields.Str(dump_only=True)
@@ -49,3 +53,7 @@ class StudentSchema(Schema):
     lapse3 = fields.Nested(DiagnosticSchema(), dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True

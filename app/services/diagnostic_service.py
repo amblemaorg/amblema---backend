@@ -22,72 +22,71 @@ class DiagnosticService():
 
         peca = PecaProject.objects(
             isDeleted=False,
-            id=pecaId,
-            school__sections__id=sectionId,
-            school__sections__isDeleted=False,
-            school__sections__students__id=studentId,
-            school__sections__students__isDeleted=False).first()
+            id=pecaId).first()
 
         if peca:
-            try:
-                if diagnosticType == "reading":
-                    schema = DiagnosticSchema(
-                        only=('wordsPerMin', 'wordsPerMinIndex', 'readingDate'))
-                elif diagnosticType == "math":
-                    schema = DiagnosticSchema(
-                        only=(
-                            'multiplicationsPerMin',
-                            'multiplicationsPerMinIndex',
-                            'operationsPerMin',
-                            'operationsPerMinIndex',
-                            'mathDate',
-                            'logicDate'))
-                data = schema.load(jsonData)
+            section = peca.school.sections.filter(
+                id=sectionId, isDeleted=False).first()
+            if section:
+                student = section.students.filter(
+                    id=studentId, isDeleted=False).first()
+                if student:
+                    try:
+                        if diagnosticType == "reading":
+                            schema = DiagnosticSchema(
+                                only=('wordsPerMin', 'wordsPerMinIndex', 'readingDate'))
+                        elif diagnosticType == "math":
+                            schema = DiagnosticSchema(
+                                only=(
+                                    'multiplicationsPerMin',
+                                    'multiplicationsPerMinIndex',
+                                    'operationsPerMin',
+                                    'operationsPerMinIndex',
+                                    'mathDate',
+                                    'logicDate'))
+                        data = schema.load(jsonData)
 
-                grade = peca.school.sections.filter(
-                    id=sectionId, isDeleted=False).first().grade
-                setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(
-                    grade)]
+                        grade = section.grade
+                        setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(
+                            grade)]
 
-                diagnostic = peca.school.sections.filter(
-                    id=sectionId, isDeleted=False).first().students.filter(
-                    id=studentId, isDeleted=False
-                ).first()['lapse{}'.format(lapse)]
+                        diagnostic = student['lapse{}'.format(lapse)]
 
-                for field in schema.dump(data).keys():
-                    diagnostic[field] = data[field]
+                        for field in schema.dump(data).keys():
+                            diagnostic[field] = data[field]
 
-                if diagnosticType == "reading":
-                    diagnostic.readingDate = datetime.utcnow()
-                elif diagnosticType == "math":
-                    if diagnostic.multiplicationsPerMin and not diagnostic.mathDate:
-                        diagnostic.mathDate = datetime.utcnow()
-                    if diagnostic.operationsPerMin and not diagnostic.logicDate:
-                        diagnostic.logicDate = datetime.utcnow()
-                diagnostic.calculateIndex(setting)
+                        if diagnosticType == "reading":
+                            diagnostic.readingDate = datetime.utcnow()
+                        elif diagnosticType == "math":
+                            if diagnostic.multiplicationsPerMin and not diagnostic.mathDate:
+                                diagnostic.mathDate = datetime.utcnow()
+                            if diagnostic.operationsPerMin and not diagnostic.logicDate:
+                                diagnostic.logicDate = datetime.utcnow()
+                        diagnostic.calculateIndex(setting)
+                        section.refreshDiagnosticsSummary()
+                        peca.school.refreshDiagnosticsSummary()
+                        peca.save()
+                        schoolYear = peca.schoolYear.fetch()
+                        schoolYear.refreshDiagnosticsSummary()
+                        schoolYear.save()
+                        return {
+                            "student": schema.dump(diagnostic),
+                            "sectionSummary": DiagnosticsSchema().dump(section.diagnostics)}, 200
 
-                for section in peca.school.sections:
-                    if str(section.id) == sectionId and not section.isDeleted:
-                        for student in section.students:
-                            if str(student.id) == studentId and not student.isDeleted:
-                                student['lapse{}'.format(
-                                    lapse)] = diagnostic
-                                section.refreshDiagnosticsSummary()
-                                peca.school.refreshDiagnosticsSummary()
-                                peca.save()
-                                schoolYear = peca.schoolYear.fetch()
-                                schoolYear.refreshDiagnosticsSummary()
-                                schoolYear.save()
-                                return {
-                                    "student": schema.dump(diagnostic),
-                                    "sectionSummary": DiagnosticsSchema().dump(section.diagnostics)}, 200
-
-            except ValidationError as err:
-                return err.normalized_messages(), 400
+                    except ValidationError as err:
+                        return err.normalized_messages(), 400
+                else:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"studentId": studentId})
+            else:
+                raise RegisterNotFound(message="Record not found",
+                                       status_code=404,
+                                       payload={"sectionId": sectionId})
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
-                                   payload={"pecaId": pecaId, "sectionId": sectionId, "studentId": studentId})
+                                   payload={"pecaId": pecaId})
 
     def delete(self, diagnosticType, lapse, pecaId, sectionId, studentId):
         """

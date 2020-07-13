@@ -16,15 +16,18 @@ from app.schemas.sponsor_user_schema import SponsorUserSchema
 from app.schemas.coordinator_user_schema import CoordinatorUserSchema
 from app.services.user_service import UserService
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class UserController(Resource):
 
+    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         service = getService(request)
         return service.getAllRecords(filters=filters)
 
+    @jwt_required
     def post(self):
         jsonData = request.get_json()
         service = getService(request)
@@ -33,10 +36,12 @@ class UserController(Resource):
 
 class UserHandlerController(Resource):
 
+    @jwt_required
     def get(self, userId):
         service = getService(request)
         return service.getRecord(userId)
 
+    @jwt_required
     def put(self, userId):
         jsonData = request.get_json()
         service = getService(request)
@@ -45,6 +50,7 @@ class UserHandlerController(Resource):
             jsonData=jsonData,
             partial=(True))
 
+    @jwt_required
     def delete(self, userId):
         service = getService(request)
         return service.deleteRecord(userId)

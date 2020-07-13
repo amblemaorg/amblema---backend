@@ -9,6 +9,7 @@ from app.models.request_content_approval_model import RequestContentApproval
 from app.schemas.request_content_approval_schema import RequestContentApprovalSchema
 from app.services.request_content_approval_service import RequestContentApprovalService
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class ReqContentApprovalController(Resource):
@@ -17,6 +18,7 @@ class ReqContentApprovalController(Resource):
         Schema=RequestContentApprovalSchema
     )
 
+    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(
@@ -29,9 +31,11 @@ class ReqContentApprovalHandlerController(Resource):
         Schema=RequestContentApprovalSchema
     )
 
+    @jwt_required
     def get(self, id):
         return self.service.getRecord(id)
 
+    @jwt_required
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -40,5 +44,6 @@ class ReqContentApprovalHandlerController(Resource):
             files=request.files,
             partial=True)
 
+    @jwt_required
     def delete(self, id):
         return self.service.deleteRecord(id)

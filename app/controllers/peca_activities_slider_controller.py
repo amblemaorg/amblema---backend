@@ -6,12 +6,14 @@ from flask_restful import Resource
 
 from app.services.peca_activities_slider_service import ActivitiesSliderService
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class ActivitiesSliderController(Resource):
 
     service = ActivitiesSliderService()
 
+    @jwt_required
     def put(self, pecaId):
         userId = request.args.get('userId')
         jsonData = request.get_json()

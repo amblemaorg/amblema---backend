@@ -18,22 +18,7 @@ from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_year_model import SchoolYear
 from app.models.shared_embedded_documents import Link
-from app.schemas.shared_schemas import CheckTemplateSchema
-
-
-class FileSchema(Schema):
-    name = fields.Str(validate=not_blank)
-    url = fields.Str(validate=(not_blank, validate_url))
-
-    @pre_load
-    def process_input(self, data, **kwargs):
-        if isinstance(data, str):
-            data = json.loads(data)
-        return data
-
-    @post_load
-    def make_document(self, data, **kwargs):
-        return Link(**data)
+from app.schemas.shared_schemas import CheckTemplateSchema, FileSchema
 
 
 class StepSchema(Schema):

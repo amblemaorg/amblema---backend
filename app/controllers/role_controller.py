@@ -9,6 +9,7 @@ from app.services.role_service import RoleService
 from app.models.role_model import Role
 from app.schemas.role_schema import RoleSchema
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class RoleController(Resource):
@@ -16,10 +17,12 @@ class RoleController(Resource):
         Model=Role,
         Schema=RoleSchema)
 
+    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(filters=filters, exclude=("permissions",))
 
+    @jwt_required
     def post(self):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
@@ -31,9 +34,11 @@ class RoleHandlerController(Resource):
         Schema=RoleSchema
     )
 
+    @jwt_required
     def get(self, roleId):
         return self.service.getRecord(roleId)
 
+    @jwt_required
     def put(self, roleId):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -41,5 +46,6 @@ class RoleHandlerController(Resource):
             jsonData=jsonData,
             partial=True)
 
+    @jwt_required
     def delete(self, roleId):
         return self.service.deleteRecord(roleId)

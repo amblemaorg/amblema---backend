@@ -13,12 +13,14 @@ from app.helpers.handler_request import getQueryParams
 from app.services.statistics_active_sponsor_service import StatisticsActiveSponsorService
 from app.services.statistics_inactive_sponsor_service import StatisticsInactiveSponsorService
 from app.services.statistics_number_active_schools_service import StatisticsNumberActiveSchoolsService
+from app.helpers.handler_authorization import jwt_required
 
 
 class UserSummaryController(Resource):
 
     service = StatisticsService()
 
+    @jwt_required
     def get(self):
         return self.service.get_count_users()
 
@@ -26,6 +28,7 @@ class UserSummaryController(Resource):
 class UserReportController(Resource):
     service = StatisticsUserService()
 
+    @jwt_required
     def get(self, userType):
         filters = getQueryParams(request)
         return self.service.get_users(userType, filters)
@@ -35,6 +38,7 @@ class DiagnosticReportController(Resource):
 
     service = StatisticsDiagnosticService()
 
+    @jwt_required
     def get(self, schoolYearId, schoolId):
         diagnostics = None
         if request.args:
@@ -47,6 +51,7 @@ class OlympicsReportCtrl(Resource):
 
     service = StatisticsOlympicsService()
 
+    @jwt_required
     def get(self, startPeriodId, endPeriodId):
         return self.service.get(startPeriodId, endPeriodId)
 
@@ -55,6 +60,7 @@ class ActiveSponsorsGraphicController(Resource):
 
     service = StatisticsActiveSponsorService()
 
+    @jwt_required
     def get(self, startPeriodId, endPeriodId):
         return self.service.get(startPeriodId, endPeriodId)
 
@@ -63,13 +69,15 @@ class InactiveSponsorsGraphicController(Resource):
 
     service = StatisticsInactiveSponsorService()
 
+    @jwt_required
     def get(self, startPeriodId, endPeriodId):
         return self.service.get(startPeriodId, endPeriodId)
 
 
 class NumberActiveSchoolsController(Resource):
-    
+
     service = StatisticsNumberActiveSchoolsService()
 
+    @jwt_required
     def get(self, startPeriodId, endPeriodId):
         return self.service.get(startPeriodId, endPeriodId)

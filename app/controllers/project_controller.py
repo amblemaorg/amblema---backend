@@ -10,6 +10,7 @@ from app.services.project_handler_service import ProjectHandlerService
 from app.models.project_model import Project
 from app.schemas.project_schema import ProjectSchema
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class ProjectController(Resource):
@@ -18,6 +19,7 @@ class ProjectController(Resource):
         Model=Project,
         Schema=ProjectSchema)
 
+    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(
@@ -26,6 +28,7 @@ class ProjectController(Resource):
                 "stepsProgress",
             ))
 
+    @jwt_required
     def post(self):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
@@ -37,9 +40,11 @@ class ProjectHandlerController(Resource):
         Model=Project,
         Schema=ProjectSchema)
 
+    @jwt_required
     def get(self, id):
         return self.service.getRecord(id)
 
+    @jwt_required
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -48,6 +53,7 @@ class ProjectHandlerController(Resource):
             files=request.files,
             partial=True)
 
+    @jwt_required
     def delete(self, id):
         return self.service.deleteRecord(id)
 
@@ -55,6 +61,7 @@ class ProjectHandlerController(Resource):
 class ProjectStepsController(Resource):
     service = ProjectService()
 
+    @jwt_required
     def post(self, id):
         jsonData = request.form.to_dict()
         return self.service.updateStep(id, jsonData, request.files)
@@ -63,6 +70,7 @@ class ProjectStepsController(Resource):
 class ProjectPecaController(Resource):
     service = ProjectService()
 
+    @jwt_required
     def get(self, id):
         """
         create a peca for a project  

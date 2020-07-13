@@ -8,6 +8,7 @@ from app.services.school_year_service import SchoolYearService
 from app.models.school_year_model import SchoolYear
 from app.schemas.school_year_schema import SchoolYearSchema
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class SchoolYearController(Resource):
@@ -16,10 +17,12 @@ class SchoolYearController(Resource):
         Model=SchoolYear,
         Schema=SchoolYearSchema)
 
+    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(filters=filters, only=('id', 'name', 'status'))
 
+    @jwt_required
     def post(self):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
@@ -31,9 +34,11 @@ class SchoolYearHandlerController(Resource):
         Model=SchoolYear,
         Schema=SchoolYearSchema)
 
+    @jwt_required
     def get(self, id):
         return self.service.getRecord(id)
 
+    @jwt_required
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -41,6 +46,7 @@ class SchoolYearHandlerController(Resource):
             jsonData=jsonData,
             partial=True)
 
+    @jwt_required
     def delete(self, id):
         return self.service.deleteRecord(id)
 
@@ -51,6 +57,7 @@ class EnrollCtrl(Resource):
         Model=SchoolYear,
         Schema=SchoolYearSchema)
 
+    @jwt_required
     def put(self, projectId):
         action = request.args.get('action')
         return self.service.schoolEnroll(
@@ -64,5 +71,6 @@ class EnrollSchoolsCtrl(Resource):
         Schema=SchoolYearSchema
     )
 
+    @jwt_required
     def get(self):
         return self.service.availableSchools()

@@ -5,15 +5,18 @@ from flask import request
 from flask_restful import Resource
 
 from app.services.monitoring_activities_service import MonitoringActivitiesService
+from app.helpers.handler_authorization import jwt_required
 
 
 class MonitoringActivitiesController(Resource):
 
     service = MonitoringActivitiesService()
 
+    @jwt_required
     def post(self):
         jsonData = request.get_json()
         return self.service.save(jsonData)
 
+    @jwt_required
     def get(self):
         return self.service.get()

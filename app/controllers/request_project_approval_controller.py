@@ -8,6 +8,7 @@ from app.services.generic_service import GenericServices
 from app.models.request_project_approval_model import RequestProjectApproval
 from app.schemas.request_project_approval_schema import RequestProjectApprovalSchema
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class ReqProjectApprovalController(Resource):
@@ -16,6 +17,7 @@ class ReqProjectApprovalController(Resource):
         Schema=RequestProjectApprovalSchema
     )
 
+    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(
@@ -28,9 +30,11 @@ class ReqProjectApprovalHandlerController(Resource):
         Schema=RequestProjectApprovalSchema
     )
 
+    @jwt_required
     def get(self, id):
         return self.service.getRecord(id)
 
+    @jwt_required
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -39,5 +43,6 @@ class ReqProjectApprovalHandlerController(Resource):
             files=request.files,
             partial=True)
 
+    @jwt_required
     def delete(self, id):
         return self.service.deleteRecord(id)

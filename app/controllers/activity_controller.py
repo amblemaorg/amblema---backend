@@ -13,12 +13,14 @@ from app.services.annual_preparation_service import AnnualPreparationService
 from app.services.annual_convention_service import AnnualConventionService
 from app.services.math_olympic_service import MathOlympicService
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class ActivityController(Resource):
 
     service = ActivityService()
 
+    @jwt_required
     def post(self, lapse):
         jsonData = request.form.to_dict()
         return self.service.save(lapse, jsonData, request.files)
@@ -36,12 +38,14 @@ class ActivityHandlerController(Resource):
         'matholympic': MathOlympicService()
     }
 
+    @jwt_required
     def get(self, id, lapse):
 
         if id in self.standards:
             return self.standards[id].get(lapse)
         return self.service.get(lapse, id)
 
+    @jwt_required
     def put(self, id, lapse):
         jsonData = request.form.to_dict()
         if id in self.standards:
@@ -52,6 +56,7 @@ class ActivityHandlerController(Resource):
             jsonData=jsonData,
             files=request.files)
 
+    @jwt_required
     def delete(self, id, lapse):
         return self.service.delete(lapse, id)
 
@@ -59,6 +64,7 @@ class ActivityHandlerController(Resource):
 class ActivitySummaryController(Resource):
     service = ActivityService()
 
+    @jwt_required
     def get(self):
         filters = None
         if 'status' in request.args:
@@ -66,6 +72,7 @@ class ActivitySummaryController(Resource):
 
         return self.service.getSumary(filters=filters)
 
+    @jwt_required
     def post(self):
         jsonData = request.get_json()
         return self.service.handleEnable(jsonData)

@@ -9,6 +9,7 @@ from app.services.sponsor_contact_service import SponsorContactService
 from app.models.sponsor_contact_model import SponsorContact
 from app.schemas.sponsor_contact_schema import SponsorContactSchema
 from app.helpers.handler_request import getQueryParams
+from app.helpers.handler_authorization import jwt_required
 
 
 class SponsorContactController(Resource):
@@ -17,10 +18,12 @@ class SponsorContactController(Resource):
         Model=SponsorContact,
         Schema=SponsorContactSchema)
 
+    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(filters=filters)
 
+    @jwt_required
     def post(self):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)
@@ -32,9 +35,11 @@ class SponsorContactHandlerController(Resource):
         Model=SponsorContact,
         Schema=SponsorContactSchema)
 
+    @jwt_required
     def get(self, id):
         return self.service.getRecord(id)
 
+    @jwt_required
     def put(self, id):
         jsonData = request.get_json()
         return self.service.updateRecord(
@@ -42,5 +47,6 @@ class SponsorContactHandlerController(Resource):
             jsonData=jsonData,
             partial=True)
 
+    @jwt_required
     def delete(self, id):
         return self.service.deleteRecord(id)

@@ -79,7 +79,7 @@ class Section(EmbeddedDocument):
                 self.diagnostics.summary[diag] = round(
                     (
                         self.diagnostics.lapse1[diag]
-                        + self.diagnostics.lapse[diag]
+                        + self.diagnostics.lapse2[diag]
                         + self.diagnostics.lapse3[diag]
                     ) / 3,
                     3)

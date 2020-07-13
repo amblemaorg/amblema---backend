@@ -6,6 +6,8 @@ from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf
 from app.models.peca_amblecoins_model import AmbleSection
+from app.schemas.shared_schemas import FileSchema
+from app.schemas.learning_module_schema import ImageSchema
 
 
 class SectionSchema(Schema):
@@ -30,6 +32,10 @@ class SectionSchema(Schema):
 
 
 class AmblecoinsPecaSchema(Schema):
+    teachersMeetingFile = fields.Nested(FileSchema(), dump_only=True)
+    teachersMeetingDescription = fields.Str(dump_only=True)
+    piggyBankDescription = fields.Str(dump_only=True)
+    piggyBankSlider = fields.List(fields.Nested(ImageSchema()), dump_only=True)
     meetingDate = fields.DateTime()
     elaborationDate = fields.DateTime()
     sections = fields.List(

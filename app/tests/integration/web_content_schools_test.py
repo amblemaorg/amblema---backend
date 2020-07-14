@@ -559,8 +559,8 @@ class WebContentSchoolTest(unittest.TestCase):
 
         # get web content
         res = self.client().get(
-            '/schoolspage/{}'.format(
-                self.school.pk)
+            '/schoolspage/{} - {}'.format(
+                self.school.code, self.school.name)
         )
         self.assertEqual(res.status_code, 200)
         school = json.loads(res.data.decode('utf8').replace("'", '"'))

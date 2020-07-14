@@ -17,7 +17,6 @@ class MunicipalityController(Resource):
         Schema=MunicipalitySchema
     )
 
-    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(filters=filters)
@@ -35,7 +34,6 @@ class MunicipalityHandlerController(Resource):
         Schema=MunicipalitySchema
     )
 
-    @jwt_required
     def get(self, municipalityId):
         return self.service.getRecord(municipalityId)
 

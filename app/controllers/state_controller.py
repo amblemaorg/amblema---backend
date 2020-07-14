@@ -16,7 +16,6 @@ class StateController(Resource):
         Model=State,
         Schema=StateSchema)
 
-    @jwt_required
     def get(self):
         filters = getQueryParams(request)
         return self.service.getAllRecords(filters=filters)
@@ -33,7 +32,6 @@ class StateHandlerController(Resource):
         Model=State,
         Schema=StateSchema)
 
-    @jwt_required
     def get(self, stateId):
         return self.service.getRecord(stateId)
 

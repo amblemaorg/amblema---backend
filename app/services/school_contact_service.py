@@ -37,7 +37,8 @@ class SchoolContactService(GenericServices):
 
             if has_changed:
                 isDuplicated = self.checkForDuplicates(
-                    fieldsForCheckDuplicates)
+                    fieldsForCheckDuplicates,
+                    record.id)
                 if isDuplicated:
                     for field in isDuplicated:
                         raise ValidationError(

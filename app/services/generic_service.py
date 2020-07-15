@@ -80,7 +80,8 @@ class GenericServices():
                 if field in uniquesFields:
                     fieldsForCheckDuplicates.append(
                         {"field": field, "value": data[field]})
-            isDuplicated = self.checkForDuplicates(fieldsForCheckDuplicates)
+            isDuplicated = self.checkForDuplicates(
+                fieldsForCheckDuplicates, record.id)
             if isDuplicated:
                 for field in isDuplicated:
                     raise ValidationError(
@@ -129,7 +130,8 @@ class GenericServices():
 
             if has_changed:
                 isDuplicated = self.checkForDuplicates(
-                    fieldsForCheckDuplicates)
+                    fieldsForCheckDuplicates,
+                    record.id)
                 if isDuplicated:
                     for field in isDuplicated:
                         raise ValidationError(
@@ -156,7 +158,7 @@ class GenericServices():
 
         return {"message": "Record deleted successfully"}, 200
 
-    def checkForDuplicates(self, attributes):
+    def checkForDuplicates(self, attributes, recordId):
         """
         Return True if find an duplicate field
         Return False otherwise
@@ -171,15 +173,29 @@ class GenericServices():
                 filterList.append(Q(**{f['field']: f['value']}))
 
             if self.Model.__base__._meta['allow_inheritance']:
-                records = self.Model.__base__.objects.filter(
-                    reduce(operator.or_, filterList),
-                    isDeleted=False
-                ).all()
+                if recordId:
+                    records = self.Model.__base__.objects.filter(
+                        reduce(operator.or_, filterList),
+                        isDeleted=False,
+                        id__ne=recordId
+                    ).all()
+                else:
+                    records = self.Model.__base__.objects.filter(
+                        reduce(operator.or_, filterList),
+                        isDeleted=False
+                    ).all()
             else:
-                records = self.Model.objects.filter(
-                    reduce(operator.or_, filterList),
-                    isDeleted=False
-                ).all()
+                if recordId:
+                    records = self.Model.objects.filter(
+                        reduce(operator.or_, filterList),
+                        isDeleted=False,
+                        id__ne=recordId
+                    ).all()
+                else:
+                    records = self.Model.objects.filter(
+                        reduce(operator.or_, filterList),
+                        isDeleted=False
+                    ).all()
             if records:
                 duplicates = []
                 for record in records:

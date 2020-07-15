@@ -28,7 +28,7 @@ def upload(file, name, path, ext):
     try:
         Path(path).mkdir(parents=True, exist_ok=True)
         fh = open(path + name + ext, "wb")
-        fh.write(b64decode(file+"==="))
+        fh.write(b64decode(file+"======="))
         fh.close()
         return True
     except BaseException as e:

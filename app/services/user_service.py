@@ -34,7 +34,8 @@ class UserService(GenericServices):
                 if field in uniquesFields:
                     fieldsForCheckDuplicates.append(
                         {"field": field, "value": data[field]})
-            isDuplicated = self.checkForDuplicates(fieldsForCheckDuplicates)
+            isDuplicated = self.checkForDuplicates(
+                fieldsForCheckDuplicates, record.id)
             if isDuplicated:
                 for field in isDuplicated:
                     raise ValidationError(
@@ -88,7 +89,7 @@ class UserService(GenericServices):
 
             if has_changed:
                 isDuplicated = self.checkForDuplicates(
-                    fieldsForCheckDuplicates)
+                    fieldsForCheckDuplicates, record.id)
                 if isDuplicated:
                     for field in isDuplicated:
                         raise ValidationError(

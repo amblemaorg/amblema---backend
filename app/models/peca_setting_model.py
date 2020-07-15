@@ -69,6 +69,7 @@ class AnnualConvention(EmbeddedDocument):
 class MathOlympic(EmbeddedDocument):
     name = fields.StringField(default="Olimpíadas matemáticas")
     description = fields.StringField()
+    webDescription = fields.StringField()
     file = fields.EmbeddedDocumentField(
         Link, is_file=True)
     date = fields.DateTimeField(null=True)

@@ -70,7 +70,7 @@ class SchoolPageContentService():
 
     def getAllRecords(self):
         schema = SchoolUserSchema(
-            partial=True, only=('id', 'code', 'name', 'coordinate'))
+            partial=True, only=('id', 'code', 'slug', 'name', 'coordinate'))
         schools = SchoolUser.objects(
             isDeleted=False, coordinate__exists=True, project__schoolYears__exists=True, project__schoolYears__0__exists=True)
         schools = schema.dump(schools, many=True)
@@ -81,7 +81,7 @@ class SchoolPageContentService():
     def get(self, id):
 
         currentPeriod = SchoolYear.objects(isDeleted=False, status="1").first()
-        code = id.split(" ", 1)[0]
+        code = id.split("_", 1)[0]
         school = SchoolUser.objects(code=code, isDeleted=False).first()
         nearbySchools = SchoolUser.objects(
             code__ne=code,
@@ -180,6 +180,7 @@ class SchoolPageContentService():
             partial=True, only=(
                 'id',
                 'name',
+                'slug',
                 'slider',
                 'nTeachers',
                 'nAdministrativeStaff',
@@ -193,7 +194,7 @@ class SchoolPageContentService():
         data['address'] = '{}, {}, Venezuela'.format(
             school.addressMunicipality.name, school.addressState.name)
         data['nearbySchools'] = SchoolUserSchema(
-            partial=True, only=('id', 'name', 'image')).dump(nearbySchools, many=True)
+            partial=True, only=('id', 'slug', 'name', 'image')).dump(nearbySchools, many=True)
         data['nStudents'] = peca.school.nStudents
         data['diagnostics'] = diagnostics
         data['olympicsSummary']['description'] = olympicsDescription

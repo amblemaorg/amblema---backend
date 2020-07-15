@@ -1,6 +1,8 @@
 # app/schemas/school_user_schema.py
 
 
+import re
+
 from marshmallow import validate, EXCLUDE, Schema
 
 from app.schemas.user_schema import UserSchema
@@ -27,6 +29,8 @@ class SchoolUserSchema(UserSchema):
     name = fields.Str(
         required=True,
         validate=(not_blank))
+    slug = fields.Function(lambda obj: '{}_{}'.format(obj.code, re.sub(
+        r'[\W_]', '-', obj.name.strip())))
     phone = fields.Str(validate=only_numbers)
     image = MAImageField(allow_none=True, validate=validate_image,
                          folder='schools')

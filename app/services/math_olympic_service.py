@@ -56,7 +56,6 @@ class MathOlympicService():
                                 lapse)].olympics
                             olympicsPeca.description = mathOlympic.description
                             olympicsPeca.file = mathOlympic.file
-                            olympicsPeca.date = mathOlympic.date
                             if mathOlympic.date and mathOlympic.date != olympicsPeca.date:
                                 peca.scheduleActivity(
                                     devName="olympics__date",
@@ -65,6 +64,7 @@ class MathOlympicService():
                                     startTime=mathOlympic.date,
                                     description=mathOlympic.description
                                 )
+                            olympicsPeca.date = mathOlympic.date
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:

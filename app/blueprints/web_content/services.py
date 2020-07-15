@@ -74,8 +74,6 @@ class SchoolPageContentService():
         schools = SchoolUser.objects(
             isDeleted=False, coordinate__exists=True, project__schoolYears__exists=True, project__schoolYears__0__exists=True)
         schools = schema.dump(schools, many=True)
-        for school in schools:
-            school['slug'] = '{} - {}'.format(school['code'], school['name'])
         return {"records": schools}, 200
 
     def get(self, id):
@@ -144,7 +142,7 @@ class SchoolPageContentService():
                 activities.append(
                     {
                         'name': setting.mathOlympic.name,
-                        'description': setting.mathOlympic.description
+                        'description': setting.mathOlympic.webDescription
                     })
             if setting.specialLapseActivity.status == "1" and 'specialLapseActivity' not in actsId:
                 actsId['specialLapseActivity'] = setting.specialLapseActivity

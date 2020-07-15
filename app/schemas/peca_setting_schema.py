@@ -120,6 +120,7 @@ class MathOlympicSchema(Schema):
     name = fields.Str(dump_only=True)
     file = fields.Nested(FileSchema())
     description = fields.Str()
+    webDescription = fields.Str()
     date = fields.DateTime(allow_none=True)
     isStandard = fields.Bool(dump_only=True)
 

@@ -10,10 +10,10 @@ from mongoengine import (
     EmbeddedDocumentListField)
 from marshmallow import Schema, fields, post_load, EXCLUDE
 
-from app.helpers.ma_schema_validators import not_blank, validate_image, validate_url
+from app.helpers.ma_schema_validators import not_blank, validate_image, validate_url, Length
 from app.helpers.ma_schema_fields import MAImageField
 from app.blueprints.web_content.models.templates_model import (
-    Testimonial, TestimonialSchema)
+    Testimonial)
 
 
 class Sponsor(EmbeddedDocument):
@@ -32,8 +32,25 @@ class SponsorPage(EmbeddedDocument):
 
 
 """
-SCHEMAS FOR MODELS 
+SCHEMAS FOR MODELS
 """
+
+
+class TestimonialSchema(Schema):
+    firstName = fields.Str(required=True, validate=not_blank)
+    lastName = fields.Str(required=True, validate=not_blank)
+    image = MAImageField(
+        required=True,
+        validate=(not_blank, validate_image),
+        folder='webcontent',
+        size=20)
+    function = fields.Str(required=True, validate=not_blank)
+    description = fields.Str(
+        required=True, validate=(not_blank, Length(max=197)))
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return Testimonial(**data)
 
 
 class SponsorSchema(Schema):
@@ -55,7 +72,7 @@ class SponsorPageSchema(Schema):
         folder='webcontent')
     testimonials = fields.List(fields.Nested(
         TestimonialSchema), required=True, validate=not_blank)
-    steps = fields.List(fields.String(validate=not_blank))
+    steps = fields.List(fields.String(validate=(not_blank, Length(max=231))))
     sponsors = fields.List(fields.Nested(SponsorSchema))
 
     @post_load

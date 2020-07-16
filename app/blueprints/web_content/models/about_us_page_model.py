@@ -8,7 +8,7 @@ from mongoengine import (
     EmbeddedDocumentListField)
 from marshmallow import Schema, fields, post_load, EXCLUDE
 
-from app.helpers.ma_schema_validators import not_blank, validate_image
+from app.helpers.ma_schema_validators import not_blank, validate_image, Length
 from app.helpers.ma_schema_fields import MAImageField
 from app.blueprints.web_content.models.templates_model import (
     Background, BackgroundSchema)
@@ -51,8 +51,9 @@ class AwardSchema(Schema):
         required=True,
         validate=(not_blank, validate_image),
         folder='webcontent')
-    description = fields.Str(required=True, validate=not_blank)
-    description2 = fields.Str()
+    description = fields.Str(
+        required=True, validate=(not_blank, Length(max=481)))
+    description2 = fields.Str(validate=Length(max=403))
 
     @post_load
     def make_document(self, data, **kwargs):
@@ -62,10 +63,13 @@ class AwardSchema(Schema):
 class AboutUsPageSchema(Schema):
     slider = fields.List(fields.Nested(BackgroundSchema),
                          required=True, validate=not_blank)
-    aboutUsText = fields.Str(required=True, validate=not_blank)
-    environmentText = fields.Str(required=True, validate=not_blank)
-    readingText = fields.Str(required=True, validate=not_blank)
-    mathText = fields.Str(required=True, validate=not_blank)
+    aboutUsText = fields.Str(
+        required=True, validate=(not_blank, Length(max=1728)))
+    environmentText = fields.Str(
+        required=True, validate=(not_blank, Length(max=579)))
+    readingText = fields.Str(
+        required=True, validate=(not_blank, Length(max=579)))
+    mathText = fields.Str(required=True, validate=(not_blank, Length(max=579)))
     awards = fields.List(fields.Nested(AwardSchema),
                          required=True, validate=not_blank)
 

@@ -9,7 +9,7 @@ from mongoengine import (
     EmbeddedDocumentListField)
 from marshmallow import Schema, fields, post_load, EXCLUDE
 
-from app.helpers.ma_schema_validators import not_blank
+from app.helpers.ma_schema_validators import not_blank, Length
 from app.blueprints.web_content.models.templates_model import (
     Background, BackgroundSchema, Testimonial, TestimonialSchema)
 
@@ -34,10 +34,13 @@ SCHEMAS FOR MODELS
 class HomePageSchema(Schema):
     slider = fields.List(fields.Nested(BackgroundSchema),
                          required=True, validate=not_blank)
-    aboutUsText = fields.Str(required=True, validate=not_blank)
-    environmentText = fields.Str(required=True, validate=not_blank)
-    readingText = fields.Str(required=True, validate=not_blank)
-    mathText = fields.Str(required=True, validate=not_blank)
+    aboutUsText = fields.Str(
+        required=True, validate=(not_blank, Length(max=317)))
+    environmentText = fields.Str(
+        required=True, validate=(not_blank, Length(max=313)))
+    readingText = fields.Str(
+        required=True, validate=(not_blank, Length(max=313)))
+    mathText = fields.Str(required=True, validate=(not_blank, Length(max=313)))
     testimonials = fields.List(fields.Nested(
         TestimonialSchema), required=True, validate=not_blank)
     nSchools = fields.Int(dump_only=True)

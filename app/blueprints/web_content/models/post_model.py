@@ -12,7 +12,7 @@ from mongoengine import (
 from marshmallow import Schema, post_load, EXCLUDE
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.helpers.ma_schema_validators import not_blank, OneOf, Length
 from app.helpers.ma_schema_fields import MAImageField
 
 
@@ -39,7 +39,7 @@ SCHEMAS FOR MODELS
 
 class PostSchema(Schema):
     id = fields.Str(dump_only=True)
-    title = fields.Str(required=True)
+    title = fields.Str(required=True, validate=Length(max=200))
     tag = fields.Str(
         required=True,
         validate=OneOf(
@@ -47,9 +47,9 @@ class PostSchema(Schema):
             ('environment', 'reading', 'math', 'other')
         )
     )
-    image = MAImageField(required=True, folder='posts')
-    image2 = MAImageField(required=True, folder='posts')
-    text = fields.Str(required=True)
+    image = MAImageField(required=True, folder='posts', size=339)
+    image2 = MAImageField(required=True, folder='posts', size=339)
+    text = fields.Str(required=True, validate=Length(max=15556))
     status = fields.Str(
         required=True,
         validate=OneOf(

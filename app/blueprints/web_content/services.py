@@ -116,7 +116,7 @@ class SchoolPageContentService():
         nextActivities = []
         for lapse in [1, 2, 3]:
             setting = currentPeriod.pecaSetting['lapse{}'.format(lapse)]
-            if setting.initialWorkshop.status == "1" and 'initialWorkShop' not in actsId:
+            if setting.initialWorkshop.status == "1" and 'initialWorkshop' not in actsId:
                 actsId['initialWorkshop'] = setting.initialWorkshop
                 activities.append(
                     {
@@ -170,7 +170,7 @@ class SchoolPageContentService():
             if act.activityId in actsId:
                 nextActivities.append({
                     'name': actsId[act.activityId].name,
-                    'description': actsId[act.activityId].description,
+                    'description': actsId[act.activityId].description if act.activityId != 'mathOlympic' else actsId[act.activityId].webDescription,
                     'date': act.startTime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
                 })
 

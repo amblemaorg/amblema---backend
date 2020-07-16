@@ -8,10 +8,10 @@ from flask import current_app
 from marshmallow import ValidationError
 from mongoengine import Q
 
-from app.models.special_activity_model import (
-    SpecialActivity, ItemSpecialActivity)
+from app.models.peca_special_lapse_activity_model import (
+    SpecialActivityPeca, ItemSpecialActivity)
 from app.models.peca_project_model import PecaProject, Lapse
-from app.schemas.special_activity_schema import SpecialActivitySchema
+from app.schemas.peca_special_lapse_activity_schema import SpecialActivitySchema
 from app.models.user_model import User
 from app.models.shared_embedded_documents import Approval
 
@@ -21,7 +21,7 @@ from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
 
 
-class SpecialActivityService():
+class PecaSpecialActivityService():
 
     def save(self, pecaId, lapse, userId, jsonData):
 
@@ -88,7 +88,7 @@ class SpecialActivityService():
         if peca:
             if lapse in ("1", "2", "3"):
                 if peca['lapse{}'.format(lapse)].specialActivity and not peca['lapse{}'.format(lapse)].specialActivity.isDeleted:
-                    specialActivity = SpecialActivity()
+                    specialActivity = SpecialActivityPeca()
 
                     specialActivity.id = peca['lapse{}'.format(
                         lapse)].specialActivity.id

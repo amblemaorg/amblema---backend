@@ -330,17 +330,21 @@ class PecaAnnualPreparationTest(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-       # delete teacher from annual preparation
-        requestData = {
-            "annualPreparationStatus": None
-        }
-        res = self.client().put(
+        # delete teacher from annual preparation
+        res = self.client().delete(
             '/pecaprojects/annualpreparation/{}/{}'.format(
                 self.pecaProject.id,
                 self.school.teachers[1].id),
-            data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
+
+        # delete teacher from annual preparation (again)
+        res = self.client().delete(
+            '/pecaprojects/annualpreparation/{}/{}'.format(
+                self.pecaProject.id,
+                self.school.teachers[1].id),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 404)
 
     def tearDown(self):
         """teardown all initialized variables."""

@@ -29,3 +29,7 @@ class PecaPreparationHandlerCtrl(Resource):
     def put(self, pecaId, teacherId):
         jsonData = request.get_json()
         return self.service.update(pecaId, teacherId, jsonData)
+
+    @jwt_required
+    def delete(self, pecaId, teacherId):
+        return self.service.delete(pecaId, teacherId)

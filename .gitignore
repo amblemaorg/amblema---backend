@@ -5,9 +5,13 @@ __pycache__
 venv
 resources/images/*/*.png
 resources/images/*/*.jpg
+resources/images/*/*.jpeg
+resources/images/*/*.jpe
 resources/images/*/*.svg
 resources/images/*.png
 resources/images/*.jpg
+resources/images/*.jpeg
+resources/images/*.jpe
 resources/images/*.svg
 resources/files/*.pdf
 resources/files/*.docx

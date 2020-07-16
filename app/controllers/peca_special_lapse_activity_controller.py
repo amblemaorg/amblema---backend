@@ -1,17 +1,17 @@
-# /app/controllers/special_activity_controller.py
+# /app/controllers/peca_special_lapse_activity_controller.py
 
 
 from flask import request
 from flask_restful import Resource
 
-from app.services.special_activity_service import SpecialActivityService
+from app.services.peca_special_activity_service import PecaSpecialActivityService
 from app.helpers.handler_request import getQueryParams
 from app.helpers.handler_authorization import jwt_required
 
 
-class SpecialActivityController(Resource):
+class PecaSpecialActivityController(Resource):
 
-    service = SpecialActivityService()
+    service = PecaSpecialActivityService()
 
     @jwt_required
     def post(self, pecaId, lapse):

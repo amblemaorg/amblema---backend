@@ -44,15 +44,19 @@ class PecaProjectService():
         from app.schemas.teacher_schema import TeacherSchema
         from app.schemas.shared_schemas import ImageStatusSchema
         from app.schemas.peca_yearbook_schema import YearbookSchema
+        from app.schemas.monitoring_activity_schema import MonitoringActivitySchema
 
         peca = PecaProject.objects(
             isDeleted=False, id=id).first()
         if peca:
             schema = PecaProjectSchema()
+            schoolYear = peca.schoolYear.fetch()
             peca.school.sections = peca.school.sections.filter(isDeleted=False)
             for section in peca.school.sections:
                 section.students = section.students.filter(isDeleted=False)
             data = schema.dump(peca)
+            data['monitoringActivities'] = MonitoringActivitySchema().dump(
+                schoolYear.pecaSetting.monitoringActivities)
             school = SchoolUser.objects(
                 id=peca.project.school.id).first()
             data['school']['teachers'] = TeacherSchema().dump(
@@ -198,7 +202,7 @@ class PecaProjectService():
         from app.models.peca_annual_preparation_model import AnnualPreparationPeca
         from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
         from app.models.peca_activities_model import ActivityPeca
-        from app.models.special_activity_model import SpecialActivity
+        from app.models.peca_special_lapse_activity_model import SpecialActivityPeca
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only('pecaSetting').first()
@@ -241,7 +245,7 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].annualConvention = None
 
             if pecaSettingLapse.specialLapseActivity.status == "1":
-                specialActivity = SpecialActivity()
+                specialActivity = SpecialActivityPeca()
                 peca['lapse{}'.format(i)].specialActivity = specialActivity
             else:
                 peca['lapse{}'.format(i)].specialActivity = None

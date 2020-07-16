@@ -264,7 +264,9 @@ class ActivityService():
                 initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
                     i+1)].initialWorkshop
                 if (
-                    (not filters)
+                    (not filters) or
+                    ('status' in filters and filters['status']
+                     == '1' and initialWorkshop.status == '1')
                 ):
                     data = {
                         "id": 'initialWorkshop',
@@ -365,7 +367,9 @@ class ActivityService():
                 specialLapseActivity = schoolYear.pecaSetting['lapse{}'.format(
                     i+1)].specialLapseActivity
                 if (
-                    (not filters)
+                    (not filters) or
+                    ('status' in filters and filters['status']
+                     == '1' and specialLapseActivity.status == '1')
                 ):
 
                     data = {

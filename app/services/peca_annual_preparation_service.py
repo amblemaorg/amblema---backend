@@ -127,3 +127,34 @@ class AnnualPreparationService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"pecaId": pecaId})
+
+    def delete(self, pecaId, teacherId):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).first()
+
+        if peca:
+
+            for i in range(1, 4):
+                if peca['lapse{}'.format(i)].annualPreparation:
+                    annualPreparation = peca['lapse{}'.format(
+                        i)].annualPreparation
+                    record = annualPreparation.teachers.filter(
+                        id=teacherId).first()
+                    if not record:
+                        raise RegisterNotFound(message="Record not found",
+                                               status_code=404,
+                                               payload={"teacher: ": teacherId})
+
+                    try:
+                        peca['lapse{}'.format(
+                            i)].annualPreparation.teachers.remove(record)
+                        peca.save()
+                        return {"message": "Record deleted successfully"}, 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"pecaId": pecaId})

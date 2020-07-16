@@ -34,7 +34,7 @@ class RequestContentApproval(Document):
         from app.schemas.peca_activities_schema import ActivityFieldsSchema
         from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
         from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema
-        from app.schemas.special_activity_schema import SpecialActivitySchema
+        from app.schemas.peca_special_lapse_activity_schema import SpecialActivitySchema
         from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.peca_activity_yearbook_schema import ActivityYearbookSchema
         from app.schemas.peca_school_schema import SchoolSchema

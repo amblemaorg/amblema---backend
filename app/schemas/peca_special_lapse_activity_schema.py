@@ -1,4 +1,4 @@
-# app/schemas/special_activity_schema.py
+# app/schemas/peca_special_lapse_activity_schema.py
 
 
 from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
@@ -6,7 +6,7 @@ from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 from app.schemas import fields
 from app.helpers.ma_schema_validators import (OneOf, not_blank)
 from app.schemas.shared_schemas import ApprovalSchema
-from app.models.special_activity_model import ItemSpecialActivity
+from app.models.peca_special_lapse_activity_model import ItemSpecialActivity
 
 
 class ItemSpecialActivitySchema(Schema):

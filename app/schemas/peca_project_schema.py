@@ -23,7 +23,7 @@ from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema
 from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
 from app.schemas.peca_activities_schema import ActivityPecaSchema
 from app.schemas.peca_schedule_schema import ScheduleActivitySchema
-from app.schemas.special_activity_schema import SpecialActivitySchema
+from app.schemas.peca_special_lapse_activity_schema import SpecialActivitySchema
 from app.schemas.peca_yearbook_schema import YearbookSchema
 from app.schemas.peca_school_schema import SchoolSchema
 

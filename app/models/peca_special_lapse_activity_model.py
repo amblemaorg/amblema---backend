@@ -20,7 +20,7 @@ class ItemSpecialActivity(EmbeddedDocument):
     subtotal = fields.FloatField(default=0.0)
 
 
-class SpecialActivity(EmbeddedDocument):
+class SpecialActivityPeca(EmbeddedDocument):
     name = fields.StringField(default="Actividad especial de lapso")
     activityDate = fields.DateTimeField()
     # approvalStatus = ("1": "pending", "2": "approved", "3": "rejected", "4": "cancelled")

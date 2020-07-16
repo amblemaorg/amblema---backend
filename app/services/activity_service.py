@@ -14,7 +14,6 @@ from app.schemas.activity_schema import ActivitySummarySchema, ActivityHandleSta
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
-from app.models.special_activity_model import SpecialActivity
 
 
 class ActivityService():
@@ -84,7 +83,7 @@ class ActivityService():
                                 file=activity.file,
                                 video=activity.video,
                                 checklist=[CheckElement(
-                                    id=c.id, name=c.name) for c in activity.checklist],
+                                    id=c.id, name=c.name) for c in activity.checklist] if activity.checklist else [],
                                 approvalType=activity.approvalType
                             )
                         )
@@ -418,6 +417,7 @@ class ActivityService():
         from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
         from app.models.peca_lapse_planning_model import LapsePlanningPeca
         from app.models.peca_initial_workshop_model import InitialWorkshopPeca
+        from app.models.peca_special_lapse_activity_model import SpecialActivityPeca
         from pymongo import UpdateOne
 
         schoolYear = SchoolYear.objects(
@@ -639,7 +639,7 @@ class ActivityService():
                             schoolYear=schoolYear.id, isDeleted=False)
 
                         if data['status'] == "1":
-                            specialActivity = SpecialActivity()
+                            specialActivity = SpecialActivityPeca()
 
                         for peca in pecaProjects:
                             # is active

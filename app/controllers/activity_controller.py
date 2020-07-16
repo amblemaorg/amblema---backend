@@ -12,6 +12,7 @@ from app.services.lapse_planning_service import LapsePlanningService
 from app.services.annual_preparation_service import AnnualPreparationService
 from app.services.annual_convention_service import AnnualConventionService
 from app.services.math_olympic_service import MathOlympicService
+from app.services.special_lapse_activity_service import SpecialLapseActivityService
 from app.helpers.handler_request import getQueryParams
 from app.helpers.handler_authorization import jwt_required
 
@@ -35,7 +36,8 @@ class ActivityHandlerController(Resource):
         'amblecoins': AmbleCoinService(),
         'annualpreparation': AnnualPreparationService(),
         'annualconvention': AnnualConventionService(),
-        'matholympic': MathOlympicService()
+        'matholympic': MathOlympicService(),
+        'specialLapseActivity': SpecialLapseActivityService()
     }
 
     @jwt_required

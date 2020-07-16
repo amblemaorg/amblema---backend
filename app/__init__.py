@@ -140,8 +140,8 @@ from app.controllers.diagnostic_controller import DiagnosticController
 from app.controllers.teacher_testimonial_controller import (
     TeacherTestimonialController
 )
-from app.controllers.special_activity_controller import (
-    SpecialActivityController
+from app.controllers.peca_special_lapse_activity_controller import (
+    PecaSpecialActivityController
 )
 from app.controllers.peca_yearbook_controller import PecaYearbookController
 from app.controllers.monitoring_activities_controller import (
@@ -339,7 +339,7 @@ def create_app(config_instance):
                      '/pecaprojects/lapseplanning/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaInitialWorkshopCtrl,
                      '/pecaprojects/initialworkshop/<string:pecaId>/<string:lapse>')
-    api.add_resource(SpecialActivityController,
+    api.add_resource(PecaSpecialActivityController,
                      '/pecaprojects/specialsactivities/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaActivitiesCtrl,
                      '/pecaprojects/activities/<string:pecaId>/<string:lapse>/<string:activityId>')

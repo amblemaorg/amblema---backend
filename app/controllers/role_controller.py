@@ -20,7 +20,7 @@ class RoleController(Resource):
     @jwt_required
     def get(self):
         filters = getQueryParams(request)
-        return self.service.getAllRecords(filters=filters, exclude=("permissions",))
+        return self.service.getAllRecords(filters=filters)
 
     @jwt_required
     def post(self):

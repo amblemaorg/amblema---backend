@@ -64,6 +64,9 @@ class UserService(GenericServices):
         """
         Update a record
         """
+        from app.models.school_year_model import SchoolYear
+        from app.models.peca_project_model import PecaProject
+
         schema = self.Schema(exclude=exclude, only=only)
         try:
             documentFiles = getFileFields(self.Model)
@@ -98,6 +101,39 @@ class UserService(GenericServices):
                         )
 
                 record.save()
+                if self.Model.__name__ == 'SchoolUser':
+                    schoolYear = SchoolYear.objects(
+                        isDeleted=False, status="1").first()
+                    if schoolYear:
+                        current_app.logger.info('a#o activo')
+                        peca = PecaProject.objects(
+                            isDeleted=False, project__school__id=recordId, schoolYear=schoolYear.pk).first()
+                        if peca:
+                            current_app.logger.info('peca activo')
+                            peca.school.name = record.name
+                            peca.school.code = record.code
+                            peca.school.phone = record.phone
+                            peca.school.addressState = record.addressState
+                            peca.school.addressMunicipality = record.addressMunicipality
+                            peca.school.address = record.address
+                            peca.school.addressCity = record.addressCity
+                            peca.school.principalFirstName = record.principalFirstName
+                            peca.school.principalLastName = record.principalLastName
+                            peca.school.principalEmail = record.principalEmail
+                            peca.school.principalPhone = record.principalPhone
+                            peca.school.subPrincipalFirstName = record.subPrincipalFirstName
+                            peca.school.subPrincipalLastName = record.subPrincipalLastName
+                            peca.school.subPrincipalEmail = record.subPrincipalEmail
+                            peca.school.subPrincipalPhone = record.subPrincipalPhone
+                            peca.school.nTeachers = record.nTeachers
+                            peca.school.nGrades = record.nGrades
+                            peca.school.nStudents = record.nStudents
+                            peca.school.nAdministrativeStaff = record.nAdministrativeStaff
+                            peca.school.nLaborStaff = record.nLaborStaff
+                            peca.school.facebook = record.facebook
+                            peca.school.instagram = record.instagram
+                            peca.school.twitter = record.twitter
+                            peca.save()
 
             return schema.dump(record), 200
         except ValidationError as err:

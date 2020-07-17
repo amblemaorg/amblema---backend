@@ -8,6 +8,7 @@ from app.helpers.ma_schema_validators import not_blank, OneOf
 
 
 class TeachersSchema(Schema):
+    id = fields.Str(dump_only=True)
     firstName = fields.Str()
     lastName = fields.Str()
     phone = fields.Str()

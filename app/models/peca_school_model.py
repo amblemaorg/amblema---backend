@@ -12,6 +12,7 @@ from app.models.peca_activities_slider_model import ActivitiesSlider
 class School(EmbeddedDocument):
     name = fields.StringField()
     code = fields.StringField()
+    phone = fields.StringField()
     addressState = fields.ReferenceField('State')
     addressMunicipality = fields.ReferenceField('Municipality')
     address = fields.StringField()

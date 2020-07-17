@@ -37,7 +37,7 @@ class ActivityHandlerController(Resource):
         'annualpreparation': AnnualPreparationService(),
         'annualconvention': AnnualConventionService(),
         'matholympic': MathOlympicService(),
-        'specialLapseActivity': SpecialLapseActivityService()
+        'speciallapseactivity': SpecialLapseActivityService()
     }
 
     @jwt_required

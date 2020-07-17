@@ -24,6 +24,7 @@ from app.schemas.peca_activities_slider_schema import ActivitiesSliderSchema
 class SchoolSchema(Schema):
     name = fields.Str(dump_only=True)
     code = fields.Str(dump_only=True)
+    phone = fields.Str(dump_only=True)
     addressState = MAReferenceField(document=State, dump_only=True)
     addressMunicipality = MAReferenceField(
         document=Municipality, dump_only=True)

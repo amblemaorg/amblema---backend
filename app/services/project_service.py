@@ -109,8 +109,11 @@ class ProjectService():
             school={
                 "name": project.school.name,
                 "code": project.school.code,
+                "phone": project.school.phone,
                 "addressState": str(project.school.addressState.id),
                 "addressMunicipality": str(project.school.addressMunicipality.id),
+                "address": project.school.address,
+                "addressCity": project.school.addressCity,
                 "principalFirstName": project.school.principalFirstName,
                 "principalLastName": project.school.principalLastName,
                 "principalEmail": project.school.principalEmail,

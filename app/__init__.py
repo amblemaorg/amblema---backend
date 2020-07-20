@@ -6,6 +6,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_mongoengine import MongoEngine
 from flask_jwt_extended import JWTManager
+from flask_compress import Compress
 
 from app.helpers.error_helpers import CustomApi
 from instance.config import app_config
@@ -148,6 +149,7 @@ from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
 db = MongoEngine()
+compress = Compress()
 
 
 def create_app(config_instance):
@@ -157,6 +159,7 @@ def create_app(config_instance):
     db.init_app(app)
     CORS(app)
     jwt = JWTManager(app)
+    compress.init_app(app)
 
     app.register_error_handler(RegisterNotFound, handleNotFound)
     app.register_error_handler(CSTM_Exception, handleNotFound)

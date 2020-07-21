@@ -222,9 +222,10 @@ class Project(Document):
                         self.checkWaitingAmblemaConfirmation()
 
                     myStep.updatedAt = datetime.utcnow()
-                    self.save()
                     if self.checkConfirm():
                         self.phase = "2"
+                    self.save()
+
                 break
 
     def createPeca(self):

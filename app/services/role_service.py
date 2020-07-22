@@ -10,9 +10,13 @@ from mongoengine import Q
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.document_metadata import getUniqueFields
 from app.services.generic_service import GenericServices
+from app.helpers.handler_messages import HandlerMessages
 
 
 class RoleService(GenericServices):
+
+    handlerMessages = HandlerMessages()
+
     def getAllRecords(self, filters=None, only=None, exclude=()):
         """
         get all available roles records
@@ -52,7 +56,7 @@ class RoleService(GenericServices):
             return {
                 'status': '0',
                 'entity': entity,
-                'msg': 'Record has an active related entity'
+                'msg': self.handlerMessages.getDeleteEntityMsg(entity)
             }, 419
         try:
             record.isDeleted = True

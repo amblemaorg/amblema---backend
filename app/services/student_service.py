@@ -11,9 +11,12 @@ from app.schemas.peca_student_schema import StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
 from app.models.school_year_model import SchoolYear
+from app.helpers.handler_messages import HandlerMessages
 
 
 class StudentService():
+
+    handlerMessages = HandlerMessages()
 
     def save(self, pecaId, sectionId, jsonData):
 
@@ -132,13 +135,13 @@ class StudentService():
                             enrolled = olympics.students.filter(
                                 id=studentId).first()
                             if enrolled:
-                                entity = 'Olympics'
+                                entity = 'OlympicsPeca'
                                 break
                     if entity:
                         return {
                             'status': '0',
                             'entity': entity,
-                            'msg': 'Record has an active related entity'
+                            'msg': self.handlerMessages.getDeleteEntityMsg(entity)
                         }, 419
 
                     try:

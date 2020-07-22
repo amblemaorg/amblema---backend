@@ -11,9 +11,12 @@ from app.schemas.peca_school_schema import SectionSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
 from app.models.school_year_model import SchoolYear
+from app.helpers.handler_messages import HandlerMessages
 
 
 class SectionService():
+
+    handlerMessages = HandlerMessages()
 
     def save(self, pecaId, jsonData):
 
@@ -180,7 +183,7 @@ class SectionService():
                     return {
                         'status': '0',
                         'entity': 'Student',
-                        'msg': 'Record has an active related entity'
+                        'msg': self.handlerMessages.getDeleteEntityMsg('Student')
                     }, 419
 
                 try:

@@ -14,11 +14,13 @@ from app.schemas.activity_schema import ActivitySummarySchema, ActivityHandleSta
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
+from app.helpers.handler_messages import HandlerMessages
 
 
 class ActivityService():
 
     filesPath = 'activities'
+    handlerMessages = HandlerMessages()
 
     def get(self, lapse, id):
         schoolYear = SchoolYear.objects(
@@ -220,7 +222,7 @@ class ActivityService():
                         return {
                             'status': '0',
                             'entity': entity,
-                            'msg': 'Record has an active related entity'
+                            'msg': self.handlerMessages.getDeleteEntityMsg(entity)
                         }, 419
 
                     try:

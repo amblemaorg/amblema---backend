@@ -14,9 +14,12 @@ from app.helpers.document_metadata import (
     getUniqueFields, getFileFields)
 from app.helpers.handler_files import validate_files, upload_files
 from app.services.generic_service import GenericServices
+from app.helpers.handler_messages import HandlerMessages
 
 
 class StepHandlerService(GenericServices):
+
+    handlerMessages = HandlerMessages()
 
     def saveRecord(self, jsonData, files=None):
         """
@@ -126,7 +129,7 @@ class StepHandlerService(GenericServices):
             return {
                 'status': '0',
                 'entity': entity,
-                'msg': 'Record has an active related entity'
+                'msg': self.handlerMessages.getDeleteEntityMsg(entity)
             }, 419
         try:
             record.isDeleted = True

@@ -17,9 +17,12 @@ from app.models.peca_setting_model import EnvironmentalProject
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
+from app.helpers.handler_messages import HandlerMessages
 
 
 class SchoolYearService(GenericServices):
+
+    handlerMessages = HandlerMessages()
 
     def getAllRecords(self, filters=None, only=None, exclude=()):
         """
@@ -115,7 +118,7 @@ class SchoolYearService(GenericServices):
                 return {
                     'status': '0',
                     'entity': entity,
-                    'msg': 'Record has an active related entity'
+                    'msg': self.handlerMessages.getDeleteEntityMsg(entity)
                 }, 419
 
             try:

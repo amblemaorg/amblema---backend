@@ -9,9 +9,12 @@ from app.models.school_user_model import SchoolUser
 from app.models.teacher_model import Teacher
 from app.schemas.teacher_schema import TeacherSchema
 from app.helpers.error_helpers import RegisterNotFound
+from app.helpers.handler_messages import HandlerMessages
 
 
 class TeacherService():
+
+    handlerMessage = HandlerMessages()
 
     def getAll(self, schoolId):
 
@@ -143,7 +146,7 @@ class TeacherService():
                             return {
                                 'status': '0',
                                 'entity': 'Section',
-                                'msg': 'Record has an active related entity'
+                                'msg': self.handlerMessage.getDeleteEntityMsg('Section')
                             }, 419
 
                 teacher.isDeleted = True

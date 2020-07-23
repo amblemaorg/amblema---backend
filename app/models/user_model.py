@@ -13,7 +13,7 @@ from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_emails import send_email
 from resources.email_templates.register_email import messageRegisterEmail, messageRegisterEmailPlainText
-from resources.email_templates.changed_password_email import changedPasswordEmail
+from resources.email_templates.changed_password_email import changedPasswordEmail, changedPasswordEmailPlainText
 
 
 class User(DynamicDocument):
@@ -87,6 +87,6 @@ class User(DynamicDocument):
         if not current_app.config.get("TESTING"):
             current_app.logger.info(send_email(
                 changedPasswordEmail(self.email, password),
-                messageRegisterEmailPlainText(self.email, password),
+                changedPasswordEmailPlainText(self.email, password),
                 'Amblema - Cambio de contraseña',
                 self.email))

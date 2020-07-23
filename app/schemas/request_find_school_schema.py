@@ -1,7 +1,7 @@
 # app/request_find_school_schema.py
 
 
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, pre_load
 
 from app.models.user_model import User
 from app.models.project_model import Project
@@ -67,3 +67,11 @@ class ReqFindSchoolSchema(Schema):
         ))
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+    @pre_load
+    def process_input(self, data, **kwargs):
+        if "code" in data and isinstance(data['code'], str):
+            data["code"] = data["code"].strip().upper()
+        if "email" in data and isinstance(data['email'], str):
+            data["email"] = data["email"].strip().lower()
+        return data

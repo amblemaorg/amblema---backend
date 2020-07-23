@@ -74,3 +74,4 @@ class ReqFindSchoolSchema(Schema):
             data["code"] = data["code"].strip().upper()
         if "email" in data and isinstance(data['email'], str):
             data["email"] = data["email"].strip().lower()
+        return data

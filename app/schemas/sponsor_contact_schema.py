@@ -98,6 +98,8 @@ class SponsorContactSchema(Schema):
             data["email"] = data["email"].lower()
         if "schoolEmail" in data and isinstance(data["schoolEmail"], str):
             data["schoolEmail"] = data["schoolEmail"].lower()
+        if "schoolCode" in data and isinstance(data['schoolCode'], str):
+            data["schoolCode"] = data["schoolCode"].strip().upper()
 
         toTitle = (
             'name'

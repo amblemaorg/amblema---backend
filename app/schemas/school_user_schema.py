@@ -3,7 +3,7 @@
 
 import re
 
-from marshmallow import validate, EXCLUDE, Schema
+from marshmallow import validate, EXCLUDE, Schema, pre_load
 
 from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema, CoordinateSchema, ImageStatusSchema
@@ -91,6 +91,12 @@ class SchoolUserSchema(UserSchema):
     olympicsSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
     teachersTestimonials = fields.Nested(
         TeacherTestimonialSchema, dump_only=True)
+
+    @pre_load
+    def process_input(self, data, **kwargs):
+        if "code" in data and isinstance(data['code'], str):
+            data["code"] = data["code"].strip().upper()
+        return data
 
     class Meta:
         unknown = EXCLUDE

@@ -95,6 +95,8 @@ class SchoolContactSchema(Schema):
     def process_input(self, data, **kwargs):
         if "email" in data and isinstance(data["email"], str):
             data["email"] = data["email"].lower()
+        if "code" in data and isinstance(data['code'], str):
+            data["code"] = data["code"].strip().upper()
         if "sponsorEmail" in data and isinstance(data["sponsorEmail"], str):
             data["sponsorEmail"] = data["sponsorEmail"].lower()
         toTitle = (

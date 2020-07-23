@@ -17,6 +17,7 @@ setup(
         'coverage',
         'marshmallow',
         'blinker',
-        'Flask-Script'
+        'Flask-Script',
+        'flask-compress'
     ]
 )

@@ -52,7 +52,7 @@ class TeacherService():
                     )
                 try:
                     school.teachers.append(teacher)
-                    school.nTeachers += 1
+                    school.nTeachers = 1 if not school.nTeachers else school.nTeachers + 1
                     school.save()
                     period = SchoolYear.objects(
                         isDeleted=False, status="1").first()

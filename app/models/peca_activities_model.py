@@ -54,7 +54,7 @@ class ActivityPeca(ActivityFields):
             'hasUpload': 'uploadedFile',
             'hasChecklist': 'checklist'
         }
-        if self.approvalType == "2":
+        if self.approvalType == "2" or self.approvalType == '3':
             approved = True
             for key in fields.keys():
                 if self[key]:

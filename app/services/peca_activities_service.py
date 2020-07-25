@@ -64,6 +64,7 @@ class ActivitiesPecaService():
                 activity = peca['lapse{}'.format(lapse)].activities.filter(
                     id=activityId).first()
                 oldActivity = copy.copy(activity)
+                newActivity = copy.copy(activity)
                 if not activity:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
@@ -85,41 +86,46 @@ class ActivitiesPecaService():
                 try:
                     # generate an approval request
                     if activity.approvalType == "3":
-                        if activity.status == "2":
-                            return {
-                                "status": 0, "message": "An activity approval is pending"
-                            }, 400
-                        act = activity
+                        if 'date' in data or 'uploadedFile' in data:
+                            if activity.status == "2":
+                                return {
+                                    "status": 0, "message": "An activity approval is pending"
+                                }, 400
+
                         for key in data.keys():
-                            act[key] = data[key]
-                        data = schema.dump(act)
+                            newActivity[key] = data[key]
+                        data = schema.dump(newActivity)
 
                         data['pecaId'] = pecaId
                         data['lapse'] = lapse
-                        #data['id'] = activityId
-                        request = RequestContentApproval(
-                            project=peca.project,
-                            user=user,
-                            type="3",
-                            detail=data
-                        ).save()
-                        activity.status = "2"
-                        activity.approvalHistory.append(
-                            Approval(
-                                id=str(request.id),
-                                user=user.id,
+
+                        if 'date' in data or 'uploadedFile' in data:
+                            request = RequestContentApproval(
+                                project=peca.project,
+                                user=user,
+                                type="3",
                                 detail=data
+                            ).save()
+                            activity.status = "2"
+                            activity.approvalHistory.append(
+                                Approval(
+                                    id=str(request.id),
+                                    user=user.id,
+                                    detail=data
+                                )
                             )
-                        )
-                        if activity.hasDate and 'date' in data and data['date']:
-                            schAct = schema.load(jsonData)
-                            peca.scheduleActivity(
-                                devName="activities__{}".format(activityId),
-                                activityId=str(activityId),
-                                subject=activity.name,
-                                startTime=schAct['date'],
-                                description=""
-                            )
+                            if activity.hasDate and 'date' in data and data['date']:
+                                schAct = schema.load(jsonData)
+                                peca.scheduleActivity(
+                                    devName="activities__{}".format(
+                                        activityId),
+                                    activityId=str(activityId),
+                                    subject=activity.name,
+                                    startTime=schAct['date'],
+                                    description=""
+                                )
+                        activity.checklist = newActivity.checklist
+                        activity.checkStatus()
 
                     else:
                         # approve only on fill all fields

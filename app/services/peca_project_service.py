@@ -45,6 +45,7 @@ class PecaProjectService():
         from app.schemas.shared_schemas import ImageStatusSchema
         from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.monitoring_activity_schema import MonitoringActivitySchema
+        from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
 
         peca = PecaProject.objects(
             isDeleted=False, id=id).first()
@@ -57,6 +58,9 @@ class PecaProjectService():
             data = schema.dump(peca)
             data['monitoringActivities'] = MonitoringActivitySchema().dump(
                 schoolYear.pecaSetting.monitoringActivities)
+            data['environmentalProject'] = EnvironmentalProjectSchema().dump(
+                schoolYear.pecaSetting.environmentalProject
+            )
             school = SchoolUser.objects(
                 id=peca.project.school.id).first()
             data['school']['teachers'] = TeacherSchema().dump(

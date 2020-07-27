@@ -222,7 +222,7 @@ class StatisticsDiagnosticService():
                     resultAverageAcum = 0
 
                     for section in data['sections']:
-                        if section['sectionSummaryAvailable'] and diag in section['sectionSummary']:
+                        if 'sectionSummaryAvailable' in section and section['sectionSummaryAvailable'] and diag in section['sectionSummary']:
                             improvementPercentageAcum += section['sectionSummary'][diag]['improvementPercentage']
                             sectionSummary = {
                                 'grade': section['grade'],

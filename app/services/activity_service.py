@@ -60,6 +60,13 @@ class ActivityService():
                     activity[field] = data[field]
                 activity.devName = re.sub(
                     r'[\W_]', '_', activity.name.strip().lower())
+                dupActivity = schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.filter(
+                    isDeleted=False, devName=activity.devName).first()
+                if dupActivity:
+                    raise ValidationError(
+                        {"name": [{"status": "5",
+                                   "msg": "Duplicated record found"}]}
+                    )
                 try:
 
                     schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.append(
@@ -131,6 +138,14 @@ class ActivityService():
                                 hasChanged = True
                                 activity[field] = data[field]
                         if hasChanged:
+                            dupActivities = schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.filter(
+                                isDeleted=False, devName=activity.devName)
+                            for dup in dupActivities:
+                                if str(dup.id) != str(id):
+                                    raise ValidationError(
+                                        {"name": [{"status": "5",
+                                                   "msg": "Duplicated record found"}]}
+                                    )
                             newActivity = activity
                         break
                 if not found:

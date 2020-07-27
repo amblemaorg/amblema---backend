@@ -97,17 +97,17 @@ class StatisticsDiagnosticService():
 
                     for student in section.students:
                         if not student.isDeleted:
-                            studentData = {
-                                'firstName': student.firstName,
-                                'lastName': student.lastName,
-                                'cardId': student.cardId,
-                                'cardType': student.cardType
-                            }
                             for i in range(3):
                                 hasResult = False
                                 sectionLapse = sectionData['lapse{}'.format(
                                     i+1)]
                                 studentLapse = student["lapse{}".format(i+1)]
+                                studentData = {
+                                    'firstName': student.firstName,
+                                    'lastName': student.lastName,
+                                    'cardId': student.cardId,
+                                    'cardType': student.cardType
+                                }
                                 for diag in diagnosticsSearch:
                                     if studentLapse[diagnostics[diag]]:
 

@@ -138,6 +138,8 @@ class ActivityService():
                                 hasChanged = True
                                 activity[field] = data[field]
                         if hasChanged:
+                            activity.devName = re.sub(
+                                r'[\W_]', '_', activity.name.strip().lower())
                             dupActivities = schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.filter(
                                 isDeleted=False, devName=activity.devName)
                             for dup in dupActivities:

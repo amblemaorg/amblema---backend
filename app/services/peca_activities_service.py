@@ -96,25 +96,26 @@ class ActivitiesPecaService():
                             newActivity[key] = data[key]
                         data = schema.dump(newActivity)
 
-                        data['pecaId'] = pecaId
-                        data['lapse'] = lapse
+                        jsonData['pecaId'] = pecaId
+                        jsonData['lapse'] = lapse
+                        jsonData['id'] = activityId
 
-                        if 'date' in data or 'uploadedFile' in data:
+                        if 'date' in jsonData or 'uploadedFile' in jsonData:
                             request = RequestContentApproval(
                                 project=peca.project,
                                 user=user,
                                 type="3",
-                                detail=data
+                                detail=jsonData
                             ).save()
                             activity.status = "2"
                             activity.approvalHistory.append(
                                 Approval(
                                     id=str(request.id),
                                     user=user.id,
-                                    detail=data
+                                    detail=jsonData
                                 )
                             )
-                            if activity.hasDate and 'date' in data and data['date']:
+                            if activity.hasDate and 'date' in jsonData and jsonData['date']:
                                 schAct = schema.load(jsonData)
                                 peca.scheduleActivity(
                                     devName="activities__{}".format(

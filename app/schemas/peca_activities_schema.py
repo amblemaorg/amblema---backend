@@ -55,6 +55,10 @@ class ActivityFieldsSchema(Schema):
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
     @pre_load
     def process_input(self, data, **kwargs):
         if "checklist" in data and isinstance(data["checklist"], str):

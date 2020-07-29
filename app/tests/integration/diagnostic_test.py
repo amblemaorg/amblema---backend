@@ -238,7 +238,7 @@ class DiagnosticTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(70,
                          result['student']['wordsPerMin'])
-        self.assertEqual(1,
+        self.assertEqual('1.00',
                          result['student']['wordsPerMinIndex'])
         self.pecaProject.reload()
         self.assertEqual(
@@ -300,12 +300,12 @@ class DiagnosticTest(unittest.TestCase):
 
         self.assertEqual(15,
                          result['student']['operationsPerMin'])
-        self.assertEqual(0.5,
+        self.assertEqual('0.50',
                          result['student']['operationsPerMinIndex'])
 
         self.assertEqual(80,
                          result['student']['multiplicationsPerMin'])
-        self.assertEqual(2,
+        self.assertEqual('2.00',
                          result['student']['multiplicationsPerMinIndex'])
         self.pecaProject = PecaProject.objects.get(id=self.pecaProject.id)
 

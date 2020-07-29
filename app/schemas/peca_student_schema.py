@@ -17,11 +17,14 @@ from app.helpers.ma_schema_validators import (
 
 class DiagnosticSchema(Schema):
     multiplicationsPerMin = fields.Int(min=0)
-    multiplicationsPerMinIndex = fields.Float(dump_only=True)
+    multiplicationsPerMinIndex = fields.Decimal(
+        dump_only=True, places=2, as_string=True)
     operationsPerMin = fields.Int(min=0)
-    operationsPerMinIndex = fields.Float(dump_only=True)
+    operationsPerMinIndex = fields.Decimal(
+        dump_only=True, places=2, as_string=True)
     wordsPerMin = fields.Int(min=0)
-    wordsPerMinIndex = fields.Float(dump_only=True)
+    wordsPerMinIndex = fields.Decimal(
+        dump_only=True, places=2, as_string=True)
     readingDate = fields.DateTime(dump_only=True)
     mathDate = fields.DateTime(dump_only=True)
     logicDate = fields.DateTime(dump_only=True)

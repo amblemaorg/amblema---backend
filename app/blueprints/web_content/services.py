@@ -185,7 +185,10 @@ class SchoolPageContentService():
                 'nLaborStaff',
                 'olympicsSummary',
                 'activitiesSlider',
-                'teachersTestimonials'))
+                'teachersTestimonials',
+                'facebook',
+                'instagram',
+                'twitter'))
         data = schema.dump(school)
         data['coordinator'] = school.project.coordinator.name
         data['sponsor'] = school.project.sponsor.name

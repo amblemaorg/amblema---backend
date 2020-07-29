@@ -10,11 +10,11 @@ from mongoengine import fields, Document, EmbeddedDocument, signals
 
 class Diagnostic(EmbeddedDocument):
     multiplicationsPerMin = fields.IntField()
-    multiplicationsPerMinIndex = fields.FloatField()
+    multiplicationsPerMinIndex = fields.DecimalField()
     operationsPerMin = fields.IntField()
-    operationsPerMinIndex = fields.FloatField()
+    operationsPerMinIndex = fields.DecimalField()
     wordsPerMin = fields.IntField()
-    wordsPerMinIndex = fields.FloatField()
+    wordsPerMinIndex = fields.DecimalField()
     mathDate = fields.DateTimeField()
     logicDate = fields.DateTimeField()
     readingDate = fields.DateTimeField()

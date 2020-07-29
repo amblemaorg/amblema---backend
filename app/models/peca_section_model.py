@@ -57,7 +57,7 @@ class Section(EmbeddedDocument):
                         summary['lapse{}'.format(
                             lapse)]['{}Sum'.format(diag)] += student['lapse{}'.format(lapse)][diag]
                         summary['lapse{}'.format(
-                            lapse)]['{}IndexSum'.format(diag)] += student['lapse{}'.format(lapse)]['{}Index'.format(diag)]
+                            lapse)]['{}IndexSum'.format(diag)] += float(student['lapse{}'.format(lapse)]['{}Index'.format(diag)])
 
         for i in range(1, 4):
             lapseSummary = summary['lapse{}'.format(i)]

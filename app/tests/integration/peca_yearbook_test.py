@@ -401,7 +401,7 @@ class PecaYearbookTest(unittest.TestCase):
                         "multiplicationsPerMin": 15,
                         "multiplicationsPerMinIndex": 0.75,
                         "operationsPerMin": 25,
-                        "operationsPerMinIndex": 0.833,
+                        "operationsPerMinIndex": 0.835,
                         "wordsPerMin": 35,
                         "wordsPerMinIndex": 0.875
                     }

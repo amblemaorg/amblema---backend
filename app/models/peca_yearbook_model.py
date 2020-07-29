@@ -14,11 +14,18 @@ class Entity(EmbeddedDocument):
     content = fields.StringField()
 
 
+class Lapse(EmbeddedDocument):
+    diagnosticAnalysis = fields.StringField(default='')
+
+
 class Yearbook(EmbeddedDocument):
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
     sponsor = fields.EmbeddedDocumentField(Entity, default=Entity())
     school = fields.EmbeddedDocumentField(Entity, default=Entity())
     coordinator = fields.EmbeddedDocumentField(Entity, default=Entity())
+    lapse1 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
+    lapse2 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
+    lapse3 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
     isInApproval = fields.BooleanField(default=False)
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

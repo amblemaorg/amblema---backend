@@ -94,18 +94,12 @@ class PecaProjectService():
                     coordinator.image)
                 data['yearbook']['coordinator']['content'] = coordinator.yearbook.content
 
-            data['yearbook']['lapse1'] = {
-                'diagnosticSummary': [],
-                'activities': []
-            }
-            data['yearbook']['lapse2'] = {
-                'diagnosticSummary': [],
-                'activities': []
-            }
-            data['yearbook']['lapse3'] = {
-                'diagnosticSummary': [],
-                'activities': []
-            }
+            data['yearbook']['lapse1']['diagnosticSummary'] = []
+            data['yearbook']['lapse1']['activities'] = []
+            data['yearbook']['lapse2']['diagnosticSummary'] = []
+            data['yearbook']['lapse2']['activities'] = []
+            data['yearbook']['lapse3']['diagnosticSummary'] = []
+            data['yearbook']['lapse3']['activities'] = []
 
             for section in sorted(
                     peca.school.sections.filter(isDeleted=False), key=lambda x: (x['grade'], x['name'])):

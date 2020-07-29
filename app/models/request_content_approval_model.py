@@ -195,8 +195,12 @@ class RequestContentApproval(Document):
                             partial=True)
                         data = schema.load(document.detail)
                         for field in schema.dump(data).keys():
-                            peca.yearbook[field] = data[field]
-
+                            if field != 'sections':
+                                peca.yearbook[field] = data[field]
+                        for section in data['sections']:
+                            for oldSection in peca.school.sections.filter(isDeleted=False):
+                                if str(oldSection.id) == section['id']:
+                                    oldSection['image'] = section['image']
                         if school.yearbook != peca.yearbook.school or school.historicalReview != peca.yearbook.historicalReview:
                             if school.yearbook != peca.yearbook.school:
                                 school.yearbook = peca.yearbook.school

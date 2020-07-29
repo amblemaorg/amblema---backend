@@ -25,6 +25,7 @@ class Section(EmbeddedDocument):
     diagnostics = fields.EmbeddedDocumentField(
         Diagnostics, default=Diagnostics())
     goals = fields.EmbeddedDocumentField(GradeSetting)
+    image = fields.StringField(null=True)
     isDeleted = fields.BooleanField(default=False)
     students = fields.EmbeddedDocumentListField(Student)
     teacher = fields.EmbeddedDocumentField(TeacherLink)

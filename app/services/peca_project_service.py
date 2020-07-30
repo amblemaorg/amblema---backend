@@ -46,16 +46,24 @@ class PecaProjectService():
         from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.monitoring_activity_schema import MonitoringActivitySchema
         from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
+        from app.models.project_model import Project
 
         peca = PecaProject.objects(
             isDeleted=False, id=id).first()
         if peca:
             schema = PecaProjectSchema()
             schoolYear = peca.schoolYear.fetch()
+            project = Project.objects(id=peca.project.id, isDeleted=False).only(
+                'stepsProgress').first()
+            amblemaConfirmation = project.stepsProgress.steps.filter(
+                devName='amblemaConfirmation', tag='1').first()
             peca.school.sections = peca.school.sections.filter(isDeleted=False)
             for section in peca.school.sections:
                 section.students = section.students.filter(isDeleted=False)
             data = schema.dump(peca)
+            # field for see go to steps option in peca menu
+            data['steps'] = str(
+                project.id) if amblemaConfirmation and amblemaConfirmation.status == "3" else False
             data['monitoringActivities'] = MonitoringActivitySchema().dump(
                 schoolYear.pecaSetting.monitoringActivities)
             data['environmentalProject'] = EnvironmentalProjectSchema().dump(

@@ -392,90 +392,91 @@ class PecaYearbookTest(unittest.TestCase):
                 "image": None
             }, result['yearbook']['school'])
         self.assertEqual(
-            result['yearbook']['lapse1'],
-            {
-                "diagnosticSummary": [
-                    {
-                        "grade": "1",
-                        "name": "A",
-                        "multiplicationsPerMin": 15,
-                        "multiplicationsPerMinIndex": 0.75,
-                        "operationsPerMin": 25,
-                        "operationsPerMinIndex": 0.835,
-                        "wordsPerMin": 35,
-                        "wordsPerMinIndex": 0.875
-                    }
-                ],
-                "activities": [
-                    {
-                        "id": "lapsePlanning",
-                        "name": "Planificación de lapso",
-                        "description": None,
-                        "images": []
-                    },
-                    {
-                        "id": "annualConvention",
-                        "name": "Convención anual",
-                        "description": None,
-                        "images": []
-                    },
-                    {
-                        "id": "olympics",
-                        "name": "Olimpiadas matemáticas",
-                        "description": None,
-                        "images": [
-                        ]
-                    }
-                ]
-            })
+            result['yearbook']['lapse1']['diagnosticSummary'],
+            [{
+                "grade": "1",
+                "name": "A",
+                "multiplicationsPerMin": 15,
+                "multiplicationsPerMinIndex": 0.75,
+                "operationsPerMin": 25,
+                "operationsPerMinIndex": 0.835,
+                "wordsPerMin": 35,
+                "wordsPerMinIndex": 0.875
+            }])
         self.assertEqual(
-            result['yearbook']['lapse2'],
-            {
-                "diagnosticSummary": [
-                    {
-                        "grade": "1",
-                        "name": "A",
-                        "multiplicationsPerMin": 0,
-                        "multiplicationsPerMinIndex": 0,
-                        "operationsPerMin": 0,
-                        "operationsPerMinIndex": 0,
-                        "wordsPerMin": 0,
-                        "wordsPerMinIndex": 0
-                    }
-                ],
-                "activities": [
-                    {
-                        "id": "ambleCoins",
-                        "name": "AmbLeMonedas",
-                        "description": None,
-                        "images": []
-                    }
-                ]
-            })
+            result['yearbook']['lapse1']['activities'],
+            [
+                {
+                    "id": "lapsePlanning",
+                    "name": "Planificación de lapso",
+                    "description": None,
+                    "images": []
+                },
+                {
+                    "id": "annualConvention",
+                    "name": "Convención anual",
+                    "description": None,
+                    "images": []
+                },
+                {
+                    "id": "olympics",
+                    "name": "Olimpiadas matemáticas",
+                    "description": None,
+                    "images": [
+                    ]
+                }
+            ]
+        )
         self.assertEqual(
-            result['yearbook']['lapse3'],
-            {
-                "diagnosticSummary": [
-                    {
-                        "grade": "1",
-                        "name": "A",
-                        "multiplicationsPerMin": 0,
-                        "multiplicationsPerMinIndex": 0.0,
-                        "operationsPerMin": 0,
-                        "operationsPerMinIndex": 0.0,
-                        "wordsPerMin": 0,
-                        "wordsPerMinIndex": 0.0
-                    }
-                ],
-                "activities": [
-                    {
-                        "id": customActivity['id'],
-                        "name": "some name",
-                        "description": None,
-                        "images": []
-                    }
-                ]
-            })
+            result['yearbook']['lapse2']['diagnosticSummary'],
+            [
+                {
+                    "grade": "1",
+                    "name": "A",
+                    "multiplicationsPerMin": 0,
+                    "multiplicationsPerMinIndex": 0,
+                    "operationsPerMin": 0,
+                    "operationsPerMinIndex": 0,
+                    "wordsPerMin": 0,
+                    "wordsPerMinIndex": 0
+                }
+            ])
+        self.assertEqual(
+            result['yearbook']['lapse2']['activities'],
+            [
+                {
+                    "id": "ambleCoins",
+                    "name": "AmbLeMonedas",
+                    "description": None,
+                    "images": []
+                }
+            ]
+        )
+        self.assertEqual(
+            result['yearbook']['lapse3']['diagnosticSummary'],
+            [
+                {
+                    "grade": "1",
+                    "name": "A",
+                    "multiplicationsPerMin": 0,
+                    "multiplicationsPerMinIndex": 0.0,
+                    "operationsPerMin": 0,
+                    "operationsPerMinIndex": 0.0,
+                    "wordsPerMin": 0,
+                    "wordsPerMinIndex": 0.0
+                }
+            ])
+        self.assertEqual(
+            result['yearbook']['lapse3']['activities'],
+            [
+                {
+                    "id": customActivity['id'],
+                    "name": "some name",
+                    "description": None,
+                    "images": []
+                }
+            ]
+        )
 
         # send yearbook request approval
         requestData = {
@@ -518,7 +519,8 @@ class PecaYearbookTest(unittest.TestCase):
                         "description": "",
                         "images": [test_image]
                     }
-                ]
+                ],
+                "diagnosticAnalysis": "some resume"
             },
             "lapse2": {
                 "activities": [
@@ -539,7 +541,10 @@ class PecaYearbookTest(unittest.TestCase):
                         "images": [test_image]
                     }
                 ]
-            }
+            },
+            "sections": [
+                {'id': str(section.id), 'image': test_image} for section in self.pecaProject.school.sections
+            ]
         }
 
         res = self.client().post(
@@ -581,6 +586,10 @@ class PecaYearbookTest(unittest.TestCase):
         self.assertEqual(
             'some description',
             result['yearbook']['approvalHistory'][0]['detail']['lapse1']['activities'][0]['description'])
+        self.assertEqual(
+            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['diagnosticAnalysis'])
+        self.assertEqual(
+            'A', result['yearbook']['approvalHistory'][0]['detail']['sections'][0]['name'])
 
         # approve request
         requestData = {
@@ -619,6 +628,9 @@ class PecaYearbookTest(unittest.TestCase):
         self.assertEqual(
             'school content',
             school.yearbook.content)
+
+        self.pecaProject.reload()
+        self.assertIsNotNone(self.pecaProject.school.sections[0].image)
 
     def tearDown(self):
         """teardown all initialized variables."""

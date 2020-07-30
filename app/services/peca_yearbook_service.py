@@ -62,6 +62,21 @@ class YearbookService():
                 if str(jsonData['coordinator']['image']).startswith('data'):
                     jsonData['coordinator']['image'] = upload_image(
                         jsonData['coordinator']['image'], folder, None)
+                for section in jsonData['sections']:
+                    found = False
+                    for oldSection in peca.school.sections:
+                        if str(oldSection.id) == section['id']:
+                            found = True
+                            section['name'] = oldSection.name
+                            section['grade'] = oldSection.grade
+                            break
+                    if not found:
+                        raise RegisterNotFound(message="Record not found",
+                                               status_code=404,
+                                               payload={"section": section['id']})
+                    if str(section['image']).startswith('data'):
+                        section['image'] = upload_image(
+                            section['image'], folder, None)
                 for lapse in [1, 2, 3]:
                     for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
                         act = jsonData['lapse{}'.format(

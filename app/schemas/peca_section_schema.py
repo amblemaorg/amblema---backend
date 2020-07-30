@@ -11,8 +11,9 @@ from marshmallow import (
     ValidationError)
 
 from app.schemas import fields
+from app.helpers.ma_schema_fields import MAImageField
 from app.helpers.ma_schema_validators import (
-    not_blank, only_numbers, OneOf, Range, validate_url, validate_email)
+    not_blank, only_numbers, OneOf, Range, validate_url, validate_email, validate_image)
 from app.models.peca_section_model import TeacherLink
 from app.schemas.peca_student_schema import StudentSchema
 from app.schemas.goal_setting_schema import GradeSettingSchema
@@ -56,5 +57,7 @@ class SectionSchema(Schema):
     teacher = fields.Nested(TeacherLinkSchema())
     diagnostics = fields.Nested(DiagnosticsSchema, dump_only=True)
     goals = fields.Nested(GradeSettingSchema, dump_only=True)
+    image = MAImageField(allow_none=True, validate=validate_image,
+                         folder='sections')
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

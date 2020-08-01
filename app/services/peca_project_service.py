@@ -66,9 +66,6 @@ class PecaProjectService():
                 project.id) if amblemaConfirmation and amblemaConfirmation.status == "3" else False
             data['monitoringActivities'] = MonitoringActivitySchema().dump(
                 schoolYear.pecaSetting.monitoringActivities)
-            data['environmentalProject'] = EnvironmentalProjectSchema().dump(
-                schoolYear.pecaSetting.environmentalProject
-            )
             school = SchoolUser.objects(
                 id=peca.project.school.id).first()
             data['school']['teachers'] = TeacherSchema().dump(
@@ -209,6 +206,7 @@ class PecaProjectService():
         from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
         from app.models.peca_activities_model import ActivityPeca
         from app.models.peca_special_lapse_activity_model import SpecialActivityPeca
+        from app.models.peca_environmental_project_model import EnvironmentalProjectPeca, Lapse as EnvProjLapse, Topic, LevelDetail, Level
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only('pecaSetting').first()
@@ -281,3 +279,18 @@ class PecaProjectService():
                             updatedAt=activity.updatedAt
                         )
                     )
+            if schoolYear.pecaSetting.environmentalProject:
+                peca.environmentalProject = schoolYear.pecaSetting.environmentalProject
+                peca.environmentalProject.__class__ = EnvironmentalProjectPeca
+                peca.environmentalProject['lapse{}'.format(
+                    i)].__class__ = EnvProjLapse
+                if peca.environmentalProject['lapse{}'.format(i)]:
+
+                    for topic in peca.environmentalProject['lapse{}'.format(i)].topics:
+                        topic.__class__ = Topic
+                        for level in topic.levels:
+                            level.__class__ = LevelDetail
+                            for target in level.target:
+                                target.__class__ = Level
+                            level.activities = [CheckElement(
+                                id=c.id, name=c.name) for c in level.activities] if level.activities else []

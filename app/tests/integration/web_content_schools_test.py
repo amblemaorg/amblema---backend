@@ -521,8 +521,8 @@ class WebContentSchoolTest(unittest.TestCase):
                                     "second one"
                                 ],
                                 "activities": [
-                                    "first one",
-                                    "second one"
+                                    {"name": "first one"},
+                                    {"name": "second one"}
                                 ],
                                 "resources": [
                                     "first one",

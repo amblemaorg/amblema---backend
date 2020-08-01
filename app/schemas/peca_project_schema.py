@@ -26,6 +26,7 @@ from app.schemas.peca_schedule_schema import ScheduleActivitySchema
 from app.schemas.peca_special_lapse_activity_schema import SpecialActivitySchema
 from app.schemas.peca_yearbook_schema import YearbookSchema
 from app.schemas.peca_school_schema import SchoolSchema
+from app.schemas.peca_environmental_project_schema import EnvironmentalProjectPecaSchema
 
 
 class LapseSchema(Schema):
@@ -53,6 +54,7 @@ class PecaProjectSchema(Schema):
     lapse2 = fields.Nested(LapseSchema)
     lapse3 = fields.Nested(LapseSchema)
     schedule = fields.List(fields.Nested(ScheduleActivitySchema))
+    environmentalProject = fields.Nested(EnvironmentalProjectPecaSchema)
     yearbook = fields.Nested(YearbookSchema())
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)

@@ -47,6 +47,12 @@ class CheckTemplate(EmbeddedDocument):
     name = fields.StringField(required=True)
 
 
+class CheckElement(EmbeddedDocument):
+    id = fields.ObjectIdField()
+    name = fields.StringField(required=True)
+    checked = fields.BooleanField(default=False)
+
+
 class Approval(EmbeddedDocument):
     id = fields.StringField()
     user = fields.ReferenceField('User')

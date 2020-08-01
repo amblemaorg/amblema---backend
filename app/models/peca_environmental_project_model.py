@@ -1,4 +1,4 @@
-# app/models/environmental_project_model.py
+# app/models/peca_environmental_project_model.py
 
 
 from datetime import datetime
@@ -7,7 +7,7 @@ from mongoengine import fields, EmbeddedDocument, EmbeddedDocumentField
 from marshmallow import ValidationError
 from flask import current_app
 
-from app.models.shared_embedded_documents import CheckTemplate
+from app.models.shared_embedded_documents import CheckElement
 
 
 class Level(EmbeddedDocument):
@@ -20,7 +20,7 @@ class LevelDetail(EmbeddedDocument):
     week = fields.ListField(fields.DateTimeField(), max_length=2)
     duration = fields.IntField(min_value=0)
     techniques = fields.ListField(fields.StringField())
-    activities = fields.EmbeddedDocumentListField(CheckTemplate)
+    activities = fields.EmbeddedDocumentListField(CheckElement)
     resources = fields.ListField(fields.StringField())
     evaluations = fields.ListField(fields.StringField())
     supportMaterial = fields.ListField(fields.URLField())
@@ -39,10 +39,10 @@ class Lapse(EmbeddedDocument):
     topics = fields.EmbeddedDocumentListField(Topic, max_length=7)
 
 
-class EnvironmentalProject(EmbeddedDocument):
+class EnvironmentalProjectPeca(EmbeddedDocument):
     name = fields.StringField()
     description = fields.StringField(default="")
-    lapse1 = fields.EmbeddedDocumentField(Lapse)
+    lapse1 = fields.EmbeddedDocumentField(Lapse, null=True)
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

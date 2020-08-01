@@ -538,8 +538,8 @@ class PecaSettings(unittest.TestCase):
                                     "second one"
                                 ],
                                 "activities": [
-                                    "first one",
-                                    "second one"
+                                    {"name": "first one"},
+                                    {"name": "second one"}
                                 ],
                                 "resources": [
                                     "first one",
@@ -572,7 +572,7 @@ class PecaSettings(unittest.TestCase):
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual("first one",
-                         result['lapse1']['topics'][0]['levels'][0]['activities'][0])
+                         result['lapse1']['topics'][0]['levels'][0]['activities'][0]['name'])
 
         requestData = {
             "name": "Some name",
@@ -615,8 +615,8 @@ class PecaSettings(unittest.TestCase):
                                     "second one"
                                 ],
                                 "activities": [
-                                    "first one",
-                                    "second one"
+                                    {"name": "first one"},
+                                    {"name": "second one"}
                                 ],
                                 "resources": [
                                     "first one",
@@ -652,8 +652,8 @@ class PecaSettings(unittest.TestCase):
                                     "second one"
                                 ],
                                 "activities": [
-                                    "first one",
-                                    "second one"
+                                    {"name": "first one"},
+                                    {"name": "second one"}
                                 ],
                                 "resources": [
                                     "first one",
@@ -679,7 +679,7 @@ class PecaSettings(unittest.TestCase):
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 400)
-    
+
     def test_endpoint_monitoring_activity_setting(self):
 
         # create monitoring activity
@@ -715,15 +715,21 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("imagen de matematicas uno", result['mathActivities'][0]['description'])
-        self.assertEqual("imagen de lectura uno", result['readingActivities'][0]['description'])
-        self.assertEqual("imagen de ambiente dos", result['environmentActivities'][1]['description'])
+        self.assertEqual("imagen de matematicas uno",
+                         result['mathActivities'][0]['description'])
+        self.assertEqual("imagen de lectura uno",
+                         result['readingActivities'][0]['description'])
+        self.assertEqual("imagen de ambiente dos",
+                         result['environmentActivities'][1]['description'])
         monitoringActivity = result
 
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
-        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
-        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
-        self.assertEqual(2,len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
+        self.assertEqual(
+            1, len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
+        self.assertEqual(
+            1, len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
+        self.assertEqual(
+            2, len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
 
         # get monitoring activity
         res = self.client().get(
@@ -732,12 +738,18 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(monitoringActivity['mathActivities'][0]['description'], result['mathActivities'][0]['description'])
-        self.assertEqual(monitoringActivity['mathActivities'][0]['image'], result['mathActivities'][0]['image'])
-        self.assertEqual(monitoringActivity['readingActivities'][0]['description'], result['readingActivities'][0]['description'])
-        self.assertEqual(monitoringActivity['readingActivities'][0]['image'], result['readingActivities'][0]['image'])
-        self.assertEqual(monitoringActivity['environmentActivities'][0]['description'], result['environmentActivities'][0]['description'])
-        self.assertEqual(monitoringActivity['environmentActivities'][0]['image'], result['environmentActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['mathActivities'][0]
+                         ['description'], result['mathActivities'][0]['description'])
+        self.assertEqual(
+            monitoringActivity['mathActivities'][0]['image'], result['mathActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['readingActivities'][0]
+                         ['description'], result['readingActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['readingActivities']
+                         [0]['image'], result['readingActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['environmentActivities'][0]
+                         ['description'], result['environmentActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['environmentActivities']
+                         [0]['image'], result['environmentActivities'][0]['image'])
 
         # update monitoring activity
         requestData = {
@@ -768,15 +780,21 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual("imagen de matematicas uno actualizada", result['mathActivities'][0]['description'])
-        self.assertEqual("imagen de lectura uno actualizada", result['readingActivities'][0]['description'])
-        self.assertEqual("imagen de ambiente uno actualizada", result['environmentActivities'][0]['description'])
+        self.assertEqual("imagen de matematicas uno actualizada",
+                         result['mathActivities'][0]['description'])
+        self.assertEqual("imagen de lectura uno actualizada",
+                         result['readingActivities'][0]['description'])
+        self.assertEqual("imagen de ambiente uno actualizada",
+                         result['environmentActivities'][0]['description'])
         monitoringActivity = result
 
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
-        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
-        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
-        self.assertEqual(1,len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
+        self.assertEqual(
+            1, len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
+        self.assertEqual(
+            1, len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
+        self.assertEqual(
+            1, len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
 
         # get monitoring activity
         res = self.client().get(
@@ -785,14 +803,20 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(monitoringActivity['mathActivities'][0]['description'], result['mathActivities'][0]['description'])
-        self.assertEqual(monitoringActivity['mathActivities'][0]['image'], result['mathActivities'][0]['image'])
-        self.assertEqual(monitoringActivity['readingActivities'][0]['description'], result['readingActivities'][0]['description'])
-        self.assertEqual(monitoringActivity['readingActivities'][0]['image'], result['readingActivities'][0]['image'])
-        self.assertEqual(monitoringActivity['environmentActivities'][0]['description'], result['environmentActivities'][0]['description'])
-        self.assertEqual(monitoringActivity['environmentActivities'][0]['image'], result['environmentActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['mathActivities'][0]
+                         ['description'], result['mathActivities'][0]['description'])
+        self.assertEqual(
+            monitoringActivity['mathActivities'][0]['image'], result['mathActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['readingActivities'][0]
+                         ['description'], result['readingActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['readingActivities']
+                         [0]['image'], result['readingActivities'][0]['image'])
+        self.assertEqual(monitoringActivity['environmentActivities'][0]
+                         ['description'], result['environmentActivities'][0]['description'])
+        self.assertEqual(monitoringActivity['environmentActivities']
+                         [0]['image'], result['environmentActivities'][0]['image'])
 
-         # delete monitoring activity
+        # delete monitoring activity
         requestData = {
             "mathActivities": [],
             "readingActivities": [],
@@ -806,9 +830,12 @@ class PecaSettings(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         schoolYear = SchoolYear.objects.get(id=self.schoolYear.pk)
-        self.assertEqual(0,len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
-        self.assertEqual(0,len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
-        self.assertEqual(0,len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
+        self.assertEqual(
+            0, len(schoolYear.pecaSetting.monitoringActivities['mathActivities']))
+        self.assertEqual(
+            0, len(schoolYear.pecaSetting.monitoringActivities['readingActivities']))
+        self.assertEqual(
+            0, len(schoolYear.pecaSetting.monitoringActivities['environmentActivities']))
 
     def tearDown(self):
         """teardown all initialized variables."""

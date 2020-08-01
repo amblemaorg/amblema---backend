@@ -1,4 +1,4 @@
-# app/models/environmental_project_model.py
+# app/models/peca_environmental_project_model.py
 
 
 import json
@@ -15,8 +15,8 @@ from marshmallow import (
 
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf, validate_url, Length
-from app.models.environmental_project_model import Level, LevelDetail, Topic, Lapse
-from app.schemas.shared_schemas import CheckTemplateSchema
+from app.models.peca_environmental_project_model import Level, LevelDetail, Topic, Lapse
+from app.schemas.shared_schemas import CheckSchema
 
 
 class LevelSchema(Schema):
@@ -37,16 +37,16 @@ class LevelSchema(Schema):
 
 
 class LevelDetailSchema(Schema):
-    target = fields.List(fields.Nested(LevelSchema()))
-    week = fields.List(fields.DateTime(), max_length=2)
+    target = fields.List(fields.Nested(LevelSchema()), dump_only=True)
+    week = fields.List(fields.DateTime(), max_length=2, dump_only=True)
     duration = fields.Method("get_duration", deserialize="load_duration")
-    techniques = fields.List(fields.Str())
-    activities = fields.List(fields.Nested(CheckTemplateSchema()))
-    resources = fields.List(fields.Str())
-    evaluations = fields.List(fields.Str())
+    techniques = fields.List(fields.Str(), dump_only=True)
+    activities = fields.List(fields.Nested(CheckSchema()))
+    resources = fields.List(fields.Str(), dump_only=True)
+    evaluations = fields.List(fields.Str(), dump_only=True)
     supportMaterial = fields.List(fields.Str(
         validate=validate_url
-    ))
+    ), dump_only=True)
 
     class Meta:
         unknown = EXCLUDE
@@ -68,10 +68,10 @@ class LevelDetailSchema(Schema):
 
 
 class TopicSchema(Schema):
-    name = fields.Str()
-    objectives = fields.List(fields.Str())
-    strategies = fields.List(fields.Str())
-    contents = fields.List(fields.Str())
+    name = fields.Str(dump_only=True)
+    objectives = fields.List(fields.Str(), dump_only=True)
+    strategies = fields.List(fields.Str(), dump_only=True)
+    contents = fields.List(fields.Str(), dump_only=True)
     levels = fields.List(
         fields.Nested(LevelDetailSchema()),
         validate=Length(max=7))
@@ -86,7 +86,7 @@ class TopicSchema(Schema):
 
 
 class LapseSchema(Schema):
-    generalObjective = fields.Str()
+    generalObjective = fields.Str(dump_only=True)
     topics = fields.List(
         fields.Nested(TopicSchema()),
         validate=Length(max=7))
@@ -100,12 +100,12 @@ class LapseSchema(Schema):
         return Lapse(**data)
 
 
-class EnvironmentalProjectSchema(Schema):
-    name = fields.Str(required=True)
-    description = fields.Str()
-    lapse1 = fields.Nested(LapseSchema())
-    lapse2 = fields.Nested(LapseSchema())
-    lapse3 = fields.Nested(LapseSchema())
+class EnvironmentalProjectPecaSchema(Schema):
+    name = fields.Str(required=True, dump_only=True)
+    description = fields.Str(dump_only=True)
+    lapse1 = fields.Nested(LapseSchema(), allow_none=True)
+    lapse2 = fields.Nested(LapseSchema(), allow_none=True)
+    lapse3 = fields.Nested(LapseSchema(), allow_none=True)
     updatedAt = fields.DateTime(dump_only=True)
 
     class Meta:

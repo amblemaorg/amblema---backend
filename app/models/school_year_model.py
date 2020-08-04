@@ -68,7 +68,7 @@ class SchoolYear(Document):
             lapse2=lapse,
             lapse3=lapse,
             goalSetting=goalSetting,
-            environmentalProject=EnvironmentalProject(),
+            environmentalProject=None,
             monitoringActivities=MonitoringActivity()
         )
         self.pecaSetting = pecaSetting

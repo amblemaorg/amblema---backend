@@ -108,11 +108,9 @@ class UserService(GenericServices):
                     schoolYear = SchoolYear.objects(
                         isDeleted=False, status="1").first()
                     if schoolYear:
-                        current_app.logger.info('a#o activo')
                         peca = PecaProject.objects(
                             isDeleted=False, project__school__id=recordId, schoolYear=schoolYear.pk).first()
                         if peca:
-                            current_app.logger.info('peca activo')
                             peca.school.name = record.name
                             peca.school.code = record.code
                             peca.school.phone = record.phone

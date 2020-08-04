@@ -9,7 +9,7 @@ from flask import current_app
 
 from app.helpers.ma_schema_fields import MAImageField, MAReferenceField
 from app.helpers.ma_schema_validators import validate_url, not_blank, validate_image, OneOf
-from app.models.shared_embedded_documents import Link, CheckTemplate, Coordinate, ImageStatus
+from app.models.shared_embedded_documents import Link, CheckTemplate, Coordinate, ImageStatus, CheckElement
 from app.models.user_model import User
 from app.helpers.ma_schema_fields import serialize_links
 
@@ -31,12 +31,6 @@ class ProjectReferenceSchema(Schema):
     sponsor = fields.Nested(ReferenceSchema, dump_only=True)
     coordinator = fields.Nested(ReferenceSchema, dump_only=True)
     school = fields.Nested(SchoolReferenceSchema, dump_only=True)
-
-
-class CheckSchema(Schema):
-    id = fields.Str()
-    name = fields.Str()
-    checked = fields.Bool()
 
 
 class FileSchema(Schema):
@@ -73,6 +67,16 @@ class CheckTemplateSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         return CheckTemplate(**data)
+
+
+class CheckSchema(Schema):
+    id = fields.Str()
+    name = fields.Str()
+    checked = fields.Bool()
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        return CheckElement(**data)
 
 
 class ApprovalSchema(Schema):

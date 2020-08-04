@@ -1,4 +1,4 @@
-# app/models/environmental_project_model.py
+# app/models/peca_environmental_project_model.py
 
 
 import json
@@ -15,8 +15,8 @@ from marshmallow import (
 
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf, validate_url, Length
-from app.models.environmental_project_model import Level, LevelDetail, Topic, Lapse
-from app.schemas.shared_schemas import CheckTemplateSchema
+from app.models.peca_environmental_project_model import Level, LevelDetail, Topic, Lapse
+from app.schemas.shared_schemas import CheckSchema
 
 
 class LevelSchema(Schema):
@@ -41,7 +41,7 @@ class LevelDetailSchema(Schema):
     week = fields.List(fields.DateTime(), max_length=2)
     duration = fields.Method("get_duration", deserialize="load_duration")
     techniques = fields.List(fields.Str())
-    activities = fields.List(fields.Nested(CheckTemplateSchema()))
+    activities = fields.List(fields.Nested(CheckSchema()))
     resources = fields.List(fields.Str())
     evaluations = fields.List(fields.Str())
     supportMaterial = fields.List(fields.Str(
@@ -100,12 +100,12 @@ class LapseSchema(Schema):
         return Lapse(**data)
 
 
-class EnvironmentalProjectSchema(Schema):
-    name = fields.Str(required=True)
-    description = fields.Str()
-    lapse1 = fields.Nested(LapseSchema())
-    lapse2 = fields.Nested(LapseSchema())
-    lapse3 = fields.Nested(LapseSchema())
+class EnvironmentalProjectPecaSchema(Schema):
+    name = fields.Str(required=True, dump_only=True)
+    description = fields.Str(dump_only=True)
+    lapse1 = fields.Nested(LapseSchema(), allow_none=True)
+    lapse2 = fields.Nested(LapseSchema(), allow_none=True)
+    lapse3 = fields.Nested(LapseSchema(), allow_none=True)
     updatedAt = fields.DateTime(dump_only=True)
 
     class Meta:

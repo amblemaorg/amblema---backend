@@ -19,6 +19,7 @@ from app.models.peca_schedule_model import ScheduleActivity
 from app.models.peca_yearbook_model import Yearbook
 from app.models.peca_special_lapse_activity_model import SpecialActivityPeca
 from app.models.peca_school_model import School
+from app.models.peca_environmental_project_model import EnvironmentalProjectPeca
 
 
 class Lapse(EmbeddedDocument):
@@ -42,6 +43,8 @@ class PecaProject(Document):
     lapse3 = fields.EmbeddedDocumentField(Lapse)
     schedule = fields.EmbeddedDocumentListField(ScheduleActivity)
     yearbook = fields.EmbeddedDocumentField(Yearbook, default=Yearbook())
+    environmentalProject = fields.EmbeddedDocumentField(
+        EnvironmentalProjectPeca)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

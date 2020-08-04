@@ -99,6 +99,7 @@ class PecaSetting(EmbeddedDocument):
     lapse1 = fields.EmbeddedDocumentField(Lapse)
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)
-    environmentalProject = fields.EmbeddedDocumentField(EnvironmentalProject)
+    environmentalProject = fields.EmbeddedDocumentField(
+        EnvironmentalProject)
     goalSetting = fields.EmbeddedDocumentField(GoalSetting)
     monitoringActivities = fields.EmbeddedDocumentField(MonitoringActivity)

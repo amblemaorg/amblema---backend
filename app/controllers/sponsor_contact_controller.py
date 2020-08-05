@@ -23,7 +23,6 @@ class SponsorContactController(Resource):
         filters = getQueryParams(request)
         return self.service.getAllRecords(filters=filters)
 
-    @jwt_required
     def post(self):
         jsonData = request.get_json()
         return self.service.saveRecord(jsonData)

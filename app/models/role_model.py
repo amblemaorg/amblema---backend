@@ -42,6 +42,24 @@ class Role(Document):
     }
 
     def clean(self):
+        from app.models.entity_model import Entity
+
         if not self.pk and not self.isStandard:
             self.devName = re.sub(
                 r'[\W_]', '_', str(self.name).strip().lower())
+            entities = Entity.objects(isDeleted=False)
+            for entity in entities:
+                permission = Permission(
+                    entityId=str(entity.id),
+                    entityName=entity.name
+                )
+                for action in entity.actions:
+                    permission.actions.append(
+                        ActionHandler(
+                            name=action.name,
+                            label=action.label,
+                            sort=action.sort,
+                            allowed=False
+                        )
+                    )
+                self.permissions.append(permission)

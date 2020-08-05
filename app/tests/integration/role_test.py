@@ -109,22 +109,6 @@ class RoleTest(unittest.TestCase):
             name="New one",
             permissions=[]
         )
-        entities = Entity.objects(isDeleted=False)
-        for entity in entities:
-            permission = Permission(
-                entityId=str(entity.id),
-                entityName=entity.name
-            )
-            for action in entity.actions:
-                permission.actions.append(
-                    ActionHandler(
-                        name=action.name,
-                        label=action.label,
-                        sort=1,
-                        allowed=True
-                    )
-                )
-            role.permissions.append(permission)
         role.save()
 
         self.assertEqual('Rol', role.permissions[1].entityName)

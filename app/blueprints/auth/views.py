@@ -86,10 +86,6 @@ class LoginView(MethodView):
             elif user.userType == "4":
                 projects = Project.objects(
                     isDeleted=False, status="1", school=user.id).exclude('stepsProgress',)
-            
-            if user.userType in ('2','3','4'):
-                if not projects:
-                    return {"projects":[{"status": "0", "msg": "This user has not assigned projects"}]}, 400
 
             for project in projects:
                 projectsJson.append(

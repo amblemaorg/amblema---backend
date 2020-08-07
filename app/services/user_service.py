@@ -197,17 +197,17 @@ class UserService(GenericServices):
                     findSchool = RequestFindSchool.objects(
                         isDeleted=False, user=recordId, status="1").first()
                     if findSchool:
-                        entity = 'RequestFindSchool'
+                        entity = 'RequestFindUser'
                     else:
                         findSponsor = RequestFindSponsor.objects(
                             isDeleted=False, user=recordId, status="1").first()
                         if findSponsor:
-                            entity = 'RequestFindSponsor'
+                            entity = 'RequestFindUser'
                         else:
                             findCoordinator = RequestFindCoordinator.objects(
                                 isDeleted=False, user=recordId, status="1").first()
                             if findCoordinator:
-                                entity = 'RequestFindCoordinator'
+                                entity = 'RequestFindUser'
         if entity:
             return {
                 'status': '0',

@@ -61,17 +61,17 @@ class StateService(GenericServices):
             findSchool = RequestFindCoordinator.objects(
                 isDeleted=False, addressState=recordId).first()
             if findSchool:
-                entity = 'RequestFindSchool'
+                entity = 'RequestFindUser'
             else:
                 findSponsor = RequestFindSponsor.objects(
                     isDeleted=False, addressState=recordId).first()
                 if findSponsor:
-                    entity = 'RequestFindSponsor'
+                    entity = 'RequestFindUser'
                 else:
                     findCoordinator = RequestFindCoordinator.objects(
                         isDeleted=False, addressState=recordId).first()
                     if findCoordinator:
-                        entity = 'RequestFindCoordinator'
+                        entity = 'RequestFindUser'
         if not entity:
             schools = SchoolUser.objects(
                 isDeleted=False, teachers__isDeleted=False, teachers__addressMunicipality=recordId).only('teachers')

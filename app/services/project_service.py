@@ -199,6 +199,7 @@ class ProjectService():
                 name=step.name,
                 devName=step.devName,
                 tag=step.tag,
+                sort=step.sort,
                 approvalType=step.approvalType,
                 hasText=step.hasText,
                 hasFile=step.hasFile,

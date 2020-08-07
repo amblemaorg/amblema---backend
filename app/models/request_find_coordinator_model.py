@@ -4,6 +4,7 @@ from datetime import datetime
 
 from flask import current_app
 from mongoengine import Document, fields, signals
+from marshmallow import ValidationError
 
 from app.models.user_model import User
 from app.models.project_model import Project, Approval
@@ -42,6 +43,17 @@ class RequestFindCoordinator(Document):
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
+        if not document.id:
+            user = User.objects(
+                isDeleted=False, email=document.email).first()
+            if user:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                "msg": "Duplicated email"}]}
+                )
+
+    @classmethod
+    def pre_save_post_validation(cls, sender, document, **kwargs):
         reciprocalFields = [
             'sponsorFillCoordinatorForm',
             'schoolFillCoordinatorForm'
@@ -125,8 +137,9 @@ class RequestFindCoordinator(Document):
             document.project.save()
 
 
-signals.pre_save_post_validation.connect(
+signals.pre_save.connect(
     RequestFindCoordinator.pre_save, sender=RequestFindCoordinator)
-
+signals.pre_save_post_validation.connect(
+    RequestFindCoordinator.pre_save_post_validation, sender=RequestFindCoordinator)
 signals.post_save.connect(
     RequestFindCoordinator.post_save, sender=RequestFindCoordinator)

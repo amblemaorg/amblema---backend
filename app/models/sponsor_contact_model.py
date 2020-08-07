@@ -15,6 +15,7 @@ from marshmallow import ValidationError
 
 from app.models.sponsor_user_model import SponsorUser
 from app.models.school_user_model import SchoolUser
+from app.models.user_model import User
 from app.models.project_model import Project
 from app.models.role_model import Role
 
@@ -76,6 +77,13 @@ class SponsorContact(Document):
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.id:
+            user = User.objects(
+                    isDeleted=False, email=document.email).first()
+            if user:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                        "msg": "Duplicated email"}]}
+                )
             if document.hasSchool:
                 school = SchoolUser.objects(
                     isDeleted=False, code=document.schoolCode).first()
@@ -84,9 +92,9 @@ class SponsorContact(Document):
                         {"schoolCode": [{"status": "5",
                                          "msg": "Duplicated school code"}]}
                     )
-                school = SchoolUser.objects(
+                user = User.objects(
                     isDeleted=False, email=document.schoolEmail).first()
-                if school:
+                if user:
                     raise ValidationError(
                         {"schoolEmail": [{"status": "5",
                                           "msg": "Duplicated school email"}]}

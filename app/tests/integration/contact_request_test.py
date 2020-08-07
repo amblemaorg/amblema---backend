@@ -290,7 +290,7 @@ class ContactRequestTest(unittest.TestCase):
             schoolNSections=18,
             schoolShift="3",
             hasSchool=True,
-            email="iamsponsor@test.com",
+            email="iamsponsorother@test.com",
             name="Sponsor C.A.",
             rif="282882822",
             companyType="1",

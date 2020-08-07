@@ -13,6 +13,8 @@ from mongoengine import (
 from app.models.coordinator_user_model import CoordinatorUser
 from app.models.project_model import Project
 from app.models.role_model import Role
+from app.models.user_model import User
+from marshmallow import ValidationError
 
 
 class CoordinatorContact(Document):
@@ -44,6 +46,16 @@ class CoordinatorContact(Document):
     def clean(self):
         self.updatedAt = datetime.utcnow()
 
+    @classmethod
+    def pre_save(cls, sender, document, **kwargs):
+        if not document.id:
+            user = User.objects(
+                    isDeleted=False, email=document.email).first()
+            if user:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                        "msg": "Duplicated email"}]}
+                )
     @classmethod
     def post_save(cls, sender, document, **kwargs):
         if document.id:
@@ -87,3 +99,5 @@ class CoordinatorContact(Document):
 
 signals.pre_save_post_validation.connect(
     CoordinatorContact.post_save, sender=CoordinatorContact)
+signals.pre_save.connect(
+    CoordinatorContact.pre_save, sender=CoordinatorContact)

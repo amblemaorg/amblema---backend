@@ -63,9 +63,9 @@ class RequestFindSchool(Document):
                     {"code": [{"status": "5",
                                "msg": "Duplicated school code"}]}
                 )
-            school = SchoolUser.objects(
+            user = User.objects(
                 isDeleted=False, email=document.email).first()
-            if school:
+            if user:
                 raise ValidationError(
                     {"email": [{"status": "5",
                                 "msg": "Duplicated school email"}]}

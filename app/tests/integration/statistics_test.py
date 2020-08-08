@@ -427,18 +427,12 @@ class StatisticsTest(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # add to annual preparation
+        # add teachers to annual preparation
         requestData = {
-            "teacherId": str(self.school.teachers[0].id)
-        }
-        res = self.client().post(
-            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        requestData = {
-            "teacherId": str(self.school.teachers[1].id)
+            "teachersIds": [
+                str(self.school.teachers[0].id),
+                str(self.school.teachers[1].id)
+            ],
         }
         res = self.client().post(
             '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),

@@ -256,8 +256,7 @@ class PecaProjectService():
 
             for activity in pecaSettingLapse.activities:
                 if activity.status == "1":
-                    peca['lapse{}'.format(i)].activities.append(
-                        ActivityPeca(
+                    actPeca = ActivityPeca(
                             id=str(activity.id),
                             name=activity.name,
                             devName=activity.devName,
@@ -278,6 +277,12 @@ class PecaProjectService():
                             createdAt=activity.createdAt,
                             updatedAt=activity.updatedAt
                         )
+                    if activity.hasChecklist:
+                        for check in activity.checklist:
+                            actPeca.checklist.append(
+                                CheckElement(name=check.name, id=check.id))
+                    peca['lapse{}'.format(i)].activities.append(
+                        actPeca
                     )
             if schoolYear.pecaSetting.environmentalProject:
                 peca.environmentalProject = schoolYear.pecaSetting.environmentalProject

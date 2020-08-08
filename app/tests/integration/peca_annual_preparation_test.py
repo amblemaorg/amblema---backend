@@ -292,7 +292,11 @@ class PecaAnnualPreparationTest(unittest.TestCase):
 
         # add teachers to annual preparation
         requestData = {
-            "teacherId": str(self.school.teachers[0].id)
+            "teachersIds": [
+                str(self.school.teachers[0].id),
+                str(self.school.teachers[1].id),
+                str(self.school.teachers[2].id)
+            ]
         }
         res = self.client().post(
             '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
@@ -300,23 +304,8 @@ class PecaAnnualPreparationTest(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        requestData = {
-            "teacherId": str(self.school.teachers[1].id)
-        }
-        res = self.client().post(
-            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
-
-        requestData = {
-            "teacherId": str(self.school.teachers[2].id)
-        }
-        res = self.client().post(
-            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
-            data=json.dumps(requestData),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 200)
+        self.pecaProject.reload()
+        self.assertEqual(3, len(self.pecaProject.lapse1.annualPreparation.teachers))
 
         # confirm teacher
         requestData = {
@@ -331,20 +320,20 @@ class PecaAnnualPreparationTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         # delete teacher from annual preparation
-        res = self.client().delete(
-            '/pecaprojects/annualpreparation/{}/{}'.format(
-                self.pecaProject.id,
-                self.school.teachers[1].id),
+        requestData = {
+            "teachersIds": [
+                str(self.school.teachers[0].id),
+                str(self.school.teachers[2].id)
+            ]
+        }
+        res = self.client().post(
+            '/pecaprojects/annualpreparation/{}'.format(self.pecaProject.id),
+            data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
+        self.pecaProject.reload()
+        self.assertEqual(2, len(self.pecaProject.lapse1.annualPreparation.teachers))
 
-        # delete teacher from annual preparation (again)
-        res = self.client().delete(
-            '/pecaprojects/annualpreparation/{}/{}'.format(
-                self.pecaProject.id,
-                self.school.teachers[1].id),
-            content_type='application/json')
-        self.assertEqual(res.status_code, 404)
 
     def tearDown(self):
         """teardown all initialized variables."""

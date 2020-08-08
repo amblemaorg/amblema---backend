@@ -13,7 +13,7 @@ class Config(object):
     }
     SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     SERVER_URL = os.getenv('SERVER_URL')  # for image url
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=15)
     JWT_TOKEN_LOCATION = ['headers']
     JWT_COOKIE_SECURE = False

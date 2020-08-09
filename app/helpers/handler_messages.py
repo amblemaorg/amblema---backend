@@ -25,6 +25,7 @@ class HandlerMessages():
         'GoalSetting': 'Metas',
         'LearningModule': 'Módulo de aprendizaje',
         'Project': 'Proyecto',
+        'PecaProject': 'PECA',
         'RequestContentApproval': 'Solicitud de aprobación de contenido',
         'RequestFindUser': 'Solicitud de creación de usuario',
         'RequestCreateProject': 'Solicitud de creación de proyectos',

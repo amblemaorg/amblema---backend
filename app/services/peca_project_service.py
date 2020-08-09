@@ -206,7 +206,7 @@ class PecaProjectService():
         from app.models.peca_annual_convention_model import AnnualConventionPeca
         from app.models.peca_activities_model import ActivityPeca
         from app.models.peca_special_lapse_activity_model import SpecialActivityPeca
-        from app.models.peca_environmental_project_model import EnvironmentalProjectPeca, Lapse as EnvProjLapse, Topic, LevelDetail, Level
+        from app.models.peca_environmental_project_model import EnvironmentalProjectPeca
         from app.schemas.peca_environmental_project_schema import EnvironmentalProjectPecaSchema
         from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
         from app.models.shared_embedded_documents import CheckElement

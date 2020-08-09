@@ -200,7 +200,7 @@ class GenericServices():
                 duplicates = []
                 for record in records:
                     for attr in attributes:
-                        if attr['value'] == record[attr['field']]:
+                        if attr['field'] in record and attr['value'] == record[attr['field']]:
                             duplicates.append(attr)
                 return duplicates
         return False

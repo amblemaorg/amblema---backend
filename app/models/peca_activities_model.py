@@ -5,14 +5,9 @@ from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
-from app.models.shared_embedded_documents import Link, Approval
+from app.models.shared_embedded_documents import Link, Approval, CheckElement
 from app.models.peca_activity_yearbook_model import ActivityYearbook
 
-
-class CheckElement(EmbeddedDocument):
-    id = fields.ObjectIdField()
-    name = fields.StringField(required=True)
-    checked = fields.BooleanField(default=False)
 
 
 class ActivityFields(EmbeddedDocument):

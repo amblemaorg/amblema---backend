@@ -165,6 +165,98 @@ class SchoolYearTest(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         schoolyear = json.loads(res.data.decode('utf8').replace("'", '"'))
 
+        requestData = {
+            "name": "Some name",
+            "lapse1": {
+                "generalObjective": "Some general objective",
+                "topics": [
+                    {
+                        "name": "Some topic",
+                        "objectives": [
+                            "first one",
+                            "second one"
+                        ],
+                        "strategies": [
+                            "first one",
+                            "second one"
+                        ],
+                        "contents": [
+                            "first one",
+                            "second one"
+                        ],
+                        "levels": [
+                            {
+                                "target": [
+                                    {
+                                        "label": "1",
+                                        "value": True
+                                    },
+                                    {
+                                        "label": "2",
+                                        "value": True
+                                    }
+                                ],
+                                "week": [
+                                    "2020-04-20T18:45:33.108Z",
+                                    "2020-04-25T18:45:33.108Z"
+                                ],
+                                "duration": "0100",
+                                "techniques": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "activities": [
+                                    {"name": "first one"},
+                                    {"name": "second one"}
+                                ],
+                                "resources": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "evaluations": [
+                                    "first one",
+                                    "second one"
+                                ],
+                                "supportMaterial": [
+                                    "https://somedomain.com/somefile",
+                                    "https://somedomain.com/somefile"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+
+        res = self.client().post(
+            '/pecasetting/environmentalproject',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = dict(
+            name="Activity test 1",
+            hasText="true",
+            hasDate="true",
+            hasFile="true",
+            hasVideo="true",
+            hasChecklist="true",
+            hasUpload="false",
+            text="some text",
+            file=(io.BytesIO(
+                b'hi everyone'), 'activityFile.pdf'),
+            video=json.dumps(
+                {"name": "somename", "url": "https://youtube.com"}),
+            checklist=json.dumps([{"name": "objectve 1"}]),
+            approvalType="3",
+            status="1"
+        )
+        res = self.client().post(
+            '/pecasetting/activities/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
         # create second school
         self.school2 = SchoolUser(
             name="School 2",

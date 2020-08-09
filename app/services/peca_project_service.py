@@ -203,10 +203,13 @@ class PecaProjectService():
         from app.models.peca_olympics_model import Olympics
         from app.models.peca_project_model import Lapse
         from app.models.peca_annual_preparation_model import AnnualPreparationPeca
-        from app.models.peca_annual_convention_model import AnnualConventionPeca, CheckElement
+        from app.models.peca_annual_convention_model import AnnualConventionPeca
         from app.models.peca_activities_model import ActivityPeca
         from app.models.peca_special_lapse_activity_model import SpecialActivityPeca
         from app.models.peca_environmental_project_model import EnvironmentalProjectPeca, Lapse as EnvProjLapse, Topic, LevelDetail, Level
+        from app.schemas.peca_environmental_project_schema import EnvironmentalProjectPecaSchema
+        from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
+        from app.models.shared_embedded_documents import CheckElement
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only('pecaSetting').first()
@@ -254,7 +257,7 @@ class PecaProjectService():
             else:
                 peca['lapse{}'.format(i)].specialActivity = None
 
-            for activity in pecaSettingLapse.activities:
+            for activity in pecaSettingLapse.activities.filter(isDeleted=False):
                 if activity.status == "1":
                     actPeca = ActivityPeca(
                             id=str(activity.id),
@@ -269,8 +272,6 @@ class PecaProjectService():
                             text=activity.text,
                             file=activity.file,
                             video=activity.video,
-                            checklist=None if not activity.hasChecklist else [CheckElement(
-                                id=chk.id, name=chk.name) for chk in activity.checklist],
                             approvalType=activity.approvalType,
                             isStandard=activity.isStandard,
                             status=activity.status,
@@ -285,17 +286,9 @@ class PecaProjectService():
                         actPeca
                     )
             if schoolYear.pecaSetting.environmentalProject:
-                peca.environmentalProject = schoolYear.pecaSetting.environmentalProject
-                peca.environmentalProject.__class__ = EnvironmentalProjectPeca
-                peca.environmentalProject['lapse{}'.format(
-                    i)].__class__ = EnvProjLapse
-                if peca.environmentalProject['lapse{}'.format(i)]:
-
-                    for topic in peca.environmentalProject['lapse{}'.format(i)].topics:
-                        topic.__class__ = Topic
-                        for level in topic.levels:
-                            level.__class__ = LevelDetail
-                            for target in level.target:
-                                target.__class__ = Level
-                            level.activities = [CheckElement(
-                                id=c.id, name=c.name) for c in level.activities] if level.activities else []
+                envProjectStg = EnvironmentalProjectSchema().dump(schoolYear.pecaSetting.environmentalProject)
+                envProjectData = EnvironmentalProjectPecaSchema().load(envProjectStg)
+                envProject = EnvironmentalProjectPeca()
+                for field in envProjectData.keys():
+                    envProject[field] = envProjectData[field]
+                peca.environmentalProject = envProject

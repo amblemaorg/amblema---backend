@@ -7,19 +7,8 @@ from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 from app.schemas import fields
 from app.helpers.ma_schema_fields import MAReferenceField
 from app.helpers.ma_schema_validators import not_blank, OneOf
-from app.schemas.shared_schemas import FileSchema, ReferenceSchema, ApprovalSchema
-from app.models.peca_activities_model import CheckElement
+from app.schemas.shared_schemas import FileSchema, ReferenceSchema, ApprovalSchema, CheckSchema
 from app.models.user_model import User
-
-
-class CheckSchema(Schema):
-    id = fields.Str()
-    name = fields.Str()
-    checked = fields.Bool()
-
-    @post_load
-    def make_document(self, data, **kwargs):
-        return CheckElement(**data)
 
 
 class ActivityFieldsSchema(Schema):

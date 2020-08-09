@@ -48,7 +48,7 @@ class StepsApprovalService(GenericServices):
                 project=record.project.getReference(),
                 user=record.user,
                 type="1",
-                detail=schema.dump(record)
+                detail=jsonData
             ).save()
 
             # record.save()

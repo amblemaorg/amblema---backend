@@ -67,7 +67,10 @@ class RequestContentApproval(Document):
                             "name": step.file.name,
                             "url": step.file.url
                         }
-                        document.detail['stepVideo'] = step.video
+                        document.detail['stepVideo'] = None if not step.hasVideo else {
+                            "name": step.video.name,
+                            "url": step.video.url
+                        }
                         document.detail['stepChecklist'] = step.checklist
                         break
 

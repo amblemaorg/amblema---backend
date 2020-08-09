@@ -6,17 +6,7 @@ from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
 from app.helpers.ma_schema_validators import not_blank, OneOf
-from app.models.project_model import CheckElement
-
-
-class CheckSchema(Schema):
-    id = fields.Str()
-    name = fields.Str()
-    checked = fields.Bool()
-
-    @post_load
-    def make_document(self, data, **kwargs):
-        return CheckElement(**data)
+from app.schemas.shared_schemas import CheckSchema
 
 
 class AnnualConventionSchema(Schema):

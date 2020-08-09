@@ -48,7 +48,7 @@ class AnnualConventionService():
                         lapse)].annualConvention = annualConvention
                     schoolYear.save()
                     if annualConvention.status == "1":
-                        from app.models.project_model import CheckElement
+                        from app.models.shared_embedded_documents import CheckElement
 
                         oldIds = []
                         for reg in oldChecklist:

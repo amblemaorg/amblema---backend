@@ -13,15 +13,9 @@ from mongoengine import (
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
-from app.models.shared_embedded_documents import Link, ProjectReference, ResumePeca
+from app.models.shared_embedded_documents import Link, ProjectReference, ResumePeca, CheckElement
 from app.services.project_service import ProjectService
 from app.models.user_model import User
-
-
-class CheckElement(EmbeddedDocument):
-    id = fields.ObjectIdField()
-    name = fields.StringField()
-    checked = fields.BooleanField(default=False)
 
 
 class StepFields(EmbeddedDocument):

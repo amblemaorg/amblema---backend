@@ -5,7 +5,7 @@ from bson import ObjectId
 
 from mongoengine import EmbeddedDocument, fields
 
-from app.models.project_model import CheckElement
+from app.models.shared_embedded_documents import CheckElement
 from app.models.peca_activity_yearbook_model import ActivityYearbook
 
 

@@ -29,7 +29,9 @@ class EnvironmentalProjectService():
     def save(self, jsonData):
 
         from app.models.peca_project_model import PecaProject
-        from app.models.peca_environmental_project_model import EnvironmentalProjectPeca, Lapse, Topic, LevelDetail, Level
+        from app.models.peca_environmental_project_model import EnvironmentalProjectPeca
+        from app.schemas.peca_environmental_project_schema import EnvironmentalProjectPecaSchema
+        from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -53,21 +55,12 @@ class EnvironmentalProjectService():
                     schoolYear.save()
                     bulk_operations = []
                     for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
-                        peca.environmentalProject = environmentalProject
-                        peca.environmentalProject.__class__ = EnvironmentalProjectPeca
-                        for i in range(1, 4):
-                            lapse = peca.environmentalProject['lapse{}'.format(
-                                i)]
-                            if lapse:
-                                lapse.__class__ = Lapse
-                                for topic in lapse.topics:
-                                    topic.__class__ = Topic
-                                    for level in topic.levels:
-                                        level.__class__ = LevelDetail
-                                        for target in level.target:
-                                            target.__class__ = Level
-                                        level.activities = [CheckElement(
-                                            id=c.id, name=c.name) for c in level.activities] if level.activities else []
+                        envProjectStg = EnvironmentalProjectSchema().dump(schoolYear.pecaSetting.environmentalProject)
+                        envProjectData = EnvironmentalProjectPecaSchema().load(envProjectStg)
+                        envProject = EnvironmentalProjectPeca()
+                        for field in envProjectData.keys():
+                            envProject[field] = envProjectData[field]
+                        peca.environmentalProject = envProject
                         bulk_operations.append(
                             UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                     if bulk_operations:

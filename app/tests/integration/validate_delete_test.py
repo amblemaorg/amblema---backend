@@ -439,6 +439,12 @@ class TeacherTestimonialTest(unittest.TestCase):
             content_type="application/json")
         self.assertEqual(res.status_code, 200)
 
+        # try delete peca
+        res = self.client().put(
+            '/enrollment/{}?action=delete'.format(self.project['id']),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
         # delete project
         res = self.client().delete(
             '/projects/{}'.format(

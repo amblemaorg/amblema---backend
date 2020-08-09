@@ -36,6 +36,7 @@ class ProjectHandlerService(GenericServices):
         from app.models.request_find_coordinator_model import RequestFindCoordinator
         from app.models.request_find_sponsor_model import RequestFindSponsor
         from app.models.request_find_school_model import RequestFindSchool
+        from app.models.peca_project_model import PecaProject
 
         record = self.getOr404(recordId)
 
@@ -59,6 +60,10 @@ class ProjectHandlerService(GenericServices):
                         isDeleted=False, project=recordId, status="1").first()
                     if findCoordinator:
                         entity = 'RequestFindUser'
+                    else:
+                        peca = PecaProject.objects(isDeleted=False, project__id=recordId).first()
+                        if peca:
+                            entity = 'PecaProject'
         if entity:
             return {
                 'status': '0',

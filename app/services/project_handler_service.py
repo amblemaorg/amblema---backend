@@ -73,6 +73,12 @@ class ProjectHandlerService(GenericServices):
         try:
             record.isDeleted = True
             record.save()
+            if record.sponsor:
+                record.sponsor.removeProject(record)
+            if record.coordinator:
+                record.coordinator.removeProject(record)
+            if record.school:
+                record.school.removeProject()
         except Exception as e:
             return {'status': 0, 'message': str(e)}, 400
 

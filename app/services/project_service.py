@@ -313,6 +313,10 @@ class ProjectService():
         if document.sponsor != oldDocument.sponsor:
             if oldDocument.sponsor:
                 oldDocument.sponsor.removeProject(document)
+            if document.school:
+                document.school.updateProject(document)
+            if document.coordinator:
+                document.coordinator.updateProject(document)
             if document.sponsor:
                 document.sponsor.addProject(document)
                 # steps
@@ -354,6 +358,10 @@ class ProjectService():
                     )
             if oldDocument.school:
                 oldDocument.school.removeProject()
+            if document.sponsor:
+                document.sponsor.updateProject(document)
+            if document.coordinator:
+                document.coordinator.updateProject(document)
             if document.school:
                 document.school.addProject(document)
                 if document.phase == "1":
@@ -385,6 +393,10 @@ class ProjectService():
         if document.coordinator != oldDocument.coordinator:
             if oldDocument.coordinator:
                 oldDocument.coordinator.removeProject(document)
+            if document.school:
+                document.school.updateProject(document)
+            if document.sponsor:
+                document.sponsor.updateProject(document)
             if document.coordinator:
                 document.coordinator.addProject(document)
                 if document.phase == "1":

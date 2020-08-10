@@ -70,12 +70,26 @@ class ActivitiesPecaService():
                                            status_code=404,
                                            payload={"activityId":  "{} lapse: {}".format(activityId, lapse)})
 
+                jsonData['name'] = activity.name
+                jsonData['devName'] = activity.devName
                 jsonData['hasText'] = activity.hasText
                 jsonData['hasDate'] = activity.hasDate
                 jsonData['hasFile'] = activity.hasFile
                 jsonData['hasVideo'] = activity.hasVideo
                 jsonData['hasChecklist'] = activity.hasChecklist
                 jsonData['hasUpload'] = activity.hasUpload
+                if activity.hasText:
+                    jsonData['text'] = activity.text
+                if activity.hasFile:
+                    jsonData['file'] = {
+                        "name": activity.file.name,
+                        "url": activity.file.url
+                    }
+                if activity.hasVideo:
+                    jsonData['video'] = {
+                        "name": activity.video.name,
+                        "url": activity.video.url
+                    }
 
                 documentFiles = getFileFields(ActivityFields)
                 if files and documentFiles:

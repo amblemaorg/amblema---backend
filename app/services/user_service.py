@@ -69,6 +69,7 @@ class UserService(GenericServices):
         """
         from app.models.school_year_model import SchoolYear
         from app.models.peca_project_model import PecaProject
+        from app.models.project_model import Project
 
         schema = self.Schema(exclude=exclude, only=only)
         try:
@@ -80,12 +81,16 @@ class UserService(GenericServices):
             data = schema.load(jsonData, partial=partial)
             record = self.getOr404(recordId)
             has_changed = False
+            has_changed_name = False
+            projectsIds = []
             uniquesFields = getUniqueFields(self.Model)
             fieldsForCheckDuplicates = []
             for field in data.keys():
                 if data[field] != record[field]:
                     record[field] = data[field]
                     has_changed = True
+                    if field in ['name', 'firstName', 'lastName']:
+                        has_changed_name = True
                     if field in uniquesFields:
                         fieldsForCheckDuplicates.append(
                             {"field": field, "value": data[field]})
@@ -102,39 +107,71 @@ class UserService(GenericServices):
                             {field["field"]: [{"status": "5",
                                                "msg": "Duplicated record found: {}".format(field["value"])}]}
                         )
+                if has_changed_name:
+                    if self.Model.__name__ in ['CoordinatorUser', 'SponsorUser']:
+                        for project in record.projects:
+                            projectsIds.append(project.id)
+                            if self.Model.__name__ == 'CoordinatorUser':
+                                project.coordinator.name = record.firstName + ' ' + record.lastName
+                            else:
+                                project.sponsor.name = record.name
+                    if self.Model.__name__ == 'SchoolUser':
+                        if record.project:
+                            projectsIds.append(record.project.id)
+                            record.project.school.name = record.name
 
                 record.save()
-                if self.Model.__name__ == 'SchoolUser':
-                    schoolYear = SchoolYear.objects(
-                        isDeleted=False, status="1").first()
-                    if schoolYear:
-                        peca = PecaProject.objects(
-                            isDeleted=False, project__school__id=recordId, schoolYear=schoolYear.pk).first()
-                        if peca:
-                            peca.school.name = record.name
-                            peca.school.code = record.code
-                            peca.school.phone = record.phone
-                            peca.school.addressState = record.addressState
-                            peca.school.addressMunicipality = record.addressMunicipality
-                            peca.school.address = record.address
-                            peca.school.addressCity = record.addressCity
-                            peca.school.principalFirstName = record.principalFirstName
-                            peca.school.principalLastName = record.principalLastName
-                            peca.school.principalEmail = record.principalEmail
-                            peca.school.principalPhone = record.principalPhone
-                            peca.school.subPrincipalFirstName = record.subPrincipalFirstName
-                            peca.school.subPrincipalLastName = record.subPrincipalLastName
-                            peca.school.subPrincipalEmail = record.subPrincipalEmail
-                            peca.school.subPrincipalPhone = record.subPrincipalPhone
-                            peca.school.nTeachers = record.nTeachers
-                            peca.school.nGrades = record.nGrades
-                            peca.school.nStudents = record.nStudents
-                            peca.school.nAdministrativeStaff = record.nAdministrativeStaff
-                            peca.school.nLaborStaff = record.nLaborStaff
-                            peca.school.facebook = record.facebook
-                            peca.school.instagram = record.instagram
-                            peca.school.twitter = record.twitter
-                            peca.save()
+                if self.Model.__name__ in ['SchoolUser', 'CoordinatorUser', 'SponsorUser']:
+                    if has_changed_name:
+                        projects = Project.objects(id__in=projectsIds, isDeleted=False)
+                        for project in projects:
+                            if self.Model.__name__ == 'SchoolUser':
+                                if project.sponsor:
+                                    project.sponsor.updateProject(project)
+                                if project.coordinator:
+                                    project.coordinator.updateProject(project)
+                            if self.Model.__name__ == 'CoordinatorUser':
+                                if project.school:
+                                    project.school.updateProject(project)
+                                if project.sponsor:
+                                    project.sponsor.updateProject(project)
+                            else:
+                                if project.school:
+                                    project.school.updateProject(project)
+                                if project.coordinator:
+                                    project.coordinator.updateProject(project)
+
+                    if self.Model.__name__ == 'SchoolUser':
+                        schoolYear = SchoolYear.objects(
+                            isDeleted=False, status="1").first()
+                        if schoolYear:
+                            peca = PecaProject.objects(
+                                isDeleted=False, project__school__id=recordId, schoolYear=schoolYear.pk).first()
+                            if peca:
+                                peca.school.name = record.name
+                                peca.school.code = record.code
+                                peca.school.phone = record.phone
+                                peca.school.addressState = record.addressState
+                                peca.school.addressMunicipality = record.addressMunicipality
+                                peca.school.address = record.address
+                                peca.school.addressCity = record.addressCity
+                                peca.school.principalFirstName = record.principalFirstName
+                                peca.school.principalLastName = record.principalLastName
+                                peca.school.principalEmail = record.principalEmail
+                                peca.school.principalPhone = record.principalPhone
+                                peca.school.subPrincipalFirstName = record.subPrincipalFirstName
+                                peca.school.subPrincipalLastName = record.subPrincipalLastName
+                                peca.school.subPrincipalEmail = record.subPrincipalEmail
+                                peca.school.subPrincipalPhone = record.subPrincipalPhone
+                                peca.school.nTeachers = record.nTeachers
+                                peca.school.nGrades = record.nGrades
+                                peca.school.nStudents = record.nStudents
+                                peca.school.nAdministrativeStaff = record.nAdministrativeStaff
+                                peca.school.nLaborStaff = record.nLaborStaff
+                                peca.school.facebook = record.facebook
+                                peca.school.instagram = record.instagram
+                                peca.school.twitter = record.twitter
+                                peca.save()
 
             return schema.dump(record), 200
         except ValidationError as err:

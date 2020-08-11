@@ -70,7 +70,12 @@ class CoordinatorUser(User):
     def updateProject(self, project):
         for myProject in self.projects:
             if myProject.id == str(project.id):
-                myProject = project.getReference()
+                newProject = project.getReference()
+                myProject.code = newProject.code
+                myProject.school = newProject.school
+                myProject.sponsor = newProject.sponsor
+                myProject.coordinator = newProject.coordinator
+                myProject.schoolYears = newProject.schoolYears
                 self.save()
                 break
 

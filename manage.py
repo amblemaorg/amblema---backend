@@ -44,6 +44,10 @@ def create_super_user(email, password):
         user.setHashPassword()
         user.save()
 
+@manager.command
+def refresh_users_projects():
+    from app.helpers.utilities_helpers import refresh_users_projects
+    refresh_users_projects()
 
 @manager.command
 def create_entity_actions():

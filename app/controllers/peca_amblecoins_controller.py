@@ -20,3 +20,10 @@ class PecaAmblecoinsController(Resource):
     def put(self, pecaId, lapse):
         jsonData = request.get_json()
         return self.service.save(pecaId, lapse, jsonData)
+
+class PecaAmbleSectionCtrl(Resource):
+    service = AmblecoinsPecaService()
+    @jwt_required
+    def put(self, pecaId, lapse):
+        jsonData = request.get_json()
+        return self.service.updateSection(pecaId, lapse, jsonData)

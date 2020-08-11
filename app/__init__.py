@@ -102,7 +102,7 @@ from app.controllers.peca_project_controller import (
 from app.controllers.peca_school_controller import SchoolController
 from app.controllers.peca_activities_slider_controller import ActivitiesSliderController
 from app.controllers.peca_amblecoins_controller import (
-    PecaAmblecoinsController
+    PecaAmblecoinsController, PecaAmbleSectionCtrl
 )
 from app.controllers.peca_olympics_controller import (
     PecaOlympicsController, PecaOlympicsHandlerCtrl
@@ -329,6 +329,8 @@ def create_app(config_instance):
                      '/pecaprojects/diagnostics/<string:diagnostic>/<string:lapse>/<string:pecaId>/<string:sectionId>/<string:studentId>')
     api.add_resource(PecaAmblecoinsController,
                      '/pecaprojects/amblecoins/<string:pecaId>/<string:lapse>')
+    api.add_resource(PecaAmbleSectionCtrl,
+                     '/pecaprojects/amblecoins/section/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaOlympicsController,
                      '/pecaprojects/olympics/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaOlympicsHandlerCtrl,

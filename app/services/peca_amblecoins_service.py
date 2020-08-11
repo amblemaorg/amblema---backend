@@ -82,3 +82,38 @@ class AmblecoinsPecaService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"pecaId": pecaId})
+
+    def updateSection(self, pecaId, lapse, jsonData):
+
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).first()
+
+        if peca:
+            if not peca['lapse{}'.format(lapse)].ambleCoins:
+                raise RegisterNotFound(message="Record not found",
+                                        status_code=404,
+                                        payload={"ambleCoins lapse: ": lapse})
+            
+            schema = AmblecoinsPecaSchema()
+            ambleCoins = peca['lapse{}'.format(
+                lapse)].ambleCoins
+            
+            section = ambleCoins.sections.filter(id=jsonData['id']).first()
+            if not section:
+                raise RegisterNotFound(message="Record not found",
+                                        status_code=404,
+                                        payload={"section: ": jsonData['id']})
+            section.status = jsonData['status']
+            
+            try:
+                peca.save()
+                return schema.dump(ambleCoins), 200
+            except Exception as e:
+                return {'status': 0, 'message': str(e)}, 400
+
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"pecaId": pecaId})

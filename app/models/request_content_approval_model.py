@@ -113,7 +113,7 @@ class RequestContentApproval(Document):
                                             partial=True)
                                         data = {}
                                         for field in fields:
-                                            if history['detail'][field]:
+                                            if field in history['detail'] and history['detail'][field]:
                                                 data[field] = history['detail'][field]
                                         data = schema.load(data)
                                         for field in data.keys():

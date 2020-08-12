@@ -130,25 +130,22 @@ class SchoolYearService(GenericServices):
                 project.save()
                 peca.isDeleted = True
                 peca.save()
-                reference = project.getReference()
-                SchoolUser.objects(isDeleted=False, id=project.school.id).update(
-                    project=reference)
-                sponsor = SponsorUser.objects(
-                    isDeleted=False, id=project.sponsor.id).first()
-                if sponsor:
-                    for project in sponsor.projects:
-                        if project.id == str(project.id):
-                            project = reference
-                            sponsor.save()
-                            break
-                coordinator = CoordinatorUser.objects(
-                    isDeleted=False, id=project.coordinator.id).first()
-                if coordinator:
-                    for project in coordinator.projects:
-                        if project.id == str(project.id):
-                            project = reference
-                            coordinator.save()
-                            break
+                
+                project.sponsor.updateProject(project)
+                project.coordinator.updateProject(project)
+                project.school.updateProject(project)
+                
+                # update counts for home page
+                sponsorPecas = len(PecaProject.objects(
+                    schoolYear=schoolYear.id,
+                    project__sponsor__id=str(project.sponsor.id),
+                    isDeleted=False).only('id'))
+                schoolYear.nSchools -= 1
+                schoolYear.nStudents -= peca.school.nStudents
+                schoolYear.nTeachers -= peca.school.nTeachers
+                schoolYear.nSponsors -= 1 if sponsorPecas == 0 else 0
+                schoolYear.save()
+
 
                 return {'msg': 'Record deleted'}, 200
             except Exception as e:
@@ -168,25 +165,20 @@ class SchoolYearService(GenericServices):
 
             try:
                 project.createPeca()
-                reference = project.getReference()
-                SchoolUser.objects(isDeleted=False, id=project.school.id).update(
-                    project=reference)
-                sponsor = SponsorUser.objects(
-                    isDeleted=False, id=project.sponsor.id).first()
-                if sponsor:
-                    for project in sponsor.projects:
-                        if project.id == str(project.id):
-                            project = reference
-                            sponsor.save()
-                            break
-                coordinator = CoordinatorUser.objects(
-                    isDeleted=False, id=project.coordinator.id).first()
-                if coordinator:
-                    for project in coordinator.projects:
-                        if project.id == str(project.id):
-                            project = reference
-                            coordinator.save()
-                            break
+                
+                project.sponsor.updateProject(project)
+                project.school.updateProject(project)
+                project.coordinator.updateProject(project)
+                
+                # update counts for home page
+                sponsorPecas = len(PecaProject.objects(
+                    schoolYear=schoolYear.id,
+                    project__sponsor__id=str(project.sponsor.id),
+                    isDeleted=False).only('id'))
+                schoolYear.nSchools += 1
+                schoolYear.nTeachers += project.school.nTeachers
+                schoolYear.nSponsors += 1 if sponsorPecas == 0 else 0
+                schoolYear.save()
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400

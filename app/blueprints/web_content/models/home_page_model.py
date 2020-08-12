@@ -21,9 +21,6 @@ class HomePage(EmbeddedDocument):
     readingText = StringField(required=True)
     mathText = StringField(required=True)
     testimonials = EmbeddedDocumentListField(Testimonial, required=True)
-    nSchools = IntField(default=0)
-    nTeachers = IntField(default=0)
-    nSponsors = IntField(default=0)
 
 
 """
@@ -43,9 +40,6 @@ class HomePageSchema(Schema):
     mathText = fields.Str(required=True, validate=(not_blank, Length(max=313)))
     testimonials = fields.List(fields.Nested(
         TestimonialSchema), required=True, validate=not_blank)
-    nSchools = fields.Int(dump_only=True)
-    nTeachers = fields.Int(dump_only=True)
-    nSponsors = fields.Int(dump_only=True)
 
     @post_load
     def make_document(self, data, **kwargs):

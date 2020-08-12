@@ -75,9 +75,15 @@ class SchoolPageContentService():
     def getAllRecords(self):
         schema = SchoolUserSchema(
             partial=True, only=('id', 'code', 'slug', 'name', 'coordinate'))
-        schools = SchoolUser.objects(
-            isDeleted=False, coordinate__exists=True, project__schoolYears__exists=True, project__schoolYears__0__exists=True)
-        schools = schema.dump(schools, many=True)
+        schools = []
+        currentPeriod = SchoolYear.objects(isDeleted=False, status="1").first()
+        if currentPeriod:
+            schoolsIds = []
+            pecas = PecaProject.objects(isDeleted=False, schoolYear=currentPeriod.id)
+            for peca in pecas:
+                schoolsIds.append(peca.project.school.id)
+            schools = SchoolUser.objects(isDeleted=False, pk__in=schoolsIds, coordinate__exists=True).all()
+            schools = schema.dump(schools, many=True)
         return {"records": schools}, 200
 
     def get(self, id):

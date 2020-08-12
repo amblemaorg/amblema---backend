@@ -60,9 +60,8 @@ class TeacherService():
                         PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
                             inc__school__nTeachers=1
                         )
-                    WebContent.objects().update(
-                        inc__homePage__nTeachers=1
-                    )
+                        period.nTeachers += 1
+                        period.save()
                     return schema.dump(teacher), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -163,9 +162,8 @@ class TeacherService():
                         PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
                             inc__school__nTeachers=1
                         )
-                    WebContent.objects().update(
-                        inc__homePage__nTeachers=1
-                    )
+                        period.nTeachers -= 1
+                        period.save()
 
                     return "Record deleted successfully", 200
                 except Exception as e:

@@ -49,14 +49,6 @@ class UserService(GenericServices):
                 record.setHashPassword()
                 record.save()
                 record.sendRegistrationEmail(password)
-                if self.Model.__name__ == 'SchoolUser':
-                    WebContent.objects().update(
-                        inc__homePage__nSchools=1
-                    )
-                elif self.Model.__name__ == 'SponsorUser':
-                    WebContent.objects().update(
-                        inc__homePage__nSponsors=1
-                    )
                 return schema.dump(record), 201
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400
@@ -255,14 +247,6 @@ class UserService(GenericServices):
         try:
             record.isDeleted = True
             record.save()
-            if self.Model.__name__ == 'SchoolUser':
-                WebContent.objects().update(
-                    dec__homePage__nSchools=1
-                )
-            elif self.Model.__name__ == 'SponsorUser':
-                WebContent.objects().update(
-                    dec__homePage__nSponsors=1
-                )
 
         except Exception as e:
             return {'status': 0, 'message': str(e)}, 400

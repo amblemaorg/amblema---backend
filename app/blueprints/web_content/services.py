@@ -33,7 +33,11 @@ class WebContentService(GenericServices):
             data = schema.dump(record)
             if page == 'homePage':
                 statisticsService = StatisticsService()
-                data['homePage']['nStudents'] = statisticsService.get_count_students()
+                counts = statisticsService.get_count_home_page()
+                data['homePage']['nSchools'] = counts['nSchools']
+                data['homePage']['nStudents'] = counts['nStudents']
+                data['homePage']['nTeachers'] = counts['nTeachers']
+                data['homePage']['nSponsors'] = counts['nSponsors']
                 data['homePage']['diagnostics'] = statisticsService.get_diagnostics_last_five_years()
             if page == 'sponsorPage':
                 data['sponsorPage']['sponsors'] = sorted(

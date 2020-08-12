@@ -40,17 +40,32 @@ class StatisticsService():
         return count
 
     def get_count_students(self):
-        oldSchoolYear = SchoolYear.objects(isDeleted=False, status="2").only(
-            'nStudents', 'createdAt').order_by('-createdAt').first()
-        if oldSchoolYear and oldSchoolYear.nStudents:
-            return oldSchoolYear.nStudents
+        
+        schoolYear = SchoolYear.objects(
+            isDeleted=False, status="1").only('nStudents').first()
+        if schoolYear and schoolYear.nStudents:
+            return schoolYear.nStudents
         else:
-            schoolYear = SchoolYear.objects(
-                isDeleted=False, status="1").only('nStudents').first()
-            if schoolYear and schoolYear.nStudents:
-                return schoolYear.nStudents
-            else:
-                return 0
+            return 0
+    
+    def get_count_home_page(self):
+        nSchools = 0
+        nStudents = 0
+        nTeachers = 0
+        nSponsors = 0
+        schoolYear = SchoolYear.objects(
+            isDeleted=False, status="1").only('nStudents', 'nSchools', 'nTeachers', 'nSponsors').first()
+        if schoolYear:
+            nSchools = schoolYear.nSchools
+            nStudents = schoolYear.nStudents
+            nTeachers = schoolYear.nTeachers
+            nSponsors = schoolYear.nSponsors
+        return {
+            'nSchools': nSchools,
+            'nStudents': nStudents,
+            'nTeachers': nTeachers,
+            'nSponsors': nSponsors
+        }
 
     def get_diagnostics_last_five_years(self):
 

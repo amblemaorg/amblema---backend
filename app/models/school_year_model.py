@@ -35,6 +35,9 @@ class SchoolYear(Document):
     diagnostics = fields.EmbeddedDocumentField(
         Diagnostics, default=Diagnostics())
     nStudents = fields.IntField(default=0)
+    nSchools = fields.IntField(default=0)
+    nTeachers = fields.IntField(default=0)
+    nSponsors = fields.IntField(default=0)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

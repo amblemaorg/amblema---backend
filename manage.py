@@ -50,6 +50,11 @@ def refresh_users_projects():
     refresh_users_projects()
 
 @manager.command
+def refresh_home_page_counts():
+    from app.helpers.utilities_helpers import refresh_home_statistics
+    refresh_home_statistics()
+
+@manager.command
 def create_entity_actions():
     from app.helpers.handler_seeds import create_entities
     create_entities()

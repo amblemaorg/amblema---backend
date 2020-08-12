@@ -185,10 +185,10 @@ class CoordinatorUser(User):
             if (
                 (document.instructed != oldDocument.instructed
                  or document.curriculum != oldDocument.curriculum)
-                and document.status != "4"
+                and document.phase != "4"
             ):
                 if document.instructed and document.curriculum:
-                    document.status = "3"
+                    document.phase = "3"
 
 
 signals.pre_save.connect(CoordinatorUser.pre_save, sender=CoordinatorUser)

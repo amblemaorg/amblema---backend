@@ -539,7 +539,7 @@ class InitialSteps(unittest.TestCase):
         self.assertEqual(result["approved"], True)
 
         self.coordinator = CoordinatorUser.objects().get(id=str(self.coordinator.id))
-        self.assertEqual("3", self.coordinator.status)
+        self.assertEqual("3", self.coordinator.phase)
 
         self.project = Project.objects.get(id=self.project.id)
         self.assertEqual(40, self.project.stepsProgress.coordinator)

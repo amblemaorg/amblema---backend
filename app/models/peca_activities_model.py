@@ -26,7 +26,7 @@ class ActivityFields(EmbeddedDocument):
     checklist = fields.EmbeddedDocumentListField(CheckElement)
     date = fields.DateTimeField(null=True)
     uploadedFile = fields.EmbeddedDocumentField(
-        Link, is_file=True, null=True, default=None)
+        Link, is_file=True, size=500, null=True, default=None)
     approvalType = fields.StringField(required=True, max_length=1)
     isStandard = fields.BooleanField(default=False)
     status = fields.StringField(default="1", max_length=1)

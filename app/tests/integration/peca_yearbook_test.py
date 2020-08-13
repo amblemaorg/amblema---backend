@@ -520,7 +520,9 @@ class PecaYearbookTest(unittest.TestCase):
                         "images": [test_image]
                     }
                 ],
-                "diagnosticAnalysis": "some resume"
+                "readingDiagnosticAnalysis": "some resume",
+                "mathDiagnosticAnalysis": "some resume",
+                "logicDiagnosticAnalysis": "some resume"
             },
             "lapse2": {
                 "activities": [
@@ -587,7 +589,11 @@ class PecaYearbookTest(unittest.TestCase):
             'some description',
             result['yearbook']['approvalHistory'][0]['detail']['lapse1']['activities'][0]['description'])
         self.assertEqual(
-            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['diagnosticAnalysis'])
+            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['readingDiagnosticAnalysis'])
+        self.assertEqual(
+            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['mathDiagnosticAnalysis'])
+        self.assertEqual(
+            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['logicDiagnosticAnalysis'])
         self.assertEqual(
             'A', result['yearbook']['approvalHistory'][0]['detail']['sections'][0]['name'])
 

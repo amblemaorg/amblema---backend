@@ -39,7 +39,9 @@ class SectionImageSchema(Schema):
 
 
 class LapseSchema(Schema):
-    diagnosticAnalysis = fields.Str()
+    readingDiagnosticAnalysis = fields.Str()
+    mathDiagnosticAnalysis = fields.Str()
+    logicDiagnosticAnalysis = fields.Str()
 
     class Meta:
         unknown = EXCLUDE

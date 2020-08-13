@@ -15,8 +15,9 @@ class Entity(EmbeddedDocument):
 
 
 class Lapse(EmbeddedDocument):
-    diagnosticAnalysis = fields.StringField(default='')
-
+    readingDiagnosticAnalysis = fields.StringField(default='')
+    mathDiagnosticAnalysis = fields.StringField(default='')
+    logicDiagnosticAnalysis = fields.StringField(default='')
 
 class Yearbook(EmbeddedDocument):
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())

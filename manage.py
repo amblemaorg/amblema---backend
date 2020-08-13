@@ -44,6 +44,12 @@ def create_super_user(email, password):
         user.setHashPassword()
         user.save()
 
+
+@manager.command
+def refresh_projects():
+    from app.helpers.utilities_helpers import refresh_projects
+    refresh_projects()
+
 @manager.command
 def refresh_users_projects():
     from app.helpers.utilities_helpers import refresh_users_projects

@@ -25,7 +25,7 @@ class ResumeSchoolYear(EmbeddedDocument):
 class ResumePeca(EmbeddedDocument):
     pecaId = fields.StringField()
     schoolYear = fields.EmbeddedDocumentField(ResumeSchoolYear)
-    createAt = fields.DateTimeField(default=datetime.utcnow)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
 
 
 class ProjectReference(EmbeddedDocument):

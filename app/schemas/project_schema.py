@@ -108,7 +108,7 @@ class ResumeSchoolYearSchema(Schema):
 class ResumePecaSchema(Schema):
     pecaId = fields.Str()
     schoolYear = fields.Nested(ResumeSchoolYearSchema)
-    createAt = fields.DateTime()
+    createdAt = fields.DateTime()
 
 
 class ProjectSchema(Schema):

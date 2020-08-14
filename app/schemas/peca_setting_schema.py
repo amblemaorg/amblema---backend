@@ -12,7 +12,7 @@ from marshmallow import (
     ValidationError)
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf, validate_image
+from app.helpers.ma_schema_validators import not_blank, OneOf, validate_image, Length
 from app.helpers.ma_schema_fields import MAImageField
 from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 from app.models.peca_setting_model import (
@@ -31,7 +31,7 @@ ImageSchema.image = MAImageField(
 
 class InicialWorkshopSchema(Schema):
     name = fields.Str(dump_only=True)
-    description = fields.Str()
+    description = fields.Str(validate=Length(max=100))
     #agreementFile = fields.Nested(FileSchema())
     #agreementDescription = fields.Str()
     #planningMeetingFile = fields.Nested(FileSchema())
@@ -52,8 +52,8 @@ class InicialWorkshopSchema(Schema):
 class LapsePlanningSchema(Schema):
     name = fields.Str(dump_only=True)
     proposalFundationFile = fields.Nested(FileSchema())
-    proposalFundationDescription = fields.Str()
-    meetingDescription = fields.Str()
+    proposalFundationDescription = fields.Str(validate=Length(max=730))
+    meetingDescription = fields.Str(validate=Length(max=730))
     isStandard = fields.Bool(dump_only=True)
 
     class Meta:
@@ -67,9 +67,9 @@ class LapsePlanningSchema(Schema):
 
 class AmbleCoinsSchema(Schema):
     name = fields.Str(dump_only=True)
-    description = fields.Str()
+    description = fields.Str(validate=Length(max=100))
     teachersMeetingFile = fields.Nested(FileSchema())
-    teachersMeetingDescription = fields.Str()
+    teachersMeetingDescription = fields.Str(validate=Length(max=730))
     piggyBankDescription = fields.Str()
     piggyBankSlider = fields.List(fields.Nested(ImageSchema()))
     isStandard = fields.Bool(dump_only=True)
@@ -87,21 +87,23 @@ class AmbleCoinsSchema(Schema):
 
 class AnnualPreparationSchema(Schema):
     name = fields.Str(dump_only=True)
-    step1Description = fields.Str()
-    step2Description = fields.Str()
-    step3Description = fields.Str()
-    step4Description = fields.Str()
+    step1Description = fields.Str(validate=Length(max=196))
+    step2Description = fields.Str(validate=Length(max=196))
+    step3Description = fields.Str(validate=Length(max=196))
+    step4Description = fields.Str(validate=Length(max=196))
     isStandard = fields.Bool(dump_only=True)
 
     class Meta:
         unknown = EXCLUDE
         ordered = True
 
+class CheckTmpSchema(CheckTemplateSchema):
+    name = fields.Str(required=True, validate=Length(max=196))
 
 class AnnualConventionSchema(Schema):
     name = fields.Str(dump_only=True)
-    description = fields.Str()
-    checklist = fields.List(fields.Nested(CheckTemplateSchema()))
+    description = fields.Str(validate=Length(max=100))
+    checklist = fields.List(fields.Nested(CheckTmpSchema))
     isStandard = fields.Bool(dump_only=True)
 
     class Meta:
@@ -119,8 +121,8 @@ class AnnualConventionSchema(Schema):
 class MathOlympicSchema(Schema):
     name = fields.Str(dump_only=True)
     file = fields.Nested(FileSchema())
-    description = fields.Str()
-    webDescription = fields.Str()
+    description = fields.Str(validate=Length(max=730))
+    webDescription = fields.Str(validate=Length(max=100))
     date = fields.DateTime(allow_none=True)
     isStandard = fields.Bool(dump_only=True)
 
@@ -131,7 +133,7 @@ class MathOlympicSchema(Schema):
 
 class SpecialLapseActivitySchema(Schema):
     name = fields.Str(dump_only=True)
-    description = fields.Str()
+    description = fields.Str(validate=Length(max=100))
     isStandard = fields.Bool(dump_only=True)
 
     class Meta:

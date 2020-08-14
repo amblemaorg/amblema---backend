@@ -40,7 +40,7 @@ class LevelDetailSchema(Schema):
     target = fields.List(fields.Nested(LevelSchema()))
     week = fields.List(fields.DateTime(), max_length=2)
     duration = fields.Method("get_duration", deserialize="load_duration")
-    techniques = fields.List(fields.Str())
+    techniques = fields.List(fields.Str(validate=Length(max=80)))
     activities = fields.List(fields.Nested(CheckTemplateSchema()))
     resources = fields.List(fields.Str())
     evaluations = fields.List(fields.Str())
@@ -68,10 +68,10 @@ class LevelDetailSchema(Schema):
 
 
 class TopicSchema(Schema):
-    name = fields.Str()
-    objectives = fields.List(fields.Str())
-    strategies = fields.List(fields.Str())
-    contents = fields.List(fields.Str())
+    name = fields.Str(validate=Length(max=80))
+    objectives = fields.List(fields.Str(validate=Length(max=80)))
+    strategies = fields.List(fields.Str(validate=Length(max=80)))
+    contents = fields.List(fields.Str(validate=Length(max=80)))
     levels = fields.List(
         fields.Nested(LevelDetailSchema()),
         validate=Length(max=7))
@@ -86,7 +86,7 @@ class TopicSchema(Schema):
 
 
 class LapseSchema(Schema):
-    generalObjective = fields.Str()
+    generalObjective = fields.Str(validate=Length(max=90))
     topics = fields.List(
         fields.Nested(TopicSchema()),
         validate=Length(max=7))
@@ -101,7 +101,7 @@ class LapseSchema(Schema):
 
 
 class EnvironmentalProjectSchema(Schema):
-    name = fields.Str(required=True)
+    name = fields.Str(required=True, validate=Length(max=55))
     description = fields.Str()
     lapse1 = fields.Nested(LapseSchema())
     lapse2 = fields.Nested(LapseSchema())

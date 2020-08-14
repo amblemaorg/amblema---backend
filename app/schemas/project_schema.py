@@ -21,7 +21,7 @@ from app.models.coordinator_user_model import CoordinatorUser
 from app.models.user_model import User
 from app.models.school_year_model import SchoolYear
 from app.schemas.step_schema import FileSchema
-from app.schemas.shared_schemas import CheckSchema
+from app.schemas.shared_schemas import CheckSchema, ResumePecaSchema
 from app.helpers.ma_schema_fields import serialize_links
 
 
@@ -97,18 +97,6 @@ class StepsProgressSchema(Schema):
     sponsor = fields.Str(dump_only=True)
     coordinator = fields.Str(dump_only=True)
     steps = fields.List(fields.Nested(StepControlSchema))
-
-
-class ResumeSchoolYearSchema(Schema):
-    id = fields.Str()
-    name = fields.Str()
-    status = fields.Str()
-
-
-class ResumePecaSchema(Schema):
-    pecaId = fields.Str()
-    schoolYear = fields.Nested(ResumeSchoolYearSchema)
-    createdAt = fields.DateTime()
 
 
 class ProjectSchema(Schema):

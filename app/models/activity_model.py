@@ -20,7 +20,7 @@ class Activity(EmbeddedDocument):
     hasUpload = fields.BooleanField(required=True, default=False)
     text = fields.StringField()
     file = fields.EmbeddedDocumentField(
-        Link, is_file=True, null=True, default=None)
+        Link, is_file=True, size=500, null=True, default=None)
     video = fields.EmbeddedDocumentField(Link, null=True, default=None)
     checklist = fields.EmbeddedDocumentListField(
         CheckTemplate, null=True, default=None)

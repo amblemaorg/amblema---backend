@@ -39,8 +39,8 @@ class RequestContentApprovalSchema(Schema):
         )
     )
     detail = fields.Dict()
-    createdAt = fields.Str(dump_only=True)
-    updatedAt = fields.Str(dump_only=True)
+    createdAt = fields.Function(lambda obj: obj.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z')
+    updatedAt = fields.Function(lambda obj: obj.updatedAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z')
 
     class Meta:
         unknown = EXCLUDE

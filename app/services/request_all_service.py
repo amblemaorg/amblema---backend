@@ -51,15 +51,13 @@ class RequestsAll():
                 data['type'] = 'coordinator'
                 data['name'] = request['record']['firstName'] + \
                     ' ' + request['record']['lastName']
-                jsonRequests.append(data)
             if request['type'] == 'sponsor':
                 data = SponsorContactSchema().dump(request['record'])
                 data['type'] = 'sponsor'
-                jsonRequests.append(data)
             if request['type'] == 'school':
                 data = SchoolContactSchema().dump(request['record'])
                 data['type'] = 'school'
-                jsonRequests.append(data)
+            jsonRequests.append(data)
 
         return {"records": jsonRequests}, 200
 

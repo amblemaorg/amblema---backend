@@ -89,8 +89,8 @@ class SponsorContactSchema(Schema):
             ('1', '2', '3'),
             ('pending', 'accepted', 'rejected')
         ))
-    createdAt = fields.DateTime(dump_only=True)
-    updatedAt = fields.DateTime(dump_only=True)
+    createdAt = fields.Function(lambda obj: obj.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z')
+    updatedAt = fields.Function(lambda obj: obj.updatedAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z')
 
     @pre_load
     def process_input(self, data, **kwargs):

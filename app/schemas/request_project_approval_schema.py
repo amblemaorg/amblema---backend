@@ -26,5 +26,5 @@ class RequestProjectApprovalSchema(Schema):
             ("pending", "approved", "rejected")
         )
     )
-    createdAt = fields.DateTime(dump_only=True)
-    updatedAt = fields.DateTime(dump_only=True)
+    createdAt = fields.Function(lambda obj: obj.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z')
+    updatedAt = fields.Function(lambda obj: obj.updatedAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z')

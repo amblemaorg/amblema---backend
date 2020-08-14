@@ -25,12 +25,24 @@ class SchoolReferenceSchema(Schema):
     code = fields.Str(dump_only=True)
 
 
+class ResumeSchoolYearSchema(Schema):
+    id = fields.Str()
+    name = fields.Str()
+    status = fields.Str()
+
+
+class ResumePecaSchema(Schema):
+    pecaId = fields.Str()
+    schoolYear = fields.Nested(ResumeSchoolYearSchema)
+    createdAt = fields.DateTime()
+
 class ProjectReferenceSchema(Schema):
     id = fields.Str(dump_only=True)
     code = fields.Str(dump_only=True)
     sponsor = fields.Nested(ReferenceSchema, dump_only=True)
     coordinator = fields.Nested(ReferenceSchema, dump_only=True)
     school = fields.Nested(SchoolReferenceSchema, dump_only=True)
+    schoolYears = fields.List(fields.Nested(ResumePecaSchema), dump_only=True)
 
 
 class FileSchema(Schema):

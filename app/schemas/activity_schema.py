@@ -12,7 +12,7 @@ from marshmallow import (
     ValidationError)
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.helpers.ma_schema_validators import not_blank, OneOf, Length
 from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 
 
@@ -20,7 +20,7 @@ class ActivitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
     devName = fields.Str(dump_only=True)
-    description = fields.Str()
+    description = fields.Str(validate=Length(max=100))
     hasText = fields.Bool(required=True, default=False)
     hasDate = fields.Bool(required=True, default=False)
     hasFile = fields.Bool(required=True, default=False)

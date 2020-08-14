@@ -1,5 +1,41 @@
 
 
+def refresh_projects():
+    from app.models.project_model import Project
+    from app.models.peca_project_model import PecaProject
+    from app.models.shared_embedded_documents import ResumeSchoolYear, ResumePeca
+    from pymongo import UpdateOne
+    from flask import current_app
+
+    projects = Project.objects(isDeleted=False)
+    projectsIds = {}
+    for project in projects:
+        project.schoolYears = []
+        projectsIds[str(project.id)] = project
+    pecas = PecaProject.objects(isDeleted=False, project__id__in=projectsIds.keys())
+    for peca in pecas:
+        schoolYear = peca.schoolYear.fetch()
+        resumePeriod = ResumeSchoolYear(
+            id=str(schoolYear.id),
+            name=schoolYear.name,
+            status=schoolYear.status
+        )
+        resumePeca = ResumePeca(
+            pecaId=str(peca.id),
+            schoolYear = resumePeriod,
+            createdAt = peca.createdAt
+        )
+        projectsIds[peca.project.id].schoolYears.append(resumePeca)
+    
+    bulk_operations = []
+    for project in projectsIds.values():
+        bulk_operations.append(
+            UpdateOne({'_id': project.id}, {'$set': project.to_mongo().to_dict()}))
+    
+    if bulk_operations:
+        Project._get_collection() \
+            .bulk_write(bulk_operations, ordered=False)
+
 def refresh_users_projects():
     from app.models.project_model import Project
     from app.models.school_user_model import SchoolUser

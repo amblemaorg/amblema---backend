@@ -44,6 +44,14 @@ def validate_files(files, documentFiles):
             if not (files[file].filename and allowed_file(files[file].filename)):
                 raise CSTM_Exception(message="File extension is not allowed",
                                      status_code=400)
+            if documentFiles[file]['size']:
+                files[file].save('/tmp/foo')
+                size = os.stat('/tmp/foo').st_size / 1024 
+                if size > documentFiles[file]['size']:
+                    raise CSTM_Exception(
+                        message="File size is not allowed. Max size: {} KB".format(documentFiles[file]['size']),
+                        status_code=400)
+                
             validFiles.append({"field": file, "file": files[file]})
     return validFiles
 

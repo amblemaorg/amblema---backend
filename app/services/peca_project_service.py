@@ -79,118 +79,7 @@ class PecaProjectService():
             coordinator = CoordinatorUser.objects.get(
                 id=peca.project.coordinator.id)
 
-            if not peca.yearbook.historicalReview.image:
-                data['yearbook']['historicalReview']['content'] = school.historicalReview.content
-                data['yearbook']['historicalReview']['image'] = serialize_links(
-                    school.historicalReview.image)
-            if not peca.yearbook.school.image:
-                data['yearbook']['school']['name'] = school.name
-                data['yearbook']['school']['image'] = serialize_links(
-                    school.image)
-                data['yearbook']['school']['content'] = school.yearbook.content
-            if not peca.yearbook.sponsor.image:
-                data['yearbook']['sponsor']['name'] = sponsor.name
-                data['yearbook']['sponsor']['image'] = serialize_links(
-                    sponsor.image)
-                data['yearbook']['sponsor']['content'] = sponsor.yearbook.content
-            if not peca.yearbook.coordinator.image:
-                data['yearbook']['coordinator']['name'] = coordinator.name
-                data['yearbook']['coordinator']['image'] = serialize_links(
-                    coordinator.image)
-                data['yearbook']['coordinator']['content'] = coordinator.yearbook.content
-
-            data['yearbook']['lapse1']['diagnosticSummary'] = []
-            data['yearbook']['lapse1']['activities'] = []
-            data['yearbook']['lapse2']['diagnosticSummary'] = []
-            data['yearbook']['lapse2']['activities'] = []
-            data['yearbook']['lapse3']['diagnosticSummary'] = []
-            data['yearbook']['lapse3']['activities'] = []
-
-            for section in sorted(
-                    peca.school.sections.filter(isDeleted=False), key=lambda x: (x['grade'], x['name'])):
-
-                summary = section.diagnostics
-                for i in range(1, 4):
-                    data['yearbook']['lapse{}'.format(i)]['diagnosticSummary'].append(
-                        {
-                            'grade': section.grade,
-                            'name': section.name,
-                            'wordsPerMin': summary['lapse{}'.format(i)]['wordsPerMin'],
-                            'wordsPerMinIndex': summary['lapse{}'.format(i)]['wordsPerMinIndex'],
-                            'multiplicationsPerMin': summary['lapse{}'.format(i)]['multiplicationsPerMin'],
-                            'multiplicationsPerMinIndex': summary['lapse{}'.format(i)]['multiplicationsPerMinIndex'],
-                            'operationsPerMin': summary['lapse{}'.format(i)]['operationsPerMin'],
-                            'operationsPerMinIndex': summary['lapse{}'.format(i)]['operationsPerMinIndex']
-                        }
-                    )
-            for i in range(1, 4):
-                lapse = peca['lapse{}'.format(i)]
-                lapseData = data['yearbook']['lapse{}'.format(i)]
-
-                if lapse.initialWorkshop:
-                    lapseData['activities'].append(
-                        {
-                            'id': 'initialWorkshop',
-                            'name': 'Taller inicial',
-                            'description': lapse.initialWorkshop.yearbook.description,
-                            'images': serialize_links(lapse.initialWorkshop.yearbook.images)
-                        }
-                    )
-
-                if lapse.ambleCoins:
-                    lapseData['activities'].append(
-                        {
-                            'id': 'ambleCoins',
-                            'name': 'AmbLeMonedas',
-                            'description': lapse.ambleCoins.yearbook.description,
-                            'images': serialize_links(lapse.ambleCoins.yearbook.images)
-                        }
-                    )
-                if lapse.lapsePlanning:
-                    lapseData['activities'].append(
-                        {
-                            'id': 'lapsePlanning',
-                            'name': 'Planificación de lapso',
-                            'description': lapse.lapsePlanning.yearbook.description,
-                            'images': serialize_links(lapse.lapsePlanning.yearbook.images)
-                        }
-                    )
-                if lapse.annualConvention:
-                    lapseData['activities'].append(
-                        {
-                            'id': 'annualConvention',
-                            'name': 'Convención anual',
-                            'description': lapse.annualConvention.yearbook.description,
-                            'images': serialize_links(lapse.annualConvention.yearbook.images)
-                        }
-                    )
-                if lapse.olympics:
-                    lapseData['activities'].append(
-                        {
-                            'id': 'olympics',
-                            'name': 'Olimpiadas matemáticas',
-                            'description': lapse.olympics.yearbook.description,
-                            'images': serialize_links(lapse.olympics.yearbook.images)
-                        }
-                    )
-                if lapse.specialActivity:
-                    lapseData['activities'].append(
-                        {
-                            'id': 'specialActivity',
-                            'name': 'Actividad especial de lapso {}'.format(i),
-                            'description': lapse.specialActivity.yearbook.description,
-                            'images': serialize_links(lapse.specialActivity.yearbook.images)
-                        }
-                    )
-                for activity in lapse.activities:
-                    lapseData['activities'].append(
-                        {
-                            'id': str(activity.id),
-                            'name': activity.name,
-                            'description': activity.yearbook.description,
-                            'images': serialize_links(activity.yearbook.images)
-                        }
-                    )
+            data['yearbook'] = self.getYearbookData(peca, school,sponsor,coordinator, data['yearbook'])
             return data, 200
         else:
             raise RegisterNotFound(message="Record not found",
@@ -292,3 +181,119 @@ class PecaProjectService():
                 for field in envProjectData.keys():
                     envProject[field] = envProjectData[field]
                 peca.environmentalProject = envProject
+
+    def getYearbookData(self, peca, school, sponsor, coordinator, data):
+        
+        if not peca.yearbook.historicalReview.image:
+            data['historicalReview']['content'] = school.historicalReview.content
+            data['historicalReview']['image'] = serialize_links(
+                school.historicalReview.image)
+        if not peca.yearbook.school.image:
+            data['school']['name'] = school.name
+            data['school']['image'] = serialize_links(
+                school.image)
+            data['school']['content'] = school.yearbook.content
+        if not peca.yearbook.sponsor.image:
+            data['sponsor']['name'] = sponsor.name
+            data['sponsor']['image'] = serialize_links(
+                sponsor.image)
+            data['sponsor']['content'] = sponsor.yearbook.content
+        if not peca.yearbook.coordinator.image:
+            data['coordinator']['name'] = coordinator.name
+            data['coordinator']['image'] = serialize_links(
+                coordinator.image)
+            data['coordinator']['content'] = coordinator.yearbook.content
+
+        data['lapse1']['diagnosticSummary'] = []
+        data['lapse1']['activities'] = []
+        data['lapse2']['diagnosticSummary'] = []
+        data['lapse2']['activities'] = []
+        data['lapse3']['diagnosticSummary'] = []
+        data['lapse3']['activities'] = []
+
+        for section in sorted(
+                peca.school.sections.filter(isDeleted=False), key=lambda x: (x['grade'], x['name'])):
+
+            summary = section.diagnostics
+            for i in range(1, 4):
+                data['lapse{}'.format(i)]['diagnosticSummary'].append(
+                    {
+                        'grade': section.grade,
+                        'name': section.name,
+                        'wordsPerMin': summary['lapse{}'.format(i)]['wordsPerMin'],
+                        'wordsPerMinIndex': summary['lapse{}'.format(i)]['wordsPerMinIndex'],
+                        'multiplicationsPerMin': summary['lapse{}'.format(i)]['multiplicationsPerMin'],
+                        'multiplicationsPerMinIndex': summary['lapse{}'.format(i)]['multiplicationsPerMinIndex'],
+                        'operationsPerMin': summary['lapse{}'.format(i)]['operationsPerMin'],
+                        'operationsPerMinIndex': summary['lapse{}'.format(i)]['operationsPerMinIndex']
+                    }
+                )
+        for i in range(1, 4):
+            lapse = peca['lapse{}'.format(i)]
+            lapseData = data['lapse{}'.format(i)]
+
+            if lapse.initialWorkshop:
+                lapseData['activities'].append(
+                    {
+                        'id': 'initialWorkshop',
+                        'name': 'Taller inicial',
+                        'description': lapse.initialWorkshop.yearbook.description,
+                        'images': serialize_links(lapse.initialWorkshop.yearbook.images)
+                    }
+                )
+
+            if lapse.ambleCoins:
+                lapseData['activities'].append(
+                    {
+                        'id': 'ambleCoins',
+                        'name': 'AmbLeMonedas',
+                        'description': lapse.ambleCoins.yearbook.description,
+                        'images': serialize_links(lapse.ambleCoins.yearbook.images)
+                    }
+                )
+            if lapse.lapsePlanning:
+                lapseData['activities'].append(
+                    {
+                        'id': 'lapsePlanning',
+                        'name': 'Planificación de lapso',
+                        'description': lapse.lapsePlanning.yearbook.description,
+                        'images': serialize_links(lapse.lapsePlanning.yearbook.images)
+                    }
+                )
+            if lapse.annualConvention:
+                lapseData['activities'].append(
+                    {
+                        'id': 'annualConvention',
+                        'name': 'Convención anual',
+                        'description': lapse.annualConvention.yearbook.description,
+                        'images': serialize_links(lapse.annualConvention.yearbook.images)
+                    }
+                )
+            if lapse.olympics:
+                lapseData['activities'].append(
+                    {
+                        'id': 'olympics',
+                        'name': 'Olimpiadas matemáticas',
+                        'description': lapse.olympics.yearbook.description,
+                        'images': serialize_links(lapse.olympics.yearbook.images)
+                    }
+                )
+            if lapse.specialActivity:
+                lapseData['activities'].append(
+                    {
+                        'id': 'specialActivity',
+                        'name': 'Actividad especial de lapso {}'.format(i),
+                        'description': lapse.specialActivity.yearbook.description,
+                        'images': serialize_links(lapse.specialActivity.yearbook.images)
+                    }
+                )
+            for activity in lapse.activities:
+                lapseData['activities'].append(
+                    {
+                        'id': str(activity.id),
+                        'name': activity.name,
+                        'description': activity.yearbook.description,
+                        'images': serialize_links(activity.yearbook.images)
+                    }
+                )
+        return data

@@ -18,6 +18,7 @@ from app.models.peca_activities_model import Approval
 from app.models.request_content_approval_model import RequestContentApproval
 from app.helpers.handler_images import upload_image
 from resources.images import path_images
+from app.services.peca_project_service import PecaProjectService
 
 
 class YearbookService():
@@ -34,6 +35,10 @@ class YearbookService():
         if peca:
             try:
                 schema = YearbookSchema()
+                pecaService = PecaProjectService()
+                school = SchoolUser.objects(id=peca.project.school.id).first()
+                sponsor = SponsorUser.objects(id=peca.project.sponsor.id).first()
+                coordinator = CoordinatorUser.objects(id=peca.project.coordinator.id).first()
 
                 user = User.objects(id=userId, isDeleted=False).first()
                 if not user:
@@ -116,7 +121,9 @@ class YearbookService():
                         )
                     )
                     peca.save()
-                    return schema.dump(yearbook), 200
+                    data = schema.dump(yearbook)
+                    data = pecaService.getYearbookData(peca, school, sponsor, coordinator, data)
+                    return data, 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
 

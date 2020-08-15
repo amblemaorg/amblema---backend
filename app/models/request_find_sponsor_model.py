@@ -21,7 +21,7 @@ class RequestFindSponsor(Document):
     email = fields.EmailField(required=True)
     rif = fields.StringField(required=True)
     companyType = fields.StringField(required=True)
-    companyOtherType = fields.StringField()
+    companyOtherType = fields.StringField(null=True)
     companyPhone = fields.StringField(required=True)
     address = fields.StringField()
     addressState = fields.ReferenceField('State', required=True)

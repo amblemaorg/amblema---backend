@@ -138,26 +138,35 @@ def refresh_home_statistics():
         nStudents = 0
         nTeachers = 0
         bulk_operations = []
+        bulk_peca_operations = []
 
         for school in schools:
             peca = schoolsIds[str(school.id)]
             schoolStudents = 0
             for section in peca.school.sections.filter(isDeleted=False):
                 schoolStudents += len(section.students.filter(isDeleted=False))
+                section.refreshDiagnosticsSummary()
+            peca.school.refreshDiagnosticsSummary()
             school.nStudents = schoolStudents
             nStudents += schoolStudents
             school.nTeachers = len(school.teachers.filter(isDeleted=False))
             nTeachers += school.nTeachers
             bulk_operations.append(
                 UpdateOne({'_id': school.id}, {'$set': school.to_mongo().to_dict()}))
+            bulk_peca_operations.append(
+                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
         
         if bulk_operations:
             SchoolUser._get_collection() \
                 .bulk_write(bulk_operations, ordered=False)
+        if bulk_peca_operations:
+            PecaProject._get_collection() \
+                .bulk_write(bulk_peca_operations, ordered=False)
 
         schoolYear.nSchools = schools.count()
         schoolYear.nStudents = nStudents
         schoolYear.nTeachers = nTeachers
         schoolYear.nSponsors = len(sponsorsIds.keys())
+        schoolYear.refreshDiagnosticsSummary()
         schoolYear.save()
     

@@ -144,6 +144,7 @@ class SchoolYearService(GenericServices):
                 schoolYear.nStudents -= peca.school.nStudents
                 schoolYear.nTeachers -= peca.school.nTeachers
                 schoolYear.nSponsors -= 1 if sponsorPecas == 0 else 0
+                schoolYear.refreshDiagnosticsSummary()
                 schoolYear.save()
 
 

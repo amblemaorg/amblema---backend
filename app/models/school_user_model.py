@@ -63,9 +63,8 @@ class SchoolUser(User):
         self.save()
 
     def updateProject(self, project):
-        if self.project.id == str(project.id):
-            self.project = project.getReference()
-            self.save()
+        self.project = project.getReference()
+        self.save()
 
     def removeProject(self):
         self.project = None

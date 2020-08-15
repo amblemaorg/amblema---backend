@@ -131,7 +131,7 @@ class ProjectService():
                 "instagram": project.school.instagram,
                 "twitter": project.school.twitter,
                 "slider": project.school.slider,
-                "activitiesSlider": ActivitiesSlider(slider=project.school.slider),
+                "activitiesSlider": ActivitiesSlider(slider=project.school.activitiesSlider),
                 "sections": [
                 ]
             }

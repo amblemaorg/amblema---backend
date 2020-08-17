@@ -264,6 +264,9 @@ class RequestContentApproval(Document):
                         peca.save()
                     elif document.status in ('3', '4'):  # rejected or cancelled
                         peca.yearbook.isInApproval = False
+                        for history in peca.yearbook.approvalHistory:
+                            if history.id == str(document.id):
+                                history.status = document.status
                         peca.save()
                  # lapse planning
                 elif document.type == "8":

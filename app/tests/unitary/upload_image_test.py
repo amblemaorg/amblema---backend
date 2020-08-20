@@ -18,9 +18,9 @@ class LearningModuleUnitaryTestCase(unittest.TestCase):
         
 
     def test_upload_image(self):
-        self.app.logger.info(upload_image(test_image, 'tests'))
-        self.app.logger.info(upload_image(jpgImage, 'tests'))
-        self.app.logger.info(upload_image(pngImage, 'tests'))
+        upload_image(test_image, 'tests')
+        upload_image(jpgImage, 'tests')
+        upload_image(pngImage, 'tests')
 
         
 

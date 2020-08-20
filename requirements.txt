@@ -32,3 +32,4 @@ pytz==2019.3              # via flask-restful
 six==1.13.0               # via bcrypt, flask-cors, flask-jwt-extended, flask-mongoengine, flask-restful, mongoengine
 werkzeug==0.16.0          # via flask, flask-jwt-extended
 wtforms==2.2.1            # via flask-wtf
+Pillow==7.2.0

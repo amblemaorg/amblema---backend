@@ -10,7 +10,10 @@ from resources.images import path_images
 from app.helpers.handler_files import upload
 from app.helpers.error_helpers import CSTM_Exception
 from marshmallow import ValidationError
-
+from PIL import Image
+import base64
+import io
+from pathlib import Path
 
 def upload_image(imageBase64, folder, size=None):
     """Method that save an image from a base64 string  
@@ -20,8 +23,12 @@ def upload_image(imageBase64, folder, size=None):
       size: float, max image size in KB
     """
 
-    validExtensions = [".jpe", ".jpg", ".jpeg", ".png", ".svg"]
-    ext = guess_extension(guess_type(imageBase64)[0])
+    validExtensions = ["jpe", "jpg", "jpeg", "png", "svg"]
+
+    imageBase64 = imageBase64.replace(" ", "+")
+
+    endExt = imageBase64.index(';')
+    ext = imageBase64[11:endExt]
 
     if ext in validExtensions:
         if size and get_size(imageBase64)/1024 > size:
@@ -31,22 +38,18 @@ def upload_image(imageBase64, folder, size=None):
                     "msg": "Invalid image size. Max allowed {} KB".format(size)
                 }
             )
+        dataImage = imageBase64.lstrip(
+                'data:image/{};base64'.format(ext))
 
-        imageBase64 = imageBase64.replace(" ", "+")
-        if ext in [".jpe", ".jpeg"]:
-            #ext = '.jpg'
-            dataImage = imageBase64.lstrip(
-                'data:image/{};base64'.format(ext[1:]))
-        elif ext == ".png":
-            dataImage = imageBase64.lstrip('data:image/png;base64')
-        else:
-            dataImage = imageBase64.lstrip('data:image/svg+xml;base64')
         pathImage = path_images + '/' + folder + '/'
+        Path(pathImage).mkdir(parents=True, exist_ok=True)
         nameImage = str(ObjectId())
+
+        dataImage = base64.b64decode(dataImage)
+        image = Image.open(io.BytesIO(dataImage))
+        ext = '.{}'.format(str(image.format).lower())
+        image.save(pathImage+nameImage+ext, image.format)
         urlImage = '/resources/images/' + folder + '/' + nameImage + ext
-
-        upload(dataImage, nameImage, pathImage, ext)
-
         return urlImage
 
     else:

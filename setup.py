@@ -18,6 +18,7 @@ setup(
         'marshmallow',
         'blinker',
         'Flask-Script',
-        'flask-compress'
+        'flask-compress',
+        'Pillow'    
     ]
 )

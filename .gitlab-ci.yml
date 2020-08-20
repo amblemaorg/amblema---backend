@@ -35,6 +35,7 @@ testing:
     - docker exec -i amblema_testing_back bash -c "coverage report"
     - docker exec -i amblema_testing_back bash -c "coverage html"
     - docker exec -i amblema_testing_back bash -c "rm -rf /home/resources/images/*/*.png"
+    - docker exec -i amblema_testing_back bash -c "rm -rf /home/resources/images/*/*.jpeg"
     - docker exec -i amblema_testing_back bash -c "rm -rf /home/resources/images/school_years/"
     - cd "$build_dir"
     - cp -a $QA_PROJECT_DIR/qa-testing/htmlcov/. ./htmlcov/

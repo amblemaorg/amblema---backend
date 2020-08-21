@@ -178,7 +178,7 @@ class SchoolYearService(GenericServices):
                     isDeleted=False).only('id'))
                 schoolYear.nSchools += 1
                 schoolYear.nTeachers += project.school.nTeachers if project.school.nTeachers else 0
-                schoolYear.nSponsors += 1 if sponsorPecas == 0 else 0
+                schoolYear.nSponsors += 1 if sponsorPecas == 1 else 0
                 schoolYear.save()
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:

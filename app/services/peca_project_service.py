@@ -89,6 +89,7 @@ class PecaProjectService():
     def initPecaSetting(self, peca):
         from app.models.school_year_model import SchoolYear
         from app.models.peca_initial_workshop_model import InitialWorkshopPeca
+        from app.models.peca_lapse_planning_model import LapsePlanningPeca
         from app.models.peca_amblecoins_model import AmblecoinsPeca, AmbleSection
         from app.models.peca_olympics_model import Olympics
         from app.models.peca_project_model import Lapse
@@ -114,9 +115,23 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].initialWorkshop = None
 
             if pecaSettingLapse.ambleCoins.status == "1":
-                peca['lapse{}'.format(i)].ambleCoins = AmblecoinsPeca()
+                peca['lapse{}'.format(i)].ambleCoins = AmblecoinsPeca(
+                    teachersMeetingFile=pecaSettingLapse.ambleCoins.teachersMeetingFile,
+                    teachersMeetingDescription=pecaSettingLapse.ambleCoins.teachersMeetingDescription,
+                    piggyBankDescription=pecaSettingLapse.ambleCoins.piggyBankDescription,
+                    piggyBankSlider=pecaSettingLapse.ambleCoins.piggyBankSlider
+                )
             else:
                 peca['lapse{}'.format(i)].ambleCoins = None
+            
+            if pecaSettingLapse.lapsePlanning.status == "1":
+                peca['lapse{}'.format(i)].lapsePlanning = LapsePlanningPeca(
+                    proposalFundationFile=pecaSettingLapse.lapsePlanning.proposalFundationFile,
+                    proposalFundationDescription=pecaSettingLapse.lapsePlanning.proposalFundationDescription,
+                    meetingDescription=pecaSettingLapse.lapsePlanning.meetingDescription
+                )
+            else:
+                peca['lapse{}'.format(i)].lapsePlanning = None
 
             if pecaSettingLapse.mathOlympic.status == "1":
                 peca['lapse{}'.format(i)].olympics = Olympics(

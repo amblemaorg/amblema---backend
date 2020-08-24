@@ -479,8 +479,9 @@ class ActivityService():
 
                     elif data['id'] == "ambleCoins":
                         found = True
-                        schoolYear.pecaSetting['lapse{}'.format(
-                            data['lapse'])].ambleCoins.status = data['status']
+                        ambleCoinsStg = schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].ambleCoins
+                        ambleCoinsStg.status = data['status']
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
                             schoolYear=schoolYear.id, isDeleted=False)
@@ -498,6 +499,10 @@ class ActivityService():
                                             status="2"
                                         )
                                     )
+                                    ambleCoins.teachersMeetingFile = ambleCoinsStg.teachersMeetingFile
+                                    ambleCoins.teachersMeetingDescription = ambleCoinsStg.teachersMeetingDescription
+                                    ambleCoins.piggyBankDescription = ambleCoinsStg.piggyBankDescription
+                                    ambleCoins.piggyBankSlider = ambleCoinsStg.piggyBankSlider
                                 peca['lapse{}'.format(
                                     data['lapse'])].ambleCoins = ambleCoins
                             # is inactive

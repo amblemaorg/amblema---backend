@@ -50,7 +50,7 @@ class StudentService():
                             push__school__sections__S__students=student,
                             inc__school__nStudents=1)
                         SchoolUser.objects(id=peca.project.school.id).update(
-                            inc__school__nStudents=1)
+                            inc__nStudents=1)
                         SchoolYear.objects(isDeleted=False, status="1").update(
                             inc__nStudents=1)
 

@@ -119,7 +119,11 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].ambleCoins = None
 
             if pecaSettingLapse.mathOlympic.status == "1":
-                peca['lapse{}'.format(i)].olympics = Olympics()
+                peca['lapse{}'.format(i)].olympics = Olympics(
+                    file = pecaSettingLapse.mathOlympic.file,
+                    description = pecaSettingLapse.mathOlympic.description,
+                    date = pecaSettingLapse.mathOlympic.date
+                )
             else:
                 peca['lapse{}'.format(i)].olympics = None
 

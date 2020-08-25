@@ -2,6 +2,7 @@
 
 from flask import current_app
 from marshmallow import ValidationError
+from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_setting_model import AnnualPreparation
@@ -25,6 +26,7 @@ class AnnualPreparationService():
             return schema.dump(annualPreparation), 200
 
     def save(self, lapse, jsonData, files=None):
+        from app.models.peca_project_model import PecaProject
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
@@ -46,9 +48,21 @@ class AnnualPreparationService():
                 for field in schema.dump(data).keys():
                     annualPreparation[field] = data[field]
                 try:
-                    schoolYear.pecaSetting['lapse{}'.format(
-                        lapse)].annualPreparation = annualPreparation
                     schoolYear.save()
+                    if annualPreparation.status == "1":
+                        bulk_operations = []
+                        for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+                            annualPreparationPeca = peca['lapse{}'.format(
+                                lapse)].annualPreparation
+                            annualPreparationPeca.step1Description = annualPreparation.step1Description
+                            annualPreparationPeca.step2Description = annualPreparation.step2Description
+                            annualPreparationPeca.step3Description = annualPreparation.step3Description
+                            annualPreparationPeca.step4Description = annualPreparation.step4Description
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
                     return schema.dump(annualPreparation), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

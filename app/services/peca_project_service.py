@@ -139,6 +139,14 @@ class PecaProjectService():
                     description = pecaSettingLapse.mathOlympic.description,
                     date = pecaSettingLapse.mathOlympic.date
                 )
+                if pecaSettingLapse.mathOlympic.date:
+                    peca.scheduleActivity(
+                            devName="olympics__date",
+                            activityId="mathOlympic",
+                            subject="Olimpíadas matemáticas",
+                            startTime=pecaSettingLapse.mathOlympic.date,
+                            description=pecaSettingLapse.mathOlympic.description
+                        )
             else:
                 peca['lapse{}'.format(i)].olympics = None
 

@@ -133,6 +133,9 @@ class SchoolYearService(GenericServices):
                 
                 project.sponsor.updateProject(project)
                 project.coordinator.updateProject(project)
+                project.school.nStudents = 0
+                project.school.nGrades = 0
+                project.school.nSections = 0
                 project.school.updateProject(project)
                 
                 # update counts for home page

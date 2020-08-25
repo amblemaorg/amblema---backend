@@ -4,6 +4,7 @@
 import json
 from functools import reduce
 import operator
+from datetime import datetime
 
 from mongoengine import Q
 from flask import current_app
@@ -43,8 +44,8 @@ class StatisticsInactiveSponsorService():
             "06": "T4", "07": "T4", "08": "T4"
             }
 
-        activeDict = {"T1":set(), "T2":set(), "T3":set(), "T4":set()}
-        inactiveDict = {"T1":set(), "T2":set(), "T3":set(), "T4":set()}
+        periodsDict = {}
+        pecaSponsorsSet = set()
         
         monthsTup = ("09","10","11","12","01","02","03","04","05","06","07","08")
         
@@ -57,44 +58,40 @@ class StatisticsInactiveSponsorService():
                 'trimesterTwo': 0,
                 'trimesterThree': 0,
                 'trimesterFour': 0,
+                'activeDict': {"T1":set(), "T2":set(), "T3":set(), "T4":set()},
+                'inactiveDict': {"T1":set(), "T2":set(), "T3":set(), "T4":set()}
             }
+            periodsDict[str(period.id)] = periodDict
+        
 
-            for sponsor in SponsorUser.objects(isDeleted=False):
-                sponsorPecas = PecaProject.objects(schoolYear=str(period.id), project__sponsor__id=str(sponsor.id))
-                if not sponsorPecas:
-                    for i in inactiveDict.keys():
-                        inactiveDict[i].add(sponsor.id)
-                else:
-                    for sponsorPeca in sponsorPecas:
-                        activeTup = ()
-                        #Se obtiene los meses en los que estuvo activo el peca
-                        if sponsorPeca.isDeleted:
-                            activeTup = monthsTup[monthsTup.index(sponsorPeca.createdAt.strftime('%m')):monthsTup.index(sponsorPeca.updatedAt.strftime('%m')) + 1]
-                        else:
-                            activeTup = monthsTup[monthsTup.index(sponsorPeca.createdAt.strftime('%m')):]
-                        
-                        for i in activeTup:
-                            activeDict[monthTrimesterDict[i]].add(sponsor.id)
-                        
-                        #Se obtiene los meses que estuvo inactivo el peca
-                        diff = tuple(set(monthsTup)-set(activeTup))
-                        for i in diff:
-                            inactiveDict[monthTrimesterDict[i]].add(sponsor.id)
 
-                #Calculo la diferencia de conjuntos para obtener los 
-                #padrinos que realmente estan inactivos en los trimestres
-                for i in inactiveDict.keys():
-                        inactiveDict[i] = inactiveDict[i] - activeDict[i]
-
-            periodDict["trimesterOne"] = len(inactiveDict["T1"])
-            periodDict["trimesterTwo"] = len(inactiveDict["T2"])
-            periodDict["trimesterThree"] = len(inactiveDict["T3"])
-            periodDict["trimesterFour"] = len(inactiveDict["T4"])
-
-            for i in inactiveDict.keys():
-                inactiveDict[i].clear()
-                activeDict[i].clear()
+        pecas = PecaProject.objects(schoolYear__in=periodsDict.keys())
+        for peca in pecas:
+            pecaSponsorsSet.add(peca.project.sponsor.id)
+            activeTup = ()
+            #Se obtiene los meses en los que estuvo activo el peca
+            if peca.isDeleted:
+                activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(peca.updatedAt.strftime('%m')) + 1]
+            else:
+                activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(datetime.utcnow().strftime('%m')) + 1]
             
-            reportData["records"].append(periodDict)
+            for i in activeTup:
+                periodsDict[str(peca.schoolYear.id)]['activeDict'][monthTrimesterDict[i]].add(peca.project.sponsor.id)
+                
+        for sponsor in SponsorUser.objects(isDeleted=False).only('id'):
+            for period in periodsDict.values():
+                for t in ['T1', 'T2', 'T3', 'T4']:
+                    if str(sponsor.id) not in period['activeDict'][t]:
+                        period['inactiveDict'][t].add(str(sponsor.id))
+
+
+        for period in periodsDict.values():
+            period["trimesterOne"] = len(period['inactiveDict']["T1"])
+            period["trimesterTwo"] = len(period['inactiveDict']["T2"])
+            period["trimesterThree"] = len(period['inactiveDict']["T3"])
+            period["trimesterFour"] = len(period['inactiveDict']["T4"])
+            period.pop('inactiveDict', None)
+            period.pop('activeDict', None)
+            reportData["records"].append(period)
 
         return reportData, 200

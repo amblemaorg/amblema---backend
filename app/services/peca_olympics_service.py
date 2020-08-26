@@ -154,6 +154,8 @@ class OlympicsService():
                                 if student.result != oldRecord.result:
                                     school = SchoolUser.objects(
                                         id=peca.project.school.id, isDeleted=False).first()
+                                    if oldRecord.status == '2':
+                                        school.olympicsSummary.classified -= 1
                                     if oldRecord.result:
                                         if oldRecord.result == "1":
                                             school.olympicsSummary.medalsGold -= 1
@@ -168,6 +170,8 @@ class OlympicsService():
                                             school.olympicsSummary.medalsSilver += 1
                                         elif student.result == "3":
                                             school.olympicsSummary.medalsBronze += 1
+                                    if student.status == '2':
+                                        school.olympicsSummary.classified += 1
                                     school.save()
                                 break
                             except Exception as e:

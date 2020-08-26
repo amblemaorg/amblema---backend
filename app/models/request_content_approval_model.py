@@ -177,7 +177,7 @@ class RequestContentApproval(Document):
                             if document.status == '2':  # approved
                                 schema = SpecialActivitySchema(partial=True)
                                 data = schema.load(document.detail)
-                                for field in schema.dump(data).keys():
+                                for field in data.keys():
                                     specialActivity[field] = data[field]
                             break
                     peca.save()

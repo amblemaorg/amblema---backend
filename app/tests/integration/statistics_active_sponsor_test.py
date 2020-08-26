@@ -488,22 +488,24 @@ class StatisticsActiveSponsorTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-
-        self.assertEqual(str(self.schoolYear1.pk),result['records'][0]['academicPeriodId'])
-        self.assertEqual(self.schoolYear1.name,result['records'][0]['academicPeriodName'])
-        self.assertEqual(['2020', '2021'],result['records'][0]['academicPeriodYears'])
-        self.assertEqual(1,result['records'][0]['trimesterOne'])
-        self.assertEqual(2,result['records'][0]['trimesterTwo'])
-        self.assertEqual(1,result['records'][0]['trimesterThree'])
-        self.assertEqual(2,result['records'][0]['trimesterFour'])
-
-        self.assertEqual(str(self.schoolYear2.pk),result['records'][1]['academicPeriodId'])
-        self.assertEqual(self.schoolYear2.name,result['records'][1]['academicPeriodName'])
-        self.assertEqual(['2021', '2022'],result['records'][1]['academicPeriodYears'])
-        self.assertEqual(1,result['records'][1]['trimesterOne'])
-        self.assertEqual(2,result['records'][1]['trimesterTwo'])
-        self.assertEqual(3,result['records'][1]['trimesterThree'])
-        self.assertEqual(2,result['records'][1]['trimesterFour'])
+        
+        for record in result['records']:
+            if record['academicPeriodId'] == str(self.schoolYear1.pk):
+                self.assertEqual(str(self.schoolYear1.pk),record['academicPeriodId'])
+                self.assertEqual(self.schoolYear1.name,record['academicPeriodName'])
+                self.assertEqual(['2020', '2021'],record['academicPeriodYears'])
+                self.assertEqual(1,record['trimesterOne'])
+                self.assertEqual(2,record['trimesterTwo'])
+                self.assertEqual(1,record['trimesterThree'])
+                self.assertEqual(2,record['trimesterFour'])
+            if record['academicPeriodId'] == str(self.schoolYear2.pk):
+                self.assertEqual(str(self.schoolYear2.pk),record['academicPeriodId'])
+                self.assertEqual(self.schoolYear2.name,record['academicPeriodName'])
+                self.assertEqual(['2021', '2022'],record['academicPeriodYears'])
+                self.assertEqual(1,record['trimesterOne'])
+                self.assertEqual(2,record['trimesterTwo'])
+                self.assertEqual(3,record['trimesterThree'])
+                self.assertEqual(2,record['trimesterFour'])
 
     def tearDown(self):
         """teardown all initialized variables."""

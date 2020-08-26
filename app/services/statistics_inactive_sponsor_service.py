@@ -78,10 +78,11 @@ class StatisticsInactiveSponsorService():
             for i in activeTup:
                 periodsDict[str(peca.schoolYear.id)]['activeDict'][monthTrimesterDict[i]].add(peca.project.sponsor.id)
                 
-        for sponsor in SponsorUser.objects(isDeleted=False).only('id'):
+        for sponsor in SponsorUser.objects(isDeleted=False).only('id', 'createdAt'):
             for period in periodsDict.values():
                 for t in ['T1', 'T2', 'T3', 'T4']:
-                    if str(sponsor.id) not in period['activeDict'][t]:
+                    periodDate = self.getEndDateTrimester(t,period['academicPeriodYears'])
+                    if str(sponsor.id) not in period['activeDict'][t] and sponsor.createdAt <= periodDate:
                         period['inactiveDict'][t].add(str(sponsor.id))
 
 
@@ -95,3 +96,17 @@ class StatisticsInactiveSponsorService():
             reportData["records"].append(period)
 
         return reportData, 200
+
+    def getEndDateTrimester(self, trimester, years):
+
+        endMonthTrimesterDict = {
+            'T1': 11,
+            'T2': 2,
+            'T3': 5,
+            'T4': 8,
+        }
+        if trimester == 'T1':
+            periodDate = datetime(int(years[0]), endMonthTrimesterDict[trimester], 1)
+        else:
+            periodDate = datetime(int(years[1]), endMonthTrimesterDict[trimester], 1)
+        return periodDate

@@ -58,7 +58,7 @@ class StatisticsActiveSponsorService():
                 'trimesterTwo': 0,
                 'trimesterThree': 0,
                 'trimesterFour': 0,
-                'activeDict': {"T1":{}, "T2":{}, "T3":{}, "T4":{}}
+                'activeDict': {"T1":set(), "T2":set(), "T3":set(), "T4":set()}
             }
             periodsDict[str(period.id)] = periodDict
         
@@ -73,13 +73,13 @@ class StatisticsActiveSponsorService():
                 activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(datetime.utcnow().strftime('%m')) + 1]
             
             for i in activeTup:
-                periodsDict[str(peca.schoolYear.id)]['activeDict'][monthTrimesterDict[i]][peca.project.sponsor.id] = peca.project.sponsor.id
+                periodsDict[str(peca.schoolYear.id)]['activeDict'][monthTrimesterDict[i]].add(peca.project.sponsor.id)
             
         for period in periodsDict.values():
-            period["trimesterOne"] = len(period['activeDict']["T1"].keys())
-            period["trimesterTwo"] = len(period['activeDict']["T2"].keys())
-            period["trimesterThree"] = len(period['activeDict']["T3"].keys())
-            period["trimesterFour"] = len(period['activeDict']["T4"].keys())
+            period["trimesterOne"] = len(period['activeDict']["T1"])
+            period["trimesterTwo"] = len(period['activeDict']["T2"])
+            period["trimesterThree"] = len(period['activeDict']["T3"])
+            period["trimesterFour"] = len(period['activeDict']["T4"])
             period.pop('activeDict', None)
 
             reportData["records"].append(period)

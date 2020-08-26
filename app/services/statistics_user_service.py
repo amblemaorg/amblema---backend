@@ -69,43 +69,44 @@ class StatisticsUserService():
                 records = []
                 annualPreparationFilter = False
                 annualPreparationTeachers = {}
-                schools = SchoolUser.objects(
-                    isDeleted=False, status="1").only('teachers')
+                schoolsIds = {}
                 for f in filters:
                     if f['field'] == 'annualPreparationStatus' and f['field']:
                         annualPreparationFilter = f['value']
                         filters.remove(f)
-                if annualPreparationFilter:
-                    schoolYear = SchoolYear.objects(
-                        isDeleted=False, status="1").only('id').first()
-                    pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
-                        'lapse1__annualPreparation',
-                        'lapse2__annualPreparation',
-                        'lapse3__annualPreparation')
-                    for peca in pecas:
-                        for i in range(1, 4):
-                            if peca['lapse{}'.format(i)].annualPreparation:
-                                annualPreparation = peca['lapse{}'.format(
-                                    i)].annualPreparation
-
-                                for teacher in annualPreparation.teachers:
-                                    if teacher.annualPreparationStatus == annualPreparationFilter:
-                                        annualPreparationTeachers[teacher.id] = str(
-                                            peca.id)
-
+                
+                schoolYear = SchoolYear.objects(
+                    isDeleted=False, status="1").only('id').first()
+                pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
+                    'project__school__id',
+                    'lapse1__annualPreparation',
+                    'lapse2__annualPreparation',
+                    'lapse3__annualPreparation')
+                for peca in pecas:
+                    schoolsIds[peca.project.school.id] = str(peca.id)
+                    for i in range(1, 4):
+                        if peca['lapse{}'.format(i)].annualPreparation:
+                            annualPreparation = peca['lapse{}'.format(
+                                i)].annualPreparation
+                            for teacher in annualPreparation.teachers:
+                                annualPreparationTeachers[teacher.id] = teacher.annualPreparationStatus
+                schools = SchoolUser.objects(
+                    isDeleted=False, status="1", id__in=schoolsIds.keys()).only('teachers', 'id')
                 for school in schools:
-                    for teacher in school.teachers:
+                    for teacher in school.teachers.filter(isDeleted=False):
                         available = True
-                        if teacher.isDeleted:
-                            available = False
                         for f in filters:
                             if hasattr(teacher, f['field']) and teacher[f['field']] != f['value']:
                                 available = False
-                        if annualPreparationFilter and str(teacher.id) not in annualPreparationTeachers:
+                        if annualPreparationFilter and not (
+                                str(teacher.id) in annualPreparationTeachers and 
+                                annualPreparationTeachers[str(teacher.id)] == annualPreparationFilter
+                            ):
                             available = False
                         if available:
-                            teacher.pecaId = None if not annualPreparationFilter else annualPreparationTeachers[str(
-                                teacher.id)]
+                            teacher.pecaId = schoolsIds[str(school.id)]
+                            if str(teacher.id) in annualPreparationTeachers:
+                                teacher.annualPreparationStatus = annualPreparationTeachers[str(teacher.id)]
                             records.append(teacher)
             if records:
                 for record in records:

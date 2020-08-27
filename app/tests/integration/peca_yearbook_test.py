@@ -420,7 +420,7 @@ class PecaYearbookTest(unittest.TestCase):
                 },
                 {
                     "id": "olympics",
-                    "name": "Olimpiadas matemáticas",
+                    "name": "Olimpíadas matemáticas",
                     "description": None,
                     "images": [
                     ]
@@ -515,7 +515,7 @@ class PecaYearbookTest(unittest.TestCase):
                     },
                     {
                         "id": "mathOlympic",
-                        "name": "Olimpiadas matemáticas",
+                        "name": "Olimpíadas matemáticas",
                         "description": "",
                         "images": [test_image]
                     }

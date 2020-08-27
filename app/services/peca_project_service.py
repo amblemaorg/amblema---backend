@@ -306,7 +306,7 @@ class PecaProjectService():
                 lapseData['activities'].append(
                     {
                         'id': 'olympics',
-                        'name': 'Olimpiadas matemáticas',
+                        'name': 'Olimpíadas matemáticas',
                         'description': lapse.olympics.yearbook.description,
                         'images': serialize_links(lapse.olympics.yearbook.images)
                     }

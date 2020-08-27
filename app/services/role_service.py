@@ -32,6 +32,9 @@ class RoleService(GenericServices):
         else:
             records = self.Model.objects(
                 isDeleted=False, devName__ne='superadmin').order_by('name')
+        # oculta los permisos que tienen que ver con el peca
+        for record in records:
+            record.permissions = [permission for permission in record.permissions if not permission.entityName.startswith('PECA')]
 
         return {"records": schema.dump(records, many=True)}, 200
 

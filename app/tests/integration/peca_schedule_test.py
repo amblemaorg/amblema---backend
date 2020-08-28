@@ -30,8 +30,8 @@ class PecaAmblecoinsTest(unittest.TestCase):
 
         self.schoolYear = SchoolYear(
             name="Test",
-            startDate="2020-02-14",
-            endDate="2020-09-14")
+            startDate="2020-09-01",
+            endDate="2021-08-01")
         self.schoolYear.initFirstPecaSetting()
         self.schoolYear.save()
 
@@ -421,6 +421,76 @@ class PecaAmblecoinsTest(unittest.TestCase):
                          len(peca['schedule']))
         self.assertEqual('Activity test 2',
                          peca['schedule'][4]['Subject'])
+
+        #############################
+        # Olympics
+        #############################
+        requestData = dict(
+            file=(io.BytesIO(b'hi everyone'),
+                  'olympicsFile.pdf'),
+            description="Some description",
+            webDescription="web description",
+            date=datetime(2020, 9, 7).strftime('%Y-%m-%d %H:%M:%SZ')
+        )
+        res = self.client().put(
+            '/pecasetting/activities/matholympic/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+        requestData = {
+            "id": 'mathOlympic',
+            "lapse": "1",
+            "isStandard": True,
+            "status": "1"
+        }
+        res = self.client().post(
+            '/pecasetting/activities',
+            data=json.dumps(requestData),
+            content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+
+        # check peca schedule
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(6, len(resultPeca['schedule']))
+        self.assertEqual('Some description',
+                         resultPeca['schedule'][5]['Description'])
+        self.assertEqual('2020-09-07 00:00:00',
+                         resultPeca['schedule'][5]['StartTime'])
+        self.assertEqual('2020-09-07 00:00:00',
+                         resultPeca['schedule'][5]['EndTime'])
+
+        requestData = dict(
+            file=(io.BytesIO(b'hi everyone'),
+                  'olympicsFile.pdf'),
+            description="Some description",
+            webDescription="web description",
+            date=datetime(2020, 9, 8).strftime('%Y-%m-%d %H:%M:%SZ')
+        )
+        res = self.client().put(
+            '/pecasetting/activities/matholympic/1',
+            data=requestData,
+            content_type='multipart/form-data')
+        self.assertEqual(res.status_code, 200)
+
+         # check peca schedule
+        res = self.client().get(
+            '/pecaprojects/{}'.format(self.pecaProject.id)
+        )
+        self.assertEqual(res.status_code, 200)
+        resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
+        self.assertEqual(6, len(resultPeca['schedule']))
+        self.assertEqual('Some description',
+                         resultPeca['schedule'][5]['Description'])
+        self.assertEqual('2020-09-08 00:00:00',
+                         resultPeca['schedule'][5]['StartTime'])
+        self.assertEqual('2020-09-08 00:00:00',
+                         resultPeca['schedule'][5]['EndTime'])
+        
 
     def tearDown(self):
         """teardown all initialized variables."""

@@ -64,8 +64,9 @@ class PecaProject(Document):
             found = False
             for act in self.schedule:
                 if act.devName == devName:
-                    act.startDate = startTime
+                    act.startTime = startTime
                     act.endTime = startTime
+                    act.description = description
                     found = True
                     break
             if not found:

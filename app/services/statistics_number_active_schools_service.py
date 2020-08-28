@@ -4,6 +4,7 @@
 import json
 from functools import reduce
 import operator
+from datetime import datetime
 
 from mongoengine import Q
 from flask import current_app
@@ -43,7 +44,7 @@ class StatisticsNumberActiveSchoolsService():
             "06": "T4", "07": "T4", "08": "T4"
             }
 
-        activeDict = {"T1":set(), "T2":set(), "T3":set(), "T4":set()}
+        periodsDict = {}
         
         monthsTup = ("09","10","11","12","01","02","03","04","05","06","07","08")
 
@@ -56,28 +57,27 @@ class StatisticsNumberActiveSchoolsService():
                 'trimesterTwo': 0,
                 'trimesterThree': 0,
                 'trimesterFour': 0,
+                'activeDict': {"T1":set(), "T2":set(), "T3":set(), "T4":set()}
             }
+            periodsDict[str(period.id)] = periodDict
 
-            for peca in PecaProject.objects(schoolYear=str(period.id)):
-                if SchoolUser.objects(id=str(peca.project.school.id), isDeleted=False):
-                    activeTup = ()
-                    #Se obtiene los meses en los que estuvo activo el peca
-                    if peca.isDeleted:
-                        activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(peca.updatedAt.strftime('%m')) + 1]
-                    else:
-                        activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):]
-                    
-                    for i in activeTup:
-                        activeDict[monthTrimesterDict[i]].add(peca.project.school.id)
+        for peca in PecaProject.objects(schoolYear__in=periodsDict.keys()):
+                
+            activeTup = ()
+            #Se obtiene los meses en los que estuvo activo el peca
+            if peca.isDeleted:
+                activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(peca.updatedAt.strftime('%m')) + 1]
+            else:
+                activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(datetime.utcnow().strftime('%m')) + 1]
             
-            periodDict["trimesterOne"] = len(activeDict["T1"])
-            periodDict["trimesterTwo"] = len(activeDict["T2"])
-            periodDict["trimesterThree"] = len(activeDict["T3"])
-            periodDict["trimesterFour"] = len(activeDict["T4"])
-
-            for i in activeDict.keys():
-                activeDict[i].clear()
-            
+            for i in activeTup:
+                periodsDict[str(peca.schoolYear.id)]['activeDict'][monthTrimesterDict[i]].add(peca.project.school.id)
+        for periodDict in periodsDict.values():
+            periodDict["trimesterOne"] = len(periodDict['activeDict']["T1"])
+            periodDict["trimesterTwo"] = len(periodDict['activeDict']["T2"])
+            periodDict["trimesterThree"] = len(periodDict['activeDict']["T3"])
+            periodDict["trimesterFour"] = len(periodDict['activeDict']["T4"])
+            periodDict.pop('activeDict', None)
             reportData["records"].append(periodDict)
 
         return reportData, 200

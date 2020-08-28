@@ -11,9 +11,9 @@ from app.schemas.learning_module_schema import ImageSchema
 
 
 class SectionSchema(Schema):
-    id = fields.Str(dump_only=True)
-    name = fields.Str(dump_only=True)
-    grade = fields.Str(dump_only=True)
+    id = fields.Str()
+    name = fields.Str()
+    grade = fields.Str()
     status = fields.Str(
         required=True,
         validate=(

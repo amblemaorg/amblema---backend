@@ -243,6 +243,7 @@ class PecaAmblecoinsTest(unittest.TestCase):
         resultPeca = json.loads(res.data.decode('utf8').replace("'", '"'))
         resultSection = resultPeca['lapse1']['ambleCoins']['sections'][0]
         self.assertEqual('2', resultSection['status'])
+        self.assertEqual('A', resultSection['name'])
 
         # disable amblecoins for lapse1
         requestData = {

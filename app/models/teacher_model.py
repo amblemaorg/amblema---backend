@@ -21,7 +21,7 @@ class Teacher(EmbeddedDocument):
     address = fields.StringField()
     addressCity = fields.StringField()
     status = fields.StringField(max_length=1, default="1")
-    annualPreparationStatus = fields.StringField(max_length=1, null=True)
+    #annualPreparationStatus = fields.StringField(max_length=1, null=True)
     pecaId = fields.StringField()
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

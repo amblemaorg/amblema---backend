@@ -53,18 +53,21 @@ class StatisticsService():
         nStudents = 0
         nTeachers = 0
         nSponsors = 0
+        nCoordinators = 0
         schoolYear = SchoolYear.objects(
-            isDeleted=False, status="1").only('nStudents', 'nSchools', 'nTeachers', 'nSponsors').first()
+            isDeleted=False, status="1").only('nStudents', 'nSchools', 'nTeachers', 'nSponsors', 'nCoordinators').first()
         if schoolYear:
             nSchools = schoolYear.nSchools
             nStudents = schoolYear.nStudents
             nTeachers = schoolYear.nTeachers
             nSponsors = schoolYear.nSponsors
+            nCoordinators = schoolYear.nCoordinators
         return {
             'nSchools': nSchools,
             'nStudents': nStudents,
             'nTeachers': nTeachers,
-            'nSponsors': nSponsors
+            'nSponsors': nSponsors,
+            'nCoordinators': nCoordinators
         }
 
     def get_diagnostics_last_five_years(self):

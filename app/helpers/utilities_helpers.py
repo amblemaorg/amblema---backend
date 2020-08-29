@@ -127,13 +127,13 @@ def refresh_home_statistics():
     if schoolYear:
         schoolsIds = {}
         sponsorsIds = {}
+        coordinatorsIds = {}
         pecas = PecaProject.objects(isDeleted=False, schoolYear=schoolYear.id)
         for peca in pecas:
             schoolsIds[peca.project.school.id] = peca
             sponsorsIds[peca.project.sponsor.id] = peca
+            coordinatorsIds[peca.project.coordinator.id] = peca
         schools = SchoolUser.objects(isDeleted=False, pk__in=schoolsIds.keys()).all()
-        current_app.logger.info(len(pecas))
-        current_app.logger.info(len(sponsorsIds.keys()))
 
         nStudents = 0
         nTeachers = 0
@@ -167,6 +167,7 @@ def refresh_home_statistics():
         schoolYear.nStudents = nStudents
         schoolYear.nTeachers = nTeachers
         schoolYear.nSponsors = len(sponsorsIds.keys())
+        schoolYear.nCoordinators = len(coordinatorsIds.keys())
         schoolYear.refreshDiagnosticsSummary()
         schoolYear.save()
-    
+        current_app.logger.info('ok')

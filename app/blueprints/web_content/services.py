@@ -38,6 +38,7 @@ class WebContentService(GenericServices):
                 data['homePage']['nStudents'] = counts['nStudents']
                 data['homePage']['nTeachers'] = counts['nTeachers']
                 data['homePage']['nSponsors'] = counts['nSponsors']
+                data['homePage']['nCoordinators'] = counts['nCoordinators']
                 data['homePage']['diagnostics'] = statisticsService.get_diagnostics_last_five_years()
             if page == 'sponsorPage':
                 data['sponsorPage']['sponsors'] = sorted(

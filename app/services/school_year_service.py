@@ -143,10 +143,15 @@ class SchoolYearService(GenericServices):
                     schoolYear=schoolYear.id,
                     project__sponsor__id=str(project.sponsor.id),
                     isDeleted=False).only('id'))
+                coordinatorPecas = len(PecaProject.objects(
+                    schoolYear=schoolYear.id,
+                    project__coordinator__id=str(project.coordinator.id),
+                    isDeleted=False).only('id'))
                 schoolYear.nSchools -= 1
                 schoolYear.nStudents -= peca.school.nStudents
                 schoolYear.nTeachers -= peca.school.nTeachers
                 schoolYear.nSponsors -= 1 if sponsorPecas == 0 else 0
+                schoolYear.nCoordinators -= 1 if coordinatorPecas == 0 else 0
                 schoolYear.refreshDiagnosticsSummary()
                 schoolYear.save()
 
@@ -179,9 +184,14 @@ class SchoolYearService(GenericServices):
                     schoolYear=schoolYear.id,
                     project__sponsor__id=str(project.sponsor.id),
                     isDeleted=False).only('id'))
+                coordinatorPecas = len(PecaProject.objects(
+                    schoolYear=schoolYear.id,
+                    project__coordinator__id=str(project.coordinator.id),
+                    isDeleted=False).only('id'))
                 schoolYear.nSchools += 1
                 schoolYear.nTeachers += project.school.nTeachers if project.school.nTeachers else 0
                 schoolYear.nSponsors += 1 if sponsorPecas == 1 else 0
+                schoolYear.nCoordinators += 1 if coordinatorPecas == 1 else 0
                 schoolYear.save()
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:

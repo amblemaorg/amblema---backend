@@ -80,14 +80,23 @@ class StatisticsService():
         }
         for period in periods:
             for diag in data.keys():
+                hasInfo = False
                 for lapse in [1, 2, 3]:
-
-                    data[diag].append(
-                        {
-                            'label': period.name,
-                            'serie': 'Lapso {}'.format(lapse),
-                            'value': period.diagnostics['lapse{}'.format(
-                                lapse)][diag]
-                        }
-                    )
+                    if period.diagnostics['lapse{}'.format(
+                                lapse)][diag]:
+                        hasInfo = True
+                if hasInfo:
+                    for lapse in [1, 2, 3]:
+                        data[diag].append(
+                            {
+                                'createdAt': period.createdAt,
+                                'label': period.name,
+                                'serie': 'Lapso {}'.format(lapse),
+                                'value': period.diagnostics['lapse{}'.format(
+                                    lapse)][diag]
+                            }
+                        )
+        for diag in data.keys():
+            data[diag] = sorted(
+                data[diag], reverse=True, key=lambda x: (x['createdAt']))
         return data

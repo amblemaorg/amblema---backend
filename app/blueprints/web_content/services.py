@@ -107,15 +107,25 @@ class SchoolPageContentService():
         }
         for peca in pecas:
             for diag in diagnostics.keys():
+                hasInfo = False
                 for lapse in [1, 2, 3]:
-                    diagnostics[diag].append(
-                        {
-                            'label': peca.schoolYearName,
-                            'serie': 'Lapso {}'.format(lapse),
-                            'value': peca.school.diagnostics['lapse{}'.format(
-                                lapse)][diag]
-                        }
-                    )
+                    if peca.school.diagnostics['lapse{}'.format(
+                                lapse)][diag]:
+                        hasInfo = True
+                if hasInfo:
+                    for lapse in [1, 2, 3]:
+                        diagnostics[diag].append(
+                            {
+                                'createdAt': peca.createdAt,
+                                'label': peca.schoolYearName,
+                                'serie': 'Lapso {}'.format(lapse),
+                                'value': peca.school.diagnostics['lapse{}'.format(
+                                    lapse)][diag]
+                            }
+                        )
+        for diag in diagnostics.keys():
+            diagnostics[diag] = sorted(
+                diagnostics[diag], reverse=True, key=lambda x: (x['createdAt']))
         olympicsDescription = ""
         for lapse in [1, 2, 3]:
             if currentPeriod.pecaSetting['lapse{}'.format(lapse)].mathOlympic.status == "1":

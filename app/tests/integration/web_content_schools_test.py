@@ -569,12 +569,11 @@ class WebContentSchoolTest(unittest.TestCase):
         self.assertEqual('Iribarren, Lara, Venezuela', school['address'])
         self.assertEqual(1, school['nStudents'])
 
-        self.assertEqual({'label': '2020 - 2021', 'value': 1,
-                          'serie': 'Lapso 1'}, school['diagnostics']['wordsPerMinIndex'][0])
-        self.assertEqual({'label': '2020 - 2021', 'value': 0.0,
-                          'serie': 'Lapso 1'}, school['diagnostics']['multiplicationsPerMinIndex'][0])
-        self.assertEqual({'label': '2020 - 2021', 'value': 0.0,
-                          'serie': 'Lapso 1'}, school['diagnostics']['operationsPerMinIndex'][0])
+        self.assertEqual('2020 - 2021', school['diagnostics']['wordsPerMinIndex'][0]['label'])
+        self.assertEqual(1, school['diagnostics']['wordsPerMinIndex'][0]['value'])
+        self.assertEqual('Lapso 1', school['diagnostics']['wordsPerMinIndex'][0]['serie'])
+        self.assertEqual([], school['diagnostics']['multiplicationsPerMinIndex'])
+        self.assertEqual([], school['diagnostics']['operationsPerMinIndex'])
 
         self.assertEqual(1, school['olympicsSummary']['inscribed'])
         self.assertEqual(1, school['olympicsSummary']['classified'])

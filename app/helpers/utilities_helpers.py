@@ -42,6 +42,7 @@ def refresh_users_projects():
     from app.models.sponsor_user_model import SponsorUser
     from app.models.coordinator_user_model import CoordinatorUser
     from pymongo import UpdateOne
+    from flask import current_app
 
     schools = SchoolUser.objects(isDeleted=False)
     sponsors = SponsorUser.objects(isDeleted=False)
@@ -49,7 +50,7 @@ def refresh_users_projects():
 
     bulk_operations = []
     for school in schools:
-        school.project = None
+        school.project = {}
         bulk_operations.append(
             UpdateOne({'_id': school.id}, {'$set': school.to_mongo().to_dict()}))
     if bulk_operations:

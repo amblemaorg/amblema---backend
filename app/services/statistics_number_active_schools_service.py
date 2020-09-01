@@ -32,6 +32,7 @@ class StatisticsNumberActiveSchoolsService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"endPeriodId": endPeriodId})
+        currentPeriod = SchoolYear.objects(isDeleted=False, status="1").only('id','endDate').first()
         
         reportData = {
             "records": []
@@ -68,7 +69,10 @@ class StatisticsNumberActiveSchoolsService():
             if peca.isDeleted:
                 activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(peca.updatedAt.strftime('%m')) + 1]
             else:
-                activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(datetime.utcnow().strftime('%m')) + 1]
+                if currentPeriod and peca.schoolYear.id == currentPeriod.id:
+                    activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):monthsTup.index(datetime.utcnow().strftime('%m')) + 1]
+                else:
+                    activeTup = monthsTup[monthsTup.index(peca.createdAt.strftime('%m')):]
             
             for i in activeTup:
                 periodsDict[str(peca.schoolYear.id)]['activeDict'][monthTrimesterDict[i]].add(peca.project.school.id)

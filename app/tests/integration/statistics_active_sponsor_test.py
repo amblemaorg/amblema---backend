@@ -32,7 +32,8 @@ class StatisticsActiveSponsorTest(unittest.TestCase):
         self.schoolYear1 = SchoolYear(
             name="Test",
             startDate="2020-09-01",
-            endDate="2021-07-30")
+            endDate="2021-07-30",
+            status="2")
         self.schoolYear1.initFirstPecaSetting()
         self.schoolYear1.save()
 
@@ -40,7 +41,8 @@ class StatisticsActiveSponsorTest(unittest.TestCase):
         self.schoolYear2 = SchoolYear(
             name="Test",
             startDate="2021-09-01",
-            endDate="2022-07-30")
+            endDate="2022-07-30",
+            status="1")
         self.schoolYear2.initFirstPecaSetting()
         self.schoolYear2.save()
 
@@ -477,6 +479,9 @@ class StatisticsActiveSponsorTest(unittest.TestCase):
             updatedAt = "2022-04-03 00:00:00"
         )
         self.pecaProject6.save()
+
+        self.schoolYear2.status = "2"
+        self.schoolYear2.save()
 
     def test_statistics_active_sponsor(self):
 

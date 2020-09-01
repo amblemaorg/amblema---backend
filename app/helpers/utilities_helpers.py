@@ -172,3 +172,52 @@ def refresh_home_statistics():
         schoolYear.refreshDiagnosticsSummary()
         schoolYear.save()
         current_app.logger.info('ok')
+
+def refresh_role_permissions():
+    from app.models.role_model import Role, Permission, ActionHandler
+    from app.models.entity_model import Entity, Action
+    from pymongo import UpdateOne
+    from flask import current_app
+
+    entities = Entity.objects(isDeleted=False)
+    entitiesDict = {}
+    for entity in entities:
+        entitiesDict[str(entity.id)] = entity
+    
+    roles = Role.objects(isDeleted=False)
+    bulk_operations = []
+    for role in roles:
+        for entity in entities:
+            found = False
+            for permission in role.permissions:
+                if permission.entityId == str(entity.id):
+                    found = True
+                    for action in entity.actions:
+                        actionFound = False
+                        for pAction in permission.actions:
+                            if pAction.name == action.name:
+                                actionFound = True
+                                pAction.label = action.label
+                                pAction.sort = action.sort
+                        if not actionFound:
+                            permission.actions.append(
+                                ActionHandler(
+                                    name=action.name,
+                                    label=action.label,
+                                    sort=action.sort
+                                )
+                            )
+            if not found:
+                permission = Permission(
+                    entityId=str(entity.id),
+                    entityName=entity.name,
+                    actions = [ActionHandler(name=action.name, label=action.label, sort=action.sort) for action in entity.actions]
+                )
+                role.permissions.append(permission)
+        bulk_operations.append(
+                UpdateOne({'_id': role.id}, {'$set': role.to_mongo().to_dict()}))
+
+    if bulk_operations:
+            Role._get_collection() \
+                .bulk_write(bulk_operations, ordered=False)
+

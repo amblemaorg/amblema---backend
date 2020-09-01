@@ -71,6 +71,11 @@ def create_standard_roles():
     from app.helpers.handler_seeds import create_standard_roles
     return create_standard_roles()
 
+@manager.command
+def refresh_role_permissions():
+    from app.helpers.utilities_helpers import refresh_role_permissions
+    return refresh_role_permissions()
+
 
 @manager.command
 def create_states_municipalities():

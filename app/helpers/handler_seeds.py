@@ -22,6 +22,18 @@ def create_entities():
     ).save()
 
     Entity(
+        name="PECA Agenda de actividades",
+        devName="ScheduleActivity",
+        actions=[
+            {
+                "name": "schedule_peca_view",
+                "label": "Ver",
+                "sort": 1
+            }
+        ]
+    ).save()
+
+    Entity(
         name="PECA Slider de actividades",
         devName="ActivitiesSlider",
         actions=[
@@ -112,6 +124,11 @@ def create_entities():
                 "name": "initial_workshop_edit",
                 "label": "Editar",
                 "sort": 2
+            },
+            {
+                "name": "initial_workshop_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
             }
         ]
     ).save()
@@ -129,6 +146,11 @@ def create_entities():
                 "name": "lapse_planning_peca_edit",
                 "label": "Editar",
                 "sort": 2
+            },
+            {
+                "name": "lapse_planning_peca_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
             }
         ]
     ).save()
@@ -143,9 +165,19 @@ def create_entities():
                 "sort": 1
             },
             {
+                "name": "olympics_peca_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
                 "name": "olympics_peca_edit",
                 "label": "Editar",
-                "sort": 2
+                "sort": 3
+            },
+            {
+                "name": "olympics_peca_delete",
+                "label": "Eliminar",
+                "sort": 4
             }
         ]
     ).save()
@@ -288,7 +320,13 @@ def create_entities():
                 "name": "yearbook_edit",
                 "label": "Editar",
                 "sort": 2
-            }
+            },
+            {
+                "name": "yearbook_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
+            },
+
         ]
     ).save()
 
@@ -305,6 +343,33 @@ def create_entities():
                 "name": "special_activity_edit",
                 "label": "Editar",
                 "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Diagnósticos",
+        devName="Diagnostics",
+        actions=[
+            {
+                "name": "diagnostics_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "diagnostics_peca_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
+                "name": "diagnostics_peca_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+            {
+                "name": "diagnostics_peca_delete",
+                "label": "Eliminar",
+                "sort": 4
             }
         ]
     ).save()

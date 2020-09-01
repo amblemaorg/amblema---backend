@@ -32,7 +32,8 @@ class StatisticsNumberActiveSchoolsTest(unittest.TestCase):
         self.schoolYear1 = SchoolYear(
             name="Test",
             startDate="2020-09-01",
-            endDate="2021-07-30")
+            endDate="2021-07-30",
+            status="2")
         self.schoolYear1.initFirstPecaSetting()
         self.schoolYear1.save()
 
@@ -442,6 +443,8 @@ class StatisticsNumberActiveSchoolsTest(unittest.TestCase):
 
         )
         self.pecaProject6.save()
+        self.schoolYear2.status = "2"
+        self.schoolYear2.save()
 
     def test_statistics_number_active_schools(self):
 

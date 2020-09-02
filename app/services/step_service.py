@@ -65,7 +65,7 @@ class StepsService():
                     createdAt=document.createdAt,
                     updatedAt=document.updatedAt
                 )
-                if document.hasChecklist:
+                if document.hasChecklist and document.checklist:
                     for check in document.checklist:
                         stepCtrl.checklist.append(
                             CheckElement(name=check.name, id=check.id))
@@ -183,7 +183,7 @@ class StepsService():
                 createdAt=document.createdAt,
                 updatedAt=document.updatedAt
             )
-            if document.hasChecklist:
+            if document.hasChecklist and document.checklist:
                 for check in document.checklist:
                     stepCtrl.checklist.append(
                         CheckElement(name=check.name, id=check.id))

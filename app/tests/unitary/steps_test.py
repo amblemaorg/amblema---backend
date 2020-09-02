@@ -10,14 +10,7 @@ class UserTestCase(unittest.TestCase):
 
     def test_step_with_text(self):
         stepSchema = StepSchema(partial=True)
-        step = {
-            "name": "some step type 1",
-            "tag": "1",
-            "hasText": True,
-            "status": "1"
-        }
-        self.assertEqual(stepSchema.validate(step), {
-                         'text': [{"status": "2", "msg": "Field is required"}]})
+        
         step = {
             "name": "some step type 1",
             "tag": "1",
@@ -40,14 +33,6 @@ class UserTestCase(unittest.TestCase):
 
     def test_step_with_file(self):
         stepSchema = StepSchema(partial=True)
-        step = {
-            "name": "some step type 1",
-            "tag": "1",
-            "hasFile": True,
-            "status": "1"
-        }
-        self.assertEqual(stepSchema.validate(step), {
-                         'file': [{"status": "2", "msg": "Field is required"}]})
 
         step = {
             "name": "some step type 1",
@@ -61,14 +46,6 @@ class UserTestCase(unittest.TestCase):
 
     def test_step_with_video(self):
         stepSchema = StepSchema(partial=True)
-        step = {
-            "name": "some step type 1",
-            "tag": "1",
-            "hasVideo": True,
-            "status": "1"
-        }
-        self.assertEqual(stepSchema.validate(step), {
-                         'video': [{"status": "2", "msg": "Field is required"}]})
 
         step = {
             "name": "some step type 1",
@@ -103,14 +80,6 @@ class UserTestCase(unittest.TestCase):
     def test_step_type_5_checklist(self):
         stepSchema = StepSchema(partial=True)
 
-        step = {
-            "name": "some step type 1",
-            "tag": "1",
-            "hasChecklist": True,
-            "status": "1"
-        }
-        self.assertEqual(stepSchema.validate(step), {
-                         'checklist': [{"status": "2", "msg": "Field is required"}]})
         step = {
             "name": "some step type 1",
             "tag": "1",

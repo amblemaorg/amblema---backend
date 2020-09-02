@@ -46,8 +46,8 @@ class ProjectReferenceSchema(Schema):
 
 
 class FileSchema(Schema):
-    name = fields.Str(validate=not_blank)
-    url = fields.Str(validate=(not_blank, validate_url))
+    name = fields.Str()
+    url = fields.Str(validate=(validate_url,))
 
     @pre_load
     def process_input(self, data, **kwargs):

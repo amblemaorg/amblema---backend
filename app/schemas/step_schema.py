@@ -88,7 +88,7 @@ class StepSchema(Schema):
 
     @validates_schema
     def validate_schema(self, data, **kwargs):
-        errors = {}
+        '''errors = {}
         if (
             "hasText" in data and data["hasText"]
             and "text" not in data
@@ -115,4 +115,4 @@ class StepSchema(Schema):
         ):
             errors["checklist"] = [{"status": "12", "msg": "Out of range"}]
         if errors:
-            raise ValidationError(errors)
+            raise ValidationError(errors)'''

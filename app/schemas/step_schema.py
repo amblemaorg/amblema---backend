@@ -36,7 +36,7 @@ class StepSchema(Schema):
     hasVideo = fields.Bool(required=True, default=False)
     hasChecklist = fields.Bool(required=True, default=False)
     hasUpload = fields.Bool(required=True, default=False)
-    text = fields.Str(validate=not_blank)
+    text = fields.Str()
     file = fields.Nested(FileSchema)
     video = fields.Nested(FileSchema)
     checklist = fields.List(

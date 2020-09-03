@@ -67,12 +67,12 @@ class PecaSpecialActivityService():
                                 detail=jsonData
                             )
                         )
-                        if data.activityDate:
+                        if data['activityDate']:
                             peca.scheduleActivity(
                                 devName="speciallapseactivity__activitydate{}".format(lapse),
                                 activityId="specialLapseActivity",  # showed on next activities web
                                 subject="Actividad especial de lapso {}".format(lapse),
-                                startTime=data.activityDate,
+                                startTime=data['activityDate'],
                                 description="Fecha de la actividad"
                             )
                         peca.save()

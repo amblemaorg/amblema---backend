@@ -43,18 +43,13 @@ def create_entities():
                 "sort": 1
             },
             {
-                "name": "activities_slider_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
                 "name": "activities_slider_edit",
-                "label": "Editar",
+                "label": "Enviar solicitud",
                 "sort": 3
             },
             {
                 "name": "activities_slider_delete",
-                "label": "Eliminar",
+                "label": "Cancelar solicitud",
                 "sort": 4
             }
         ]
@@ -236,18 +231,13 @@ def create_entities():
                 "sort": 1
             },
             {
-                "name": "teacher_testimonial_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
                 "name": "teacher_testimonial_edit",
-                "label": "Editar",
+                "label": "Enviar solicitud",
                 "sort": 3
             },
             {
                 "name": "teacher_testimonial_delete",
-                "label": "Eliminar",
+                "label": "Cancelar solicitud",
                 "sort": 4
             }
         ]
@@ -318,7 +308,7 @@ def create_entities():
             },
             {
                 "name": "yearbook_edit",
-                "label": "Editar",
+                "label": "Enviar solicitud",
                 "sort": 2
             },
             {
@@ -341,6 +331,40 @@ def create_entities():
             },
             {
                 "name": "special_activity_edit",
+                "label": "Enviar solicitud",
+                "sort": 2
+            },
+            {
+                "name": "special_activity_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Estrategias de seguimiento de actividades",
+        devName="MonitoringActivityPeca",
+        actions=[
+            {
+                "name": "monitoring_activity_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+        ]
+    ).save()
+
+    Entity(
+        name="PECA temática ambiental",
+        devName="EnvironmentalProjectPeca",
+        actions=[
+            {
+                "name": "environmental_project_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "environmental_project_peca_edit",
                 "label": "Editar",
                 "sort": 2
             }

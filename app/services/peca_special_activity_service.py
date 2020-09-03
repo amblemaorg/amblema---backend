@@ -31,7 +31,7 @@ class PecaSpecialActivityService():
         if peca:
             try:
                 schema = SpecialActivitySchema()
-                schema.validate(jsonData)
+                data = schema.load(jsonData)
 
                 user = User.objects(id=str(userId), isDeleted=False).first()
                 if not user:
@@ -67,6 +67,14 @@ class PecaSpecialActivityService():
                                 detail=jsonData
                             )
                         )
+                        if data.activityDate:
+                            peca.scheduleActivity(
+                                devName="speciallapseactivity__activitydate{}".format(lapse),
+                                activityId="specialLapseActivity",  # showed on next activities web
+                                subject="Actividad especial de lapso {}".format(lapse),
+                                startTime=data.activityDate,
+                                description="Fecha de la actividad"
+                            )
                         peca.save()
                         return schema.dump(specialActivity), 200
                     except Exception as e:

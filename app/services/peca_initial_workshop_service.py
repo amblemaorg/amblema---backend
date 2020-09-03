@@ -4,6 +4,7 @@ from flask import current_app
 from marshmallow import ValidationError
 import os
 import os.path
+import copy
 
 from app.models.peca_project_model import PecaProject
 from app.models.peca_initial_workshop_model import InitialWorkshopPeca
@@ -62,6 +63,7 @@ class InitialWorkshopService():
 
                 initialWorkshop = peca['lapse{}'.format(
                     lapse)].initialWorkshop
+                oldInitialWorkshop = copy.copy(initialWorkshop)
 
                 if initialWorkshop.isInApproval and ('description' in jsonData or 'images' in jsonData):
                     return {
@@ -111,6 +113,14 @@ class InitialWorkshopService():
                     else:
                         for field in data.keys():
                             initialWorkshop[field] = data[field]
+                    if initialWorkshop.workshopDate != oldInitialWorkshop.workshopDate:
+                        peca.scheduleActivity(
+                            devName="initialworkshol__workshopDate",
+                            activityId="initialWorkshop",
+                            subject="Taller inicial",
+                            startTime=initialWorkshop.workshopDate,
+                            description="Fecha del taller"
+                        )
                     peca['lapse{}'.format(
                         lapse)].initialWorkshop = initialWorkshop
                     peca.save()

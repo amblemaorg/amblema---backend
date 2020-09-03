@@ -2,6 +2,7 @@
 
 
 from datetime import datetime
+
 from app.models.peca_project_model import PecaProject
 from app.models.shared_embedded_documents import ProjectReference
 from app.models.project_model import Project, Approval, CheckElement
@@ -38,6 +39,7 @@ class RequestContentApproval(Document):
         from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.peca_activity_yearbook_schema import ActivityYearbookSchema
         from app.schemas.peca_school_schema import SchoolSchema
+        from app.schemas.shared_schemas import CheckSchema
         from app.models.school_user_model import SchoolUser
         from app.models.sponsor_user_model import SponsorUser
         from app.models.coordinator_user_model import CoordinatorUser
@@ -71,7 +73,7 @@ class RequestContentApproval(Document):
                             "name": step.video.name,
                             "url": step.video.url
                         }
-                        document.detail['stepChecklist'] = step.checklist
+                        document.detail['stepChecklist'] = None if not step.checklist else CheckSchema().dump(step.checklist, many=True)
                         break
 
         # before update
@@ -308,6 +310,7 @@ class RequestContentApproval(Document):
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
+        from app.schemas.shared_schemas import CheckSchema
         reciprocalFields = {
             "sponsorAgreementSchool": "schoolAgreementSponsor",
             "schoolAgreementSponsor": "sponsorAgreementSchool",
@@ -360,16 +363,18 @@ class RequestContentApproval(Document):
                 if document.status == "2":
                     for step in project.stepsProgress.steps:
                         if step.id == document.detail['stepId']:
-                            if document.detail['stepHasDate']:
-                                step.date = document.detail['stepDate']
+                            if document.detail['stepHasDate'] and document.detail['stepDate']:
+                                step.date = datetime.strptime(document.detail['stepDate'], '%Y-%m-%dT%H:%M:%S.%fZ')
                             if document.detail['stepHasUpload']:
                                 step.uploadedFile = Link(
                                     name=document.detail['stepUploadedFile']['name'],
                                     url=document.detail['stepUploadedFile']['url'])
-                            if document.detail['stepHasVideo']:
-                                step.video = document.detail['stepVideo']
-                            if document.detail['stepHasChecklist']:
-                                document.detail['checklist'] = document.detail['stepChecklist']
+                            if document.detail['stepHasVideo'] and document.detail['stepVideo']:
+                                step.video = Link(
+                                    name=document.detail['stepVideo']['name'],
+                                    url=document.detail['stepVideo']['url'])
+                            if document.detail['stepHasChecklist'] and document.detail['stepChecklist']:
+                                step.checklist = [CheckSchema().load(check) for check in document.detail['stepChecklist']]
                             step.status = "3"  # approved
                             for approval in step.approvalHistory:
                                 if approval.id == str(document.id):

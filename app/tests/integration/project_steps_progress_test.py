@@ -389,7 +389,7 @@ class InitialSteps(unittest.TestCase):
                 "stepUploadedFile": {"name": "uploaded",
                                      "url": "https://server.com/files/asd.pdf"},
 
-                "stepDate": datetime.utcnow()
+                "stepDate": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
             }
         )
         approvalRequest.save()

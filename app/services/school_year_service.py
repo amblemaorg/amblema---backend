@@ -54,10 +54,11 @@ class SchoolYearService(GenericServices):
                         "msg": "Current school year has not finished yet"
                     }, 400
                 date = datetime.datetime.now()
+                newYearEnds = date.year + 1 if date.month > 8 else date.year
                 newSchoolYear = SchoolYear(
                     name="{} - {}".format(date.year, date.year+1),
                     startDate=date,
-                    endDate=date.replace(date.year + 1),
+                    endDate=date.replace(newYearEnds, 8, 31),
                     pecaSetting=oldSchoolYear.pecaSetting
                 )
                 newSchoolYear.pecaSetting.environmentalProject = EnvironmentalProject()

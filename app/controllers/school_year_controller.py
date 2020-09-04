@@ -20,7 +20,7 @@ class SchoolYearController(Resource):
     @jwt_required
     def get(self):
         filters = getQueryParams(request)
-        return self.service.getAllRecords(filters=filters, only=('id', 'name', 'status'))
+        return self.service.getAllRecords(filters=filters, only=('id', 'name', 'status', 'startDate', 'endDate'))
 
     @jwt_required
     def post(self):

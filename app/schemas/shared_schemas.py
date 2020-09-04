@@ -53,6 +53,8 @@ class FileSchema(Schema):
     def process_input(self, data, **kwargs):
         if isinstance(data, str):
             data = json.loads(data)
+        if 'url' in data and str(data['url']).startswith(current_app.config.get('SERVER_URL')):
+            data['url'] = data['url'].replace(current_app.config.get('SERVER_URL'), '')
         return data
 
     @post_dump

@@ -173,6 +173,27 @@ def refresh_home_statistics():
         schoolYear.save()
         current_app.logger.info('ok')
 
+def copy_steps():
+    from app.models.school_year_model import SchoolYear
+    from app.models.step_model import Step
+    
+    from flask import current_app
+
+    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+    oldSchoolYear = SchoolYear.objects(isDeleted=False, status="2").order_by('-endDate').first()
+    bulkSteps = []
+    steps = Step.objects(schoolYear=str(oldSchoolYear.id),
+                                     isDeleted=False).all()
+    for step in steps:
+        step.id = None
+        step.schoolYear = schoolYear.id
+        bulkSteps.append(
+            step
+        )
+    if bulkSteps:
+        Step.objects.insert(bulkSteps)
+    current_app.logger.info('ok')
+    
 def refresh_role_permissions():
     from app.models.role_model import Role, Permission, ActionHandler
     from app.models.entity_model import Entity, Action

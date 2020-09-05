@@ -207,7 +207,7 @@ class PecaProjectService():
                     peca['lapse{}'.format(i)].activities.append(
                         actPeca
                     )
-            if schoolYear.pecaSetting.environmentalProject:
+            if schoolYear.pecaSetting.environmentalProject and schoolYear.pecaSetting.environmentalProject.name:
                 envProjectStg = EnvironmentalProjectSchema().dump(schoolYear.pecaSetting.environmentalProject)
                 envProjectData = EnvironmentalProjectPecaSchema().load(envProjectStg)
                 envProject = EnvironmentalProjectPeca()

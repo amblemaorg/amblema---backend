@@ -22,6 +22,18 @@ def create_entities():
     ).save()
 
     Entity(
+        name="PECA Agenda de actividades",
+        devName="ScheduleActivity",
+        actions=[
+            {
+                "name": "schedule_peca_view",
+                "label": "Ver",
+                "sort": 1
+            }
+        ]
+    ).save()
+
+    Entity(
         name="PECA Slider de actividades",
         devName="ActivitiesSlider",
         actions=[
@@ -31,18 +43,13 @@ def create_entities():
                 "sort": 1
             },
             {
-                "name": "activities_slider_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
                 "name": "activities_slider_edit",
-                "label": "Editar",
+                "label": "Enviar solicitud",
                 "sort": 3
             },
             {
                 "name": "activities_slider_delete",
-                "label": "Eliminar",
+                "label": "Cancelar solicitud",
                 "sort": 4
             }
         ]
@@ -112,6 +119,11 @@ def create_entities():
                 "name": "initial_workshop_edit",
                 "label": "Editar",
                 "sort": 2
+            },
+            {
+                "name": "initial_workshop_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
             }
         ]
     ).save()
@@ -129,6 +141,11 @@ def create_entities():
                 "name": "lapse_planning_peca_edit",
                 "label": "Editar",
                 "sort": 2
+            },
+            {
+                "name": "lapse_planning_peca_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
             }
         ]
     ).save()
@@ -143,9 +160,19 @@ def create_entities():
                 "sort": 1
             },
             {
+                "name": "olympics_peca_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
                 "name": "olympics_peca_edit",
                 "label": "Editar",
-                "sort": 2
+                "sort": 3
+            },
+            {
+                "name": "olympics_peca_delete",
+                "label": "Eliminar",
+                "sort": 4
             }
         ]
     ).save()
@@ -204,18 +231,13 @@ def create_entities():
                 "sort": 1
             },
             {
-                "name": "teacher_testimonial_create",
-                "label": "Crear",
-                "sort": 2
-            },
-            {
                 "name": "teacher_testimonial_edit",
-                "label": "Editar",
+                "label": "Enviar solicitud",
                 "sort": 3
             },
             {
                 "name": "teacher_testimonial_delete",
-                "label": "Eliminar",
+                "label": "Cancelar solicitud",
                 "sort": 4
             }
         ]
@@ -286,9 +308,15 @@ def create_entities():
             },
             {
                 "name": "yearbook_edit",
-                "label": "Editar",
+                "label": "Enviar solicitud",
                 "sort": 2
-            }
+            },
+            {
+                "name": "yearbook_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
+            },
+
         ]
     ).save()
 
@@ -303,8 +331,69 @@ def create_entities():
             },
             {
                 "name": "special_activity_edit",
+                "label": "Enviar solicitud",
+                "sort": 2
+            },
+            {
+                "name": "special_activity_delete",
+                "label": "Cancelar solicitud",
+                "sort": 3
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Estrategias de seguimiento de actividades",
+        devName="MonitoringActivityPeca",
+        actions=[
+            {
+                "name": "monitoring_activity_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+        ]
+    ).save()
+
+    Entity(
+        name="PECA temática ambiental",
+        devName="EnvironmentalProjectPeca",
+        actions=[
+            {
+                "name": "environmental_project_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "environmental_project_peca_edit",
                 "label": "Editar",
                 "sort": 2
+            }
+        ]
+    ).save()
+
+    Entity(
+        name="PECA Diagnósticos",
+        devName="Diagnostics",
+        actions=[
+            {
+                "name": "diagnostics_peca_view",
+                "label": "Ver",
+                "sort": 1
+            },
+            {
+                "name": "diagnostics_peca_create",
+                "label": "Crear",
+                "sort": 2
+            },
+            {
+                "name": "diagnostics_peca_edit",
+                "label": "Editar",
+                "sort": 3
+            },
+            {
+                "name": "diagnostics_peca_delete",
+                "label": "Eliminar",
+                "sort": 4
             }
         ]
     ).save()

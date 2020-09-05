@@ -6,6 +6,7 @@ import datetime
 
 from flask import current_app
 from marshmallow import ValidationError
+from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
@@ -18,6 +19,7 @@ from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.helpers.handler_messages import HandlerMessages
+from app.models.step_model import Step
 
 
 class SchoolYearService(GenericServices):
@@ -66,6 +68,18 @@ class SchoolYearService(GenericServices):
                 oldSchoolYear.status = "2"
                 oldSchoolYear.endDate = date
                 oldSchoolYear.save()
+                bulkSteps = []
+                steps = Step.objects(schoolYear=str(oldSchoolYear.id),
+                                     isDeleted=False).all()
+                for step in steps:
+                    step.id = None
+                    step.schoolYear = newSchoolYear.id
+                    bulkSteps.append(
+                        step
+                    )
+                if bulkSteps:
+                    Step.objects.insert(bulkSteps)
+
             else:
                 date = datetime.datetime.now()
                 newSchoolYear = SchoolYear(

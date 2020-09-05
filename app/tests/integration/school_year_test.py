@@ -17,7 +17,8 @@ from app.models.peca_project_model import PecaProject
 from app.models.role_model import Role
 from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
-
+from app.helpers.handler_seeds import create_initial_steps
+from app.models.step_model import Step
 
 class SchoolYearTest(unittest.TestCase):
     def setUp(self):
@@ -120,6 +121,10 @@ class SchoolYearTest(unittest.TestCase):
         self.assertEqual([], result1['pecaSetting']['lapse1']['activities'])
         self.assertEqual("1", result1.status)
 
+        create_initial_steps()
+        steps = Step.objects(isDeleted=False).count()
+        self.assertEqual(21, steps)
+
         # create new schoolyear
         requestData = {
             "name": "2021-2022"
@@ -152,6 +157,13 @@ class SchoolYearTest(unittest.TestCase):
 
         result1 = SchoolYear.objects(id=result1['id'], isDeleted=False).first()
         self.assertEqual("2", result1.status)
+
+        steps = Step.objects(isDeleted=False).count()
+        self.assertEqual(42, steps)
+
+        steps = Step.objects(isDeleted=False, schoolYear=result2.id).count()
+        self.assertEqual(21, steps)
+
 
     def test_enroll_school(self):
         requestData = {

@@ -76,6 +76,10 @@ def refresh_role_permissions():
     from app.helpers.utilities_helpers import refresh_role_permissions
     return refresh_role_permissions()
 
+@manager.command
+def copy_steps():
+    from app.helpers.utilities_helpers import copy_steps
+    return copy_steps()
 
 @manager.command
 def create_states_municipalities():

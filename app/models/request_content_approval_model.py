@@ -30,6 +30,10 @@ class RequestContentApproval(Document):
     isDeleted = fields.BooleanField(default=False)
     meta = {'collection': 'requests_content_approval'}
 
+    def clean(self):
+        if not current_app.config.get("TESTING"):
+            self.updatedAt = datetime.utcnow()
+
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         from app.schemas.peca_activities_schema import ActivityFieldsSchema
@@ -138,7 +142,19 @@ class RequestContentApproval(Document):
                             if history.status == '2':  # approved
                                 school = SchoolUser.objects(
                                     id=peca.project.school.id).first()
-                                schema = SchoolSchema(partial=True)
+                                schema = SchoolSchema(partial=True, only=(
+                                    'principalFirstName',
+                                    'principalLastName',
+                                    'principalPhone',
+                                    'principalEmail',
+                                    'subPrincipalFirstName',
+                                    'subPrincipalLastName',
+                                    'subPrincipalEmail',
+                                    'subPrincipalPhone',
+                                    'facebook',
+                                    'instagram',
+                                    'twitter',
+                                    'slider'))
                                 data = schema.load(document.detail)
                                 for field in data.keys():
                                     peca.school[field] = data[field]

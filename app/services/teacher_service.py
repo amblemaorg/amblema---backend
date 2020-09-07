@@ -52,13 +52,13 @@ class TeacherService():
                     )
                 try:
                     school.teachers.append(teacher)
-                    school.nTeachers = 1 if not school.nTeachers else school.nTeachers + 1
+                    school.nTeachers = len(school.teachers.filter(isDeleted=False))
                     school.save()
                     period = SchoolYear.objects(
                         isDeleted=False, status="1").first()
                     if period:
                         PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
-                            inc__school__nTeachers=1
+                            set__school__nTeachers=school.nTeachers
                         )
                         period.nTeachers += 1
                         period.save()
@@ -156,11 +156,11 @@ class TeacherService():
                         teachers__isDeleted__ne=True
                     ).update(
                         set__teachers__S__isDeleted=True,
-                        dec__nTeachers=1)
+                        set__nTeachers=len(school.teachers.filter(isDeleted=False)))
 
                     if period:
                         PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
-                            inc__school__nTeachers=1
+                            set__school__nTeachers=len(school.teachers.filter(isDeleted=False))
                         )
                         period.nTeachers -= 1
                         period.save()

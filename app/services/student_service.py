@@ -43,14 +43,17 @@ class StudentService():
                                        "msg": "Duplicated record found: {}".format(student.firstName)}]}
                         )
                     try:
+                        nStudents = 1
+                        for section in peca.school.sections.filter(isDeleted=False):
+                            nStudents += len(section.students.filter(isDeleted=False))
                         PecaProject.objects(
                             id=pecaId,
                             school__sections__id=sectionId
                         ).update(
                             push__school__sections__S__students=student,
-                            inc__school__nStudents=1)
+                            set__school__nStudents=nStudents)
                         SchoolUser.objects(id=peca.project.school.id).update(
-                            inc__nStudents=1)
+                            set__nStudents=nStudents)
                         SchoolYear.objects(isDeleted=False, status="1").update(
                             inc__nStudents=1)
 

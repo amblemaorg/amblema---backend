@@ -49,6 +49,10 @@ class PecaProject(Document):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
 
+    def clean(self):
+        if not current_app.config.get("TESTING"):
+            self.updatedAt = datetime.utcnow()
+
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         from app.services.peca_project_service import PecaProjectService

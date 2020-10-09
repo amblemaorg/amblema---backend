@@ -47,8 +47,8 @@ class PostSchema(Schema):
             ('environment', 'reading', 'math', 'other')
         )
     )
-    image = MAImageField(required=True, folder='posts', size=339)
-    image2 = MAImageField(required=True, folder='posts', size=339)
+    image = MAImageField(required=True, folder='posts', size=800)
+    image2 = MAImageField(required=True, folder='posts', size=800)
     text = fields.Str(required=True, validate=Length(max=15556))
     status = fields.Str(
         required=True,

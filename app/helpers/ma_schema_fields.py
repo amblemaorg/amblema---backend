@@ -83,7 +83,7 @@ class MAImageField(fields.Field):
         """
         custom metadata:
           folder: folder name into image resource path
-          size: optional size limit of image, in MB
+          size: optional size limit of image, in KB
         """
         if str(value).startswith('data'):
             size = None if not 'size' in self.metadata else self.metadata['size']

@@ -43,7 +43,7 @@ class TestimonialSchema(Schema):
         required=True,
         validate=(not_blank, validate_image),
         folder='webcontent',
-        size=20)
+        size=800)
     function = fields.Str(required=True, validate=not_blank)
     description = fields.Str(
         required=True, validate=(not_blank, Length(max=197)))

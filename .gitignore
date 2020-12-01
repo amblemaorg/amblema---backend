@@ -25,3 +25,4 @@ resources/images/school_years/
 resources/images/schools/
 .coverage
 htmlcov/
+.env

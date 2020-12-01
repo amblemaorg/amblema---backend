@@ -499,7 +499,7 @@ class StatisticsInactiveSponsorTest(unittest.TestCase):
                 self.assertEqual(str(self.schoolYear1.pk),record['academicPeriodId'])
                 self.assertEqual(self.schoolYear1.name,record['academicPeriodName'])
                 self.assertEqual(['2020', '2021'],record['academicPeriodYears'])
-                self.assertEqual(2,record['trimesterOne'])
+                self.assertEqual(0,record['trimesterOne'])
                 self.assertEqual(1,record['trimesterTwo'])
                 self.assertEqual(1,record['trimesterThree'])
                 self.assertEqual(1,record['trimesterFour'])

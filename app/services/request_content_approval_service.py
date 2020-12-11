@@ -35,3 +35,9 @@ class RequestContentApprovalService(GenericServices):
             recordsJson.append(data)
 
         return {"records": recordsJson}, 200
+
+"""    def deleteandcancel(self, recordId):
+        record = self.Model.objects(Q(id=recordId) & Q(isDeleted=False)).first()
+        if record:
+            record.isDeleted = True
+"""

@@ -333,6 +333,7 @@ class RequestContentApproval(Document):
             "sponsorAgreementSchoolFoundation": "schoolAgreementFoundation",
             "schoolAgreementFoundation": "sponsorAgreementSchoolFoundation"
         }
+        
         # after create
         if 'created' in kwargs and kwargs['created']:
             # steps
@@ -444,7 +445,22 @@ class RequestContentApproval(Document):
                             project.save()
                             break
 
-
+            elif document.type == "5":
+                from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
+                if document.isDeleted:
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    initialWorkshop = peca['lapse{}'.format(
+                        document.detail['lapse'])].initialWorkshop
+                    for history in initialWorkshop.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = "4"
+                            initialWorkshop.isInApproval = False
+                            peca['lapse{}'.format(
+                                document.detail['lapse'])].initialWorkshop = initialWorkshop
+                            peca.save()
+                            break
+                    
 signals.pre_save.connect(RequestContentApproval.pre_save,
                          sender=RequestContentApproval)
 

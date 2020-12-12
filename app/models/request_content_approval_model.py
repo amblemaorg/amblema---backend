@@ -333,6 +333,7 @@ class RequestContentApproval(Document):
             "sponsorAgreementSchoolFoundation": "schoolAgreementFoundation",
             "schoolAgreementFoundation": "sponsorAgreementSchoolFoundation"
         }
+        
         # after create
         if 'created' in kwargs and kwargs['created']:
             # steps
@@ -444,7 +445,88 @@ class RequestContentApproval(Document):
                             project.save()
                             break
 
+            # testimonials
+            elif document.type == "2":
+                if document.isDeleted:
+                    school = SchoolUser.objects(
+                        id=str(document.project.school['id'])).first()
+                    teachersTestimonials = school.teachersTestimonials
+                    for history in teachersTestimonials.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = "4"
+                            teachersTestimonials.isInApproval = False
+                            school.save()
+                            break
+                
+            # initial workshop
+            elif document.type == "5":
+                from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema
+                if document.isDeleted:
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    initialWorkshop = peca['lapse{}'.format(
+                        document.detail['lapse'])].initialWorkshop
+                    for history in initialWorkshop.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = "4"
+                            initialWorkshop.isInApproval = False
+                            peca['lapse{}'.format(
+                                document.detail['lapse'])].initialWorkshop = initialWorkshop
+                            peca.save()
+                            break
+            # specialActivity
+            elif document.type == "6":
+                if document.isDeleted:
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    specialActivity = peca['lapse{}'.format(
+                        document.detail['lapse'])].specialActivity
+                    for history in specialActivity.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = "4"
+                            specialActivity.isInApproval = False
+                            peca.save()
+                            break
+            #yearbook
+            elif document.type == "7":
+                if document.isDeleted:
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
 
+                    peca.yearbook.isInApproval = False
+                    for history in peca.yearbook.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = document.status
+                            peca.save()
+                            break
+            #lapsePlanning                
+            elif document.type == "8":
+                from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema
+                if document.isDeleted:
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    lapsePlanning = peca['lapse{}'.format(
+                        document.detail['lapse'])].lapsePlanning
+                    for history in lapsePlanning.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = "4"
+                            lapsePlanning.isInApproval = False
+                            peca.save()
+                            break
+            # activities slider
+            elif document.type == '9':
+                if document.isDeleted:
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    activitiesSlider = peca.school.activitiesSlider
+                    for history in activitiesSlider.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = "4"
+                            history.comments = document.comments
+                            activitiesSlider.isInApproval = False
+                            peca.save()
+                            break
+                                    
 signals.pre_save.connect(RequestContentApproval.pre_save,
                          sender=RequestContentApproval)
 

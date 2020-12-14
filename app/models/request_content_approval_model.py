@@ -472,7 +472,19 @@ class RequestContentApproval(Document):
                             activity.status = "1"
                                         
                     peca.save()
-                    
+            #school
+            elif document.type == "4":
+                if document.isDeleted:
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    for history in peca.school.approvalHistory:
+                        if history.id == str(document.id):
+                            history.status = "4"
+                            history.comments = document.comments
+                            peca.school.isInApproval = False
+                    peca.save()
+                # initial workshop
+                        
             # initial workshop
             elif document.type == "5":
                 from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema

@@ -457,7 +457,22 @@ class RequestContentApproval(Document):
                             teachersTestimonials.isInApproval = False
                             school.save()
                             break
-                
+            #activity
+            elif document.type == "3":
+                if document.isDeleted:
+                    fields = ['date', 'uploadedFile', 'checklist']
+                    peca = PecaProject.objects(
+                        id=document.detail['pecaId']).first()
+                    for activity in peca['lapse{}'.format(document.detail['lapse'])]['activities']:
+                        if str(activity.id) == document.detail['id']:
+                            for history in activity.approvalHistory:
+                                if str(history.id) == str(document.id):
+                                    history.status = "4"
+                                    break
+                            activity.status = "1"
+                                        
+                    peca.save()
+                    
             # initial workshop
             elif document.type == "5":
                 from app.schemas.peca_initial_workshop_schema import InitialWorkshopPecaSchema

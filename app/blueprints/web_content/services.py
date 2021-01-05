@@ -173,7 +173,7 @@ class SchoolPageContentService():
                         'description': setting.specialLapseActivity.description
                     })
             for genericAct in setting.activities:
-                if genericAct.status == "1" and str(genericAct.id) not in actsId:
+                if genericAct.status == "1" and str(genericAct.id) not in actsId and not genericAct.isDeleted:
                     actsId[str(genericAct.id)] = genericAct
                     activities.append(
                         {

@@ -218,7 +218,7 @@ class ActivityService():
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").first()
-
+                    
         if schoolYear:
 
             activities = schoolYear.pecaSetting['lapse{}'.format(

@@ -183,21 +183,35 @@ class StudentService():
 
     def checkForDuplicated(self, section, newStudent):
         for s in section.students.filter(isDeleted=False):
-            if (
-                (
-                    s.id != newStudent.id
-                    and s.firstName == newStudent.firstName
-                    and s.lastName == newStudent.lastName
-                    and s.birthdate == newStudent.birthdate
-                    and s.gender == newStudent.gender
-                ) or
-                (
-                    s.id != newStudent.id
-                    and s.cardId == newStudent.cardId
-                    and s.cardType == newStudent.cardType
-                )
-            ):
-                return True
+            print("ss")
+            #print("nuevo estudiante"+newStudent.cardId)
+            if newStudent.cardId != "" and newStudent.cardId != None:
+                if (
+                    (
+                        s.id != newStudent.id
+                        and s.firstName == newStudent.firstName
+                        and s.lastName == newStudent.lastName
+                        and s.birthdate == newStudent.birthdate
+                        and s.gender == newStudent.gender
+                    ) or
+                    (
+                        s.id != newStudent.id
+                        and s.cardId == newStudent.cardId
+                        and s.cardType == newStudent.cardType
+                    )
+                ):
+                    return True
+            else:
+                if (
+                    (
+                        s.id != newStudent.id
+                        and s.firstName == newStudent.firstName
+                        and s.lastName == newStudent.lastName
+                        and s.birthdate == newStudent.birthdate
+                        and s.gender == newStudent.gender
+                    )
+                ):
+                    return True
         return False
 
         '''section.students.filter(

@@ -183,11 +183,13 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual("Danel",
                          result['firstName'])
         # create 2
+        datee = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ')
         requestData = {
             "firstName": "Dana",
             "lastName": "Rodriguez",
-            "birthdate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
-            "gender": "1"
+            "birthdate": datee,
+            "gender": "1",
+            "cardId": "20922848"
         }
         res = self.client().post(
             '/pecaprojects/students/{}/{}'.format(
@@ -204,8 +206,9 @@ class SchoolPecaTest(unittest.TestCase):
         requestData = {
             "firstName": "Dana",
             "lastName": "Rodriguez",
-            "birthdate": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
-            "gender": "1"
+            "birthdate": datee,
+            "gender": "1",
+            "cardId": "20922848"
         }
         res = self.client().post(
             '/pecaprojects/students/{}/{}'.format(

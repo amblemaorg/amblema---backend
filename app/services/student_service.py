@@ -183,8 +183,6 @@ class StudentService():
 
     def checkForDuplicated(self, section, newStudent):
         for s in section.students.filter(isDeleted=False):
-            print("ss")
-            #print("nuevo estudiante"+newStudent.cardId)
             if newStudent.cardId != "" and newStudent.cardId != None:
                 if (
                     (

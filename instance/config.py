@@ -6,7 +6,7 @@ from datetime import timedelta
 
 class Config(object):
     """Parent configuration class."""
-    DEBUG = False
+    DEBUG = True
     CSRF_ENABLED = True
     MONGODB_SETTINGS = {
         'host': os.getenv('DB_URL')

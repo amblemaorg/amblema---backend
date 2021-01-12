@@ -162,7 +162,6 @@ class ActivityService():
                         schoolYear.pecaSetting['lapse{}'.format(
                             lapse)].activities = activities
                         schoolYear.save()
-
                         if newActivity.status == "1":
                             bulk_operations = []
                             for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
@@ -180,12 +179,15 @@ class ActivityService():
                                         activity.text = newActivity.text
                                         activity.file = newActivity.file
                                         activity.video = newActivity.video
-
-                                        oldCheckIds = [str(c.id)
+                                        if oldActivity.checklist != None:
+                                            oldCheckIds = [str(c.id)
                                                        for c in oldActivity.checklist]
+                                        else:
+                                            oldCheckIds = []
                                         newCheckIds = {}
-                                        for c in newActivity.checklist:
-                                            newCheckIds[str(c.id)] = c
+                                        if newActivity.checklist:
+                                            for c in newActivity.checklist:
+                                                newCheckIds[str(c.id)] = c
                                         if activity.hasChecklist and oldActivity.checklist != newActivity.checklist:
                                             for c in activity.checklist:
                                                 if str(c.id) not in newCheckIds:

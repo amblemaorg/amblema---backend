@@ -41,8 +41,7 @@ class ActivityHandlerController(Resource):
     }
 
     @jwt_required
-    def get(self, id, lapse):
-
+    def get(self, id, lapse):    
         if id in self.standards:
             return self.standards[id].get(lapse)
         return self.service.get(lapse, id)

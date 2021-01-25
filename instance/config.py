@@ -58,11 +58,15 @@ class ProductionConfig(Config):
     TESTING = False
     JWT_COOKIE_SECURE = True
 
+class SupportConfig(Config):
+    """Configurations for Support."""
+    DEBUG = True
 
 app_config = {
     'testing': TestingConfig,
     'development': DevelopmentConfig,
     'qa': QaConfig,
     'staging': StagingConfig,
+    'support': SupportConfig,
     'production': ProductionConfig,
 }

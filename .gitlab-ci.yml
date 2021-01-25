@@ -117,7 +117,7 @@ Drop-support-testing:
   script:
     - if docker ps --format '{{.Names}}' | grep -w amblema_testing_back &> /dev/null; then
     - docker rm -f amblema_testing_back
-    - fi
+    - fiEst
     - if docker images -a | grep -w "amblema_support_testing_python" &> /dev/null; then
     - docker rmi amblema_support_testing_python
     - fi

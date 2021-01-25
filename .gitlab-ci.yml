@@ -46,6 +46,50 @@ testing:
     - htmlcov/
     expire_in: 1 week
 
+testing:
+  stage: test
+  tags:
+    - amblema-back
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^soporte*/
+  script:
+    - build_dir="$PWD"
+    - export INSTANCE="testing"
+    - export BACK_PORT=$TESTING_BACK_PORT
+    - export DB_URL=$TESTING_DB_URL
+    - export SERVER_URL=$TESTING_SERVER_URL
+    - if ! [ -d $SUPPORT_PROJECT_DIR/support-testing ]; then
+    - if ! [ -d $SUPPORT_PROJECT_DIR ]; then
+      mkdir -p $SUPPORT_PROJECT_DIR
+    - fi
+    - cd $SUPPORT_PROJECT_DIR
+    - git clone -b soporte --single-branch $CI_REPOSITORY_URL support-testing
+    - else
+    - cd $SUPPORT_PROJECT_DIR/support-testing
+    - git pull $CI_REPOSITORY_URL $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    - fi
+    - cd $SUPPORT_PROJECT_DIR/support-testing
+    - docker-compose -p amblema_support_testing up -d
+    - docker exec -i amblema_testing_back bash -c "coverage erase"
+    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/unitary/ -p \"*_test.py\" -v"
+    - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/integration/ -p \"*_test.py\" -v"
+    - docker exec -i amblema_testing_back bash -c "coverage report"
+    - docker exec -i amblema_testing_back bash -c "coverage html"
+    - docker exec -i amblema_testing_back bash -c "rm -rf /home/resources/images/*/*.png"
+    - docker exec -i amblema_testing_back bash -c "rm -rf /home/resources/images/*/*.jpeg"
+    - docker exec -i amblema_testing_back bash -c "rm -rf /home/resources/images/school_years/"
+    - cd "$build_dir"
+    - cp -a $SUPPORT_PROJECT_DIR/support-testing/htmlcov/. ./htmlcov/
+    - docker rm -f amblema_testing_back
+  
+  artifacts:
+    paths:
+    - htmlcov/
+    expire_in: 1 week
+
 Drop-testing:
   stage: test
   tags:
@@ -62,6 +106,22 @@ Drop-testing:
     - docker rmi amblema_qa_testing_python
     - fi
 
+Drop-support-testing:
+  stage: test
+  tags:
+    - amblema-back
+  only:
+    refs:
+      - soporte
+  when: manual
+  script:
+    - if docker ps --format '{{.Names}}' | grep -w amblema_testing_back &> /dev/null; then
+    - docker rm -f amblema_testing_back
+    - fiEst
+    - if docker images -a | grep -w "amblema_support_testing_python" &> /dev/null; then
+    - docker rmi amblema_support_testing_python
+    - fi
+    
 staging-deploy:
   stage: deploy
   tags:
@@ -114,4 +174,36 @@ staging-turn-down:
     - fi
     - if docker images -a | grep -w "amblema_qa_python" &> /dev/null; then
     - docker rmi amblema_qa_python
+    - fi
+
+support-deploy:
+  stage: deploy
+  tags:
+    - amblema-back
+  only:
+    refs:
+      - soporte
+  script:
+    - export INSTANCE="support"
+    - export BACK_PORT=$SUPPORT_BACK_PORT
+    - export DB_URL=$SUPPORT_DB_URL
+    - export SERVER_URL=$SUPPORT_SERVER_URL
+    - if ! [ -d $SUPPORT_PROJECT_DIR/$CI_PROJECT_NAME ]; then
+    - mkdir -p $SUPPORT_PROJECT_DIR
+    - cd $SUPPORT_PROJECT_DIR
+    - git config --global user.email "greudys@binauraldev.com"
+    - git config --global user.name "Greudys Godoy"
+    - git clone -b soporte --single-branch $CI_REPOSITORY_URL $CI_PROJECT_NAME
+    - else
+    - cd $SUPPORT_PROJECT_DIR/$CI_PROJECT_NAME
+    - git config --global user.email "greudys@binauraldev.com"
+    - git config --global user.name "Greudys Godoy"
+    - git reset --hard
+    - git pull $CI_REPOSITORY_URL soporte
+    - fi
+    - if ! docker ps --format '{{.Names}}' | grep -w $SUPPORT_CONTAINER_NAME &> /dev/null; then
+    - cd $SUPPORT_PROJECT_DIR/$CI_PROJECT_NAME
+    - docker-compose -p amblema_support up -d
+    - else
+    - docker restart $SUPPORT_CONTAINER_NAME
     - fi

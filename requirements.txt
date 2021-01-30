@@ -10,25 +10,25 @@ blinker==1.4
 brotli==1.0.7             # via flask-compress
 cffi==1.13.2              # via bcrypt
 click==7.0                # via flask
-coverage==5.0.2
+coverage==5.3.1
 flask-bcrypt==0.7.1
-flask-compress==1.5.0
-flask-cors==3.0.8
-flask-jwt-extended==3.24.1
+flask-compress==1.8.0
+flask-cors==3.0.9
+flask-jwt-extended==3.25.0
 flask-mongoengine==0.9.5
-flask-restful==0.3.7
+flask-restful==0.3.8
 flask-script==2.0.6
 flask-wtf==0.14.2         # via flask-mongoengine
-flask==1.1.1
+flask==1.1.2
 itsdangerous==1.1.0       # via flask
-jinja2==2.10.3            # via flask
+jinja2==2.11.2            # via flask
 markupsafe==1.1.1         # via jinja2
-marshmallow==3.3.0
+marshmallow==3.10.0
 mongoengine==0.19.1       # via flask-mongoengine
 pycparser==2.19           # via cffi
 pyjwt==1.7.1
 pymongo==3.10.0           # via mongoengine
-pytz==2019.3              # via flask-restful
+pytz==2020.5              # via flask-restful
 six==1.13.0               # via bcrypt, flask-cors, flask-jwt-extended, flask-mongoengine, flask-restful, mongoengine
 werkzeug==0.16.0          # via flask, flask-jwt-extended
 wtforms==2.2.1            # via flask-wtf

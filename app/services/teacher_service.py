@@ -57,7 +57,7 @@ class TeacherService():
                     period = SchoolYear.objects(
                         isDeleted=False, status="1").first()
                     if period:
-                        PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
+                        PecaProject.objects(project__school__id=str(school.id), isDeleted=False, schoolYear=period.id).update(
                             set__school__nTeachers=school.nTeachers
                         )
                         period.nTeachers += 1
@@ -124,7 +124,7 @@ class TeacherService():
 
         school = SchoolUser.objects(
             Q(id=schoolId)
-            & Q(teachers__isDeleted__ne=True)
+            & Q(teachers__isDeleted=False)
             & Q(teachers__id=teacherId)
         ).first()
 
@@ -132,7 +132,6 @@ class TeacherService():
             teacher = school.teachers.filter(
                 id=teacherId, isDeleted=False).first()
             if teacher:
-
                 period = SchoolYear.objects(
                     isDeleted=False, status="1").first()
                 if period:
@@ -150,17 +149,23 @@ class TeacherService():
 
                 teacher.isDeleted = True
                 try:
-                    SchoolUser.objects(
+                    school.teachers.filter(
+                    id=teacherId, isDeleted=False).update(isDelete = True)
+                    school.save()
+                    school.nTeachers = len(school.teachers.filter(isDeleted=False))
+                    school.save()
+                    """SchoolUser.objects(
                         id=schoolId,
                         teachers__id=teacherId,
-                        teachers__isDeleted__ne=True
+                        teachers__isDeleted=False
                     ).update(
                         set__teachers__S__isDeleted=True,
                         set__nTeachers=len(school.teachers.filter(isDeleted=False)))
+                    """
 
                     if period:
-                        PecaProject.objects(project__school__id=school.id, isDeleted=False, schoolYear=period.id).update(
-                            set__school__nTeachers=len(school.teachers.filter(isDeleted=False))
+                        PecaProject.objects(project__school__id=str(school.id), isDeleted=False, schoolYear=period.id).update(
+                            set__school__nTeachers=school.nTeachers
                         )
                         period.nTeachers -= 1
                         period.save()

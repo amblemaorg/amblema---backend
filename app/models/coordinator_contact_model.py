@@ -70,6 +70,7 @@ class CoordinatorContact(Document):
                         email=document.email,
                         userType='2',
                         phone=document.phone,
+                        address = document.address,
                         role=Role.objects(
                             isDeleted=False, devName="coordinator").first(),
                         addressState=document.addressState,

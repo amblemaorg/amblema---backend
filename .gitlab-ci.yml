@@ -46,7 +46,7 @@ testing:
     - htmlcov/
     expire_in: 1 week
 
-testing:
+testing_support:
   stage: test
   tags:
     - amblema-back

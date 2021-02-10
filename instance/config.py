@@ -54,7 +54,7 @@ class StagingConfig(Config):
 
 class ProductionConfig(Config):
     """Configurations for Production."""
-    DEBUG = False
+    DEBUG = True
     TESTING = False
     JWT_COOKIE_SECURE = True
 

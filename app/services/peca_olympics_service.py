@@ -151,28 +151,36 @@ class OlympicsService():
                             student = record
                             try:
                                 peca.save()
-                                if student.result != oldRecord.result:
-                                    school = SchoolUser.objects(
+                                classified = peca['lapse{}'.format(lapse)].olympics.students.filter(status="2")
+                                print(classified)
+                                school = SchoolUser.objects(
                                         id=peca.project.school.id, isDeleted=False).first()
-                                    if oldRecord.status == '2':
-                                        school.olympicsSummary.classified -= 1
-                                    if oldRecord.result:
-                                        if oldRecord.result == "1":
-                                            school.olympicsSummary.medalsGold -= 1
-                                        elif oldRecord.result == "2":
-                                            school.olympicsSummary.medalsSilver -= 1
-                                        elif oldRecord.result == "3":
-                                            school.olympicsSummary.medalsBronze -= 1
-                                    if student.result:
-                                        if student.result == "1":
-                                            school.olympicsSummary.medalsGold += 1
-                                        elif student.result == "2":
-                                            school.olympicsSummary.medalsSilver += 1
-                                        elif student.result == "3":
-                                            school.olympicsSummary.medalsBronze += 1
-                                    if student.status == '2':
-                                        school.olympicsSummary.classified += 1
-                                    school.save()
+                                school.olympicsSummary.classified = len(classified)
+                                school.olympicsSummary.inscribed = len(peca['lapse{}'.format(lapse)].olympics.students)
+                                school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="1", status="2"))
+                                school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="2", status="2"))
+                                school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="3", status="2"))
+                                school.save()
+                                #if student.result != oldRecord.result:
+                                    #if oldRecord.status == '2':
+                                    #    school.olympicsSummary.classified -= 1
+                                    #if oldRecord.result:
+                                    #    if oldRecord.result == "1":
+                                    #        school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="1"))
+                                    #    elif oldRecord.result == "2":
+                                    #        school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="2"))
+                                    #    elif oldRecord.result == "3":
+                                    #        school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="3"))
+                                    #if student.result:
+                                    #if student.result == "1":
+                                    #    school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="1", status="2"))
+                                    #elif student.result == "2":
+                                    #    school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="2", status="2"))
+                                    #elif student.result == "3":
+                                    #    school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="3", status="2"))
+                                    #if student.status == '2':
+                                    #    school.olympicsSummary.classified += 1
+                                #    school.save()
                                 break
                             except Exception as e:
                                 return {'status': 0, 'message': str(e)}, 400
@@ -214,18 +222,24 @@ class OlympicsService():
             if found:
                 try:
                     peca.save()
+                    classified = peca['lapse{}'.format(lapse)].olympics.students.filter(status="2")   
                     school = SchoolUser.objects(
                         id=peca.project.school.id, isDeleted=False).first()
-                    school.olympicsSummary.inscribed -= 1
-                    if record.result:
-                        school.olympicsSummary.classified -= 1
-                        if record.result == "1":
-                            school.olympicsSummary.medalsGold -= 1
-                        elif record.result == "2":
-                            school.olympicsSummary.medalsSilver -= 1
-                        elif record.result == "3":
-                            school.olympicsSummary.medalsBronze -= 1
+                    school.olympicsSummary.classified = len(classified)
+                    school.olympicsSummary.inscribed = len(peca['lapse{}'.format(lapse)].olympics.students)
+                    school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="1", status="2"))
+                    school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="2", status="2"))
+                    school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(lapse)].olympics.students.filter(result="3", status="2"))
                     school.save()
+                    #if record.result:
+                    #    #school.olympicsSummary.classified -= 1
+                    #    if record.result == "1":
+                    #        school.olympicsSummary.medalsGold -= 1
+                    #    elif record.result == "2":
+                    #        school.olympicsSummary.medalsSilver -= 1
+                    #    elif record.result == "3":
+                    #        school.olympicsSummary.medalsBronze -= 1
+                    #school.save()
                     return {"message": "Record deleted successfully"}, 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400

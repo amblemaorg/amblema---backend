@@ -38,7 +38,7 @@ class LevelSchema(Schema):
 
 class LevelDetailSchema(Schema):
     target = fields.List(fields.Nested(LevelSchema()))
-    week = fields.List(fields.DateTime(), max_length=2)
+    #week = fields.List(fields.DateTime(), max_length=2)
     duration = fields.Method("get_duration", deserialize="load_duration")
     techniques = fields.List(fields.Str(validate=Length(max=80)))
     activities = fields.List(fields.Nested(CheckTemplateSchema()))

@@ -17,7 +17,7 @@ class Level(EmbeddedDocument):
 
 class LevelDetail(EmbeddedDocument):
     target = fields.EmbeddedDocumentListField(Level)
-    #week = fields.ListField(fields.DateTimeField(), max_length=2)
+    week = fields.ListField(fields.DateTimeField(), max_length=2)
     duration = fields.IntField(min_value=0)
     techniques = fields.ListField(fields.StringField())
     activities = fields.EmbeddedDocumentListField(CheckTemplate)

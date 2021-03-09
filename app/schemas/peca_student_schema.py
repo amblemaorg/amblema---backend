@@ -19,7 +19,7 @@ class DiagnosticSchema(Schema):
     multiplicationsPerMin = fields.Int()
     multiplicationsPerMinIndex = fields.Decimal(
         dump_only=True, places=2, as_string=True)
-    operationsPerMin = fields.Int()
+    operationsPerMin = fields.Int(allow_none=True)
     operationsPerMinIndex = fields.Decimal(
         dump_only=True, places=2, as_string=True)
     wordsPerMin = fields.Int(min=0)

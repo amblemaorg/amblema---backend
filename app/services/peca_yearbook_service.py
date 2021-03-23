@@ -103,11 +103,11 @@ class YearbookService():
                 jsonData['pecaId'] = pecaId
                     
                 try:
+                    request = None
                     if "requestId" in jsonData:
                         if jsonData["requestId"] != "" and jsonData["requestId"]!=None:
                            request = RequestContentApproval.objects(id=jsonData["requestId"], project=peca.project, type="7", status="1", isDeleted=False).first()
-                        else:
-                            request = None            
+                                        
                     if not request:
                         if yearbook.isInApproval:
                             return {
@@ -142,6 +142,7 @@ class YearbookService():
                     data["requestId"] = str(request.id)
                     return data, 200
                 except Exception as e:
+                    print(e)
                     return {'status': 0, 'message': str(e)}, 400
 
             except ValidationError as err:

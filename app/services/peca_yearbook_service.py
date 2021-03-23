@@ -67,6 +67,7 @@ class YearbookService():
                 if str(jsonData['coordinator']['image']).startswith('data'):
                     jsonData['coordinator']['image'] = upload_image(
                         jsonData['coordinator']['image'], folder, None)
+                
                 for section in jsonData['sections']:
                     found = False
                     for oldSection in peca.school.sections:
@@ -82,6 +83,7 @@ class YearbookService():
                     if str(section['image']).startswith('data'):
                         section['image'] = upload_image(
                             section['image'], folder, None)
+                
                 for lapse in [1, 2, 3]:
                     for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
                         act = jsonData['lapse{}'.format(
@@ -97,34 +99,50 @@ class YearbookService():
                 schema.validate(jsonData)
                 yearbook = peca.yearbook
 
-                if yearbook.isInApproval:
-                    return {
-                        "status": "0",
-                        "msg": "Record has a pending approval request"
-                    }, 400
-
+                
                 jsonData['pecaId'] = pecaId
-
+                    
                 try:
-                    request = RequestContentApproval(
-                        project=peca.project,
-                        user=user,
-                        type="7",
-                        detail=jsonData
-                    ).save()
-                    yearbook.isInApproval = True
-                    yearbook.approvalHistory.append(
-                        Approval(
-                            id=str(request.id),
-                            user=user.id,
+                    request = None
+                    if "requestId" in jsonData:
+                        if jsonData["requestId"] != "" and jsonData["requestId"]!=None:
+                           request = RequestContentApproval.objects(id=jsonData["requestId"], project=peca.project, type="7", status="1", isDeleted=False).first()
+                                        
+                    if not request:
+                        if yearbook.isInApproval:
+                            return {
+                                "status": "0",
+                                "msg": "Record has a pending approval request"
+                            }, 400
+    
+                        request = RequestContentApproval(
+                            project=peca.project,
+                            user=user,
+                            type="7",
                             detail=jsonData
+                        ).save()
+                        yearbook.isInApproval = True
+                        yearbook.approvalHistory.append(
+                            Approval(
+                                id=str(request.id),
+                                user=user.id,
+                                detail=jsonData
+                            )
                         )
-                    )
+                    else:
+                        del jsonData["requestId"]
+                        request.detail = jsonData
+                        request.save()
+                        for history in yearbook.approvalHistory:
+                            if history.id == request.id:
+                                history.detail = jsonData
                     peca.save()
                     data = schema.dump(yearbook)
                     data = pecaService.getYearbookData(peca, school, sponsor, coordinator, data)
+                    data["requestId"] = str(request.id)
                     return data, 200
                 except Exception as e:
+                    print(e)
                     return {'status': 0, 'message': str(e)}, 400
 
             except ValidationError as err:

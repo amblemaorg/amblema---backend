@@ -30,7 +30,7 @@ include:
   #  file: build.gitlab-ci.yml
     
   - project: binaural/ecosistema/DevOps/ci-cd/ymls
-  file: /semantic-versioning/release.gitlab-ci.yml #para versionado  
+    file: /semantic-versioning/release.gitlab-ci.yml #para versionado  
 
 testing:
   stage: test

@@ -1,6 +1,36 @@
+image: alpine:latest
+variables:
+  # KUBE_INGRESS_BASE_DOMAIN is the application deployment domain and should be set as a variable at the group or project level.
+  # KUBE_INGRESS_BASE_DOMAIN: domain.example.com
+
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: testing-password
+  POSTGRES_ENABLED: "true"
+  POSTGRES_DB: $CI_ENVIRONMENT_SLUG
+
+  DOCKER_DRIVER: overlay2
+
+  ROLLOUT_RESOURCE_TYPE: deployment
+
+  DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+
 stages:
+  - build
   - test
-  - deploy
+  - deploy  # dummy stage to follow the template guidelines
+  - review
+  - staging
+  - release
+  - production
+  - cleanup
+  
+include:
+  #- project: binaural/ecosistema/DevOps/ci-cd/ymls
+  #  ref: master
+  #  file: build.gitlab-ci.yml
+    
+  - project: binaural/ecosistema/DevOps/ci-cd/ymls
+  file: /semantic-versioning/release.gitlab-ci.yml #para versionado  
 
 testing:
   stage: test

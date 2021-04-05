@@ -134,7 +134,7 @@ class YearbookService():
                         request.detail = jsonData
                         request.save()
                         for history in yearbook.approvalHistory:
-                            if history.id == request.id:
+                            if history.id == str(request.id):
                                 history.detail = jsonData
                     peca.save()
                     data = schema.dump(yearbook)

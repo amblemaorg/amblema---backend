@@ -58,6 +58,10 @@ testing:
     - git pull $CI_REPOSITORY_URL $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
     - fi
     - cd $QA_PROJECT_DIR/qa-testing
+    - if [ -f .env ]; then 
+    -  rm .env
+    - fi
+    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL" | tee -a .env
     - docker-compose build
     - docker-compose -p amblema_qa_testing up -d
     - docker exec -i amblema_testing_back bash -c "coverage erase"
@@ -102,6 +106,10 @@ testing_support:
     - cd $SUPPORT_PROJECT_DIR/support-testing
     - git pull $CI_REPOSITORY_URL $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
     - fi
+    - if [ -f .env ]; then 
+    -  rm .env
+    - fi
+    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL" | tee -a .env
     - cd $SUPPORT_PROJECT_DIR/support-testing
     - docker-compose build
     - docker-compose -p amblema_support_testing up -d
@@ -185,6 +193,11 @@ staging-deploy:
     - else
     - docker restart $QA_CONTAINER_NAME
     - fi
+    - if [ -f .env ]; then 
+    -  rm .env
+    - fi
+    - echo -e "INSTANCE="qa"\nBACK_PORT=$QA_BACK_PORT\nDB_URL=$QA_DB_URL\nSERVER_URL=$QA_SERVER_URL" | tee -a .env
+    
 
 staging-turn-down:
   stage: deploy

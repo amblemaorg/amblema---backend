@@ -8,7 +8,9 @@ aniso8601==8.0.0          # via flask-restful
 bcrypt==3.1.7             # via flask-bcrypt
 blinker==1.4
 brotli==1.0.7             # via flask-compress
+certifi==2017.4.17
 cffi==1.13.2              # via bcrypt
+chardet==4.0.0
 click==7.0                # via flask
 coverage==5.3.1
 flask-bcrypt==0.7.1
@@ -20,6 +22,7 @@ flask-restful==0.3.8
 flask-script==2.0.6
 flask-wtf==0.14.2         # via flask-mongoengine
 flask==1.1.2
+idna==2.10
 itsdangerous==1.1.0       # via flask
 jinja2==2.11.2            # via flask
 markupsafe==1.1.1         # via jinja2
@@ -29,7 +32,9 @@ pycparser==2.19           # via cffi
 pyjwt==1.7.1
 pymongo==3.10.0           # via mongoengine
 pytz==2020.5              # via flask-restful
+requests==2.25.1
 six==1.13.0               # via bcrypt, flask-cors, flask-jwt-extended, flask-mongoengine, flask-restful, mongoengine
+urllib3==1.26.4
 werkzeug==0.16.0          # via flask, flask-jwt-extended
 wtforms==2.2.1            # via flask-wtf
 Pillow==7.2.0

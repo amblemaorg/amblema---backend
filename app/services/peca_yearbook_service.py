@@ -83,7 +83,7 @@ class YearbookService():
                     if str(section['image']).startswith('data'):
                         section['image'] = upload_image(
                             section['image'], folder, None)
-                
+                img_msg = []
                 for lapse in [1, 2, 3]:
                     for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
                         act = jsonData['lapse{}'.format(
@@ -92,10 +92,12 @@ class YearbookService():
                             img = act['images'][image]
                             if str(img).startswith('data'):
                                 img = upload_image(
-                                    img, folder, None)
-                                jsonData['lapse{}'.format(
-                                    lapse)]['activities'][activity]['images'][image] = img
-
+                                    img, folder, None, True)
+                                if img != '':
+                                    jsonData['lapse{}'.format(
+                                        lapse)]['activities'][activity]['images'][image] = img
+                                else:
+                                    img_msg.append('La imagen '+str(image+1)+' es corrupta')
                 schema.validate(jsonData)
                 yearbook = peca.yearbook
 
@@ -140,6 +142,7 @@ class YearbookService():
                     data = schema.dump(yearbook)
                     data = pecaService.getYearbookData(peca, school, sponsor, coordinator, data)
                     data["requestId"] = str(request.id)
+                    data["msgs"] = img_msg
                     return data, 200
                 except Exception as e:
                     print(e)

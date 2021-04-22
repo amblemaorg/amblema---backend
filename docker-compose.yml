@@ -2,6 +2,7 @@ version: '3'
 services:
   python:
     image: devbinaural/flask-mongo:1.1.1
+    build: .
     container_name: amblema_${INSTANCE}_back
     ports:
       - $BACK_PORT:5000

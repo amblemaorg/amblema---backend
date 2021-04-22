@@ -67,7 +67,10 @@ def upload_image(imageBase64, folder, size=None, is_yearbook=False):
                                 status_code=400)
         except Exception as e:
             print(e)
-            raise CSTM_Exception(message="Invalid image format",
+            if is_yearbook:
+                return ''
+            else:
+                raise CSTM_Exception(message="Invalid image format",
                                         status_code=400)
         return urlImage
     else:

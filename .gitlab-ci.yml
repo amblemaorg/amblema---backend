@@ -61,7 +61,7 @@ testing:
     - if [ -f .env ]; then 
     -  rm .env
     - fi
-    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL" | tee -a .env
+    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL\nTESTING_DB_URL=$TESTING_DB_URL\nJWT_SECRET_KEY=$JWT_SECRET_KEY\nSMTP_USERNAME=$SMTP_USERNAME\nSMTP_PASSWORD=$SMTP_PASSWORD\nSMTP_FROM=$SMTP_FROM\nSMTP_HOST=$SMTP_HOST\nSMTP_PORT=$SMTP_PORT\nDB_NETWORK=$DB_NETWORK" | tee -a .env
     - docker-compose build
     - docker-compose -p amblema_qa_testing up -d
     - docker exec -i amblema_testing_back bash -c "coverage erase"
@@ -109,7 +109,7 @@ testing_support:
     - if [ -f .env ]; then 
     -  rm .env
     - fi
-    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL" | tee -a .env
+    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL\nTESTING_DB_URL=$TESTING_DB_URL\nJWT_SECRET_KEY=$JWT_SECRET_KEY\nSMTP_USERNAME=$SMTP_USERNAME\nSMTP_PASSWORD=$SMTP_PASSWORD\nSMTP_FROM=$SMTP_FROM\nSMTP_HOST=$SMTP_HOST\nSMTP_PORT=$SMTP_PORT\nDB_NETWORK=$DB_NETWORK" | tee -a .env
     - cd $SUPPORT_PROJECT_DIR/support-testing
     - docker-compose build
     - docker-compose -p amblema_support_testing up -d
@@ -196,7 +196,7 @@ staging-deploy:
     - if [ -f .env ]; then 
     -  rm .env
     - fi
-    - echo -e "INSTANCE="qa"\nBACK_PORT=$QA_BACK_PORT\nDB_URL=$QA_DB_URL\nSERVER_URL=$QA_SERVER_URL" | tee -a .env
+    - echo -e "INSTANCE="qa"\nBACK_PORT=$QA_BACK_PORT\nDB_URL=$QA_DB_URL\nSERVER_URL=$QA_SERVER_URL\nTESTING_DB_URL=$TESTING_DB_URL\nJWT_SECRET_KEY=$JWT_SECRET_KEY\nSMTP_USERNAME=$SMTP_USERNAME\nSMTP_PASSWORD=$SMTP_PASSWORD\nSMTP_FROM=$SMTP_FROM\nSMTP_HOST=$SMTP_HOST\nSMTP_PORT=$SMTP_PORT\nDB_NETWORK=$DB_NETWORK" | tee -a .env
     
 
 staging-turn-down:

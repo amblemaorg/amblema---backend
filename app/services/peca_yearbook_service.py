@@ -88,19 +88,20 @@ class YearbookService():
                     for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
                         act = jsonData['lapse{}'.format(
                             lapse)]['activities'][activity]
+                        images_save = []
                         for image in range(len(act['images'])):
                             img = act['images'][image]
                             if str(img).startswith('data'):
-                                img = upload_image(
+                                imgd = upload_image(
                                     img, folder, None, True)
-                                if img != '':
-                                    jsonData['lapse{}'.format(
-                                        lapse)]['activities'][activity]['images'][image] = img
+                                if imgd != '' and imgd != None:
+                                    images_save.append(imgd)
                                 else:
                                     img_msg.append('La imagen '+str(image+1)+' es corrupta')
+                        jsonData['lapse{}'.format(
+                                        lapse)]['activities'][activity]['images'] = images_save
                 schema.validate(jsonData)
                 yearbook = peca.yearbook
-
                 
                 jsonData['pecaId'] = pecaId
                     

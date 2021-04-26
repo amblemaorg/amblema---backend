@@ -98,6 +98,9 @@ class YearbookService():
                                     images_save.append(imgd)
                                 else:
                                     img_msg.append('La imagen '+str(image+1)+' es corrupta')
+                            else:
+                                images_save.append(img)
+                                
                         jsonData['lapse{}'.format(
                                         lapse)]['activities'][activity]['images'] = images_save
                 schema.validate(jsonData)

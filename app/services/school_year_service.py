@@ -247,3 +247,18 @@ class SchoolYearService(GenericServices):
             "availableSchools": availableSchools,
             "enrolledSchools": enrolledSchools
         }, 200
+
+    def updateStastistics(self):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        if schoolYear:
+            pecas = PecaProject.objects(
+                schoolYear=schoolYear.id, isDeleted=False).only('school', 'project__id')
+            nTeachers = 0
+            nStudents = 0
+            for peca in pecas:
+                nTeachers += peca.school.nTeachers
+                nStudents += peca.school.nStudents
+            schoolYear.nStudents = nStudents
+            schoolYear.nTeachers = nTeachers
+            schoolYear.save()
+        return {"message": "Update Stastistics"}, 200

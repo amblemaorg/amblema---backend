@@ -74,3 +74,11 @@ class EnrollSchoolsCtrl(Resource):
     @jwt_required
     def get(self):
         return self.service.availableSchools()
+
+class CronScrollYearCtrl(Resource):
+    service = SchoolYearService(
+        Model=SchoolYear,
+        Schema=SchoolYearSchema
+    )
+    def get(self):
+        return self.service.updateStastistics()

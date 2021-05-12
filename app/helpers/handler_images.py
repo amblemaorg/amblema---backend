@@ -53,7 +53,7 @@ def upload_image(imageBase64, folder, size=None, is_yearbook=False):
             image.save(pathImage+nameImage+ext, image.format)
             urlImage = '/resources/images/' + folder + '/' + nameImage + ext
             if urlImage != '':
-                if os.getenv('INSTANCE') == "testing":
+                if os.getenv('INSTANCE') == "testing" or os.getenv("INSTANCE")=="development":
                     res = requests.get("http://python:5000"+urlImage)
                 else:
                     res = requests.get(os.getenv('SERVER_URL')+urlImage)

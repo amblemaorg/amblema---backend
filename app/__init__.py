@@ -31,7 +31,7 @@ from app.controllers.learning_module_controller import (
     AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
-    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl
+    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -372,5 +372,6 @@ def create_app(config_instance):
                      '/schools/teacherstestimonials/<string:schoolId>')
     api.add_resource(MonitoringActivitiesController,
                      '/pecasetting/monitoringactivities')
-
+    api.add_resource(CronScrollYearCtrl,
+                    '/cron/statistics/schoolYear')
     return app

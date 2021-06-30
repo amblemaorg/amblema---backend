@@ -554,6 +554,7 @@ class PecaYearbookTest(unittest.TestCase):
                 self.pecaProject.id, self.coordinator.id),
             data=json.dumps(requestData),
             content_type='application/json')
+        
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(str(self.coordinator.id),

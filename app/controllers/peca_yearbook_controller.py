@@ -12,7 +12,7 @@ class PecaYearbookController(Resource):
 
     service = YearbookService()
 
-    @jwt_required
+    #@jwt_required
     def post(self, pecaId):
         jsonData = request.get_json()
         userId = request.args.get('userId')

@@ -67,6 +67,7 @@ class YearbookService():
                 if str(jsonData['coordinator']['image']).startswith('data'):
                     jsonData['coordinator']['image'] = upload_image(
                         jsonData['coordinator']['image'], folder, None)
+                
                 for section in jsonData['sections']:
                     found = False
                     for oldSection in peca.school.sections:
@@ -82,49 +83,73 @@ class YearbookService():
                     if str(section['image']).startswith('data'):
                         section['image'] = upload_image(
                             section['image'], folder, None)
+                img_msg = []
                 for lapse in [1, 2, 3]:
                     for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
                         act = jsonData['lapse{}'.format(
                             lapse)]['activities'][activity]
+                        images_save = []
                         for image in range(len(act['images'])):
                             img = act['images'][image]
                             if str(img).startswith('data'):
-                                img = upload_image(
-                                    img, folder, None)
-                                jsonData['lapse{}'.format(
-                                    lapse)]['activities'][activity]['images'][image] = img
-
+                                imgd = upload_image(
+                                    img, folder, None, True)
+                                if imgd != '' and imgd != None:
+                                    images_save.append(imgd)
+                                else:
+                                    img_msg.append('La imagen '+str(image+1)+' es corrupta')
+                            else:
+                                images_save.append(img)
+                                
+                        jsonData['lapse{}'.format(
+                                        lapse)]['activities'][activity]['images'] = images_save
                 schema.validate(jsonData)
                 yearbook = peca.yearbook
-
-                if yearbook.isInApproval:
-                    return {
-                        "status": "0",
-                        "msg": "Record has a pending approval request"
-                    }, 400
-
+                
                 jsonData['pecaId'] = pecaId
-
+                    
                 try:
-                    request = RequestContentApproval(
-                        project=peca.project,
-                        user=user,
-                        type="7",
-                        detail=jsonData
-                    ).save()
-                    yearbook.isInApproval = True
-                    yearbook.approvalHistory.append(
-                        Approval(
-                            id=str(request.id),
-                            user=user.id,
+                    request = None
+                    if "requestId" in jsonData:
+                        if jsonData["requestId"] != "" and jsonData["requestId"]!=None:
+                           request = RequestContentApproval.objects(id=jsonData["requestId"], project=peca.project, type="7", status="1", isDeleted=False).first()
+                                        
+                    if not request:
+                        if yearbook.isInApproval:
+                            return {
+                                "status": "0",
+                                "msg": "Record has a pending approval request"
+                            }, 400
+    
+                        request = RequestContentApproval(
+                            project=peca.project,
+                            user=user,
+                            type="7",
                             detail=jsonData
+                        ).save()
+                        yearbook.isInApproval = True
+                        yearbook.approvalHistory.append(
+                            Approval(
+                                id=str(request.id),
+                                user=user.id,
+                                detail=jsonData
+                            )
                         )
-                    )
+                    else:
+                        del jsonData["requestId"]
+                        request.detail = jsonData
+                        request.save()
+                        for history in yearbook.approvalHistory:
+                            if history.id == str(request.id):
+                                history.detail = jsonData
                     peca.save()
                     data = schema.dump(yearbook)
                     data = pecaService.getYearbookData(peca, school, sponsor, coordinator, data)
+                    data["requestId"] = str(request.id)
+                    data["msgs"] = img_msg
                     return data, 200
                 except Exception as e:
+                    print(e)
                     return {'status': 0, 'message': str(e)}, 400
 
             except ValidationError as err:

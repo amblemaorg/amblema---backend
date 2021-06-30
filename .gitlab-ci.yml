@@ -1,6 +1,36 @@
+image: alpine:latest
+variables:
+  # KUBE_INGRESS_BASE_DOMAIN is the application deployment domain and should be set as a variable at the group or project level.
+  # KUBE_INGRESS_BASE_DOMAIN: domain.example.com
+
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: testing-password
+  POSTGRES_ENABLED: "true"
+  POSTGRES_DB: $CI_ENVIRONMENT_SLUG
+
+  DOCKER_DRIVER: overlay2
+
+  ROLLOUT_RESOURCE_TYPE: deployment
+
+  DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
+
 stages:
+  - build
   - test
-  - deploy
+  - deploy  # dummy stage to follow the template guidelines
+  - review
+  - staging
+  - release
+  - production
+  - cleanup
+  
+include:
+  #- project: binaural/ecosistema/DevOps/ci-cd/ymls
+  #  ref: master
+  #  file: build.gitlab-ci.yml
+    
+  - project: binaural/ecosistema/DevOps/ci-cd/ymls
+    file: /semantic-versioning/release.gitlab-ci.yml #para versionado  
 
 testing:
   stage: test
@@ -28,6 +58,11 @@ testing:
     - git pull $CI_REPOSITORY_URL $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
     - fi
     - cd $QA_PROJECT_DIR/qa-testing
+    - if [ -f .env ]; then 
+    -  rm .env
+    - fi
+    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL\nTESTING_DB_URL=$TESTING_DB_URL\nJWT_SECRET_KEY=$JWT_SECRET_KEY\nSMTP_USERNAME=$SMTP_USERNAME\nSMTP_PASSWORD=$SMTP_PASSWORD\nSMTP_FROM=$SMTP_FROM\nSMTP_HOST=$SMTP_HOST\nSMTP_PORT=$SMTP_PORT\nDB_NETWORK=$DB_NETWORK" | tee -a .env
+    - docker-compose build
     - docker-compose -p amblema_qa_testing up -d
     - docker exec -i amblema_testing_back bash -c "coverage erase"
     - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/unitary/ -p \"*_test.py\" -v"
@@ -46,7 +81,7 @@ testing:
     - htmlcov/
     expire_in: 1 week
 
-testing:
+testing_support:
   stage: test
   tags:
     - amblema-back
@@ -71,7 +106,12 @@ testing:
     - cd $SUPPORT_PROJECT_DIR/support-testing
     - git pull $CI_REPOSITORY_URL $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
     - fi
+    - if [ -f .env ]; then 
+    -  rm .env
+    - fi
+    - echo -e "INSTANCE="testing"\nBACK_PORT=$TESTING_BACK_PORT\nDB_URL=$TESTING_DB_URL\nSERVER_URL=$TESTING_SERVER_URL\nTESTING_DB_URL=$TESTING_DB_URL\nJWT_SECRET_KEY=$JWT_SECRET_KEY\nSMTP_USERNAME=$SMTP_USERNAME\nSMTP_PASSWORD=$SMTP_PASSWORD\nSMTP_FROM=$SMTP_FROM\nSMTP_HOST=$SMTP_HOST\nSMTP_PORT=$SMTP_PORT\nDB_NETWORK=$DB_NETWORK" | tee -a .env
     - cd $SUPPORT_PROJECT_DIR/support-testing
+    - docker-compose build
     - docker-compose -p amblema_support_testing up -d
     - docker exec -i amblema_testing_back bash -c "coverage erase"
     - docker exec -i amblema_testing_back bash -c "coverage run -m unittest discover -s app/tests/unitary/ -p \"*_test.py\" -v"
@@ -153,6 +193,11 @@ staging-deploy:
     - else
     - docker restart $QA_CONTAINER_NAME
     - fi
+    - if [ -f .env ]; then 
+    -  rm .env
+    - fi
+    - echo -e "INSTANCE="qa"\nBACK_PORT=$QA_BACK_PORT\nDB_URL=$QA_DB_URL\nSERVER_URL=$QA_SERVER_URL\nTESTING_DB_URL=$TESTING_DB_URL\nJWT_SECRET_KEY=$JWT_SECRET_KEY\nSMTP_USERNAME=$SMTP_USERNAME\nSMTP_PASSWORD=$SMTP_PASSWORD\nSMTP_FROM=$SMTP_FROM\nSMTP_HOST=$SMTP_HOST\nSMTP_PORT=$SMTP_PORT\nDB_NETWORK=$DB_NETWORK" | tee -a .env
+    
 
 staging-turn-down:
   stage: deploy

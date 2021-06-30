@@ -16,10 +16,10 @@ from app.helpers.ma_schema_validators import (
 
 
 class DiagnosticSchema(Schema):
-    multiplicationsPerMin = fields.Int(min=0)
+    multiplicationsPerMin = fields.Int(allow_none=True)
     multiplicationsPerMinIndex = fields.Decimal(
         dump_only=True, places=2, as_string=True)
-    operationsPerMin = fields.Int(min=0)
+    operationsPerMin = fields.Int(allow_none=True)
     operationsPerMinIndex = fields.Decimal(
         dump_only=True, places=2, as_string=True)
     wordsPerMin = fields.Int(min=0)

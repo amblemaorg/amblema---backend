@@ -252,10 +252,19 @@ class SchoolYearService(GenericServices):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         if schoolYear:
             pecas = PecaProject.objects(
-                schoolYear=schoolYear.id, isDeleted=False).only('school', 'project__id')
+                schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
             nTeachers = 0
             nStudents = 0
             for peca in pecas:
+                schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
+                peca.school.nTeachers = len(schoolUser.teachers.filter(isDeleted=False))
+                schoolUser.nTeachers = peca.school.nTeachers
+                peca.school.nStudents = 0
+                for section in peca.school.sections.filter(isDeleted=False):
+                    peca.school.nStudents += len(section.students.filter(isDeleted=False))
+                schoolUser.nStudents = peca.school.nStudents
+                peca.save()
+                schoolUser.save()
                 nTeachers += peca.school.nTeachers
                 nStudents += peca.school.nStudents
             schoolYear.nStudents = nStudents

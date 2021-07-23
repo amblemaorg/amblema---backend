@@ -14,7 +14,7 @@ from flask import current_app
 
 class EntitySchema(Schema):
     name = fields.Str(allow_none=True)
-    image = MAImageField()
+    image = MAImageField(allow_none=True)
     content = fields.Str()
 
     class Meta:

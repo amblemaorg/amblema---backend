@@ -25,15 +25,14 @@ class RequestContentApprovalService(GenericServices):
             for f in filters:
                 filterList.append(Q(**{f['field']: f['value']}))
             records = self.Model.objects(isDeleted=False).filter(
-                reduce(operator.and_, filterList))
+                reduce(operator.and_, filterList)).limit(50)
         else:
             records = self.Model.objects(
-                isDeleted=False)
+                isDeleted=False).order_by("-createdAt").limit(50)
         for record in records:
             data = schema.dump(record)
             data['typeUser'] = record.user.userType
             recordsJson.append(data)
-
         return {"records": recordsJson}, 200
 
 """    def deleteandcancel(self, recordId):

@@ -28,7 +28,7 @@ class RequestContentApprovalService(GenericServices):
                 reduce(operator.and_, filterList)).limit(50)
         else:
             records = self.Model.objects(
-                isDeleted=False).order_by("-createdAt").limit(30)
+                isDeleted=False).order_by("-createdAt").limit(50)
         for record in records:
             data = schema.dump(record)
             data['typeUser'] = record.user.userType

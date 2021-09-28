@@ -93,3 +93,12 @@ class Section(EmbeddedDocument):
             else:
                 self.diagnostics.summary[diag] = 0
                 self.diagnostics.summary['{}Index'.format(diag)] = 0
+
+"""class SectionClass(Document):
+    id = fields.ObjectIdField(default=fields.ObjectId)
+    grade = fields.StringField(max_length=1)
+    name = fields.StringField()
+    image = fields.StringField(null=True)
+    isDeleted = fields.BooleanField(default=False)
+    students = fields.EmbeddedDocumentListField(StudentClass)
+    teacher = fields.EmbeddedDocumentField(TeacherLink)"""

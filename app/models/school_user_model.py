@@ -10,6 +10,7 @@ from app.models.shared_embedded_documents import ProjectReference, DocumentRefer
 from app.models.teacher_model import Teacher
 from app.models.teacher_testimonial_model import TeacherTestimonial
 from app.models.peca_yearbook_model import Entity
+from app.models.peca_student_model import StudentClass
 
 
 class OlympicsSummary(EmbeddedDocument):
@@ -48,6 +49,7 @@ class SchoolUser(User):
     schoolShift = fields.StringField(max_length=1, null=True)
     project = fields.EmbeddedDocumentField(ProjectReference)
     teachers = fields.EmbeddedDocumentListField(Teacher)
+    students = fields.EmbeddedDocumentListField(StudentClass)
     slider = fields.EmbeddedDocumentListField(ImageStatus)
     activitiesSlider = fields.ListField(fields.StringField())
     phase = fields.StringField(max_length=1, default="1")

@@ -149,6 +149,7 @@ from app.controllers.peca_yearbook_controller import PecaYearbookController
 from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
+from app.controllers.cron_student_controller import CronStudentController
 db = MongoEngine()
 compress = Compress()
 
@@ -374,4 +375,5 @@ def create_app(config_instance):
                      '/pecasetting/monitoringactivities')
     api.add_resource(CronScrollYearCtrl,
                     '/cron/statistics/schoolYear')
+    api.add_resource(CronStudentController, '/cron/student')
     return app

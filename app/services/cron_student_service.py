@@ -13,7 +13,7 @@ from app.models.peca_student_model import StudentClass
 
 class CronStudentService():
     def run(self):
-        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        schoolYear = SchoolYear.objects(isDeleted=False, status="2").order_by('-createdAt').first()
         pecas = PecaProject.objects(
             isDeleted=False,
             schoolYear=schoolYear.id)

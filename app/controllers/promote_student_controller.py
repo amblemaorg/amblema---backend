@@ -11,8 +11,8 @@ from app.helpers.handler_authorization import jwt_required
 
 class PromoteStudentController(Resource):
     service = PromoteStudentService()
-    def get(self,school_code):
-        return self.service.getList(school_code=school_code)
+    def get(self,school_code, id_section):
+        return self.service.getList(school_code=school_code, id_section=id_section)
 
 class SectionsPromoteStudentController(Resource):
     service = SectionsPromoteStudentService()

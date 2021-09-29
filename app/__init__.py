@@ -377,6 +377,6 @@ def create_app(config_instance):
     api.add_resource(CronScrollYearCtrl,
                     '/cron/statistics/schoolYear')
     api.add_resource(CronStudentController, '/cron/student')
-    api.add_resource(PromoteStudentController, '/promote/students/<school_code>')
+    api.add_resource(PromoteStudentController, '/promote/students/<school_code>/<id_section>')
     api.add_resource(SectionsPromoteStudentController, '/init/promote/students/<school_code>')
     return app

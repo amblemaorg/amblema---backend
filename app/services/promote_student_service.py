@@ -12,7 +12,7 @@ from app.models.peca_student_model import SectionClass
 from app.models.peca_student_model import StudentClass
 
 class PromoteStudentService():
-    def getList(self, school_code):
+    def getList(self, school_code, id_section):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         schoolYearPrevius = SchoolYear.objects(isDeleted=False, status="2").order_by('-createdAt').first()
         school = SchoolUser.objects(code=school_code, isDeleted=False).first()
@@ -24,11 +24,11 @@ class PromoteStudentService():
             isDeleted=False,
             schoolYear=schoolYear.id).first()
         print(peca_actual.id)
-        sections_peca = peca.school.sections.filter(isDeleted=False)
-        sections_list = []
-        for section in sections_peca:
-            sections_list.append({"id":str(section.id), "grade": section.grade, "name": section.name})
-        return {"status":200, "msg": "Exito", "sections": sections_list, "p": peca_actual.school.code},200
+        section_peca = peca.school.sections.filter(isDeleted=False, id=id_section).first()
+        students_list = []
+        if section_peca:
+            students_list = [{"id":str(student.id), "firstName": student.firstName, "lastName": student.lastName, "cardId": student.cardId, "cardType": student.cardType, "birthdate": str(student.birthdate), "gender": student.gender} for student in section_peca.students]
+        return {"status":200, "msg": "Exito", "students": students_list},200
 
 class SectionsPromoteStudentService():
     def getSections(self, school_code):

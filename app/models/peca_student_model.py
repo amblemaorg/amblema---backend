@@ -6,6 +6,7 @@ from bson import ObjectId
 
 from flask import current_app
 from mongoengine import fields, Document, EmbeddedDocument, signals
+from app.models.school_year_model import SchoolYear
 
 
 class Diagnostic(EmbeddedDocument):
@@ -71,3 +72,23 @@ class Student(EmbeddedDocument):
             for diag in diags:
                 self['lapse{}'.format(i)][diag] = None
                 self['lapse{}'.format(i)][dates[diag]] = None
+
+class SectionClass(EmbeddedDocument):
+    id = fields.ObjectIdField(default=fields.ObjectId)
+    grade = fields.StringField(max_length=1)
+    name = fields.StringField()
+    schoolYear = fields.ReferenceField(SchoolYear)
+    
+    
+class StudentClass(EmbeddedDocument):
+    id = fields.ObjectIdField(default=fields.ObjectId)
+    firstName = fields.StringField()
+    lastName = fields.StringField()
+    cardId = fields.StringField()
+    cardType = fields.StringField()
+    birthdate = fields.DateTimeField()
+    gender = fields.StringField(max_length=1)
+    sections = fields.EmbeddedDocumentListField(SectionClass)
+    isDeleted = fields.BooleanField(default=False)
+    createdAt = fields.DateTimeField(default=datetime.utcnow)
+    updatedAt = fields.DateTimeField(default=datetime.utcnow)

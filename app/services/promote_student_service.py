@@ -37,8 +37,9 @@ class PromoteStudentService():
             schoolYear=schoolYear.id,).first()
         section = peca_actual.school.sections.filter(
                 isDeleted=False, id=id_section_current).first()
-        if section:
+        school = SchoolUser.objects(code=school_code, isDeleted=False).first()
 
+        if section:
             for student in students:
                 student_save = Student()
                 student_save.firstName = student.firstName
@@ -59,7 +60,7 @@ class PromoteStudentService():
                         ).update(
                             push__school__sections__S__students=student_save,
                             set__school__nStudents=nStudents)
-            
+                SchoolUser.objects(code=school_code, studen)
             return {"status":201, "msg": "Estudiantes promovidos con exito"},201
         else:
             return {"status":400, "msg": "La sección no existe"},201

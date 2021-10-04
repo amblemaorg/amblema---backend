@@ -149,6 +149,8 @@ from app.controllers.peca_yearbook_controller import PecaYearbookController
 from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
+
+from app.controllers.cron_emails_lost_controller import CronEmailsLostController
 db = MongoEngine()
 compress = Compress()
 
@@ -374,4 +376,5 @@ def create_app(config_instance):
                      '/pecasetting/monitoringactivities')
     api.add_resource(CronScrollYearCtrl,
                     '/cron/statistics/schoolYear')
+    api.add_resource(CronEmailsLostController, '/cron/emails/lost')
     return app

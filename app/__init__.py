@@ -150,7 +150,7 @@ from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
 from app.controllers.cron_student_controller import CronStudentController
-from app.controllers.promote_student_controller import PromoteStudentController, SectionsPromoteStudentController
+from app.controllers.promote_student_controller import PromoteStudentController, SectionsPromoteStudentController, PromoteStudentsController
 db = MongoEngine()
 compress = Compress()
 
@@ -379,4 +379,5 @@ def create_app(config_instance):
     api.add_resource(CronStudentController, '/cron/student')
     api.add_resource(PromoteStudentController, '/promote/students/<school_code>/<id_section>')
     api.add_resource(SectionsPromoteStudentController, '/init/promote/students/<school_code>')
+    api.add_resource(PromoteStudentsController, '/promote/students/<school_code>')
     return app

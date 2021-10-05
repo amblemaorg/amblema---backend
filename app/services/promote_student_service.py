@@ -30,17 +30,17 @@ class PromoteStudentService():
             students_list = [{"id":str(student.id), "firstName": student.firstName, "lastName": student.lastName, "cardId": student.cardId, "cardType": student.cardType, "birthdate": str(student.birthdate), "gender": student.gender} for student in section_peca.students]
         return {"status":200, "msg": "Exito", "students": students_list},200
     
-    def promoteStudents(self, school_code, id_section_previus, id_section_current, students, pecaId):
+    def promoteStudents(self, school_code, data):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         peca_actual = PecaProject.objects(
             isDeleted=False,
             schoolYear=schoolYear.id,).first()
         section = peca_actual.school.sections.filter(
-                isDeleted=False, id=id_section_current).first()
+                isDeleted=False, id=data["id_section_current"]).first()
         school = SchoolUser.objects(code=school_code, isDeleted=False).first()
 
         if section:
-            for student in students:
+            for student in data["students"]:
                 student_save = Student()
                 student_save.firstName = student.firstName
                 student_save.lastName = student.lastName
@@ -56,11 +56,19 @@ class PromoteStudentService():
                 PecaProject.objects(
                             id=pecaId,
                             school__code=school_code,
-                            school__sections__id=id_section_current
+                            school__sections__id=data["id_section_current"]
                         ).update(
                             push__school__sections__S__students=student_save,
                             set__school__nStudents=nStudents)
-                SchoolUser.objects(code=school_code, studen)
+                section_save = SectionClass()
+                section_save.name = section.name
+                section_save.grade = section.grade
+                section_save.isDeleted = False
+                section_save.schoolYear = schoolYear.id
+                section_save.id = section.id
+                
+                SchoolUser.objects(code=school_code, students__S__cardId=student.cardId).update(push__students__S__sections=section_save)
+                
             return {"status":201, "msg": "Estudiantes promovidos con exito"},201
         else:
             return {"status":400, "msg": "La sección no existe"},201

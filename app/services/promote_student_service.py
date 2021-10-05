@@ -34,7 +34,7 @@ class PromoteStudentService():
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         peca_actual = PecaProject.objects(
             isDeleted=False,
-            schoolYear=schoolYear.id,).first()
+            schoolYear=schoolYear.id, school__code=school_code).first()
         section = peca_actual.school.sections.filter(
                 isDeleted=False, id=data["id_section_current"]).first()
         school = SchoolUser.objects(code=school_code, isDeleted=False).first()
@@ -68,7 +68,7 @@ class PromoteStudentService():
                 section_save.id = section.id
                 
                 SchoolUser.objects(code=school_code, students__S__cardId=student.cardId).update(push__students__S__sections=section_save)
-                
+
             return {"status":201, "msg": "Estudiantes promovidos con exito"},201
         else:
             return {"status":400, "msg": "La sección no existe"},201

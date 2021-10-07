@@ -29,7 +29,7 @@ class CronStudentService():
                 section_save.schoolYear = schoolYear.id
                 students_peca = section.students.filter(isDeleted=False)
                 for student in students_peca:
-                    student_filter = next((stu for stu in students_save if stu.cardId == student.cardId), None)
+                    student_filter = next((stu for stu in students_save if stu.firstName == student.firstName and stu.lastName == student.lastName), None)
                     if not student_filter:
                         student_save = StudentClass()
                         student_save.firstName = student.firstName

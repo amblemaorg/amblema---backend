@@ -18,3 +18,9 @@ class SectionsPromoteStudentController(Resource):
     service = SectionsPromoteStudentService()
     def get(self,school_code):
         return self.service.getSections(school_code=school_code)
+
+class PromoteStudentsController(Resource):
+    service = PromoteStudentService()
+    def post(self, school_code):
+        jsonData = request.get_json()
+        return self.service.promoteStudents(school_code=school_code, data=jsonData)

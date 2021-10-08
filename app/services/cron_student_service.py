@@ -14,7 +14,7 @@ from app.models.peca_student_model import StudentClass
 class CronStudentService():
     def run(self):
         schoolYear = SchoolYear.objects(isDeleted=False, status="2").order_by('-createdAt').first()
-        pecas = PecaProject.objects(
+        pecas = PecaProject.objects.filter(
             isDeleted=False,
             schoolYear=schoolYear.id)
         for peca in pecas:
@@ -27,11 +27,13 @@ class CronStudentService():
                 section_save.grade = section.grade
                 section_save.name = section.name
                 section_save.schoolYear = schoolYear.id
+                section_save.isDeleted = False
                 students_peca = section.students.filter(isDeleted=False)
                 for student in students_peca:
                     student_filter = next((stu for stu in students_save if stu.firstName == student.firstName and stu.lastName == student.lastName), None)
                     if not student_filter:
                         student_save = StudentClass()
+                        student_save.id = student.id
                         student_save.firstName = student.firstName
                         student_save.lastName = student.lastName
                         student_save.cardId = student.cardId

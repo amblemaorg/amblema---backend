@@ -4,9 +4,9 @@
 from flask import current_app
 from marshmallow import ValidationError
 from mongoengine.queryset.visitor import Q
-
+from bson import ObjectId
 from app.models.peca_project_model import PecaProject
-from app.models.peca_student_model import Student, Diagnostic
+from app.models.peca_student_model import Student, Diagnostic, StudentClass, SectionClass
 from app.schemas.peca_student_schema import StudentSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
@@ -34,7 +34,7 @@ class StudentService():
                     student = Student()
                     for field in schema.dump(data).keys():
                         student[field] = data[field]
-
+                    
                     for i in range(3):
                         student['lapse{}'.format(i+1)] = Diagnostic()
                     if self.checkForDuplicated(section, student):
@@ -43,6 +43,14 @@ class StudentService():
                                        "msg": "Duplicated record found: {}".format(student.firstName)}]}
                         )
                     try:
+                        
+                        section_save = SectionClass()
+                        section_save.id = section.id
+                        section_save.grade = section.grade
+                        section_save.name = section.name
+                        section_save.schoolYear = peca.schoolYear
+                        section_save.isDeleted = False
+                        
                         nStudents = 1
                         for section in peca.school.sections.filter(isDeleted=False):
                             nStudents += len(section.students.filter(isDeleted=False))
@@ -57,6 +65,22 @@ class StudentService():
                         SchoolYear.objects(isDeleted=False, status="1").update(
                             inc__nStudents=1)
 
+                        
+                        
+                        student_save = StudentClass()
+                        student_save.id = student.id
+                        student_save.firstName = student.firstName
+                        student_save.lastName = student.lastName
+                        student_save.cardId = student.cardId
+                        student_save.cardType = student.cardType
+                        student_save.birthdate = student.birthdate
+                        student_save.gender = student.gender
+                        student_save.isDeleted = False
+                        student_save.sections = [section_save]
+                        
+                        school = SchoolUser.objects(id=peca.project.school.id).first()
+                        school.students.append(student_save)
+                        school.save()
                         return schema.dump(student), 200
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
@@ -96,6 +120,18 @@ class StudentService():
                             return {"status": "1", "msg": "Duplicated record found"}, 400
                         try:
                             peca.save()
+                        
+                            school = SchoolUser.objects(id=peca.project.school.id).first()
+                            student_school = school.students.filter(id=ObjectId(studentId)).first()
+                            
+                            student_school.firstName = student.firstName
+                            student_school.lastName = student.lastName
+                            student_school.cardId = student.cardId
+                            student_school.cardType = student.cardType
+                            student_school.birthdate = student.birthdate
+                            student_school.gender = student.gender
+                            school.save()
+                            
                             return schema.dump(student), 200
                         except Exception as e:
                             return {'status': 0, 'message': str(e)}, 400

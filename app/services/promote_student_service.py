@@ -58,6 +58,14 @@ class PromoteStudentService():
                 student_save.gender = student["gender"]
                 student_save.isDeleted = False
                 nStudents = 1
+                
+                section_save = SectionClass()
+                section_save.name = section.name
+                section_save.grade = section.grade
+                section_save.isDeleted = False
+                section_save.schoolYear = schoolYear.id
+                section_save.id = section.id
+                
                 for section in peca_actual.school.sections.filter(isDeleted=False):
                     nStudents += len(section.students.filter(isDeleted=False))
                         
@@ -68,12 +76,6 @@ class PromoteStudentService():
                         ).update(
                             push__school__sections__S__students=student_save,
                             set__school__nStudents=nStudents)
-                section_save = SectionClass()
-                section_save.name = section.name
-                section_save.grade = section.grade
-                section_save.isDeleted = False
-                section_save.schoolYear = schoolYear.id
-                section_save.id = section.id
                 
                 for est in school.students:
                     if est.id == ObjectId(student["id"]):

@@ -4,7 +4,7 @@
 from flask import request
 from flask_restful import Resource
 
-from app.services.promote_student_service import PromoteStudentService, SectionsPromoteStudentService
+from app.services.promote_student_service import PromoteStudentService, SectionsPromoteStudentService, ChangeSectionStudentsService
 from app.helpers.handler_request import getQueryParams
 from app.helpers.handler_authorization import jwt_required
 
@@ -24,3 +24,9 @@ class PromoteStudentsController(Resource):
     def post(self, school_code):
         jsonData = request.get_json()
         return self.service.promoteStudents(school_code=school_code, data=jsonData)
+
+class ChangeSectionStudentsController(Resource):
+    service = ChangeSectionStudentsService()
+    def post(self, pecaId):
+        jsonData = request.get_json()
+        return self.service.changeSection(data=jsonData, pecaID=pecaId)

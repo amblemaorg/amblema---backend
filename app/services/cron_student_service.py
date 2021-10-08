@@ -27,6 +27,7 @@ class CronStudentService():
                 section_save.grade = section.grade
                 section_save.name = section.name
                 section_save.schoolYear = schoolYear.id
+                section_save.isDeleted = False
                 students_peca = section.students.filter(isDeleted=False)
                 for student in students_peca:
                     student_filter = next((stu for stu in students_save if stu.firstName == student.firstName and stu.lastName == student.lastName), None)

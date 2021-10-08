@@ -115,3 +115,60 @@ class SectionsPromoteStudentService():
         else:
             return {"status": 400, "msg": "La escuela no tiene proyecto actual"},200
             
+
+class ChangeSectionStudentsService():
+    def changeSection(self, data, pecaID):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaID).first()
+        if peca:
+            school_code = peca.school.code
+            school = SchoolUser.objects(code=school_code, isDeleted=False).first()
+            section = peca.school.sections.filter(id=data["section_previus"]).first()
+            if section:
+                section_new = peca.school.sections.filter(id=data["section_new"]).first()
+                if section_new:
+                    for student in data["students"]:
+                        st = section.students.filter(
+                    isDeleted=False, id=student["id"]).first()
+                        st.isDeleted = True
+                        student_save = Student()
+                        student_save.id = student["id"]
+                        student_save.firstName = student["firstName"]
+                        student_save.lastName = student["lastName"]
+                        student_save.cardId = student["cardId"]
+                        student_save.cardType = student["cardType"]
+                        student_save.birthdate = student["birthdate"]
+                        student_save.gender = student["gender"]
+                        student_save.isDeleted = False
+                        
+                        section_new.students.append(student_save)
+
+                        student_school = school.students.filter(id=ObjectId(student["id"])).first()
+                        sections_currents = []
+                        for sect in student_school.sections:
+                            if sect.id !=  section.id:
+                                sections_currents.append(sect)
+                           
+                        student_school.sections = sections_currents
+                
+                        section_save = SectionClass()
+                        section_save.name = section_new.name
+                        section_save.grade = section_new.grade
+                        section_save.isDeleted = False
+                        section_save.schoolYear = peca.schoolYear
+                        section_save.id = section_new.id
+
+                        student_school.sections.append(section_save)
+                    peca.save()
+                    school.save()
+                    return {"status": 201, "msg": "Estudiantes cambiados con éxito"},201    
+                else:
+                    return {"status": 400, "msg": "No se encontro la sección nueva"},200
+            
+            else:
+                return {"status": 400, "msg": "No se encontro la sección anterior"},200
+                
+        else:
+            return {"status": 400, "msg": "No se encontro el proyecto"},200
+            

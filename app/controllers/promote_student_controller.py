@@ -30,3 +30,6 @@ class ChangeSectionStudentsController(Resource):
     def post(self, pecaId):
         jsonData = request.get_json()
         return self.service.changeSection(data=jsonData, pecaID=pecaId)
+    def put(self, pecaId):
+        jsonData = request.get_json()
+        return self.service.deleteStudentForSection(data=jsonData, pecaId=pecaId)

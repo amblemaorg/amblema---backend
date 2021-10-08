@@ -171,4 +171,32 @@ class ChangeSectionStudentsService():
                 
         else:
             return {"status": 400, "msg": "No se encontro el proyecto"},200
-            
+
+    def deleteStudentForSection(self, data, pecaId):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId).first()
+        if peca:
+            school_code = peca.school.code
+            school = SchoolUser.objects(code=school_code, isDeleted=False).first()
+            section = peca.school.sections.filter(id=data["section"]).first()
+            if section:
+                for student in data["students"]:
+                    st = section.students.filter(
+                isDeleted=False, id=student["id"]).first()
+                    st.isDeleted = True
+                    
+                    student_school = school.students.filter(id=ObjectId(student["id"])).first()
+                    sections_currents = []
+                    for sect in student_school.sections:
+                        if sect.id !=  section.id:
+                            sections_currents.append(sect)
+                        
+                    student_school.sections = sections_currents
+                peca.save()
+                school.save()
+                return {"status": 201, "msg": "Estudiantes eliminados con éxito"},201    
+            else:
+                return {"status": 400, "msg": "No se encontro la sección"},200
+        else:
+            return {"status": 400, "msg": "No se encontro el proyecto"},200

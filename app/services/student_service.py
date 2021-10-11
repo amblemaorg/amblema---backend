@@ -197,17 +197,18 @@ class StudentService():
                         student.isDeleted = True
                         
                         student_school = school.students.filter(id=student.id).first()
-                        sections_currents = []
-                        for sect in student_school.sections:
-                            if sect.id !=  section.id:
-                                sections_currents.append(sect)
-            
-                        section = peca.school.sections.filter(id=peca.project.school.id).first()
-                        student_school.sections = sections_currents
-                        
+                        if student_school:
+                            sections_currents = []
+                            for sect in student_school.sections:
+                                if sect.id !=  section.id:
+                                    sections_currents.append(sect)
+                
+                            section = peca.school.sections.filter(id=peca.project.school.id).first()
+                            student_school.sections = sections_currents
+                    
+                            school.save()
                         peca.school.nStudents -= 1
                         peca.save()
-                        school.save()
                         
                         SchoolUser.objects(id=peca.project.school.id).update(
                             dec__school__nStudents=1)

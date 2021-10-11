@@ -123,14 +123,14 @@ class StudentService():
                         
                             school = SchoolUser.objects(id=peca.project.school.id).first()
                             student_school = school.students.filter(id=ObjectId(studentId)).first()
-                            
-                            student_school.firstName = student.firstName
-                            student_school.lastName = student.lastName
-                            student_school.cardId = student.cardId
-                            student_school.cardType = student.cardType
-                            student_school.birthdate = student.birthdate
-                            student_school.gender = student.gender
-                            school.save()
+                            if student_school:
+                                student_school.firstName = student.firstName
+                                student_school.lastName = student.lastName
+                                student_school.cardId = student.cardId
+                                student_school.cardType = student.cardType
+                                student_school.birthdate = student.birthdate
+                                student_school.gender = student.gender
+                                school.save()
                             
                             return schema.dump(student), 200
                         except Exception as e:
@@ -195,8 +195,20 @@ class StudentService():
                             schoolYear.refreshDiagnosticsSummary()
 
                         student.isDeleted = True
+                        
+                        student_school = school.students.filter(id=student.id).first()
+                        sections_currents = []
+                        for sect in student_school.sections:
+                            if sect.id !=  section.id:
+                                sections_currents.append(sect)
+            
+                        section = peca.school.sections.filter(id=peca.project.school.id).first()
+                        student_school.sections = sections_currents
+                        
                         peca.school.nStudents -= 1
                         peca.save()
+                        school.save()
+                        
                         SchoolUser.objects(id=peca.project.school.id).update(
                             dec__school__nStudents=1)
                         schoolYear.nStudents -= 1

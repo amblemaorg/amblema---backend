@@ -195,7 +195,7 @@ class StudentService():
                             schoolYear.refreshDiagnosticsSummary()
 
                         student.isDeleted = True
-                        
+                        school = SchoolUser.objects(id=peca.project.school.id).first()
                         student_school = school.students.filter(id=student.id).first()
                         if student_school:
                             sections_currents = []

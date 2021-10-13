@@ -96,6 +96,24 @@ class PromoteStudentService():
                 school.nStudents = nStudents
                 school.save()
 
+                schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                pecas = PecaProject.objects(
+                    schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
+                
+                nStudents = 0
+                
+                for peca in pecas:
+                    schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
+                    peca.school.nStudents = 0
+                    for section in peca.school.sections.filter(isDeleted=False):
+                        peca.school.nStudents += len(section.students.filter(isDeleted=False))
+                    schoolUser.nStudents = peca.school.nStudents
+                    peca.save()
+                    schoolUser.save()
+                    nStudents += peca.school.nStudents
+                schoolYear.nStudents = nStudents
+                schoolYear.save()
+
                 return {"status":201, "msg": "Estudiantes promovidos con exito"},201
             else:
                 return {"status":400, "msg": "La sección no existe"},201
@@ -187,6 +205,26 @@ class ChangeSectionStudentsService():
                         peca.save()
                         school.nStudents = nStudents
                         school.save()
+            
+                        
+                        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                        pecas = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
+                        
+                        nStudents = 0
+                        
+                        for peca in pecas:
+                            schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
+                            peca.school.nStudents = 0
+                            for section in peca.school.sections.filter(isDeleted=False):
+                                peca.school.nStudents += len(section.students.filter(isDeleted=False))
+                            schoolUser.nStudents = peca.school.nStudents
+                            peca.save()
+                            schoolUser.save()
+                            nStudents += peca.school.nStudents
+                        schoolYear.nStudents = nStudents
+                        schoolYear.save()
+        
                         return {"status": 201, "msg": "Estudiantes cambiados con éxito"},201    
                     else:
                         return {"status": 400, "msg": "No se encontro la sección nueva"},200
@@ -233,6 +271,25 @@ class ChangeSectionStudentsService():
                             
                     peca.save()
                     school.save()
+        
+                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                    pecas = PecaProject.objects(
+                        schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
+                    
+                    nStudents = 0
+                    
+                    for peca in pecas:
+                        schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
+                        peca.school.nStudents = 0
+                        for section in peca.school.sections.filter(isDeleted=False):
+                            peca.school.nStudents += len(section.students.filter(isDeleted=False))
+                        schoolUser.nStudents = peca.school.nStudents
+                        peca.save()
+                        schoolUser.save()
+                        nStudents += peca.school.nStudents
+                    schoolYear.nStudents = nStudents
+                    schoolYear.save()
+    
                     return {"status": 201, "msg": "Estudiantes eliminados con éxito"},201    
                 else:
                     return {"status": 400, "msg": "No se encontro la sección"},200

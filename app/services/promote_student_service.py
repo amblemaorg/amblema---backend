@@ -62,7 +62,6 @@ class PromoteStudentService():
                     student_save.birthdate = student["birthdate"]
                     student_save.gender = student["gender"]
                     student_save.isDeleted = False
-                    nStudents = 1
                     
                     section_save = SectionClass()
                     section_save.name = section.name
@@ -71,16 +70,13 @@ class PromoteStudentService():
                     section_save.schoolYear = schoolYear.id
                     section_save.id = section.id
                     
-                    for section in peca_actual.school.sections.filter(isDeleted=False):
-                        nStudents += len(section.students.filter(isDeleted=False))
                             
                     PecaProject.objects(
                                 id=pecaId,
                                 school__code=school_code,
                                 school__sections__id=data["id_section_current"]
                             ).update(
-                                push__school__sections__S__students=student_save,
-                                set__school__nStudents=nStudents)
+                                push__school__sections__S__students=student_save)
                     
                     for est in school.students:
                         if est.id == ObjectId(student["id"]):
@@ -90,7 +86,16 @@ class PromoteStudentService():
                                     valid = False
                             if valid:
                                 est.sections.append(section_save)                                
-                school.save()            
+                
+                nStudents = 0
+                peca_actual.reload()
+                for section in peca_actual.school.sections.filter(isDeleted=False):
+                    nStudents += len(section.students.filter(isDeleted=False))
+                peca_actual.school.nStudents = nStudents
+                peca_actual.save()
+                school.nStudents = nStudents
+                school.save()
+
                 return {"status":201, "msg": "Estudiantes promovidos con exito"},201
             else:
                 return {"status":400, "msg": "La sección no existe"},201
@@ -174,7 +179,13 @@ class ChangeSectionStudentsService():
                                 section_save.id = section_new.id
 
                                 student_school.sections.append(section_save)
+                        
+                        nStudents = 0
+                        for section in peca.school.sections.filter(isDeleted=False):
+                            nStudents += len(section.students.filter(isDeleted=False))
+                        peca.school.nStudents = nStudents
                         peca.save()
+                        school.nStudents = nStudents
                         school.save()
                         return {"status": 201, "msg": "Estudiantes cambiados con éxito"},201    
                     else:
@@ -213,6 +224,13 @@ class ChangeSectionStudentsService():
                                     sections_currents.append(sect)
                                 
                             student_school.sections = sections_currents
+                    nStudents = 0
+                    for section in peca.school.sections.filter(isDeleted=False):
+                        nStudents += len(section.students.filter(isDeleted=False))
+                    peca.school.nStudents = nStudents
+                    
+                    school.nStudents = nStudents
+                            
                     peca.save()
                     school.save()
                     return {"status": 201, "msg": "Estudiantes eliminados con éxito"},201    

@@ -170,6 +170,15 @@ class SchoolYearService(GenericServices):
                 schoolYear.refreshDiagnosticsSummary()
                 schoolYear.save()
 
+                school = SchoolUser.objects(isDeleted=False, id=peca.school.id).first()
+                if school:
+                    school.nStudents = 0
+                    school.olympicsSummary.medalsGold = 0
+                    school.olympicsSummary.classified = 0
+                    school.olympicsSummary.medalsSilver = 0
+                    school.olympicsSummary.medalsBronze = 0
+                    school.olympicsSummary.inscribed = 0
+                    school.save()
 
                 return {'msg': 'Record deleted'}, 200
             except Exception as e:
@@ -208,6 +217,17 @@ class SchoolYearService(GenericServices):
                 schoolYear.nSponsors += 1 if sponsorPecas == 1 else 0
                 schoolYear.nCoordinators += 1 if coordinatorPecas == 1 else 0
                 schoolYear.save()
+                
+                school = SchoolUser.objects(isDeleted=False, id=project.school.id).first()
+                if school:
+                    school.nStudents = 0
+                    school.olympicsSummary.medalsGold = 0
+                    school.olympicsSummary.classified = 0
+                    school.olympicsSummary.medalsSilver = 0
+                    school.olympicsSummary.medalsBronze = 0
+                    school.olympicsSummary.inscribed = 0
+                    school.save()
+                
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:
                 return {'status': 0, 'message': str(e)}, 400

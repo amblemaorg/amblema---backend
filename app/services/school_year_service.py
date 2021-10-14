@@ -169,7 +169,7 @@ class SchoolYearService(GenericServices):
                 schoolYear.nCoordinators -= 1 if coordinatorPecas == 0 else 0
                 schoolYear.refreshDiagnosticsSummary()
                 schoolYear.save()
-                school = SchoolUser.objects(isDeleted=False, code=peca.school.code).first()
+                school = SchoolUser.objects(isDeleted=False, code=project.school.code).first()
                 if school:
                     school.nStudents = 0
                     school.olympicsSummary.medalsGold = 0
@@ -217,7 +217,7 @@ class SchoolYearService(GenericServices):
                 schoolYear.nSponsors += 1 if sponsorPecas == 1 else 0
                 schoolYear.nCoordinators += 1 if coordinatorPecas == 1 else 0
                 schoolYear.save()
-                school = SchoolUser.objects(isDeleted=False, code=project.school.id).first()
+                school = SchoolUser.objects(isDeleted=False, code=project.school.code).first()
                 if school:
                     school.nStudents = 0
                     school.olympicsSummary.medalsGold = 0

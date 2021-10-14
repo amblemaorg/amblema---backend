@@ -8,7 +8,7 @@ from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
-from app.models.peca_student_model import SectionClass, Student
+from app.models.peca_student_model import SectionClass, Student, Diagnostic
 from app.models.peca_student_model import StudentClass
 
 from bson import ObjectId
@@ -62,7 +62,10 @@ class PromoteStudentService():
                     student_save.birthdate = student["birthdate"]
                     student_save.gender = student["gender"]
                     student_save.isDeleted = False
-                    
+                    student_save.lapse1 = Diagnostic()
+                    student_save.lapse2 = Diagnostic()
+                    student_save.lapse3 = Diagnostic()
+
                     section_save = SectionClass()
                     section_save.name = section.name
                     section_save.grade = section.grade

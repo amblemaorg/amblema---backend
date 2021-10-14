@@ -291,3 +291,21 @@ class SchoolYearService(GenericServices):
             schoolYear.nTeachers = nTeachers
             schoolYear.save()
         return {"message": "Update Stastistics"}, 200
+    
+    def emptySchools(self):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        if schoolYear:
+            pecas = PecaProject.objects(
+                schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
+            for peca in pecas:
+                school = SchoolUser.objects(isDeleted=False, code=peca.school.code).first()
+                if school:
+                    school.nStudents = 0
+                    school.olympicsSummary.medalsGold = 0
+                    school.olympicsSummary.classified = 0
+                    school.olympicsSummary.medalsSilver = 0
+                    school.olympicsSummary.medalsBronze = 0
+                    school.olympicsSummary.inscribed = 0
+                    school.save()
+        return {"message": "schools clear"}, 200
+    

@@ -82,3 +82,11 @@ class CronScrollYearCtrl(Resource):
     )
     def get(self):
         return self.service.updateStastistics()
+
+class CronEmptySchoolCtrl(Resource):
+    service = SchoolYearService(
+        Model=SchoolYear,
+        Schema=SchoolYearSchema
+    )
+    def get(self):
+        return self.service.emptySchools()

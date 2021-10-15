@@ -31,7 +31,7 @@ from app.controllers.learning_module_controller import (
     AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
-    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl
+    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -149,8 +149,10 @@ from app.controllers.peca_yearbook_controller import PecaYearbookController
 from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
-
 from app.controllers.cron_emails_lost_controller import CronEmailsLostController
+from app.controllers.cron_student_controller import CronStudentController
+from app.controllers.promote_student_controller import PromoteStudentController, SectionsPromoteStudentController, PromoteStudentsController, ChangeSectionStudentsController
+
 db = MongoEngine()
 compress = Compress()
 
@@ -376,5 +378,13 @@ def create_app(config_instance):
                      '/pecasetting/monitoringactivities')
     api.add_resource(CronScrollYearCtrl,
                     '/cron/statistics/schoolYear')
+
     api.add_resource(CronEmailsLostController, '/cron/emails/lost')
+    api.add_resource(CronStudentController, '/cron/student')
+    api.add_resource(PromoteStudentController, '/promote/students/<school_code>/<id_section>')
+    api.add_resource(SectionsPromoteStudentController, '/init/promote/students/<school_code>')
+    api.add_resource(PromoteStudentsController, '/promote/students/<school_code>')
+    api.add_resource(ChangeSectionStudentsController, '/students/change/section/<pecaId>')
+    api.add_resource(CronEmptySchoolCtrl, '/cron/schools/empty')
+
     return app

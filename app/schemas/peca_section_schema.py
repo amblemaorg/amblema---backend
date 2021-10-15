@@ -61,3 +61,16 @@ class SectionSchema(Schema):
                          folder='sections')
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
+
+class SectionClassSchema(Schema):
+    id = fields.Str(dump_only=True)
+    grade = fields.Str(
+        required=True,
+        validate=OneOf(
+            ('0', '1', '2', '3', '4', '5', '6'),
+            ('preschool', '1', '2', '3', '4', '5', '6')
+        ))
+    name = fields.Str(required=True)
+    teacher = fields.Nested(TeacherLinkSchema())
+    createdAt = fields.DateTime(dump_only=True)
+    updatedAt = fields.DateTime(dump_only=True)

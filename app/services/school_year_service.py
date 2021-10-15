@@ -169,10 +169,19 @@ class SchoolYearService(GenericServices):
                 schoolYear.nCoordinators -= 1 if coordinatorPecas == 0 else 0
                 schoolYear.refreshDiagnosticsSummary()
                 schoolYear.save()
-
+                school = SchoolUser.objects(isDeleted=False, code=project.school.code).first()
+                if school:
+                    school.nStudents = 0
+                    school.olympicsSummary.medalsGold = 0
+                    school.olympicsSummary.classified = 0
+                    school.olympicsSummary.medalsSilver = 0
+                    school.olympicsSummary.medalsBronze = 0
+                    school.olympicsSummary.inscribed = 0
+                    school.save()
 
                 return {'msg': 'Record deleted'}, 200
             except Exception as e:
+                print(e)
                 return {'status': 0, 'message': str(e)}, 400
 
         else:
@@ -208,8 +217,19 @@ class SchoolYearService(GenericServices):
                 schoolYear.nSponsors += 1 if sponsorPecas == 1 else 0
                 schoolYear.nCoordinators += 1 if coordinatorPecas == 1 else 0
                 schoolYear.save()
+                school = SchoolUser.objects(isDeleted=False, code=project.school.code).first()
+                if school:
+                    school.nStudents = 0
+                    school.olympicsSummary.medalsGold = 0
+                    school.olympicsSummary.classified = 0
+                    school.olympicsSummary.medalsSilver = 0
+                    school.olympicsSummary.medalsBronze = 0
+                    school.olympicsSummary.inscribed = 0
+                    school.save()
+                
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:
+                print(e)
                 return {'status': 0, 'message': str(e)}, 400
 
     def availableSchools(self):
@@ -271,3 +291,21 @@ class SchoolYearService(GenericServices):
             schoolYear.nTeachers = nTeachers
             schoolYear.save()
         return {"message": "Update Stastistics"}, 200
+    
+    def emptySchools(self):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        if schoolYear:
+            pecas = PecaProject.objects(
+                schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
+            for peca in pecas:
+                school = SchoolUser.objects(isDeleted=False, code=peca.school.code).first()
+                if school:
+                    school.nStudents = 0
+                    school.olympicsSummary.medalsGold = 0
+                    school.olympicsSummary.classified = 0
+                    school.olympicsSummary.medalsSilver = 0
+                    school.olympicsSummary.medalsBronze = 0
+                    school.olympicsSummary.inscribed = 0
+                    school.save()
+        return {"message": "schools clear"}, 200
+    

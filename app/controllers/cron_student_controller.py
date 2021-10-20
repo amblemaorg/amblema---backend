@@ -11,5 +11,5 @@ from app.helpers.handler_authorization import jwt_required
 
 class CronStudentController(Resource):
     service = CronStudentService()
-    def get(self):
-        return self.service.run()
+    def get(self, limit, skip):
+        return self.service.run(limit=limit, skip=skip)

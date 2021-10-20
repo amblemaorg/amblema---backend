@@ -28,15 +28,9 @@ class RequestContentApprovalService(GenericServices):
                 reduce(operator.and_, filterList)).limit(50)
         else:
             records = self.Model.objects(
-                isDeleted=False).order_by("-createdAt").limit(50)
+                isDeleted=False).order_by("status","-updatedAt").limit(50)
         for record in records:
             data = schema.dump(record)
             data['typeUser'] = record.user.userType
             recordsJson.append(data)
         return {"records": recordsJson}, 200
-
-"""    def deleteandcancel(self, recordId):
-        record = self.Model.objects(Q(id=recordId) & Q(isDeleted=False)).first()
-        if record:
-            record.isDeleted = True
-"""

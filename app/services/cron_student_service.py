@@ -12,11 +12,11 @@ from app.models.peca_student_model import SectionClass
 from app.models.peca_student_model import StudentClass
 
 class CronStudentService():
-    def run(self):
+    def run(self, limit, skip):
         schoolYear = SchoolYear.objects(isDeleted=False, status="2").order_by('-createdAt').first()
         pecas = PecaProject.objects.filter(
             isDeleted=False,
-            schoolYear=schoolYear.id)
+            schoolYear=schoolYear.id).limit(limit).skip(skip)
         for peca in pecas:
             school = SchoolUser.objects(code=peca.school.code, isDeleted=False).first()
             sections_peca = peca.school.sections.filter(isDeleted=False)

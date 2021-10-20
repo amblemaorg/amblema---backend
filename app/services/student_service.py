@@ -185,36 +185,25 @@ class StudentService():
 
                     try:
                         schoolYear = peca.schoolYear.fetch()
-                        print("0")
                         if student.hasDiagnostics():
-                            print("0")
                             student.deleteDiagnostics(
                                 [1, 2, 3],
                                 ['wordsPerMin', 'multiplicationsPerMin', 'operationsPerMin'])
-                            print("0")
                             section.refreshDiagnosticsSummary()
-                            print("0")
                             peca.school.refreshDiagnosticsSummary()
-                            print("0")
                             schoolYear.refreshDiagnosticsSummary()
 
-                        print("q")
                         student.isDeleted = True
-                        print("a")
                         school = SchoolUser.objects(code=peca.school.code).first()
-                        print("c")
                         student_school = school.students.filter(id=student.id).first()
-                        print("1")
                         if student_school:
                             sections_currents = []
                             for sect in student_school.sections:
                                 if sect.id !=  section.id:
                                     sections_currents.append(sect)
-                            print("2")
                         
                             section = peca.school.sections.filter(id=peca.project.school.id).first()
                             student_school.sections = sections_currents
-                            print("3")
                         
                             school.save()
                         peca.school.nStudents -= 1
@@ -222,7 +211,6 @@ class StudentService():
                         
                         SchoolUser.objects(code=peca.school.code).update(
                             dec__school__nStudents=1)
-                        print("4")
                         
                         schoolYear.nStudents -= 1
                         schoolYear.save()

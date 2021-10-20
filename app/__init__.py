@@ -376,7 +376,7 @@ def create_app(config_instance):
                      '/pecasetting/monitoringactivities')
     api.add_resource(CronScrollYearCtrl,
                     '/cron/statistics/schoolYear')
-    api.add_resource(CronStudentController, '/cron/student')
+    api.add_resource(CronStudentController, '/cron/student/<int:limit>/<int:skip>')
     api.add_resource(PromoteStudentController, '/promote/students/<school_code>/<id_section>')
     api.add_resource(SectionsPromoteStudentController, '/init/promote/students/<school_code>')
     api.add_resource(PromoteStudentsController, '/promote/students/<school_code>')

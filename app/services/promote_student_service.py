@@ -180,7 +180,10 @@ class ChangeSectionStudentsService():
                             student_save.birthdate = student["birthdate"]
                             student_save.gender = student["gender"]
                             student_save.isDeleted = False
-                            
+                            student_save.lapse1 = Diagnostic()
+                            student_save.lapse2 = Diagnostic()
+                            student_save.lapse3 = Diagnostic()
+
                             section_new.students.append(student_save)
 
                             student_school = school.students.filter(id=ObjectId(student["id"])).first()

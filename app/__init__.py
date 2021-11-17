@@ -130,7 +130,7 @@ from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
 )
 from app.controllers.section_controller import(
-    SectionController, SectionHandlerController
+    SectionController, SectionHandlerController, SectionExportController
 )
 from app.controllers.student_controller import (
     StudentController, StudentHandlerController
@@ -382,4 +382,7 @@ def create_app(config_instance):
     api.add_resource(PromoteStudentsController, '/promote/students/<school_code>')
     api.add_resource(ChangeSectionStudentsController, '/students/change/section/<pecaId>')
     api.add_resource(CronEmptySchoolCtrl, '/cron/schools/empty')
+
+    api.add_resource(SectionExportController, '/section/load/<pecaId>')
+    
     return app

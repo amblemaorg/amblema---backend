@@ -235,3 +235,35 @@ class SectionService():
             return True
         return False
         """
+class SectionsExport():
+    handlerMessages = HandlerMessages()
+    def getSections(self, pecaId, jsonData):
+        peca = PecaProject.objects(
+            isDeleted=False, id=pecaId).first()
+
+        if peca:
+            try:
+                if "action" in jsonData:
+                    if  jsonData["action"] == "export":
+                        if "sections" in jsonData:
+                            list = []
+                            for section in jsonData["sections"]:
+                                section_peca = peca.school.sections.filter(isDeleted=False, id=section).first()
+                                if section_peca:
+                                    section_list = {"name": section_peca.name, "grade": section_peca.grade, "id": str(section_peca.id), "students": []}
+                                    for student in section_peca.students.filter(isDeleted=False):
+                                        section_list["students"].append({"id":str(student.id), "firstName": student.firstName, "lastName": student.lastName, "cardId": student.cardId, "cardType": student.cardType, "birthdate": str(student.birthdate), "gender": student.gender})
+                                    list.append(section_list)
+                            return {"status_code":201, "message": "Exito", "sections": list},201
+                        else:
+                            return {"status_code":404, "message": "Debe enviar secciones a exportar"},201
+                        
+                else:
+                    raise RegisterNotFound(message="Debe escoger una acción a realizar",
+                                   status_code=404)
+            except ValidationError as err:
+                return err.normalized_messages(), 400
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"recordId": pecaId})

@@ -12,6 +12,8 @@ from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
 from app.models.school_year_model import SchoolYear
 from app.helpers.handler_messages import HandlerMessages
+from app.models.peca_student_model import SectionClass, Student, Diagnostic, StudentClass
+from app.schemas.peca_student_schema import StudentSchema
 
 
 class SectionService():
@@ -235,6 +237,7 @@ class SectionService():
             return True
         return False
         """
+
 class SectionsExport():
     handlerMessages = HandlerMessages()
     def getSections(self, pecaId, jsonData):
@@ -243,6 +246,9 @@ class SectionsExport():
 
         if peca:
             try:
+                school_code = peca.school.code
+                school = SchoolUser.objects(code=school_code, isDeleted=False).first()
+
                 if "action" in jsonData:
                     if  jsonData["action"] == "export":
                         if "sections" in jsonData:
@@ -257,7 +263,80 @@ class SectionsExport():
                             return {"status_code":201, "message": "Exito", "sections": list},201
                         else:
                             return {"status_code":404, "message": "Debe enviar secciones a exportar"},201
-                        
+
+                    if jsonData["action"] == "import":
+                        if ("section" in jsonData) and ("students" in jsonData):    
+                            section_peca = peca.school.sections.filter(isDeleted=False, id=jsonData["section"]).first()
+                            if section_peca:
+                                for student in jsonData["student"]:
+                                    if student["firstName"] and student["lastName"] and student["cardId"] and student["cardType"] and student["birthdate"] and student["gender"]:
+                                        
+                                        student_find = school.students.filter(isDeleted=False, firstName=student["firstName"], lastName=student["lastName"], gender=student["gender"]).first()
+                                        schema = StudentSchema()
+                                        data = schema.load(student)
+                                        student_save = Student()
+                                        for field in schema.dump(data).keys():
+                                            student_save[field] = data[field]
+                                        
+                                        for i in range(3):
+                                            student_save['lapse{}'.format(i+1)] = Diagnostic()
+                                        
+                                        if student_find:
+                                            student_save.id = student_find.id
+                                                
+                                        
+                                        if not self.checkForDuplicated(section, student):
+                                            in_section = False
+                                            if student_find:
+                                                for sec in student_find.sections.filter(isDeleted=False):
+                                                    if sec.schoolYear.id == peca.schoolYear.id:
+                                                        in_section = True
+                                            if not in_section:
+                                                section_save = SectionClass()
+                                                section_save.name = section.name
+                                                section_save.grade = section.grade
+                                                section_save.isDeleted = False
+                                                section_save.schoolYear = peca.schoolYear.id
+                                                section_save.id = section.id
+
+                                                PecaProject.objects(
+                                                    id=pecaId,
+                                                    school__code=school_code,
+                                                    school__sections__id=data["id_section_current"]
+                                                ).update(
+                                                    push__school__sections__S__students=student_save)
+
+                                                if student_find:
+                                                    for est in school.students:
+                                                        if est.id == student_save.id:
+                                                            valid = True
+                                                            for sect in est.sections:
+                                                                if sect.schoolYear.id == peca.schoolYear.id:
+                                                                    valid = False
+                                                            if valid:
+                                                                est.sections.append(section_save)
+                                                else:
+                                                    student_save = StudentClass()
+                                                    student_save.id = student.id
+                                                    student_save.firstName = student.firstName
+                                                    student_save.lastName = student.lastName
+                                                    student_save.cardId = student.cardId
+                                                    student_save.cardType = student.cardType
+                                                    student_save.birthdate = student.birthdate
+                                                    student_save.gender = student.gender
+                                                    student_save.isDeleted = False
+                                                    student_save.sections = [section_save]
+                                                    
+                                                    school.students.append(student_save)
+                                school.save()
+
+                                return {"status_code":201, "message": "Estudiantes importados con éxito"},201                
+                            else:
+                                return {"status_code":404, "message": "Debe enviar una sección válida a importar"},201
+
+                        else:
+                            return {"status_code":404, "message": "Debe enviar una sección a importar"},201
+
                 else:
                     raise RegisterNotFound(message="Debe escoger una acción a realizar",
                                    status_code=404)
@@ -267,3 +346,34 @@ class SectionsExport():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"recordId": pecaId})
+
+    def checkForDuplicated(self, section, newStudent):
+        for s in section.students.filter(isDeleted=False):
+            if newStudent.cardId != "" and newStudent.cardId != None:
+                if (
+                    (
+                        s.id != newStudent.id
+                        and s.firstName == newStudent.firstName
+                        and s.lastName == newStudent.lastName
+                        and s.birthdate == newStudent.birthdate
+                        and s.gender == newStudent.gender
+                    ) or
+                    (
+                        s.id != newStudent.id
+                        and s.cardId == newStudent.cardId
+                        and s.cardType == newStudent.cardType
+                    )
+                ):
+                    return True
+            else:
+                if (
+                    (
+                        s.id != newStudent.id
+                        and s.firstName == newStudent.firstName
+                        and s.lastName == newStudent.lastName
+                        and s.birthdate == newStudent.birthdate
+                        and s.gender == newStudent.gender
+                    )
+                ):
+                    return True
+        return False

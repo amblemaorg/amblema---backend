@@ -111,6 +111,7 @@ class RequestContentApproval(Document):
                             for history in activity.approvalHistory:
                                 if str(history.id) == str(document.id):
                                     history.status = document.status
+                                    history.comments = document.comments
                                     # approved
                                     if history.status == "2":
                                         # approved
@@ -171,6 +172,7 @@ class RequestContentApproval(Document):
                     for history in initialWorkshop.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
+                            history.comments = document.comments
                             initialWorkshop.isInApproval = False
                             if document.status == "2":  # approved
                                 schema = InitialWorkshopPecaSchema(
@@ -191,6 +193,7 @@ class RequestContentApproval(Document):
                     for history in specialActivity.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
+                            history.comments = document.comments
                             specialActivity.isInApproval = False
                             if document.status == '2':  # approved
                                 schema = SpecialActivitySchema(partial=True)
@@ -285,6 +288,7 @@ class RequestContentApproval(Document):
                         for history in peca.yearbook.approvalHistory:
                             if history.id == str(document.id):
                                 history.status = document.status
+                                history.comments = document.comments
                         peca.save()
                  # lapse planning
                 elif document.type == "8":
@@ -295,6 +299,7 @@ class RequestContentApproval(Document):
                     for history in lapsePlanning.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
+                            history.comments = document.comments
                             lapsePlanning.isInApproval = False
                             if document.status == "2":  # approved
                                 schema = LapsePlanningPecaSchema(

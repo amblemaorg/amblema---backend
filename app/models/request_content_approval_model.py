@@ -221,10 +221,11 @@ class RequestContentApproval(Document):
                         for field in schema.dump(data).keys():
                             if field != 'sections':
                                 peca.yearbook[field] = data[field]
-                        for section in data['sections']:
-                            for oldSection in peca.school.sections.filter(isDeleted=False):
-                                if str(oldSection.id) == section['id']:
-                                    oldSection['image'] = section['image']
+                        if "sections" in data:
+                            for section in data['sections']:
+                                for oldSection in peca.school.sections.filter(isDeleted=False):
+                                    if str(oldSection.id) == section['id']:
+                                        oldSection['image'] = section['image']
                         if school.yearbook != peca.yearbook.school or school.historicalReview != peca.yearbook.historicalReview:
                             if school.yearbook != peca.yearbook.school:
                                 school.yearbook = peca.yearbook.school

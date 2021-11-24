@@ -125,7 +125,8 @@ class YearbookService():
                             if yearbook[field]["logicDiagnosticAnalysis"] != jsonData[field]["logicDiagnosticAnalysis"]:
                                 data_save[field]["logicDiagnosticAnalysis"] = jsonData[field]["logicDiagnosticAnalysis"]
                             
-                            data_save[field]["diagnosticSummary"] = jsonData[field]["diagnosticSummary"]
+                            if "diagnosticSummary" in jsonData[field]:
+                                data_save[field]["diagnosticSummary"] = jsonData[field]["diagnosticSummary"]
 
                             data_save[field]["activities"] = []
                             for activity in jsonData[field]['activities']:

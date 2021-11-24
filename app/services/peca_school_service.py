@@ -78,7 +78,7 @@ class SchoolService():
                 oldImages = {}
                 for image in school.slider:
                     oldImages[image.id] = image
-
+                datasave = {}
                 for field in data.keys():
                     if school[field] != data[field]:
                         if field == 'slider':
@@ -91,7 +91,7 @@ class SchoolService():
                                     approvalRequired = True
                         else:
                             approvalRequired = True
-
+                        datasave[field] = data[field]
                         newSchool[field] = data[field]
 
                 try:
@@ -102,11 +102,12 @@ class SchoolService():
                                 "msg": "Record has a pending approval request"
                             }, 400
                         jsonData['pecaId'] = pecaId
+                        datasave['pecaId'] = pecaId
                         request = RequestContentApproval(
                             project=peca.project,
                             user=user,
                             type="4",
-                            detail=jsonData
+                            detail=datasave
                         ).save()
                         school.approvalHistory.append(
                             Approval(

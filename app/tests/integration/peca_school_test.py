@@ -212,7 +212,7 @@ class PecaSchoolTest(unittest.TestCase):
         self.assertEqual(res.status_code, 400)
 
         # get approval request
-        res = self.client().get(
+        """res = self.client().get(
             '/requestscontentapproval')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
@@ -269,7 +269,7 @@ class PecaSchoolTest(unittest.TestCase):
         self.assertEqual("first image",
                          resultSchool['slider'][0]['description'])
         self.assertEqual(1, len(resultSchool['slider']))
-
+        """
     def tearDown(self):
         """teardown all initialized variables."""
         self.db.connection.drop_database('amblema_testing')

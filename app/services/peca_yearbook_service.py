@@ -116,14 +116,17 @@ class YearbookService():
                                 data_save[field] = jsonData[field]
                         elif field == "lapse1" or field == "lapse2" or field == "lapse3":
                             data_save[field] = {}
-                            if yearbook[field]["readingDiagnosticAnalysis"] != jsonData[field]["readingDiagnosticAnalysis"]:
-                                data_save[field]["readingDiagnosticAnalysis"] = jsonData[field]["readingDiagnosticAnalysis"]
+                            if "readingDiagnosticAnalysis" in jsonData[field]:
+                                if yearbook[field]["readingDiagnosticAnalysis"] != jsonData[field]["readingDiagnosticAnalysis"]:
+                                    data_save[field]["readingDiagnosticAnalysis"] = jsonData[field]["readingDiagnosticAnalysis"]
 
-                            if yearbook[field]["mathDiagnosticAnalysis"] != jsonData[field]["mathDiagnosticAnalysis"]:
-                                data_save[field]["mathDiagnosticAnalysis"] = jsonData[field]["mathDiagnosticAnalysis"]
+                            if "mathDiagnosticAnalysis" in jsonData[field]:
+                                if yearbook[field]["mathDiagnosticAnalysis"] != jsonData[field]["mathDiagnosticAnalysis"]:
+                                    data_save[field]["mathDiagnosticAnalysis"] = jsonData[field]["mathDiagnosticAnalysis"]
                             
-                            if yearbook[field]["logicDiagnosticAnalysis"] != jsonData[field]["logicDiagnosticAnalysis"]:
-                                data_save[field]["logicDiagnosticAnalysis"] = jsonData[field]["logicDiagnosticAnalysis"]
+                            if "logicDiagnosticAnalysis" in jsonData[field]:
+                                if yearbook[field]["logicDiagnosticAnalysis"] != jsonData[field]["logicDiagnosticAnalysis"]:
+                                    data_save[field]["logicDiagnosticAnalysis"] = jsonData[field]["logicDiagnosticAnalysis"]
                             
                             if "diagnosticSummary" in jsonData[field]:
                                 data_save[field]["diagnosticSummary"] = jsonData[field]["diagnosticSummary"]

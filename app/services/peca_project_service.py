@@ -58,7 +58,7 @@ class PecaProjectService():
             amblemaConfirmation = project.stepsProgress.steps.filter(
                 devName='amblemaConfirmation', tag='1').first()
             peca.school.sections = peca.school.sections.filter(isDeleted=False)
-            peca.school.sections = sorted(peca.school.sections, key = lambda i: i["grade"])
+            peca.school.sections = sorted(peca.school.sections, key = lambda i: (i["grade"], i["name"]))
             for section in peca.school.sections:
                 section.students = section.students.filter(isDeleted=False)
             data = schema.dump(peca)

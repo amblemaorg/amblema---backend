@@ -105,6 +105,7 @@ class ActivitiesPecaService():
                 data = schema.load(jsonData)
 
                 try:
+                    
                     # generate an approval request
                     if activity.approvalType == "3":
                         if 'date' in data or 'uploadedFile' in data:
@@ -153,7 +154,15 @@ class ActivitiesPecaService():
                         # approve only on fill all fields
                         if activity.approvalType == "2":
                             data.pop('status', None)
-
+                        if activity.approvalType == "5":
+                            if activity.hasChecklist:
+                                percent = 0
+                                for act in data["checklist"]:
+                                    if act["checked"]:
+                                        percent = percent + 1
+                                if percent > 0:
+                                    percent = (percent/len(data["checklist"]))*100
+                                data["percent"] = percent
                         for field in data.keys():
                             activity[field] = data[field]
                         activity.checkStatus()

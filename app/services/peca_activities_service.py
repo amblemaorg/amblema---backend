@@ -13,7 +13,7 @@ from app.helpers.error_helpers import RegisterNotFound
 from app.models.request_content_approval_model import RequestContentApproval
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
-
+from app.models.school_year_model import  SchoolYear
 
 class ActivitiesPecaService():
 
@@ -186,3 +186,31 @@ class ActivitiesPecaService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"pecaId": pecaId})
+
+class CronPecaActivitiesService():    
+    def cronPecaActivities(self, limit, skip):
+        schoolYear = SchoolYear.objects(
+            isDeleted=False, status="1").only("id").first()
+        if schoolYear:
+            print(schoolYear.id)
+            pecas = PecaProject.objects(
+            isDeleted=False, schoolYear=schoolYear.id).limit(limit).skip(skip)
+            count_pecas = PecaProject.objects(
+            isDeleted=False, schoolYear=schoolYear.id).count()
+            for peca in pecas:
+                for i in range(1, 4):
+                    for activity in peca['lapse{}'.format(i)].activities:
+                        if activity.approvalType == "5":
+                            if activity.hasChecklist:
+                                percent = 0
+                                for act in activity.checklist:
+                                    if act.checked:
+                                        percent = percent + 1
+                                if percent > 0:
+                                    percent = (percent/len(activity.checklist))*100
+                                activity["percent"] = percent
+                peca.save()
+            return {"status_code": "200", "message": "Sincronizacion exitosa", "cantidad": count_pecas},200
+        else:
+            return {"status_code": "400", "message": "Sincronizacion fallida, año escolar inactivo"},200
+            

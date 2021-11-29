@@ -121,7 +121,7 @@ from app.controllers.peca_initial_workshop_controller import (
     PecaInitialWorkshopCtrl
 )
 from app.controllers.peca_activities_controller import (
-    PecaActivitiesCtrl
+    PecaActivitiesCtrl, CronPecaActivitiesCtrl
 )
 from app.controllers.peca_schedule_controller import (
     ScheduleController
@@ -384,5 +384,6 @@ def create_app(config_instance):
     api.add_resource(CronEmptySchoolCtrl, '/cron/schools/empty')
 
     api.add_resource(SectionExportController, '/section/load/<pecaId>')
+    api.add_resource(CronPecaActivitiesCtrl, '/cron/activities/percent/<int:limit>/<int:skip>')
     
     return app

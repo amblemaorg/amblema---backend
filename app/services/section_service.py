@@ -342,6 +342,32 @@ class SectionsExport():
                                                         
                                                         school.students.append(student_class)
                                     school.save()
+                                    nStudents = 0
+                                    for section in peca.school.sections.filter(isDeleted=False):
+                                        nStudents += len(section.students.filter(isDeleted=False))
+                                    peca.school.nStudents = nStudents
+                                    peca.save()
+                                    school.nStudents = nStudents
+                                    school.save()
+
+                                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                                    pecas = PecaProject.objects(
+                                        schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
+                                    
+                                    nStudents = 0
+                                    
+                                    for peca in pecas:
+                                        schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
+                                        peca.school.nStudents = 0
+                                        for section in peca.school.sections.filter(isDeleted=False):
+                                            peca.school.nStudents += len(section.students.filter(isDeleted=False))
+                                        schoolUser.nStudents = peca.school.nStudents
+                                        peca.save()
+                                        schoolUser.save()
+                                        nStudents += peca.school.nStudents
+                                    schoolYear.nStudents = nStudents
+                                    schoolYear.save()
+                                    
                                     return {"status_code":201, "message": "Estudiantes importados con éxito"},201                
                                 else:
                                     return {"status_code":400, "message": "No se ha recibido data para importar"},201

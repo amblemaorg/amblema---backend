@@ -4,7 +4,7 @@
 from flask import request
 from flask_restful import Resource
 
-from app.services.peca_activities_service import ActivitiesPecaService
+from app.services.peca_activities_service import ActivitiesPecaService, CronPecaActivitiesService
 from app.helpers.handler_authorization import jwt_required
 
 
@@ -20,3 +20,8 @@ class PecaActivitiesCtrl(Resource):
     @jwt_required
     def get(self, pecaId, lapse, activityId):
         return self.service.get(pecaId, lapse, activityId)
+
+class CronPecaActivitiesCtrl(Resource):
+    service = CronPecaActivitiesService()
+    def get(self, limit, skip):
+        return self.service.cronPecaActivities(limit, skip)

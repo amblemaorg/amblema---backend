@@ -35,6 +35,7 @@ class ActivityFieldsSchema(Schema):
         ),
         dump_only=True)
     isStandard = fields.Bool(dump_only=True)
+    percent = fields.Float(default=0)
     status = fields.Str(
         validate=OneOf(
             ("1", "2", "3"),

@@ -25,19 +25,23 @@ class PromoteStudentService():
             peca_actual = PecaProject.objects(
                 isDeleted=False,
                 schoolYear=schoolYear.id).first()
-            section_peca = peca.school.sections.filter(isDeleted=False, id=id_section).first()
-            students_list = []
-            if section_peca:
-                for student in section_peca.students.filter(isDeleted=False):
-                    st = school.students.filter(isDeleted=False, id=student.id).first()
-                    if st:
-                        valid = True
-                        for nt in st.sections:
-                            if nt.schoolYear.id == schoolYear.id:
-                                valid = False
-                        if valid:
-                            students_list.append({"id":str(student.id), "firstName": student.firstName, "lastName": student.lastName, "cardId": student.cardId, "cardType": student.cardType, "birthdate": str(student.birthdate), "gender": student.gender})
-            return {"status":200, "msg": "Exito", "students": students_list},200
+            if peca:
+                section_peca = peca.school.sections.filter(isDeleted=False, id=id_section).first()
+                students_list = []
+                if section_peca:
+                    for student in section_peca.students.filter(isDeleted=False):
+                        st = school.students.filter(isDeleted=False, id=student.id).first()
+                        if st:
+                            valid = True
+                            for nt in st.sections:
+                                if nt.schoolYear.id == schoolYear.id:
+                                    valid = False
+                            if valid:
+                                students_list.append({"id":str(student.id), "firstName": student.firstName, "lastName": student.lastName, "cardId": student.cardId, "cardType": student.cardType, "birthdate": str(student.birthdate), "gender": student.gender})
+                return {"status":200, "msg": "Exito", "students": students_list},200
+            else:
+                return {"status":400, "msg": "No tiene data de periodos anteriores"},200
+                
         except Exception as e:
             print(e)
             return {'status': 0, 'message': str(e)}, 400
@@ -135,21 +139,24 @@ class SectionsPromoteStudentService():
             peca_previus = PecaProject.objects(
                 isDeleted=False,
                 schoolYear=schoolYearPrevius.id, school__code=school_code).first()
-            
-            if peca_actual:
-                sections_peca_actual = peca_actual.school.sections.filter(isDeleted=False)
-                sections_list_actual = []
-                for section in sections_peca_actual:
-                    sections_list_actual.append({"id":str(section.id), "grade": section.grade, "name": section.name})
+            if peca_previus:
+                if peca_actual:
+                    sections_peca_actual = peca_actual.school.sections.filter(isDeleted=False)
+                    sections_list_actual = []
+                    for section in sections_peca_actual:
+                        sections_list_actual.append({"id":str(section.id), "grade": section.grade, "name": section.name})
 
-                sections_peca_previus = peca_previus.school.sections.filter(isDeleted=False)
-                sections_list_previus = []
-                for section in sections_peca_previus:
-                    sections_list_previus.append({"id":str(section.id), "grade": section.grade, "name": section.name})
-                
-                return {"status": 200, "section_previus": sections_list_previus, "section_current": sections_list_actual},200
+                    sections_peca_previus = peca_previus.school.sections.filter(isDeleted=False)
+                    sections_list_previus = []
+                    for section in sections_peca_previus:
+                        sections_list_previus.append({"id":str(section.id), "grade": section.grade, "name": section.name})
+                    
+                    return {"status": 200, "section_previus": sections_list_previus, "section_current": sections_list_actual},200
+                else:
+                    return {"status": 400, "msg": "La escuela no tiene proyecto actual"},200
             else:
-                return {"status": 400, "msg": "La escuela no tiene proyecto actual"},200
+                return {"status": 400, "msg": "La escuela no tiene proyecto anterior"},200
+                
         except Exception as e:
             print(e)
             return {'status': 0, 'message': str(e)}, 400        

@@ -274,6 +274,7 @@ class SectionsExport():
                                         if student["nombre"] and student["apellido"] and student["fecha_de_nacimiento"] and student["genero"]:
                                             student["genero"] = "1" if student["genero"] == "F" else "2"
                                             student["tipo_de_documento"] = "1" if student["tipo_de_documento"] == "V" else "2"
+                                            print(student["fecha_de_nacimiento"])
                                             student["fecha_de_nacimiento"] = datetime.strftime(datetime.strptime(student["fecha_de_nacimiento"], "%d-%m-%Y"), "%Y-%m-%d")
                                             student["fecha_de_nacimiento"] = str(student["fecha_de_nacimiento"])+"T00:00:00.000Z"
                                             student_format = {}
@@ -283,7 +284,6 @@ class SectionsExport():
                                             student_format["cardType"] = student["tipo_de_documento"] if "tipo_de_documento" in student else ""
                                             student_format["birthdate"] = student["fecha_de_nacimiento"] if "fecha_de_nacimiento" in student else ""
                                             student_format["gender"] = student["genero"] if "genero" in student else ""
-                                            
                                             student_find = school.students.filter(isDeleted=False, firstName=student_format["firstName"], lastName=student_format["lastName"], gender=student_format["gender"]).first()
                                             schema = StudentSchema()
                                             data = schema.load(student_format)

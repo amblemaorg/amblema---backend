@@ -25,10 +25,10 @@ class RequestContentApprovalService(GenericServices):
             for f in filters:
                 filterList.append(Q(**{f['field']: f['value']}))
             records = self.Model.objects(isDeleted=False).filter(
-                reduce(operator.and_, filterList)).order_by("-updatedAt","status").limit(50)
+                reduce(operator.and_, filterList)).order_by("status","-updatedAt").limit(50)
         else:
             records = self.Model.objects(
-                isDeleted=False).order_by("-updatedAt","status").limit(50)
+                isDeleted=False).order_by("status","-updatedAt").limit(50)
         for record in records:
             data = schema.dump(record)
             data['typeUser'] = record.user.userType

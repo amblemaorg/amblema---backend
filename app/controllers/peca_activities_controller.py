@@ -28,5 +28,10 @@ class CronPecaActivitiesCtrl(Resource):
 
 class ReportActivitiesCtrl(Resource):
     service = ReportActivityService()
+
     def get(self):
         return self.service.getDataInicial()
+
+    def post(self):
+        jsonData = request.form.to_dict()
+        return self.service.generateReport(jsonData)

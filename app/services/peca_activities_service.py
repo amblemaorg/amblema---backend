@@ -192,7 +192,6 @@ class CronPecaActivitiesService():
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("id").first()
         if schoolYear:
-            print(schoolYear.id)
             pecas = PecaProject.objects(
             isDeleted=False, schoolYear=schoolYear.id).limit(limit).skip(skip)
             count_pecas = PecaProject.objects(
@@ -213,4 +212,148 @@ class CronPecaActivitiesService():
             return {"status_code": "200", "message": "Sincronizacion exitosa", "cantidad": count_pecas},200
         else:
             return {"status_code": "400", "message": "Sincronizacion fallida, año escolar inactivo"},200
-            
+
+class ReportActivityService():
+    def getDataInicial(self):
+        schoolYears = SchoolYear.objects(
+            isDeleted=False)
+        data = {"schoolYears":[]}
+        if len(schoolYears)>0:
+            for schoolYear in schoolYears:
+                data_schoolyear = {"name": schoolYear.name, "status": schoolYear.status, "id": str(schoolYear.id) ,"lapses": []}
+                for i in range(1, 4):
+                    lapseN = {"name": "Lapso "+str(i), "activities":[]}
+                    lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
+                    """if lapse.initialWorkshop:
+                        if lapse.initialWorkshop.status == "1":
+                            lapseN["activities"].append({"name": lapse.initialWorkshop.name, "devName": "initialWorkshop", "isStandard": lapse.initialWorkshop.isStandard})
+
+                    if lapse.ambleCoins:
+                        if lapse.ambleCoins.status == "1":
+                            lapseN["activities"].append({"name": lapse.ambleCoins.name, "devName": "ambleCoins", "isStandard": lapse.ambleCoins.isStandard})
+                    if lapse.lapsePlanning:
+                        if lapse.lapsePlanning.status == "1":
+                            lapseN["activities"].append({"name": lapse.lapsePlanning.name, "devName": "lapsePlanning", "isStandard": lapse.lapsePlanning.isStandard})
+                    if lapse.annualConvention:
+                        if lapse.annualConvention.status == "1":
+                            lapseN["activities"].append({"name": lapse.annualConvention.name, "devName": "annualConvention", "isStandard": lapse.annualConvention.isStandard})
+                    if lapse.annualPreparation:
+                        if lapse.annualPreparation.status == "1":
+                            lapseN["activities"].append({"name": lapse.annualPreparation.name, "devName": "annualPreparation", "isStandard": lapse.annualPreparation.isStandard})
+                    if lapse.mathOlympic:
+                        if lapse.mathOlympic.status == "1":
+                            lapseN["activities"].append({"name": lapse.mathOlympic.name, "devName": "mathOlympic", "isStandard": lapse.mathOlympic.isStandard})
+                    if lapse.specialLapseActivity:
+                        if lapse.specialLapseActivity.status == "1":
+                            lapseN["activities"].append({"name": lapse.specialLapseActivity.name, "devName": "specialLapseActivity", "isStandard": lapse.specialLapseActivity.isStandard})
+                    """
+                    for activity in lapse.activities:
+                        if activity.status == "1" and activity.isDeleted == False:
+                            lapseN["activities"].append({"name": activity.name, "devName": activity.devName, "isStandard": activity.isStandard})
+                    data_schoolyear["lapses"].append(lapseN)
+                       
+                pecas = PecaProject.objects(isDeleted=False, schoolYear=schoolYear.id).only("id", "project")
+                data_schoolyear["coordinators"] = []
+                data_schoolyear["sponsors"] = []
+                data_schoolyear["schools"] = []
+                for peca in pecas:
+                    if peca.project.coordinator:
+                        data_schoolyear["coordinators"].append({"id": str(peca.project.coordinator.id), "name": str(peca.project.coordinator.name)})
+                    if peca.project.sponsor:
+                        data_schoolyear["sponsors"].append({"id": str(peca.project.sponsor.id), "name": str(peca.project.sponsor.name)})
+                    if peca.project.school:
+                        data_schoolyear["schools"].append({"id": str(peca.project.school.id), "name": str(peca.project.school.name)})
+                data["schoolYears"].append(data_schoolyear)
+                
+                
+            return {"status_code": "200", "message": "Actividades", "data": data},200
+        
+        else:
+            return {"status_code": "404", "message": "No hay año escolar activo"},200
+    
+    def generateReport(self, jsonData):
+        if jsonData["type_filter"] == "schoolYear":
+            if "schoolYear" in jsonData:
+                schoolYear = SchoolYear.objects(isDeleted=False, id=jsonData["schoolYear"]).first()
+                if schoolYear:
+                    lapses = []
+                    activities = []
+                    for i in range(1, 4):
+                        activities.append({"name": "Lapso "+str(i), "title": True, "lapse": i})
+                        lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
+                        """
+                        if lapse.initialWorkshop:
+                            if lapse.initialWorkshop.status == "1":
+                                activities.append({"name": lapse.initialWorkshop.name, "title": False, "lapse": i})
+
+                        if lapse.ambleCoins:
+                            if lapse.ambleCoins.status == "1":
+                                activities.append({"name": lapse.ambleCoins.name, "title": False, "lapse": i})
+                        
+                        if lapse.lapsePlanning:
+                            if lapse.lapsePlanning.status == "1":
+                                activities.append({"name": lapse.lapsePlanning.name, "title": False, "lapse": i})
+                        
+                        if lapse.annualConvention:
+                            if lapse.annualConvention.status == "1":
+                                activities.append({"name": lapse.annualConvention.name, "title": False, "lapse": i})
+                        
+                        if lapse.annualPreparation:
+                            if lapse.annualPreparation.status == "1":
+                                activities.append({"name": lapse.annualPreparation.name, "title": False, "lapse": i})
+                        
+                        if lapse.mathOlympic:
+                            if lapse.mathOlympic.status == "1":
+                                activities.append({"name": lapse.mathOlympic.name, "title": False, "lapse": i})
+                        if lapse.specialLapseActivity:
+                            if lapse.specialLapseActivity.status == "1":
+                                activities.append({"name": lapse.specialLapseActivity.name, "title": False, "lapse": i})
+                        """
+                        
+                        for activity in lapse.activities:
+                            if activity.status == "1" and activity.isDeleted == False:
+                                activities.append({"name": activity.name, "title": False, "lapse": i})
+                    
+                    #lapses.append(lapseN)
+                    
+                    pecas = PecaProject.objects(isDeleted=False, schoolYear=schoolYear.id).only("id", "project", "lapse1", "lapse2", "lapse3")
+                    schools = []
+                    peca_active = []
+                    for peca in pecas:
+                        if peca.project.school:
+                            schools.append({"id": str(peca.project.school.id), "name": str(peca.project.school.name)})
+                            peca_active.append(peca)
+                    #pecas = PecaProject.objects(isDeleted=False, schoolYear: jsonData["schoolYear"]).only("lapse1", "lapse2", "lapse3", "school")
+                    #for peca in pecas:
+                    matriz = []
+                    for i in range(0, len(activities)):
+                        matriz.append({"activity": activities[i]["name"], "columns": []})
+                        for j in range(0, len(schools)):
+                            """
+                            if peca_active[i]["lapse{}".format(activities[i]["lapse"])].initialWorkshop.name == activities[i]["name"]:
+                                matriz[i]["columns"].append({"value": 100})
+                            elif "AmbLeMonedas" == activities[i]["name"]:
+                                matriz[i]["columns"].append({"value": 100})
+                            elif peca_active[i]["lapse{}".format(activities[i]["lapse"])].lapsePlanning.name == activities[i]["name"]:
+                                matriz[i]["columns"].append({"value": 100})
+                            elif peca_active[i]["lapse{}".format(activities[i]["lapse"])].annualConvention.name == activities[i]["name"]:
+                                matriz[i]["columns"].append({"value": 100})
+                            elif peca_active[i]["lapse{}".format(activities[i]["lapse"])].annualPreparation.name == activities[i]["name"]:
+                                matriz[i]["columns"].append({"value": 100})
+                            elif peca_active[i]["lapse{}".format(activities[i]["lapse"])].mathOlympic.name == activities[i]["name"]:
+                                matriz[i]["columns"].append({"value": 100})
+                            elif peca_active[i]["lapse{}".format(activities[i]["lapse"])].specialLapseActivity.name == activities[i]["name"]:
+                                matriz[i]["columns"].append({"value": 100})
+                            else:
+                            """
+                            for acti in peca_active[j]["lapse{}".format(activities[i]["lapse"])].activities:
+                                if acti.name == activities[i]["name"]:
+                                    matriz[i]["columns"].append({"value": int(acti.percent)})
+                                    break
+                
+                    return {"status_code": "201", "message": "Reporte", "rows": activities, "columns": schools, "matriz": matriz}, 201
+                else:
+                    return {"status_code": "404", "message": "Debe enviar un año escolar valido"},201
+        
+            else:
+                return {"status_code": "404", "message": "Debe enviar un año escolar"},201

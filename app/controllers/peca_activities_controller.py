@@ -33,5 +33,5 @@ class ReportActivitiesCtrl(Resource):
         return self.service.getDataInicial()
 
     def post(self):
-        jsonData = request.form.to_dict()
+        jsonData = request.get_json()
         return self.service.generateReport(jsonData)

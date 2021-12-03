@@ -263,6 +263,9 @@ class ReportActivityService():
                         data_schoolyear["sponsors"].append({"id": str(peca.project.sponsor.id), "name": str(peca.project.sponsor.name)})
                     if peca.project.school:
                         data_schoolyear["schools"].append({"id": str(peca.project.school.id), "name": str(peca.project.school.name)})
+                data_schoolyear["schools"] = self.remove_duplicates(data_schoolyear["schools"])
+                data_schoolyear["coordinators"] = self.remove_duplicates(data_schoolyear["coordinators"])
+                data_schoolyear["sponsors"] = self.remove_duplicates(data_schoolyear["sponsors"])
                 data["schoolYears"].append(data_schoolyear)
                 
                 
@@ -273,7 +276,6 @@ class ReportActivityService():
     
     def generateReport(self, jsonData):
         try:
-            print(jsonData)
             if jsonData["type_filter"] == "schoolYear":
                 if "schoolYear" in jsonData:
                     schoolYear = SchoolYear.objects(isDeleted=False, id=jsonData["schoolYear"]).first()
@@ -393,7 +395,78 @@ class ReportActivityService():
                         return {"status_code": "404", "message": "El año escolar no es válido"},201                    
                 else:
                     return {"status_code": "404", "message": "Debe enviar por lo menos un coordinador"},201
+            elif jsonData["type_filter"] == "school":
+                if "schools" in jsonData:
+                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                    if schoolYear:
+                        lapses = []
+                        activities = []
+                        for i in range(1, 4):
+                            activities.append({"name": "Lapso "+str(i), "title": True, "lapse": i})
+                            lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
+
+                            for activity in lapse.activities:
+                                if activity.status == "1" and activity.isDeleted == False:
+                                    activities.append({"name": activity.name, "title": False, "lapse": i})
+                        pecas = PecaProject.objects(isDeleted=False, project__school__id__in=jsonData["schools"], schoolYear=schoolYear.id).only("id", "project", "lapse1", "lapse2", "lapse3")
+                        schools = []
+                        peca_active = []
+                        for peca in pecas:
+                            if peca.project.school:
+                                schools.append({"id": str(peca.project.school.id), "name": str(peca.project.school.name)})
+                                peca_active.append(peca)
+                        matriz = []
+                        for i in range(0, len(activities)):
+                            matriz.append({"activity": activities[i]["name"], "columns": []})
+                            for j in range(0, len(schools)):
+                                for acti in peca_active[j]["lapse{}".format(activities[i]["lapse"])].activities:
+                                    if acti.name == activities[i]["name"]:
+                                        matriz[i]["columns"].append({"value": int(acti.percent)})
+                                        break
+                        return {"status_code": "201", "message": "Reporte", "rows": activities, "columns": schools, "matriz": matriz}, 201
+                    else:
+                        return {"status_code": "404", "message": "El año escolar no es válido"},201                    
+                else:
+                    return {"status_code": "404", "message": "Debe enviar por lo menos una escuela"},201
+            
+            elif jsonData["type_filter"] == "activity":
+                if "activities" in jsonData:
+                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                    if schoolYear:
+                        lapses = []
+                        activities = []
+                        for i in range(1, 4):
+                            activities.append({"name": "Lapso "+str(i), "title": True, "lapse": i})
+                            lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
+
+                            for activity in lapse.activities:
+                                if activity.status == "1" and activity.isDeleted == False and activity.name in jsonData["activities"]:
+                                    activities.append({"name": activity.name, "title": False, "lapse": i})
+                        pecas = PecaProject.objects(isDeleted=False, schoolYear=schoolYear.id).only("id", "project", "lapse1", "lapse2", "lapse3")
+                        schools = []
+                        peca_active = []
+                        for peca in pecas:
+                            if peca.project.school:
+                                schools.append({"id": str(peca.project.school.id), "name": str(peca.project.school.name)})
+                                peca_active.append(peca)
+                        matriz = []
+                        for i in range(0, len(activities)):
+                            matriz.append({"activity": activities[i]["name"], "columns": []})
+                            for j in range(0, len(schools)):
+                                for acti in peca_active[j]["lapse{}".format(activities[i]["lapse"])].activities:
+                                    if acti.name == activities[i]["name"]:
+                                        matriz[i]["columns"].append({"value": int(acti.percent)})
+                                        break
+                        return {"status_code": "201", "message": "Reporte", "rows": activities, "columns": schools, "matriz": matriz}, 201 
         except Exception as e:
             print(e)
             return {"status_code": "500", "message": "Ha ocurrido un error"},201
         
+    def remove_duplicates(self, list):
+        id_clean = []
+        list_clean = []
+        for item in list:
+            if not item["id"] in id_clean:
+                id_clean.append(item["id"])
+                list_clean.append(item)
+        return list_clean

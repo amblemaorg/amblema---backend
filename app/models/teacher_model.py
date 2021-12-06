@@ -20,6 +20,7 @@ class Teacher(EmbeddedDocument):
     addressMunicipality = fields.ReferenceField('Municipality')
     address = fields.StringField()
     addressCity = fields.StringField()
+    specialty = fields.ReferenceField('SpecialtyTeacher')
     status = fields.StringField(max_length=1, default="1")
     #annualPreparationStatus = fields.StringField(max_length=1, null=True)
     pecaId = fields.StringField()

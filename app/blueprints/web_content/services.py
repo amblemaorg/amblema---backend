@@ -15,9 +15,11 @@ from app.blueprints.web_content.models.web_content import WebContent, WebContent
 from app.services.statistics_service import StatisticsService
 from app.models.school_user_model import SchoolUser
 from app.schemas.school_user_schema import SchoolUserSchema
+from app.schemas.school_user_schema import SchoolUserSchema
 from app.models.peca_project_model import PecaProject
 from app.models.school_year_model import SchoolYear
 from app.models.project_model import Project
+from app.models.state_model import State
 
 
 class WebContentService(GenericServices):
@@ -75,7 +77,7 @@ class SchoolPageContentService():
 
     def getAllRecords(self):
         schema = SchoolUserSchema(
-            partial=True, only=('id', 'code', 'slug', 'name', 'coordinate'))
+            partial=True, only=('id', 'code', 'slug', 'name', 'coordinate', "addressState"))
         schools = []
         currentPeriod = SchoolYear.objects(isDeleted=False, status="1").first()
         if currentPeriod:
@@ -85,7 +87,9 @@ class SchoolPageContentService():
                 schoolsIds.append(peca.project.school.id)
             schools = SchoolUser.objects(isDeleted=False, pk__in=schoolsIds, coordinate__exists=True).all()
             schools = schema.dump(schools, many=True)
-        return {"records": schools}, 200
+        states = State.objects(isDeleted=False)
+        states_data = [{"name": state.name, "id": str(state.id)} for state in states]
+        return {"records": schools, "states": states_data}, 200
 
     def get(self, id):
 

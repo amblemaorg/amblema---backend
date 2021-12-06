@@ -151,6 +151,10 @@ from app.controllers.monitoring_activities_controller import (
 )
 from app.controllers.cron_student_controller import CronStudentController
 from app.controllers.promote_student_controller import PromoteStudentController, SectionsPromoteStudentController, PromoteStudentsController, ChangeSectionStudentsController
+from app.controllers.specialty_teacher_controller import (
+    SpecialtyTeacherController, SpecialtyTeacherHandlerController
+)
+
 db = MongoEngine()
 compress = Compress()
 
@@ -386,4 +390,9 @@ def create_app(config_instance):
     api.add_resource(SectionExportController, '/section/load/<pecaId>')
     api.add_resource(CronPecaActivitiesCtrl, '/cron/activities/percent/<int:limit>/<int:skip>')
     api.add_resource(ReportActivitiesCtrl, '/report/activities')
+    api.add_resource(SpecialtyTeacherController,
+                     '/specialty')
+    api.add_resource(SpecialtyTeacherHandlerController,
+                     '/specialty/<string:specialtyId>')
+    
     return app

@@ -249,7 +249,7 @@ class SectionsExport():
             try:
                 school_code = peca.school.code
                 school = SchoolUser.objects(code=school_code, isDeleted=False).first()
-
+                #print(school.id)
                 if "action" in jsonData:
                     if  jsonData["action"] == "export":
                         if "sections" in jsonData:
@@ -274,7 +274,6 @@ class SectionsExport():
                                         if student["nombre"] and student["apellido"] and student["fecha_de_nacimiento"] and student["genero"]:
                                             student["genero"] = "1" if student["genero"] == "F" else "2"
                                             student["tipo_de_documento"] = "1" if student["tipo_de_documento"] == "V" else "2"
-                                            print(student["fecha_de_nacimiento"])
                                             student["fecha_de_nacimiento"] = datetime.strftime(datetime.strptime(student["fecha_de_nacimiento"], "%d-%m-%Y"), "%Y-%m-%d")
                                             student["fecha_de_nacimiento"] = str(student["fecha_de_nacimiento"])+"T00:00:00.000Z"
                                             student_format = {}
@@ -293,14 +292,15 @@ class SectionsExport():
                                             
                                             for i in range(3):
                                                 student_save['lapse{}'.format(i+1)] = Diagnostic()
-                                            
+                                                
                                             if student_find:
                                                 student_save.id = student_find.id
-                                                    
+                                                        
                                             
                                             if not self.checkForDuplicated(section_peca, student_save):
                                                 in_section = False
                                                 if student_find:
+                                                        
                                                     for sec in student_find.sections.filter():
                                                         if sec.schoolYear.id == peca.schoolYear.id:
                                                             in_section = True
@@ -341,7 +341,8 @@ class SectionsExport():
                                                         student_class.sections = [section_save]
                                                         
                                                         school.students.append(student_class)
-                                    school.save()
+                                            school.save()
+                                            school.reload()
                                     nStudents = 0
                                     for section in peca.school.sections.filter(isDeleted=False):
                                         nStudents += len(section.students.filter(isDeleted=False))

@@ -52,14 +52,16 @@ class Section(EmbeddedDocument):
         for student in self.students:
             for lapse in range(1, 4):
                 for diag in diagnosticsList:
-                    if student['lapse{}'.format(lapse)][diag]:
+                    if student['lapse{}'.format(lapse)][diag]!= None:
+                        print("entro")
                         summary['lapse{}'.format(
                             lapse)]['{}Count'.format(diag)] += 1
                         summary['lapse{}'.format(
                             lapse)]['{}Sum'.format(diag)] += student['lapse{}'.format(lapse)][diag]
+                        val = student['lapse{}'.format(lapse)]['{}Index'.format(diag)] if student['lapse{}'.format(lapse)]['{}Index'.format(diag)] != None else 0
                         summary['lapse{}'.format(
-                            lapse)]['{}IndexSum'.format(diag)] += float(student['lapse{}'.format(lapse)]['{}Index'.format(diag)])
-
+                            lapse)]['{}IndexSum'.format(diag)] += float(val)
+        
         for i in range(1, 4):
             lapseSummary = summary['lapse{}'.format(i)]
             lapse = self.diagnostics['lapse{}'.format(i)]

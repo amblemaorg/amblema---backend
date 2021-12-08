@@ -31,7 +31,7 @@ from app.controllers.learning_module_controller import (
     AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
-    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl
+    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl, CronDiagnisticosCtrl, CronAddDiagnosticsCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -394,5 +394,8 @@ def create_app(config_instance):
                      '/specialty')
     api.add_resource(SpecialtyTeacherHandlerController,
                      '/specialty/<string:specialtyId>')
+    api.add_resource(CronDiagnisticosCtrl, '/cron/diagnosticos/<int:limit>/<int:skip>')
+
+    api.add_resource(CronAddDiagnosticsCtrl, '/cron/diagonisticos/add/<int:limit>/<int:skip>')
     
     return app

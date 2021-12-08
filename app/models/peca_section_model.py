@@ -49,11 +49,10 @@ class Section(EmbeddedDocument):
                 "operationsPerMinIndexSum": 0
             }
 
-        for student in self.students:
+        for student in self.students.filter(isDeleted=False):
             for lapse in range(1, 4):
                 for diag in diagnosticsList:
                     if student['lapse{}'.format(lapse)][diag]!= None:
-                        print("entro")
                         summary['lapse{}'.format(
                             lapse)]['{}Count'.format(diag)] += 1
                         summary['lapse{}'.format(

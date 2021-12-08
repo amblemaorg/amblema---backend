@@ -4,7 +4,7 @@
 from flask import request
 from flask_restful import Resource
 
-from app.services.school_year_service import SchoolYearService
+from app.services.school_year_service import SchoolYearService, CronDiagnosticosService, CronAddDiagnosticsService
 from app.models.school_year_model import SchoolYear
 from app.schemas.school_year_schema import SchoolYearSchema
 from app.helpers.handler_request import getQueryParams
@@ -90,3 +90,13 @@ class CronEmptySchoolCtrl(Resource):
     )
     def get(self):
         return self.service.emptySchools()
+
+class CronDiagnisticosCtrl(Resource):
+    service = CronDiagnosticosService()
+    def get(self, limit,skip):
+        return self.service.run(limit, skip)
+
+class CronAddDiagnosticsCtrl(Resource):
+    service = CronAddDiagnosticsService()
+    def get(self, limit,skip):
+        return self.service.run(limit, skip)

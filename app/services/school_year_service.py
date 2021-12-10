@@ -316,6 +316,13 @@ class CronDiagnosticosService():
             pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('id','school','schoolYear').limit(limit).skip(skip)
             for peca in pecas:
                 for section in peca.school.sections.filter(isDeleted=False):
+                    if section.grade != "0":
+                        setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(section.grade)]
+                        for student in section.students.filter(isDeleted=False):
+                            for lapse in [1,2,3]:
+                                diagnostic = student['lapse{}'.format(lapse)]
+                                if diagnostic:
+                                    diagnostic.calculateIndex(setting)
                     section.refreshDiagnosticsSummary()
                     peca.school.refreshDiagnosticsSummary()
                 peca.save()

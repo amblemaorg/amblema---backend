@@ -109,7 +109,7 @@ class YearbookService():
                 data_save = {}
                 #print(yearbook.userId)
                 for field in jsonData.keys():
-                    if field != "pecaId" and field != "userId" and field != "status" and field != "sections" and field !="requestId":
+                    if field != "pecaId" and field != "userId" and field != "status" and field != "sections" and field !="requestId" and field!="comments":
                         if field =="sponsor" or field =="coordinator" or field =="school" or field == "historicalReview":
                             jsonData[field]["image"] = jsonData[field]["image"].replace(os.getenv('SERVER_URL')+"/", "") if jsonData[field]["image"] != None else None 
                             if yearbook[field]["image"] != jsonData[field]["image"] or yearbook[field]["content"] != jsonData[field]["content"]:

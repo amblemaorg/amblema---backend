@@ -112,9 +112,10 @@ class YearbookService():
                     if field != "pecaId" and field != "userId" and field != "status" and field != "sections" and field !="requestId" and field!="comments":
                         if field =="sponsor" or field =="coordinator" or field =="school" or field == "historicalReview":
                             is_url = False
-                            if jsonData[field]["image"].find(os.getenv('SERVER_URL')) != -1:
-                                is_url = True
-                                jsonData[field]["image"] = jsonData[field]["image"].replace(os.getenv('SERVER_URL')+"/", "") if jsonData[field]["image"] != None else None 
+                            if jsonData[field]["image"] != None:
+                                if jsonData[field]["image"].find(os.getenv('SERVER_URL')) != -1:
+                                    is_url = True
+                                    jsonData[field]["image"] = jsonData[field]["image"].replace(os.getenv('SERVER_URL')+"/", "") if jsonData[field]["image"] != None else None 
                             if yearbook[field]["image"] != jsonData[field]["image"] or yearbook[field]["content"] != jsonData[field]["content"]:
                                 if is_url:
                                     jsonData[field]["image"] = os.getenv('SERVER_URL')+"/"+jsonData[field]["image"]

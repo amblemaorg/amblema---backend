@@ -282,7 +282,16 @@ class ReportActivityService():
                     if schoolYear:
                         lapses = []
                         activities = []
-                        for i in range(1, 4):
+                        lapses_req = []
+                        for lap in jsonData["lapses"]:
+                            if lap == "Lapso 1":
+                                lapses_req.append(1)
+                            if lap == "Lapso 2":
+                                lapses_req.append(2)
+                            if lap == "Lapso 3":
+                                lapses_req.append(3)
+
+                        for i in lapses_req:
                             activities.append({"name": "Lapso "+str(i), "title": True, "lapse": i})
                             lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
                             """
@@ -363,11 +372,20 @@ class ReportActivityService():
                     return {"status_code": "404", "message": "Debe enviar un año escolar"},201
             elif jsonData["type_filter"] == "coordinator":
                 if "coordinators" in jsonData:
-                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                    schoolYear = SchoolYear.objects(isDeleted=False, id=jsonData["schoolYear"]).first()
                     if schoolYear:
                         lapses = []
                         activities = []
-                        for i in range(1, 4):
+                        lapses_req = []
+                        for lap in jsonData["lapses"]:
+                            if lap == "Lapso 1":
+                                lapses_req.append(1)
+                            if lap == "Lapso 2":
+                                lapses_req.append(2)
+                            if lap == "Lapso 3":
+                                lapses_req.append(3)
+
+                        for i in lapses_req:
                             activities.append({"name": "Lapso "+str(i), "title": True, "lapse": i})
                             lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
 
@@ -397,11 +415,20 @@ class ReportActivityService():
                     return {"status_code": "404", "message": "Debe enviar por lo menos un coordinador"},201
             elif jsonData["type_filter"] == "school":
                 if "schools" in jsonData:
-                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                    schoolYear = SchoolYear.objects(isDeleted=False, id=jsonData["schoolYear"]).first()
                     if schoolYear:
                         lapses = []
                         activities = []
-                        for i in range(1, 4):
+                        lapses_req = []
+                        for lap in jsonData["lapses"]:
+                            if lap == "Lapso 1":
+                                lapses_req.append(1)
+                            if lap == "Lapso 2":
+                                lapses_req.append(2)
+                            if lap == "Lapso 3":
+                                lapses_req.append(3)
+
+                        for i in lapses_req:
                             activities.append({"name": "Lapso "+str(i), "title": True, "lapse": i})
                             lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
 
@@ -431,16 +458,25 @@ class ReportActivityService():
             
             elif jsonData["type_filter"] == "activity":
                 if "activities" in jsonData:
-                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+                    schoolYear = SchoolYear.objects(isDeleted=False, id=jsonData["schoolYear"]).first()
                     if schoolYear:
                         lapses = []
                         activities = []
-                        for i in range(1, 4):
+                        lapses_req = []
+                        for lap in jsonData["lapses"]:
+                            if lap == "Lapso 1":
+                                lapses_req.append(1)
+                            if lap == "Lapso 2":
+                                lapses_req.append(2)
+                            if lap == "Lapso 3":
+                                lapses_req.append(3)
+
+                        for i in lapses_req:
                             activities.append({"name": "Lapso "+str(i), "title": True, "lapse": i})
                             lapse = schoolYear.pecaSetting['lapse{}'.format(i)]
 
                             for activity in lapse.activities:
-                                if activity.status == "1" and activity.isDeleted == False and activity.name in jsonData["activities"]:
+                                if activity.status == "1" and activity.isDeleted == False and activity.devName in jsonData["activities"]:
                                     activities.append({"name": activity.name, "title": False, "lapse": i})
                         pecas = PecaProject.objects(isDeleted=False, schoolYear=schoolYear.id).only("id", "project", "lapse1", "lapse2", "lapse3")
                         schools = []

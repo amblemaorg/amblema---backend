@@ -89,9 +89,13 @@ class SchoolService():
                                 # new image
                                 elif image.id not in oldImages:
                                     approvalRequired = True
+                                if approvalRequired:
+                                    datasave["slider"] = jsonData["slider"]
                         else:
                             approvalRequired = True
-                        datasave[field] = data[field]
+                        
+                        if field != "slider":
+                            datasave[field] = data[field]
                         newSchool[field] = data[field]
 
                 try:

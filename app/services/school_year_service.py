@@ -20,6 +20,7 @@ from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
 from app.helpers.handler_messages import HandlerMessages
 from app.models.step_model import Step
+from app.models.peca_student_model import Diagnostic
 
 
 class SchoolYearService(GenericServices):
@@ -309,3 +310,46 @@ class SchoolYearService(GenericServices):
                     school.save()
         return {"message": "schools clear"}, 200
     
+class CronDiagnosticosService():
+    def run(self, limit, skip):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        if schoolYear:
+            pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('id','school','schoolYear').limit(limit).skip(skip)
+            for peca in pecas:
+                for section in peca.school.sections.filter(isDeleted=False):
+                    if section.grade != "0":
+                        setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(section.grade)]
+                        for student in section.students.filter(isDeleted=False):
+                            for lapse in [1,2,3]:
+                                diagnostic = student['lapse{}'.format(lapse)]
+                                if diagnostic:
+                                    diagnostic.calculateIndex(setting)
+                    section.refreshDiagnosticsSummary()
+                    peca.school.refreshDiagnosticsSummary()
+                peca.save()
+                peca.reload()
+                schoolYearPeca = peca.schoolYear.fetch()
+                schoolYearPeca.refreshDiagnosticsSummary()
+                schoolYearPeca.save()
+            return {"message": "Cron ejecutado"}, 200            
+        else:
+            return {"message": "No hay año escolar activo"}, 200
+
+class CronAddDiagnosticsService():
+    def run(self, limit, skip):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        if schoolYear:
+            pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('id','school','schoolYear').limit(limit).skip(skip)
+            for peca in pecas:
+                for section in peca.school.sections.filter(isDeleted=False):
+                    for student in section.students.filter():
+                        if student.lapse1 == None:
+                            student.lapse1 = Diagnostic()
+                        if student.lapse2 == None:
+                            student.lapse2 = Diagnostic()
+                        if student.lapse3 == None:
+                            student.lapse3 = Diagnostic()
+                peca.save()
+            return {"message": "Cron ejecutado"}, 200            
+        else:
+            return {"message": "No hay año escolar activo"}, 200

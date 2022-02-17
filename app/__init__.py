@@ -31,7 +31,7 @@ from app.controllers.learning_module_controller import (
     AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
-    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl
+    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl, CronDiagnisticosCtrl, CronAddDiagnosticsCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -130,7 +130,7 @@ from app.controllers.teacher_controller import (
     TeacherController, TeacherHandlerController
 )
 from app.controllers.section_controller import(
-    SectionController, SectionHandlerController
+    SectionController, SectionHandlerController, SectionExportController
 )
 from app.controllers.student_controller import (
     StudentController, StudentHandlerController
@@ -380,11 +380,16 @@ def create_app(config_instance):
                     '/cron/statistics/schoolYear')
 
     api.add_resource(CronEmailsLostController, '/cron/emails/lost')
-    api.add_resource(CronStudentController, '/cron/student')
+    api.add_resource(CronStudentController, '/cron/student/<int:limit>/<int:skip>')
     api.add_resource(PromoteStudentController, '/promote/students/<school_code>/<id_section>')
     api.add_resource(SectionsPromoteStudentController, '/init/promote/students/<school_code>')
     api.add_resource(PromoteStudentsController, '/promote/students/<school_code>')
     api.add_resource(ChangeSectionStudentsController, '/students/change/section/<pecaId>')
     api.add_resource(CronEmptySchoolCtrl, '/cron/schools/empty')
+
+    api.add_resource(CronDiagnisticosCtrl, '/cron/diagnosticos/<int:limit>/<int:skip>')
+
+    api.add_resource(CronAddDiagnosticsCtrl, '/cron/diagonisticos/add/<int:limit>/<int:skip>')
+    api.add_resource(SectionExportController, '/section/load/<pecaId>')
 
     return app

@@ -58,9 +58,9 @@ class DiagnosticService():
                         if diagnosticType == "reading":
                             diagnostic.readingDate = datetime.utcnow()
                         elif diagnosticType == "math":
-                            if diagnostic.multiplicationsPerMin and not diagnostic.mathDate:
+                            if diagnostic.multiplicationsPerMin != None and not diagnostic.mathDate:
                                 diagnostic.mathDate = datetime.utcnow()
-                            if diagnostic.operationsPerMin and not diagnostic.logicDate:
+                            if diagnostic.operationsPerMin != None and not diagnostic.logicDate:
                                 diagnostic.logicDate = datetime.utcnow()
                         diagnostic.calculateIndex(setting)
                         section.refreshDiagnosticsSummary()

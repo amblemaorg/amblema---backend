@@ -1,4 +1,9 @@
 # AmbLeMa - Backend
+## Correr por primera vez en local
+1. Correr bd mongo del proyecto https://gitlab.binauraldev.com/binaural/proyectos/backend/custom/db/amblema---db.git  
+2. Correr el siguiente comando para crear la bd local: `docker exec -i amblema_mongodb bash -c "mongo -u root -p garden86 --eval \"db.getSiblingDB('amblema').createUser({user: 'amblema',pwd: 'garden86',roles: [{role: 'readWrite',db: 'amblema'}]})\""`  
+3. Importar bd de producción  
+
 ## Correr en local
 1. Crear o sobreescribir el archivo .env con la siguiente informacion:  
 INSTANCE=development  

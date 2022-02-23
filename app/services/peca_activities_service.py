@@ -121,6 +121,16 @@ class ActivitiesPecaService():
                         jsonData['pecaId'] = pecaId
                         jsonData['lapse'] = lapse
                         jsonData['id'] = activityId
+                        
+                        if jsonData["hasChecklist"]:
+                            percent = 0
+                            for act in data["checklist"]:
+                                if act["checked"]:
+                                    percent = percent + 1
+                            if percent > 0:
+                                percent = (percent/len(data["checklist"]))*100
+                            jsonData["percent"] = percent
+                        
 
                         if 'date' in jsonData or 'uploadedFile' in jsonData:
                             request = RequestContentApproval(
@@ -199,15 +209,15 @@ class CronPecaActivitiesService():
             for peca in pecas:
                 for i in range(1, 4):
                     for activity in peca['lapse{}'.format(i)].activities:
-                        if activity.approvalType == "5":
-                            if activity.hasChecklist:
-                                percent = 0
-                                for act in activity.checklist:
-                                    if act.checked:
-                                        percent = percent + 1
-                                if percent > 0:
-                                    percent = (percent/len(activity.checklist))*100
-                                activity["percent"] = percent
+                        #if activity.approvalType == "5":
+                        if activity.hasChecklist:
+                            percent = 0
+                            for act in activity.checklist:
+                                if act.checked:
+                                    percent = percent + 1
+                            if percent > 0:
+                                percent = (percent/len(activity.checklist))*100
+                            activity["percent"] = percent
                 peca.save()
             return {"status_code": "200", "message": "Sincronizacion exitosa", "cantidad": count_pecas},200
         else:

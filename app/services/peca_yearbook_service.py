@@ -181,7 +181,7 @@ class YearbookService():
                     request = None
                     if "requestId" in jsonData:
                         if jsonData["requestId"] != "" and jsonData["requestId"]!=None:
-                           request = RequestContentApproval.objects(id=jsonData["requestId"], project=peca.project, type="7", status="1", isDeleted=False).first()
+                           request = RequestContentApproval.objects(id=jsonData["requestId"], project__id=peca.project.id, type="7", status="1", isDeleted=False).first()
                                         
                     
                     if not request:

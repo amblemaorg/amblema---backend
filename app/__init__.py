@@ -155,6 +155,8 @@ from app.controllers.specialty_teacher_controller import (
     SpecialtyTeacherController, SpecialtyTeacherHandlerController
 )
 
+from app.controllers.peca_grade_controller import PecaGradeController
+
 db = MongoEngine()
 compress = Compress()
 
@@ -397,5 +399,7 @@ def create_app(config_instance):
     api.add_resource(CronDiagnisticosCtrl, '/cron/diagnosticos/<int:limit>/<int:skip>')
 
     api.add_resource(CronAddDiagnosticsCtrl, '/cron/diagonisticos/add/<int:limit>/<int:skip>')
+    
+    api.add_resource(PecaGradeController, '/peca/grade/<pecaId>')
     
     return app

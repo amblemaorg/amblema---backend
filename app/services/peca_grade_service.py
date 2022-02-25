@@ -88,26 +88,109 @@ class PecaGradeService():
                                             jsonData["lapse"])].olympics = olympics
                                         peca.save()
                                         peca.reload()
-                                        school.olympicsSummary.inscribed += 1
-                                        if student.status == "2":
-                                            school.olympicsSummary.classified += 1
-                                            if student.result:
-                                                if student.result == "1":
-                                                    school.olympicsSummary.medalsGold += 1
-                                                elif student.result == "2":
-                                                    school.olympicsSummary.medalsSilver += 1
-                                                elif student.result == "3":
-                                                    school.olympicsSummary.medalsBronze += 1
-                                        school.save()
-                                        school.reload()
-                                    
+                                        
                                     except Exception as e:
                                         return {'status': 0, 'message': str(e)},400
+                        
+                        classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
+                        school.olympicsSummary.classified = len(classified)
+                        school.olympicsSummary.inscribed = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students)
+                        school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
+                        school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
+                        school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+                
+                        school.save()
+                        school.reload()
+                                    
                         return {'status': 201, 'message': "Se registraron los estudiantes exitosamente"},201
                 else:
                     return {'status': 400, 'message': "Debe enviar los grados a inscribir"},201
             except ValidationError as err:
                 return err.normalized_messages(), 400
+        else:
+            return {'status': 400, 'message': "El proyecto peca no existe"},201
+                
+    def deleteStudent(self, pecaId, jsonData):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).only("project", "school", "lapse1", "lapse2", "lapse3").first()
+
+        if peca:
+            try:
+                schema = StudentSchema()
+                if not peca['lapse{}'.format(jsonData["lapse"])].olympics:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"olympics lapse: ": jsonData["lapse"]})
+                for studentId in jsonData["students"]:
+                    found = False
+                    for student in peca['lapse{}'.format(jsonData["lapse"])].olympics.students:
+                        if student.id == studentId:
+                            found = True
+                            peca['lapse{}'.format(jsonData["lapse"])].olympics.students.remove(student)
+                            break
+                    if found:
+                        peca.save()
+                        peca.reload()
+                
+                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
+                school = SchoolUser.objects(
+                    id=peca.project.school.id, isDeleted=False).first()
+                school.olympicsSummary.classified = len(classified)
+                school.olympicsSummary.inscribed = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students)
+                school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
+                school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
+                school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+                school.save()
+                return {"status": 201, "message": "Se han eliminado los estudiantes con éxito"}, 201
+                
+            except ValidationError as err:
+                return err.normalized_messages(), 400
+        else:
+            return {'status': 400, 'message': "El proyecto peca no existe"},201
+    
+    def changeStatus(self, pecaId, jsonData):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).only("project", "school", "lapse1", "lapse2", "lapse3").first()
+
+        if peca:
+            try:
+                schema = StudentSchema()
+                if not peca['lapse{}'.format(jsonData["lapse"])].olympics:
+                    raise RegisterNotFound(message="Record not found",
+                                           status_code=404,
+                                           payload={"olympics lapse: ": jsonData["lapse"]})
+                for studentId in jsonData["students"]:
+                    found = False
+                    for student in peca['lapse{}'.format(jsonData["lapse"])].olympics.students:
+                        if student.id == studentId:
+                            found = True
+                            student.status = jsonData["status"]
+                            break
+                    if found:
+                        peca.save()
+                        peca.reload()
+                
+                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
+                school = SchoolUser.objects(
+                    id=peca.project.school.id, isDeleted=False).first()
+                school.olympicsSummary.classified = len(classified)
+                school.olympicsSummary.inscribed = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students)
+                school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
+                school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
+                school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+                school.save()
+                return {"status": 201, "message": "Se han cambiado el estatus de los estudiantes con éxito"}, 201
+                
+            except ValidationError as err:
+                return err.normalized_messages(), 400
+        else:
+            return {'status': 400, 'message': "El proyecto peca no existe"},201
+
+        
 def name_grade(grade):
     if grade == "0":
         return "Preescolar"

@@ -102,7 +102,7 @@ class PecaGradeService():
                         school.save()
                         school.reload()
                                     
-                        return {'status': 201, 'message': "Se registraron los estudiantes exitosamente"},201
+                    return {'status': 201, 'message': "Se registraron los estudiantes exitosamente"},201
                 else:
                     return {'status': 400, 'message': "Debe enviar los grados a inscribir"},201
             except ValidationError as err:

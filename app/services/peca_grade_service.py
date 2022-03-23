@@ -1,4 +1,4 @@
-# app/services/peca_initial_workshop_service.py
+# app/services/peca_grade_service.py
 
 from flask import current_app
 from marshmallow import ValidationError

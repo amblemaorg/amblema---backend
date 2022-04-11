@@ -16,7 +16,6 @@ from app.models.peca_student_model import SectionClass, Student, Diagnostic, Stu
 from app.schemas.peca_student_schema import StudentSchema
 from datetime import datetime
 
-
 class SectionService():
 
     handlerMessages = HandlerMessages()
@@ -238,7 +237,6 @@ class SectionService():
             return True
         return False
         """
-
 class SectionsExport():
     handlerMessages = HandlerMessages()
     def getSections(self, pecaId, jsonData):

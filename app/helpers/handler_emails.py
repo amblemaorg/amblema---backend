@@ -38,7 +38,7 @@ def send_email(body, plainTextBody, subject, to):
     # Create secure connection with server and send email
     context = ssl.create_default_context()
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        with smtplib.SMTP_SSL("email-smtp.us-east-1.amazonaws.com", 465, context=context) as server:
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.sendmail(
                 SMTP_FROM, to, msg.as_string()

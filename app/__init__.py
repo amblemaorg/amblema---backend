@@ -149,6 +149,7 @@ from app.controllers.peca_yearbook_controller import PecaYearbookController
 from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
+from app.controllers.cron_emails_lost_controller import CronEmailsLostController
 from app.controllers.cron_student_controller import CronStudentController
 from app.controllers.promote_student_controller import PromoteStudentController, SectionsPromoteStudentController, PromoteStudentsController, ChangeSectionStudentsController
 from app.controllers.specialty_teacher_controller import (

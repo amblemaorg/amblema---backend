@@ -121,7 +121,7 @@ from app.controllers.peca_initial_workshop_controller import (
     PecaInitialWorkshopCtrl
 )
 from app.controllers.peca_activities_controller import (
-    PecaActivitiesCtrl
+    PecaActivitiesCtrl, CronPecaActivitiesCtrl, ReportActivitiesCtrl
 )
 from app.controllers.peca_schedule_controller import (
     ScheduleController
@@ -152,6 +152,11 @@ from app.controllers.monitoring_activities_controller import (
 from app.controllers.cron_emails_lost_controller import CronEmailsLostController
 from app.controllers.cron_student_controller import CronStudentController
 from app.controllers.promote_student_controller import PromoteStudentController, SectionsPromoteStudentController, PromoteStudentsController, ChangeSectionStudentsController
+from app.controllers.specialty_teacher_controller import (
+    SpecialtyTeacherController, SpecialtyTeacherHandlerController
+)
+
+from app.controllers.peca_grade_controller import PecaGradeController
 
 db = MongoEngine()
 compress = Compress()
@@ -378,8 +383,6 @@ def create_app(config_instance):
                      '/pecasetting/monitoringactivities')
     api.add_resource(CronScrollYearCtrl,
                     '/cron/statistics/schoolYear')
-
-    api.add_resource(CronEmailsLostController, '/cron/emails/lost')
     api.add_resource(CronStudentController, '/cron/student/<int:limit>/<int:skip>')
     api.add_resource(PromoteStudentController, '/promote/students/<school_code>/<id_section>')
     api.add_resource(SectionsPromoteStudentController, '/init/promote/students/<school_code>')
@@ -387,9 +390,17 @@ def create_app(config_instance):
     api.add_resource(ChangeSectionStudentsController, '/students/change/section/<pecaId>')
     api.add_resource(CronEmptySchoolCtrl, '/cron/schools/empty')
 
+    api.add_resource(SectionExportController, '/section/load/<pecaId>')
+    api.add_resource(CronPecaActivitiesCtrl, '/cron/activities/percent/<int:limit>/<int:skip>')
+    api.add_resource(ReportActivitiesCtrl, '/report/activities')
+    api.add_resource(SpecialtyTeacherController,
+                     '/specialty')
+    api.add_resource(SpecialtyTeacherHandlerController,
+                     '/specialty/<string:specialtyId>')
     api.add_resource(CronDiagnisticosCtrl, '/cron/diagnosticos/<int:limit>/<int:skip>')
 
     api.add_resource(CronAddDiagnosticsCtrl, '/cron/diagonisticos/add/<int:limit>/<int:skip>')
-    api.add_resource(SectionExportController, '/section/load/<pecaId>')
-
+    
+    api.add_resource(PecaGradeController, '/peca/grade/<pecaId>')
+    
     return app

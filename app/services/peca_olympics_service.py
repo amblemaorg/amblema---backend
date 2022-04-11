@@ -88,8 +88,7 @@ class OlympicsService():
 
                 olympics['students'].append(student)
                 try:
-                    peca['lapse{}'.format(
-                        lapse)].olympics = olympics
+                    peca['lapse{}'.format(lapse)].olympics = olympics
                     peca.save()
                     school = SchoolUser.objects(
                         id=peca.project.school.id, isDeleted=False).first()

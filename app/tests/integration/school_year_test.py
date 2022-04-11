@@ -329,7 +329,7 @@ class SchoolYearTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(
-            '2021 - 2022', result['schoolYears'][0]['schoolYear']['name'])
+            '2022 - 2023', result['schoolYears'][0]['schoolYear']['name'])
 
         project = Project.objects(id=project['id']).first()
         self.assertEqual(1, len(project.schoolYears))

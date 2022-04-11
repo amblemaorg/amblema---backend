@@ -68,21 +68,22 @@ class YearbookService():
                     jsonData['coordinator']['image'] = upload_image(
                         jsonData['coordinator']['image'], folder, None)
                 
-                for section in jsonData['sections']:
-                    found = False
-                    for oldSection in peca.school.sections:
-                        if str(oldSection.id) == section['id']:
-                            found = True
-                            section['name'] = oldSection.name
-                            section['grade'] = oldSection.grade
-                            break
-                    if not found:
-                        raise RegisterNotFound(message="Record not found",
-                                               status_code=404,
-                                               payload={"section": section['id']})
-                    if str(section['image']).startswith('data'):
-                        section['image'] = upload_image(
-                            section['image'], folder, None)
+                if "sections" in jsonData: 
+                    for section in jsonData['sections']:
+                        found = False
+                        for oldSection in peca.school.sections:
+                            if str(oldSection.id) == section['id']:
+                                found = True
+                                section['name'] = oldSection.name
+                                section['grade'] = oldSection.grade
+                                break
+                        if not found:
+                            raise RegisterNotFound(message="Record not found",
+                                                status_code=404,
+                                                payload={"section": section['id']})
+                        if str(section['image']).startswith('data'):
+                            section['image'] = upload_image(
+                                section['image'], folder, None)
                 img_msg = []
                 for lapse in [1, 2, 3]:
                     for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
@@ -105,15 +106,84 @@ class YearbookService():
                                         lapse)]['activities'][activity]['images'] = images_save
                 schema.validate(jsonData)
                 yearbook = peca.yearbook
-                
+                data_save = {}
+                #print(yearbook.userId)
+                for field in jsonData.keys():
+                    if field != "pecaId" and field != "userId" and field != "status" and field != "sections" and field !="requestId" and field!="comments":
+                        if field =="sponsor" or field =="coordinator" or field =="school" or field == "historicalReview":
+                            is_url = False
+                            if jsonData[field]["image"] != None:
+                                if jsonData[field]["image"].find(os.getenv('SERVER_URL')) != -1:
+                                    is_url = True
+                                    jsonData[field]["image"] = jsonData[field]["image"].replace(os.getenv('SERVER_URL')+"/", "") if jsonData[field]["image"] != None else None 
+                            if yearbook[field]["image"] != jsonData[field]["image"] or yearbook[field]["content"] != jsonData[field]["content"]:
+                                if is_url:
+                                    jsonData[field]["image"] = os.getenv('SERVER_URL')+"/"+jsonData[field]["image"]
+                                data_save[field] = jsonData[field]
+                        elif field == "lapse1" or field == "lapse2" or field == "lapse3":
+                            data_save[field] = {}
+                            if "readingDiagnosticAnalysis" in jsonData[field]:
+                                if yearbook[field]["readingDiagnosticAnalysis"] != jsonData[field]["readingDiagnosticAnalysis"]:
+                                    data_save[field]["readingDiagnosticAnalysis"] = jsonData[field]["readingDiagnosticAnalysis"]
+
+                            if "mathDiagnosticAnalysis" in jsonData[field]:
+                                if yearbook[field]["mathDiagnosticAnalysis"] != jsonData[field]["mathDiagnosticAnalysis"]:
+                                    data_save[field]["mathDiagnosticAnalysis"] = jsonData[field]["mathDiagnosticAnalysis"]
+                            
+                            if "logicDiagnosticAnalysis" in jsonData[field]:
+                                if yearbook[field]["logicDiagnosticAnalysis"] != jsonData[field]["logicDiagnosticAnalysis"]:
+                                    data_save[field]["logicDiagnosticAnalysis"] = jsonData[field]["logicDiagnosticAnalysis"]
+                            
+                            if "diagnosticSummary" in jsonData[field]:
+                                data_save[field]["diagnosticSummary"] = jsonData[field]["diagnosticSummary"]
+
+                            data_save[field]["activities"] = []
+                            for activity in jsonData[field]['activities']:
+                                found = False
+                                if activity['id'] == 'initialWorkshop':
+                                    if peca[field].initialWorkshop.yearbook.description != activity["description"] or len(peca[field].initialWorkshop.yearbook.images) != len(activity["images"]):
+                                        data_save[field]["activities"].append(activity)
+                                        found = True
+                                elif activity['id'] == 'ambleCoins':
+                                    if peca[field].ambleCoins.yearbook.description != activity["description"] or len(peca[field].ambleCoins.yearbook.images) != len(activity["images"]):
+                                        data_save[field]["activities"].append(activity)
+                                        found = True
+                                elif activity['id'] == 'lapsePlanning':
+                                    if peca[field].lapsePlanning.yearbook.description != activity["description"] or len(peca[field].lapsePlanning.yearbook.images) != len(activity["images"]):
+                                        data_save[field]["activities"].append(activity)
+                                        found = True
+                                elif activity['id'] == 'annualConvention':
+                                    if peca[field].annualConvention.yearbook.description != activity["description"] or len(peca[field].annualConvention.yearbook.images) != len(activity["images"]):
+                                        data_save[field]["activities"].append(activity)
+                                        found = True
+                                elif activity['id'] == 'olympics':
+                                    if peca[field].olympics.yearbook.description != activity["description"] or len(peca[field].olympics.yearbook.images) != len(activity["images"]):
+                                        data_save[field]["activities"].append(activity)
+                                        found = True
+                                elif activity['id'] == 'specialActivity':
+                                    if peca[field].specialActivity.yearbook.description != activity["description"] or len(peca[field].specialActivity.yearbook.images) != len(activity["images"]):
+                                        data_save[field]["activities"].append(activity)
+                                        found = True
+                                
+                                if not found:
+                                    for pecaAct in peca[field].activities:
+                                        if activity['id'] == pecaAct.id:
+                                            if pecaAct.yearbook.description != activity["description"] or len(pecaAct.yearbook.images) != len(activity["images"]):
+                                                data_save[field]["activities"].append(activity)
+                        elif yearbook[field] != jsonData[field]:
+                            data_save[field] = jsonData[field]
+
+                    if field == "sections":
+                        data_save[field] = jsonData[field]
                 jsonData['pecaId'] = pecaId
-                    
+                data_save['pecaId'] = pecaId
                 try:
                     request = None
                     if "requestId" in jsonData:
                         if jsonData["requestId"] != "" and jsonData["requestId"]!=None:
                            request = RequestContentApproval.objects(id=jsonData["requestId"], project__id=peca.project.id, type="7", status="1", isDeleted=False).first()
                                         
+                    
                     if not request:
                         if yearbook.isInApproval:
                             return {
@@ -125,7 +195,7 @@ class YearbookService():
                             project=peca.project,
                             user=user,
                             type="7",
-                            detail=jsonData
+                            detail=data_save
                         ).save()
                         yearbook.isInApproval = True
                         yearbook.approvalHistory.append(
@@ -137,7 +207,7 @@ class YearbookService():
                         )
                     else:
                         del jsonData["requestId"]
-                        request.detail = jsonData
+                        request.detail = data_save
                         request.save()
                         for history in yearbook.approvalHistory:
                             if history.id == str(request.id):

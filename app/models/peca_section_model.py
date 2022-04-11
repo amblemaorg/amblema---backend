@@ -61,7 +61,6 @@ class Section(EmbeddedDocument):
                         summary['lapse{}'.format(
                             lapse)]['{}IndexSum'.format(diag)] += float(val)
         
-        
         for i in range(1, 4):
             lapseSummary = summary['lapse{}'.format(i)]
             lapse = self.diagnostics['lapse{}'.format(i)]

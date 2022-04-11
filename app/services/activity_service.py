@@ -647,11 +647,11 @@ class ActivityService():
                         pecaProjects = PecaProject.objects(
                             schoolYear=schoolYear.id, isDeleted=False)
 
-                        if data['status'] == "1":
-                            for i in ['1','2','3']:
-                                if data['lapse'] != i:
-                                    schoolYear.pecaSetting['lapse{}'.format(
-                                        i)].mathOlympic.status = '2'
+                        #if data['status'] == "1":
+                        #    for i in ['1','2','3']:
+                        #        if data['lapse'] != i:
+                        #            schoolYear.pecaSetting['lapse{}'.format(
+                        #                i)].mathOlympic.status = '2'
 
                         for peca in pecaProjects:
                             # is active
@@ -674,10 +674,10 @@ class ActivityService():
                                         startTime=olympics.date,
                                         description=olympics.description
                                     )
-                                for i in ['1','2','3']:
-                                    if i != data['lapse']:
-                                        peca['lapse{}'.format(
-                                            i)].olympics = None
+                                #for i in ['1','2','3']:
+                                #    if i != data['lapse']:
+                                #        peca['lapse{}'.format(
+                                #            i)].olympics = None
                             # is inactive
                             else:
                                 peca['lapse{}'.format(

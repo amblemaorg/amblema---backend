@@ -22,7 +22,6 @@ from app.helpers.handler_messages import HandlerMessages
 from app.models.step_model import Step
 from app.models.peca_student_model import Diagnostic
 
-
 class SchoolYearService(GenericServices):
 
     handlerMessages = HandlerMessages()

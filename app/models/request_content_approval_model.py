@@ -111,6 +111,7 @@ class RequestContentApproval(Document):
                             for history in activity.approvalHistory:
                                 if str(history.id) == str(document.id):
                                     history.status = document.status
+                                    history.comments = document.comments
                                     # approved
                                     if history.status == "2":
                                         # approved
@@ -171,6 +172,7 @@ class RequestContentApproval(Document):
                     for history in initialWorkshop.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
+                            history.comments = document.comments
                             initialWorkshop.isInApproval = False
                             if document.status == "2":  # approved
                                 schema = InitialWorkshopPecaSchema(
@@ -191,6 +193,7 @@ class RequestContentApproval(Document):
                     for history in specialActivity.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
+                            history.comments = document.comments
                             specialActivity.isInApproval = False
                             if document.status == '2':  # approved
                                 schema = SpecialActivitySchema(partial=True)
@@ -218,10 +221,11 @@ class RequestContentApproval(Document):
                         for field in schema.dump(data).keys():
                             if field != 'sections':
                                 peca.yearbook[field] = data[field]
-                        for section in data['sections']:
-                            for oldSection in peca.school.sections.filter(isDeleted=False):
-                                if str(oldSection.id) == section['id']:
-                                    oldSection['image'] = section['image']
+                        if "sections" in data:
+                            for section in data['sections']:
+                                for oldSection in peca.school.sections.filter(isDeleted=False):
+                                    if str(oldSection.id) == section['id']:
+                                        oldSection['image'] = section['image']
                         if school.yearbook != peca.yearbook.school or school.historicalReview != peca.yearbook.historicalReview:
                             if school.yearbook != peca.yearbook.school:
                                 school.yearbook = peca.yearbook.school
@@ -285,6 +289,7 @@ class RequestContentApproval(Document):
                         for history in peca.yearbook.approvalHistory:
                             if history.id == str(document.id):
                                 history.status = document.status
+                                history.comments = document.comments
                         peca.save()
                  # lapse planning
                 elif document.type == "8":
@@ -295,6 +300,7 @@ class RequestContentApproval(Document):
                     for history in lapsePlanning.approvalHistory:
                         if history.id == str(document.id):
                             history.status = document.status
+                            history.comments = document.comments
                             lapsePlanning.isInApproval = False
                             if document.status == "2":  # approved
                                 schema = LapsePlanningPecaSchema(

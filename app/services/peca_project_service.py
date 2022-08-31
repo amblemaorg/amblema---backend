@@ -3,6 +3,7 @@
 
 from functools import reduce
 import operator
+import json
 
 from flask import current_app
 from marshmallow import ValidationError
@@ -10,7 +11,9 @@ from mongoengine import Q
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
+from app.models.peca_yearbook_model import Yearbook
 from app.schemas.peca_project_schema import PecaProjectSchema, SchoolSchema
+from app.schemas.peca_yearbook_schema import YearbookSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
@@ -35,6 +38,69 @@ class PecaProjectService():
 
         schema = PecaProjectSchema(exclude=('school',))
         return {"records": schema.dump(records, many=True)}, 200
+    
+    def savePrintOptions(self, id, jsonData):
+        peca = PecaProject.objects(id=id, isDeleted=False).first()
+        if not peca:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"recordId": id})
+
+        try:
+            schema = YearbookSchema()
+            base = schema.dump(peca.yearbook)
+            keys = [x for x in jsonData.keys()]
+            keysBase = [x for x in base.keys()]
+            for key in keys:
+                if key not in keysBase:
+                    return {'status': 0, 'message': "no correct field"}, 400
+
+            if 'historicalReview' in keys:
+                if 'print' in jsonData['historicalReview']['printOption'].keys():
+                    base['historicalReview']['printOption']['print'] = jsonData['historicalReview']['printOption']['print']
+                if 'expandGallery' in jsonData['historicalReview']['printOption'].keys():
+                    base['historicalReview']['printOption']['expandGallery'] = jsonData['historicalReview']['printOption']['expandGallery']
+            if 'sponsor' in keys:
+                if 'print' in jsonData['sponsor']['printOption'].keys():
+                    base['sponsor']['printOption']['print'] = jsonData['sponsor']['printOption']['print']
+                if 'expandGallery' in jsonData['sponsor']['printOption'].keys():
+                    base['sponsor']['printOption']['expandGallery'] = jsonData['sponsor']['printOption']['expandGallery']
+            if 'coordinator' in keys:
+                if 'print' in jsonData['coordinator']['printOption'].keys():
+                    base['coordinator']['printOption']['print'] = jsonData['coordinator']['printOption']['print']
+                if 'expandGallery' in jsonData['coordinator']['printOption'].keys():
+                    base['coordinator']['printOption']['expandGallery'] = jsonData['coordinator']['printOption']['expandGallery']
+            if 'school' in keys:
+                if 'print' in jsonData['school']['printOption'].keys():
+                    base['school']['printOption']['print'] = jsonData['school']['printOption']['print']
+                if 'expandGallery' in jsonData['school']['printOption'].keys():
+                    base['school']['printOption']['expandGallery'] = jsonData['school']['printOption']['expandGallery']
+            if 'lapse1' in keys:
+                if 'print' in jsonData['lapse1']['printOption'].keys():
+                    base['lapse1']['printOption']['print'] = jsonData['lapse1']['printOption']['print']
+                if 'expandGallery' in jsonData['lapse1']['printOption'].keys():
+                    base['lapse1']['printOption']['expandGallery'] = jsonData['lapse1']['printOption']['expandGallery']
+            if 'lapse2' in keys:
+                if 'print' in jsonData['lapse2']['printOption'].keys():
+                    base['lapse2']['printOption']['print'] = jsonData['lapse2']['printOption']['print']
+                if 'expandGallery' in jsonData['lapse2']['printOption'].keys():
+                    base['lapse2']['printOption']['expandGallery'] = jsonData['lapse2']['printOption']['expandGallery']
+            if 'lapse3' in keys:
+                if 'print' in jsonData['lapse3']['printOption'].keys():
+                    base['lapse3']['printOption']['print'] = jsonData['lapse3']['printOption']['print']
+                if 'expandGallery' in jsonData['lapse3']['printOption'].keys():
+                    base['lapse3']['printOption']['expandGallery'] = jsonData['lapse3']['printOption']['expandGallery']
+            if 'index' in keys:
+                if 'print' in jsonData['index']:
+                    base['index']['print'] = jsonData['index']['print']
+            try:
+                anotherBase = schema.load(base)
+                peca.update(set__yearbook=anotherBase)
+                return {"baseNew" : schema.dump(anotherBase),"keys" : keys, "keysBase": keysBase}, 200
+            except Exception as e:
+                    return {'status': 0, 'message': str(e)}, 400
+        except ValidationError as err:
+                return err.normalized_messages(), 400
 
     def get(self, id):
         from app.models.school_user_model import SchoolUser
@@ -43,7 +109,6 @@ class PecaProjectService():
         from app.schemas.school_user_schema import TeacherTestimonialSchema
         from app.schemas.teacher_schema import TeacherSchema
         from app.schemas.shared_schemas import ImageStatusSchema
-        from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.monitoring_activity_schema import MonitoringActivitySchema
         from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
         from app.models.project_model import Project
@@ -217,7 +282,24 @@ class PecaProjectService():
                 peca.environmentalProject = envProject
 
     def getYearbookData(self, peca, school, sponsor, coordinator, data):
-        
+
+        data['index']['pages'] = []
+
+        if peca.yearbook.historicalReview.printOption.print == True:
+            data['index']['pages'].append('historicalReview')
+        if peca.yearbook.sponsor.printOption.print == True:
+            data['index']['pages'].append('sponsor')
+        if peca.yearbook.coordinator.printOption.print == True:
+            data['index']['pages'].append('coordinator')
+        if peca.yearbook.school.printOption.print == True:
+            data['index']['pages'].append('school')
+        if peca.yearbook.lapse1.printOption.print == True:
+            data['index']['pages'].append('lapse1')
+        if peca.yearbook.lapse2.printOption.print == True:
+            data['index']['pages'].append('lapse2')
+        if peca.yearbook.lapse3.printOption.print == True:
+            data['index']['pages'].append('lapse3')
+
         if not peca.yearbook.historicalReview.image:
             data['historicalReview']['content'] = school.historicalReview.content
             data['historicalReview']['image'] = serialize_links(

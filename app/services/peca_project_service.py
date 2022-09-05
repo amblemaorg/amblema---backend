@@ -19,6 +19,9 @@ from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.ma_schema_fields import serialize_links
 
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class PecaProjectService():
 
@@ -38,8 +41,45 @@ class PecaProjectService():
 
         schema = PecaProjectSchema(exclude=('school',))
         return {"records": schema.dump(records, many=True)}, 200
-    
+
+    def getPrintOptions(self,id):
+        peca = PecaProject.objects(id=id, isDeleted=False).first()
+        if not peca:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"recordId": id})
+        try:
+            schema = YearbookSchema()
+            yearbook = peca.yearbook
+            yearbook = schema.dump(yearbook)
+            keysBase = [x for x in yearbook.keys()]
+            data = {}
+            pages = []
+            for key in keysBase:
+                if key in ['index','activitiesPrint','updatedAt','isInApproval','approvalHistory']:
+                    continue
+                if yearbook[key]['printOption']['print'] == True:
+                    pages.append(key)
+            activities = {"lapse1" : [], "lapse2" : [], "lapse3" : []}
+            for activity in yearbook['activitiesPrint']:
+                if activity['lapse'] == 'lapse1':
+                    activities['lapse1'].append(
+                        {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
+                elif activity['lapse'] == 'lapse2':
+                    activities['lapse2'].append(
+                        {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
+                elif activity['lapse'] == 'lapse3':
+                    activities['lapse3'].append(
+                        {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
+            data = {"activitiesPrint" : activities,"pages" : pages,"index" : yearbook['index']['print']}
+            return data, 200
+        except ValidationError as err:
+            return err.normalized_messages(), 400
+
     def savePrintOptions(self, id, jsonData):
+        from app.models.peca_yearbook_model import Activity
+        from app.schemas.peca_yearbook_schema import ActivitiesSchema
+
         peca = PecaProject.objects(id=id, isDeleted=False).first()
         if not peca:
             raise RegisterNotFound(message="Record not found",
@@ -48,55 +88,32 @@ class PecaProjectService():
 
         try:
             schema = YearbookSchema()
-            base = schema.dump(peca.yearbook)
+            yearbook = peca.yearbook
             keys = [x for x in jsonData.keys()]
-            keysBase = [x for x in base.keys()]
+            keysBase = [x for x in schema.dump(yearbook).keys()]
             for key in keys:
                 if key not in keysBase:
                     return {'status': 0, 'message': "no correct field"}, 400
-
-            if 'historicalReview' in keys:
-                if 'print' in jsonData['historicalReview']['printOption'].keys():
-                    base['historicalReview']['printOption']['print'] = jsonData['historicalReview']['printOption']['print']
-                if 'expandGallery' in jsonData['historicalReview']['printOption'].keys():
-                    base['historicalReview']['printOption']['expandGallery'] = jsonData['historicalReview']['printOption']['expandGallery']
-            if 'sponsor' in keys:
-                if 'print' in jsonData['sponsor']['printOption'].keys():
-                    base['sponsor']['printOption']['print'] = jsonData['sponsor']['printOption']['print']
-                if 'expandGallery' in jsonData['sponsor']['printOption'].keys():
-                    base['sponsor']['printOption']['expandGallery'] = jsonData['sponsor']['printOption']['expandGallery']
-            if 'coordinator' in keys:
-                if 'print' in jsonData['coordinator']['printOption'].keys():
-                    base['coordinator']['printOption']['print'] = jsonData['coordinator']['printOption']['print']
-                if 'expandGallery' in jsonData['coordinator']['printOption'].keys():
-                    base['coordinator']['printOption']['expandGallery'] = jsonData['coordinator']['printOption']['expandGallery']
-            if 'school' in keys:
-                if 'print' in jsonData['school']['printOption'].keys():
-                    base['school']['printOption']['print'] = jsonData['school']['printOption']['print']
-                if 'expandGallery' in jsonData['school']['printOption'].keys():
-                    base['school']['printOption']['expandGallery'] = jsonData['school']['printOption']['expandGallery']
-            if 'lapse1' in keys:
-                if 'print' in jsonData['lapse1']['printOption'].keys():
-                    base['lapse1']['printOption']['print'] = jsonData['lapse1']['printOption']['print']
-                if 'expandGallery' in jsonData['lapse1']['printOption'].keys():
-                    base['lapse1']['printOption']['expandGallery'] = jsonData['lapse1']['printOption']['expandGallery']
-            if 'lapse2' in keys:
-                if 'print' in jsonData['lapse2']['printOption'].keys():
-                    base['lapse2']['printOption']['print'] = jsonData['lapse2']['printOption']['print']
-                if 'expandGallery' in jsonData['lapse2']['printOption'].keys():
-                    base['lapse2']['printOption']['expandGallery'] = jsonData['lapse2']['printOption']['expandGallery']
-            if 'lapse3' in keys:
-                if 'print' in jsonData['lapse3']['printOption'].keys():
-                    base['lapse3']['printOption']['print'] = jsonData['lapse3']['printOption']['print']
-                if 'expandGallery' in jsonData['lapse3']['printOption'].keys():
-                    base['lapse3']['printOption']['expandGallery'] = jsonData['lapse3']['printOption']['expandGallery']
-            if 'index' in keys:
-                if 'print' in jsonData['index']:
-                    base['index']['print'] = jsonData['index']['print']
+                if key == 'index':
+                    yearbook[key]['print'] = jsonData[key]['print']
+                elif key == 'activitiesPrint':
+                    schemaActivity = ActivitiesSchema()
+                    activitiesExist = [schemaActivity.dump(x)['name'] for x in yearbook[key]]
+                    for activityJson in jsonData[key]:
+                        if activityJson['name'] in activitiesExist:
+                            yearbook.activitiesPrint.pop(activitiesExist.index(activityJson['name']))
+                            if activityJson['print'] == True:
+                                continue
+                        activity = Activity(name=activityJson['name'], print=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
+                        yearbook.activitiesPrint.append(activity)
+                else:
+                    if 'print' in jsonData[key]['printOption'].keys():
+                        yearbook[key]['printOption']['print'] = jsonData[key]['printOption']['print']
+                    if 'expandGallery' in jsonData[key]['printOption'].keys():
+                        yearbook[key]['printOption']['expandGallery'] = jsonData[key]['printOption']['expandGallery']
             try:
-                anotherBase = schema.load(base)
-                peca.update(set__yearbook=anotherBase)
-                return {"baseNew" : schema.dump(anotherBase),"keys" : keys, "keysBase": keysBase}, 200
+                peca.save()
+                return schema.dump(yearbook), 200
             except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:

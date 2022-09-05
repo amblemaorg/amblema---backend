@@ -61,7 +61,11 @@ class LapseSchema(Schema):
     def make_document(self, data, **kwargs):
         return Lapse(**data)
 
-
+class ActivitiesSchema(Schema):
+    name = fields.Str(allow_none=True) 
+    print = fields.Bool()
+    expandGallery = fields.Bool()
+    lapse = fields.Str()
 class YearbookSchema(Schema):
     historicalReview = fields.Nested(EntitySchema)
     sponsor = fields.Nested(EntitySchema)
@@ -72,6 +76,7 @@ class YearbookSchema(Schema):
     lapse2 = fields.Nested(LapseSchema)
     lapse3 = fields.Nested(LapseSchema)
     index = fields.Nested(IndexSchema)
+    activitiesPrint = fields.List(fields.Nested(ActivitiesSchema))
     isInApproval = fields.Bool()
     approvalHistory = fields.List(fields.Nested(ApprovalSchema()))
     updatedAt = fields.DateTime()

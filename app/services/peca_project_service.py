@@ -12,7 +12,10 @@ from mongoengine import Q
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
 from app.models.peca_yearbook_model import Yearbook
+from app.models.peca_project_print_option_model import PecaProjectPrintOptionModel
 from app.schemas.peca_project_schema import PecaProjectSchema, SchoolSchema
+from app.models.peca_project_print_option_model import ActivityModel, SectionModel
+from app.schemas.peca_project_print_option_schema import PecaProjectPrintOption, ActivitySchema, SectionSchema
 from app.schemas.peca_yearbook_schema import YearbookSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
@@ -48,20 +51,18 @@ class PecaProjectService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"recordId": id})
+
+        printOption = PecaProjectPrintOptionModel.objects(id_peca=id).first()
         try:
+            schemaPrint = PecaProjectPrintOption()
             schema = YearbookSchema()
             yearbook = peca.yearbook
+            printOptions = schemaPrint.dump(printOption)
             yearbook = schema.dump(yearbook)
-            keysBase = [x for x in yearbook.keys()]
+            pages = [x['name'] for x in printOptions['sectionsPrint']]
             data = {}
-            pages = []
-            for key in keysBase:
-                if key in ['index','activitiesPrint','updatedAt','isInApproval','approvalHistory']:
-                    continue
-                if yearbook[key]['printOption']['print'] == True:
-                    pages.append(key)
             activities = {"lapse1" : [], "lapse2" : [], "lapse3" : []}
-            for activity in yearbook['activitiesPrint']:
+            for activity in printOptions['activitiesPrint']:
                 if activity['lapse'] == 'lapse1':
                     activities['lapse1'].append(
                         {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
@@ -71,49 +72,68 @@ class PecaProjectService():
                 elif activity['lapse'] == 'lapse3':
                     activities['lapse3'].append(
                         {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
-            data = {"activitiesPrint" : activities,"pages" : pages,"index" : yearbook['index']['print']}
+            data = {"activitiesPrint" : activities,"disablePages" : pages,"index" : printOptions['index'], "diagnosticPrint" : printOptions['diagnosticPrint']}
+            _logger.warning(schemaPrint.dump(printOption))
             return data, 200
         except ValidationError as err:
             return err.normalized_messages(), 400
 
     def savePrintOptions(self, id, jsonData):
-        from app.models.peca_yearbook_model import Activity
-        from app.schemas.peca_yearbook_schema import ActivitiesSchema
-
-        peca = PecaProject.objects(id=id, isDeleted=False).first()
+        peca = PecaProject.objects(id=id, isDeleted=False).only('yearbook').first()
         if not peca:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"recordId": id})
-
+        printOption = PecaProjectPrintOptionModel.objects(id_peca=id).first()
         try:
+            if not printOption:
+                printOption = PecaProjectPrintOptionModel(id_peca=id)
+            printSchema = PecaProjectPrintOption()
+            printOptions = printSchema.dump(printOption)
             schema = YearbookSchema()
-            yearbook = peca.yearbook
             keys = [x for x in jsonData.keys()]
-            keysBase = [x for x in schema.dump(yearbook).keys()]
+            keysBase = [x for x in printOptions.keys()]
+            _logger.warning(keysBase)
             for key in keys:
                 if key not in keysBase:
                     return {'status': 0, 'message': "no correct field"}, 400
+
                 if key == 'index':
-                    yearbook[key]['print'] = jsonData[key]['print']
-                elif key == 'activitiesPrint':
-                    schemaActivity = ActivitiesSchema()
-                    activitiesExist = [schemaActivity.dump(x)['name'] for x in yearbook[key]]
+                    printOption.index = jsonData[key]
+                    continue
+
+                if key == 'diagnosticsPrint':
+                    printOption.diagnosticsPrint = jsonData[key]
+                    continue
+
+                if key == 'activitiesPrint':
+                    schemaActivity = ActivitySchema()
+                    activitiesExist = [schemaActivity.dump(x)['name'] for x in printOptions[key]]
                     for activityJson in jsonData[key]:
                         if activityJson['name'] in activitiesExist:
-                            yearbook.activitiesPrint.pop(activitiesExist.index(activityJson['name']))
+                            printOption.activitiesPrint.pop(activitiesExist.index(activityJson['name']))
                             if activityJson['print'] == True:
                                 continue
-                        activity = Activity(name=activityJson['name'], print=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
-                        yearbook.activitiesPrint.append(activity)
-                else:
-                    if 'print' in jsonData[key]['printOption'].keys():
-                        yearbook[key]['printOption']['print'] = jsonData[key]['printOption']['print']
-                    if 'expandGallery' in jsonData[key]['printOption'].keys():
-                        yearbook[key]['printOption']['expandGallery'] = jsonData[key]['printOption']['expandGallery']
+                        activity = ActivityModel(name=activityJson['name'], print=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
+                        printOption.activitiesPrint.append(activity)
+                    continue
+
+                if key == 'sectionsPrint':
+                    schemaSection = SectionSchema()
+                    sectionsExist = [schemaSection.dump(x)['name'] for x in printOptions[key]]
+                    for sectionJson in jsonData[key]:
+                        if sectionJson['name'] in sectionsExist:
+                            printOption.sectionsPrint.pop(sectionsExist.index(sectionJson['name']))
+                            if sectionJson['print'] == True:
+                                continue
+                        section = SectionModel(name=sectionJson['name'], print=sectionJson['print'])
+                        printOption.sectionsPrint.append(section)
+                    continue
             try:
-                peca.save()
-                return schema.dump(yearbook), 200
+                _logger.warning("PRE-GUARDADO")
+                printOption.save()
+                _logger.warning("GUARDADO")
+                return schema.dump(printOption), 200
             except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:
@@ -299,23 +319,6 @@ class PecaProjectService():
                 peca.environmentalProject = envProject
 
     def getYearbookData(self, peca, school, sponsor, coordinator, data):
-
-        data['index']['pages'] = []
-
-        if peca.yearbook.historicalReview.printOption.print == True:
-            data['index']['pages'].append('historicalReview')
-        if peca.yearbook.sponsor.printOption.print == True:
-            data['index']['pages'].append('sponsor')
-        if peca.yearbook.coordinator.printOption.print == True:
-            data['index']['pages'].append('coordinator')
-        if peca.yearbook.school.printOption.print == True:
-            data['index']['pages'].append('school')
-        if peca.yearbook.lapse1.printOption.print == True:
-            data['index']['pages'].append('lapse1')
-        if peca.yearbook.lapse2.printOption.print == True:
-            data['index']['pages'].append('lapse2')
-        if peca.yearbook.lapse3.printOption.print == True:
-            data['index']['pages'].append('lapse3')
 
         if not peca.yearbook.historicalReview.image:
             data['historicalReview']['content'] = school.historicalReview.content

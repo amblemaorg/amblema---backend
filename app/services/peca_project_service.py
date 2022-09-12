@@ -108,21 +108,27 @@ class PecaProjectService():
                     continue
 
                 if key == 'activitiesPrint':
+                    preventDuplicate = []
                     schemaActivity = ActivitySchema()
                     activitiesExist = [schemaActivity.dump(x)['name'] for x in printOptions[key]]
                     for activityJson in jsonData[key]:
+                        if activityJson['name'] in preventDuplicate:
+                            continue
+                        preventDuplicate.append(activityJson['name'])
                         if activityJson['name'] in activitiesExist:
                             printOption.activitiesPrint.pop(activitiesExist.index(activityJson['name']))
-                            if activityJson['print'] == True:
-                                continue
                         activity = ActivityModel(name=activityJson['name'], print=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
                         printOption.activitiesPrint.append(activity)
                     continue
 
                 if key == 'sectionsPrint':
+                    preventDuplicate = []
                     schemaSection = SectionSchema()
                     sectionsExist = [schemaSection.dump(x)['name'] for x in printOptions[key]]
                     for sectionJson in jsonData[key]:
+                        if sectionJson['name'] in preventDuplicate:
+                            continue
+                        preventDuplicate.append(sectionJson['name'])
                         if sectionJson['name'] in sectionsExist:
                             printOption.sectionsPrint.pop(sectionsExist.index(sectionJson['name']))
                             if sectionJson['print'] == True:

@@ -51,9 +51,10 @@ class PecaProjectService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"recordId": id})
-
         printOption = PecaProjectPrintOptionModel.objects(id_peca=id).first()
         try:
+            if not printOption:
+                printOption = PecaProjectPrintOptionModel(id_peca=id)
             schemaPrint = PecaProjectPrintOption()
             schema = YearbookSchema()
             yearbook = peca.yearbook

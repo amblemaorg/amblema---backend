@@ -3,6 +3,7 @@
 
 from functools import reduce
 import operator
+import json
 
 from flask import current_app
 from marshmallow import ValidationError
@@ -10,11 +11,19 @@ from mongoengine import Q
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
+from app.models.peca_yearbook_model import Yearbook
+from app.models.peca_project_print_option_model import PecaProjectPrintOptionModel
 from app.schemas.peca_project_schema import PecaProjectSchema, SchoolSchema
+from app.models.peca_project_print_option_model import ActivityModel, SectionModel
+from app.schemas.peca_project_print_option_schema import PecaProjectPrintOption, ActivitySchema, SectionSchema
+from app.schemas.peca_yearbook_schema import YearbookSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.ma_schema_fields import serialize_links
+
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class PecaProjectService():
@@ -36,6 +45,107 @@ class PecaProjectService():
         schema = PecaProjectSchema(exclude=('school',))
         return {"records": schema.dump(records, many=True)}, 200
 
+    def getPrintOptions(self,id):
+        peca = PecaProject.objects(id=id, isDeleted=False).first()
+        if not peca:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"recordId": id})
+        printOption = PecaProjectPrintOptionModel.objects(id_peca=id).first()
+        try:
+            if not printOption:
+                printOption = PecaProjectPrintOptionModel(id_peca=id)
+            schemaPrint = PecaProjectPrintOption()
+            schema = YearbookSchema()
+            yearbook = peca.yearbook
+            printOptions = schemaPrint.dump(printOption)
+            yearbook = schema.dump(yearbook)
+            pages = [x['name'] for x in printOptions['sectionsPrint']]
+            data = {}
+            activities = {"lapse1" : [], "lapse2" : [], "lapse3" : []}
+            for activity in printOptions['activitiesPrint']:
+                if activity['lapse'] == 'lapse1':
+                    activities['lapse1'].append(
+                        {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
+                elif activity['lapse'] == 'lapse2':
+                    activities['lapse2'].append(
+                        {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
+                elif activity['lapse'] == 'lapse3':
+                    activities['lapse3'].append(
+                        {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
+            data = {"activitiesPrint" : activities,"disablePages" : pages,"index" : printOptions['index'], "diagnosticPrint" : printOptions['diagnosticPrint']}
+            _logger.warning(schemaPrint.dump(printOption))
+            return data, 200
+        except ValidationError as err:
+            return err.normalized_messages(), 400
+
+    def savePrintOptions(self, id, jsonData):
+        peca = PecaProject.objects(id=id, isDeleted=False).only('yearbook').first()
+        if not peca:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"recordId": id})
+        printOption = PecaProjectPrintOptionModel.objects(id_peca=id).first()
+        try:
+            if not printOption:
+                printOption = PecaProjectPrintOptionModel(id_peca=id)
+            printSchema = PecaProjectPrintOption()
+            printOptions = printSchema.dump(printOption)
+            schema = YearbookSchema()
+            keys = [x for x in jsonData.keys()]
+            keysBase = [x for x in printOptions.keys()]
+            _logger.warning(keysBase)
+            for key in keys:
+                if key not in keysBase:
+                    return {'status': 0, 'message': "no correct field"}, 400
+
+                if key == 'index':
+                    printOption.index = jsonData[key]
+                    continue
+
+                if key == 'diagnosticsPrint':
+                    printOption.diagnosticsPrint = jsonData[key]
+                    continue
+
+                if key == 'activitiesPrint':
+                    preventDuplicate = []
+                    schemaActivity = ActivitySchema()
+                    activitiesExist = [schemaActivity.dump(x)['name'] for x in printOptions[key]]
+                    for activityJson in jsonData[key]:
+                        if activityJson['name'] in preventDuplicate:
+                            continue
+                        preventDuplicate.append(activityJson['name'])
+                        if activityJson['name'] in activitiesExist:
+                            printOption.activitiesPrint.pop(activitiesExist.index(activityJson['name']))
+                        activity = ActivityModel(name=activityJson['name'], print=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
+                        printOption.activitiesPrint.append(activity)
+                    continue
+
+                if key == 'sectionsPrint':
+                    preventDuplicate = []
+                    schemaSection = SectionSchema()
+                    sectionsExist = [schemaSection.dump(x)['name'] for x in printOptions[key]]
+                    for sectionJson in jsonData[key]:
+                        if sectionJson['name'] in preventDuplicate:
+                            continue
+                        preventDuplicate.append(sectionJson['name'])
+                        if sectionJson['name'] in sectionsExist:
+                            printOption.sectionsPrint.pop(sectionsExist.index(sectionJson['name']))
+                            if sectionJson['print'] == True:
+                                continue
+                        section = SectionModel(name=sectionJson['name'], print=sectionJson['print'])
+                        printOption.sectionsPrint.append(section)
+                    continue
+            try:
+                _logger.warning("PRE-GUARDADO")
+                printOption.save()
+                _logger.warning("GUARDADO")
+                return schema.dump(printOption), 200
+            except Exception as e:
+                    return {'status': 0, 'message': str(e)}, 400
+        except ValidationError as err:
+                return err.normalized_messages(), 400
+
     def get(self, id):
         from app.models.school_user_model import SchoolUser
         from app.models.sponsor_user_model import SponsorUser
@@ -43,7 +153,6 @@ class PecaProjectService():
         from app.schemas.school_user_schema import TeacherTestimonialSchema
         from app.schemas.teacher_schema import TeacherSchema
         from app.schemas.shared_schemas import ImageStatusSchema
-        from app.schemas.peca_yearbook_schema import YearbookSchema
         from app.schemas.monitoring_activity_schema import MonitoringActivitySchema
         from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
         from app.models.project_model import Project
@@ -217,7 +326,7 @@ class PecaProjectService():
                 peca.environmentalProject = envProject
 
     def getYearbookData(self, peca, school, sponsor, coordinator, data):
-        
+
         if not peca.yearbook.historicalReview.image:
             data['historicalReview']['content'] = school.historicalReview.content
             data['historicalReview']['image'] = serialize_links(

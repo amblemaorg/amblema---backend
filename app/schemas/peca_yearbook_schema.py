@@ -10,13 +10,10 @@ from app.helpers.ma_schema_fields import MAImageField
 from app.schemas.shared_schemas import ApprovalSchema
 
 from flask import current_app
-
-
 class EntitySchema(Schema):
     name = fields.Str(allow_none=True)
     image = MAImageField(allow_none=True)
     content = fields.Str(allow_none=True)
-
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -25,14 +22,12 @@ class EntitySchema(Schema):
     def make_document(self, data, **kwargs):
         return Entity(**data)
 
-
 class SectionImageSchema(Schema):
     id = fields.Str()
     name = fields.Str()
     grade = fields.Str()
     image = MAImageField(allow_none=True, validate=validate_image,
                          folder='sections')
-
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -42,7 +37,6 @@ class LapseSchema(Schema):
     readingDiagnosticAnalysis = fields.Str()
     mathDiagnosticAnalysis = fields.Str()
     logicDiagnosticAnalysis = fields.Str()
-
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -50,8 +44,6 @@ class LapseSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         return Lapse(**data)
-
-
 class YearbookSchema(Schema):
     historicalReview = fields.Nested(EntitySchema)
     sponsor = fields.Nested(EntitySchema)

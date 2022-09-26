@@ -1,11 +1,11 @@
 aniso8601==9.0.1
-bcrypt==3.2.0
+bcrypt==3.2.2
 blinker==1.4
 Brotli==1.0.9
-certifi==2021.10.8
+certifi==2022.6.15
 cffi==1.15.0
 chardet==4.0.0
-charset-normalizer==2.0.12
+charset-normalizer==2.1.0
 click==8.0.4
 coverage==6.2
 Flask==1.1.2 #BREAKING BRANCH
@@ -16,7 +16,7 @@ Flask-JWT-Extended==3.25.1  #BREAKING BRANCH
 flask-mongoengine==1.0.0
 Flask-RESTful==0.3.9
 Flask-Script==2.0.6
-Flask-WTF==1.0.0
+Flask-WTF==1.0.1
 idna==3.3
 itsdangerous==2.0.1
 Jinja2==3.0.3
@@ -26,10 +26,10 @@ mongoengine==0.24.1
 Pillow==8.4.0
 pycparser==2.21
 PyJWT==1.7.1 #BREAKING BRANCH
-pymongo==4.0.2
+pymongo==4.1.1
 pytz==2022.1
 requests==2.27.1
 six==1.16.0
 urllib3==1.26.9
 Werkzeug==2.0.3
-WTForms==3.0.0
+WTForms==3.0.1

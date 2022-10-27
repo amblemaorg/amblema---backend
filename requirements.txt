@@ -5,7 +5,7 @@ Brotli==1.0.9
 certifi==2022.6.15
 cffi==1.15.0
 chardet==4.0.0
-charset-normalizer==2.1.0
+charset-normalizer==2.0.0
 click==8.0.4
 coverage==6.2
 Flask==1.1.2 #BREAKING BRANCH
@@ -32,4 +32,4 @@ requests==2.27.1
 six==1.16.0
 urllib3==1.26.9
 Werkzeug==2.0.3
-WTForms==3.0.1
+WTForms==3.0.0

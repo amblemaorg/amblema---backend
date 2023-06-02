@@ -10,6 +10,20 @@ from app.schemas import fields
 from app.models.user_model import User
 
 
+class MeSchema(Schema):
+    email = fields.Str(required=True, validate=(validate_email))
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
+    @pre_load
+    def process_input(self, data, **kwargs):
+        if 'email' in data and isinstance(data["email"], str):
+            data["email"] = str(data["email"]).lower()
+        return data
+
+
 class LoginSchema(Schema):
     email = fields.Str(required=True, validate=(validate_email))
     password = fields.Str(

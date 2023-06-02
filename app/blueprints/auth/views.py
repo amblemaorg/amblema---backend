@@ -24,8 +24,43 @@ from app.schemas.coordinator_user_schema import CoordinatorUserSchema
 from app.schemas.admin_user_schema import AdminUserSchema
 from app.models.project_model import Project
 from app.models.school_year_model import SchoolYear
-from .schemas import RecoverySchema, ChangePasswordSchema, LoginSchema
+from .schemas import RecoverySchema, ChangePasswordSchema, LoginSchema, MeSchema
 from app.helpers.ma_schema_validators import ValidationError
+
+
+class MeView(MethodView):
+    """This class-based view handles user ."""
+
+    @jwt_required
+    def post(self):
+        schema = MeSchema()
+
+        try:
+            jsonData = request.get_json()
+            data = schema.load(jsonData)
+            user = User.objects(email=data['email'], isDeleted=False).only(
+                'id', 'role', 'userType', 'password').first()
+            schema = UserSchema()
+            if not user:
+                return {
+                    "email": [
+                        {"status": "5", "msg": "Record not found: {}".format(
+                            data['email'])}
+                    ]
+                }, 400
+
+            if user.role.status == "2":
+                return {"role": [{"status": "15", "msg": "No authorized"}]}, 400
+
+            # Generate the access token.
+            # This will be generated in login microservice
+            payload = getUserData(user)
+            resp = jsonify(payload)
+
+            return resp, 200
+
+        except ValidationError as err:
+            return err.normalized_messages(), 400
 
 
 class LoginView(MethodView):
@@ -150,7 +185,10 @@ class ChangePasswordView(MethodView):
             return err.normalized_messages(), 400
 
 
+
+
 # Define the API resource
+me_view = MeView.as_view('me_view')
 login_view = LoginView.as_view('login_view')
 refresh_view = TokenRefreshView.as_view('refresh_view')
 recovery_view = RecoveryPasswordView.as_view('recovery_view')
@@ -160,10 +198,20 @@ change_password_view = ChangePasswordView.as_view('change_password_view')
 # Define the rule for the registration url --->  /auth/login
 # Then add the rule to the blueprint
 auth_blueprint.add_url_rule(
+    '/auth/me',
+    view_func=me_view,
+    methods=['POST']
+)
+
+# Define the rule for the registration url --->  /auth/login
+# Then add the rule to the blueprint
+auth_blueprint.add_url_rule(
     '/auth/login',
     view_func=login_view,
     methods=['POST', 'DELETE']
 )
+
+
 
 # Define the rule for the registration url --->  /auth/login
 # Then add the rule to the blueprint
@@ -189,6 +237,36 @@ auth_blueprint.add_url_rule(
 def getUserPayload(user):
     schema = UserSchema()
     refreshSchema = UserSchema(only=('id',))
+    exclude = 'projects', 'addressState', 'addressMunicipality', 'addressCity', 'createdAt', 'updatedAt', 'image', 'homePhone', 'addressHome', 'isReferred', 'referredName', 'learning', 'nCoins', 'instructed', 'phase', 'address', 'firstName', 'lastName', 'cardType', 'cardId', 'gender'
+
+    if user.userType == '1':  # admin
+        user = AdminUser.objects(id=user.id).first()
+        schema = AdminUserSchema()
+    elif user.userType == '2':  # coordinator
+        user = CoordinatorUser.objects(id=user.id).first()
+        schema = CoordinatorUserSchema()
+    elif user.userType == '3':  # sponsor
+        user = SponsorUser.objects(id=user.id).first()
+        schema = SponsorUserSchema()
+    elif user.userType == '4':  # school
+        user = SchoolUser.objects(id=user.id).first()
+        schema = SchoolUserSchema()
+
+    userJson = schema.dump(user) #returns an object collections.OrderedDict, not a Json as it is.
+
+    for element in exclude:
+        try:
+            userJson.pop(element)
+        except:
+            continue
+
+    refreshJson = refreshSchema.dump(user)
+    payload = userJson
+
+    return {'accessPayload': payload, 'refreshPayload': refreshJson}
+
+def getUserData(user):
+    schema = UserSchema()
     
     if user.userType == '1':  # admin
         user = AdminUser.objects(id=user.id).first()
@@ -203,10 +281,12 @@ def getUserPayload(user):
         user = SchoolUser.objects(id=user.id).first()
         schema = SchoolUserSchema()
 
-    userJson = schema.dump(user)
+    userJson = schema.dump(user) #returns an object collections.OrderedDict, not a Json as it is.
+
     permissions = user.get_permissions()
     projectsJson = []
     projects = []
+
     activeSchoolYear = SchoolYear.objects(
         isDeleted=False, status="1").only('id', 'name').first()
     if activeSchoolYear:
@@ -214,6 +294,7 @@ def getUserPayload(user):
             "id": str(activeSchoolYear.id),
             "name": activeSchoolYear.name
         }
+
     if user.userType == "2":
         projects = Project.objects(
             isDeleted=False, status="1", coordinator=user.id).exclude('stepsProgress',)
@@ -253,11 +334,9 @@ def getUserPayload(user):
                 ]
             }
         )
-    refreshJson = refreshSchema.dump(user)
     payload = userJson
     payload['projects'] = projectsJson
     payload['activeSchoolYear'] = activeSchoolYear
     payload['permissions'] = permissions
-    
 
-    return {'accessPayload': payload, 'refreshPayload': refreshJson}
+    return {'data': payload}

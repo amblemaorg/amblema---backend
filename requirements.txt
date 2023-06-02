@@ -28,8 +28,8 @@ pycparser==2.21
 PyJWT==1.7.1 #BREAKING BRANCH
 pymongo==4.1.1
 pytz==2022.1
-requests==2.27.1
+requests
 six==1.16.0
 urllib3==1.26.9
 Werkzeug==2.0.3
-WTForms==3.0.1
+WTForms

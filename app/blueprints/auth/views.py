@@ -8,7 +8,7 @@ from flask.views import MethodView
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, get_jti, get_raw_jwt,
     jwt_required, jwt_refresh_token_required, get_jwt_identity,
-    set_access_cookies, set_refresh_cookies)
+    set_access_cookies, set_refresh_cookies, decode_token)
 import copy
 
 from app.blueprints.auth import auth_blueprint
@@ -32,28 +32,26 @@ class MeView(MethodView):
     """This class-based view handles user ."""
 
     @jwt_required
-    def post(self):
-        schema = MeSchema()
+    def get(self):
 
         try:
-            jsonData = request.get_json()
-            data = schema.load(jsonData)
-            user = User.objects(email=data['email'], isDeleted=False).only(
+            #Gets email from token, and looks for it in database
+            token = request.headers['Authorization'].split()[1]
+            decoded_token = decode_token(token)
+            user = User.objects(email=decoded_token['identity']['email'], isDeleted=False).only(
                 'id', 'role', 'userType', 'password').first()
-            schema = UserSchema()
             if not user:
                 return {
                     "email": [
                         {"status": "5", "msg": "Record not found: {}".format(
-                            data['email'])}
+                            decoded_token['identity']['email'])}
                     ]
                 }, 400
 
             if user.role.status == "2":
                 return {"role": [{"status": "15", "msg": "No authorized"}]}, 400
 
-            # Generate the access token.
-            # This will be generated in login microservice
+            # Sends the payload of the user related data
             payload = getUserData(user)
             resp = jsonify(payload)
 
@@ -200,7 +198,7 @@ change_password_view = ChangePasswordView.as_view('change_password_view')
 auth_blueprint.add_url_rule(
     '/auth/me',
     view_func=me_view,
-    methods=['POST']
+    methods=['GET']
 )
 
 # Define the rule for the registration url --->  /auth/login

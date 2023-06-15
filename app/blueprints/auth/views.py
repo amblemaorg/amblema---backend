@@ -252,6 +252,8 @@ def getUserPayload(user):
 
     userJson = schema.dump(user) #returns an object collections.OrderedDict, not a Json as it is.
 
+    permissions = user.get_permissions()
+
     for element in exclude:
         try:
             userJson.pop(element)
@@ -260,7 +262,7 @@ def getUserPayload(user):
 
     refreshJson = refreshSchema.dump(user)
     payload = userJson
-
+    payload['permissions'] = permissions
     return {'accessPayload': payload, 'refreshPayload': refreshJson}
 
 def getUserData(user):

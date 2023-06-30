@@ -31,7 +31,10 @@ from app.controllers.learning_module_controller import (
     AnswerLearningModuleController
 )
 from app.controllers.school_year_controller import (
-    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl, CronDiagnisticosCtrl, CronAddDiagnosticsCtrl
+    SchoolYearController, SchoolYearHandlerController, EnrollCtrl, 
+    EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl, 
+    CronDiagnisticosCtrl, CronAddDiagnosticsCtrl, CronClearApprovalHistoryCtrl,
+    ClearApprovalHistoryPastYearCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -404,6 +407,8 @@ def create_app(config_instance):
     api.add_resource(CronAddDiagnosticsCtrl, '/cron/diagonisticos/add/<int:limit>/<int:skip>')
     
     api.add_resource(PecaGradeController, '/peca/grade/<pecaId>')
-
     
+    api.add_resource(CronClearApprovalHistoryCtrl, '/cron/approvalHistory/clear/<int:desde>/<int:hasta>')
+
+    api.add_resource(ClearApprovalHistoryPastYearCtrl, '/clear/approvalHistoryPast')
     return app

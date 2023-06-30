@@ -4,7 +4,7 @@
 from flask import request
 from flask_restful import Resource
 
-from app.services.school_year_service import SchoolYearService, CronDiagnosticosService, CronAddDiagnosticsService
+from app.services.school_year_service import SchoolYearService, CronDiagnosticosService, CronAddDiagnosticsService, CronClearApprovalHistoryService, ClearApprovalHistoryPastYearService
 from app.models.school_year_model import SchoolYear
 from app.schemas.school_year_schema import SchoolYearSchema
 from app.helpers.handler_request import getQueryParams
@@ -100,3 +100,15 @@ class CronAddDiagnosticsCtrl(Resource):
     service = CronAddDiagnosticsService()
     def get(self, limit,skip):
         return self.service.run(limit, skip)
+
+class CronClearApprovalHistoryCtrl(Resource):
+    service = CronClearApprovalHistoryService()
+    def get(self, desde,hasta):
+        return self.service.run(desde, hasta)
+
+ 
+class ClearApprovalHistoryPastYearCtrl(Resource):
+    service = ClearApprovalHistoryPastYearService()
+    def get(self):
+        return self.service.run()
+    

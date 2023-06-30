@@ -82,10 +82,10 @@ class SchoolPageContentService():
         currentPeriod = SchoolYear.objects(isDeleted=False, status="1").first()
         if currentPeriod:
             schoolsIds = []
-            pecas = PecaProject.objects(isDeleted=False, schoolYear=currentPeriod.id)
+            pecas = PecaProject.objects(isDeleted=False, schoolYear=currentPeriod.id).only("project__school")
             for peca in pecas:
                 schoolsIds.append(peca.project.school.id)
-            schools = SchoolUser.objects(isDeleted=False, pk__in=schoolsIds, coordinate__exists=True).all()
+            schools = SchoolUser.objects(isDeleted=False, pk__in=schoolsIds, coordinate__exists=True).only('id', 'code', 'slug', 'name', 'coordinate', "addressState").all()
             schools = schema.dump(schools, many=True)
         states = State.objects(isDeleted=False)
         states_data = [{"name": state.name, "id": str(state.id)} for state in states]

@@ -3,10 +3,12 @@
 
 import re
 import datetime
+from datetime import timedelta
 
 from flask import current_app
 from marshmallow import ValidationError
 from pymongo import UpdateOne
+from mongoengine.queryset.visitor import Q
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
@@ -352,3 +354,89 @@ class CronAddDiagnosticsService():
             return {"message": "Cron ejecutado"}, 200            
         else:
             return {"message": "No hay año escolar activo"}, 200
+
+class CronClearApprovalHistoryService():
+    def run(self, desde, hasta):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        if schoolYear:
+            try:
+                # Obtengo el primer día del mes desde
+                fecha_inicio = datetime.datetime(datetime.datetime.now().year, desde, 1)
+
+                # Obtengo el último día del mes hasta
+                fecha_fin = datetime.datetime(datetime.datetime.now().year, hasta, 1) + timedelta(days=31)
+                fecha_fin = fecha_fin.replace(day=1) - timedelta(days=1)
+                
+                pecas = PecaProject.objects(
+                    yearbook__approvalHistory__updatedAt__lt=fecha_inicio,
+                    isDeleted=False,
+                    schoolYear=schoolYear.id
+                ).only("id")
+                
+                for peca in pecas:
+                    peca = PecaProject.objects.only("id", "yearbook__approvalHistory").get(id=peca.id)
+                    # Filtro los datos que necesito mantener
+                    elementos_filtrados = [
+                        elem for elem in peca.yearbook.approvalHistory
+                        if ((elem.status == "1" or elem.status == "2") and elem.updatedAt >= fecha_inicio)  
+                    ]
+                    
+                    # Dejamos solo el ultimo historico aprobado
+                    nueva_lista = []
+                    encontrado_ultimo = False
+                    
+                    if elementos_filtrados:
+                        for elem in reversed(elementos_filtrados):
+                            if elem.status != "2":
+                                nueva_lista.append(elem)
+
+                            if elem.status == "2" and not encontrado_ultimo:
+                                nueva_lista.append(elem)
+                                encontrado_ultimo = True
+
+                        if nueva_lista:
+                            elementos_filtrados = list(reversed(nueva_lista))
+                    
+                    # Actualizar approvalHistory con los elementos filtrados
+                    peca.yearbook.approvalHistory = elementos_filtrados
+                    
+                    # Guardar los cambios en el documento
+                    peca.save()    
+                
+                return {"message": "Cron ejecutado"}, 200            
+            except Exception as e:
+                return {"message": "Cron error: "+str(e)}, 400
+        else:
+            return {"message": "No hay año escolar activo"}, 200
+
+class ClearApprovalHistoryPastYearService():
+    def run(self):
+        try:
+            schoolYears = SchoolYear.objects(isDeleted=False, status = "2")
+            for schoolYear in schoolYears:
+                pecas = PecaProject.objects(
+                    isDeleted=False,
+                    schoolYear=schoolYear.id
+                ).only("id")
+                
+                for peca in pecas:
+                    peca = PecaProject.objects.only("id", "yearbook__approvalHistory").get(id=peca.id)
+                    # Filtro los datos que necesito mantener
+                    elementos_filtrados = [
+                        elem for elem in peca.yearbook.approvalHistory
+                        if (elem.status == "2")
+                    ]
+                    
+                    # Dejamos solo el ultimo historico aprobado
+                    if elementos_filtrados:
+                        elementos_filtrados = [elementos_filtrados[-1]]
+                    
+                    # Actualizar approvalHistory con los elementos filtrados
+                    peca.yearbook.approvalHistory = elementos_filtrados
+                        
+                    # Guardar los cambios en el documento
+                    peca.save()  
+
+            return {"message": "Ejecutado"}, 200            
+        except Exception as e:
+            return {"message": "Cron error: "+str(e)}, 400

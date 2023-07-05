@@ -25,12 +25,22 @@ class RequestContentApprovalService(GenericServices):
             for f in filters:
                 filterList.append(Q(**{f['field']: f['value']}))
             records = self.Model.objects(isDeleted=False).filter(
-                reduce(operator.and_, filterList)).order_by("-updatedAt","status").limit(40)
+                reduce(operator.and_, filterList)).order_by("-updatedAt","status").limit(50)
         else:
             records = self.Model.objects(
-                isDeleted=False).order_by("-updatedAt","status").limit(40)
+                isDeleted=False).order_by("-updatedAt","status").limit(50)
+        
         for record in records:
+            # Check if the sections key exists in detail
+            if "sections" in record["detail"]:
+                for section in record["detail"]["sections"]:
+                    # Check if the key students exists in section to remove it from the response
+                    if "students" in section:
+                        del section["students"]
+                    
             data = schema.dump(record)
             data['typeUser'] = record.user.userType
+        
             recordsJson.append(data)
+        
         return {"records": recordsJson}, 200

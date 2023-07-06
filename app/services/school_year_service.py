@@ -378,21 +378,25 @@ class CronClearApprovalHistoryService():
                     # Filtro los datos que necesito mantener
                     elementos_filtrados = [
                         elem for elem in peca.yearbook.approvalHistory
-                        if ((elem.status == "1" or elem.status == "2") and elem.updatedAt >= fecha_inicio)  
+                        if ((elem.status == "1" or elem.status == "2" or elem.status=="3") and elem.updatedAt >= fecha_inicio)  
                     ]
                     
                     # Dejamos solo el ultimo historico aprobado
                     nueva_lista = []
                     encontrado_ultimo = False
-                    
+                    encontrado_rechazado = False
                     if elementos_filtrados:
                         for elem in reversed(elementos_filtrados):
-                            if elem.status != "2":
+                            if elem.status != "2" and elem.status != "3":
                                 nueva_lista.append(elem)
 
                             if elem.status == "2" and not encontrado_ultimo:
                                 nueva_lista.append(elem)
                                 encontrado_ultimo = True
+
+                            if elem.status == "3" and not encontrado_rechazado:
+                                nueva_lista.append(elem)
+                                encontrado_rechazado = True
 
                         if nueva_lista:
                             elementos_filtrados = list(reversed(nueva_lista))

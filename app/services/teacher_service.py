@@ -52,7 +52,7 @@ class TeacherService():
                     )
                 try:
                     school.teachers.append(teacher)
-                    school.nTeachers = len(school.teachers.filter(isDeleted=False))
+                    school.nTeachers = len(school.teachers.filter(isDeleted=False, status="1"))
                     school.save()
                     period = SchoolYear.objects(
                         isDeleted=False, status="1").first()
@@ -152,7 +152,7 @@ class TeacherService():
                     school.teachers.filter(
                     id=teacherId, isDeleted=False).update(isDelete = True)
                     school.save()
-                    school.nTeachers = len(school.teachers.filter(isDeleted=False))
+                    school.nTeachers = len(school.teachers.filter(isDeleted=False, status="1"))
                     school.save()
                     """SchoolUser.objects(
                         id=schoolId,

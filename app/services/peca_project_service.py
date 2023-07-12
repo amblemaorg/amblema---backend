@@ -172,6 +172,13 @@ class PecaProjectService():
             for section in peca.school.sections:
                 section.students = section.students.filter(isDeleted=False)
             data = schema.dump(peca)
+            activities = []
+            for i in range(1, 4):
+                for activity in data["lapse{}".format(i)]["activities"]:
+                    if activity["status"] == "1":
+                        activities.append(activity)
+                data["lapse{}".format(i)]["activities"] = activities
+                
             # field for see go to steps option in peca menu
             data['steps'] = str(
                 project.id) if amblemaConfirmation and amblemaConfirmation.status == "3" else False

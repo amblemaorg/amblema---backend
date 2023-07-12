@@ -758,13 +758,18 @@ class ActivityService():
                                 else:
                                     for act in peca['lapse{}'.format(data['lapse'])].activities:
                                         if act.id == str(activity.id):
-                                            peca['lapse{}'.format(
-                                                data['lapse'])].activities.remove(act)
-                                bulk_operations.append(
-                                    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
-                            if bulk_operations:
-                                PecaProject._get_collection() \
-                                    .bulk_write(bulk_operations, ordered=False)
+                                            #peca['lapse{}'.format(
+                                            #    data['lapse'])].activities.remove(act)
+                                            act.status="2"
+                                            print(peca.id)
+                                            print("encontro")
+                                peca.save()
+                                print("paso")
+                                #bulk_operations.append(
+                                #    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                            #if bulk_operations:
+                            #    PecaProject._get_collection() \
+                            #        .bulk_write(bulk_operations, ordered=False)
                             break
                 if found:
                     schoolYear.save()

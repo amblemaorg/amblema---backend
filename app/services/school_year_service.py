@@ -279,7 +279,7 @@ class SchoolYearService(GenericServices):
             nStudents = 0
             for peca in pecas:
                 schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
-                peca.school.nTeachers = len(schoolUser.teachers.filter(isDeleted=False))
+                peca.school.nTeachers = len(schoolUser.teachers.filter(isDeleted=False, status="1"))
                 schoolUser.nTeachers = peca.school.nTeachers
                 peca.school.nStudents = 0
                 for section in peca.school.sections.filter(isDeleted=False):

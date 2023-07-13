@@ -98,7 +98,7 @@ class SchoolPageContentService():
         school = SchoolUser.objects(code=code, isDeleted=False).first()
         nearbySchools = SchoolUser.objects(
             code__ne=code,
-            isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id', 'slug', 'name', 'image').order_by("createdAt DESC").limit(3)
+            isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image').order_by("createdAt DESC").limit(3)
         pecasIds = [peca.pecaId for peca in school.project.schoolYears]
         pecas = PecaProject.objects(
             id__in=pecasIds, isDeleted=False).only("school","createdAt","schoolYearName",).order_by('createdAt').limit(5)

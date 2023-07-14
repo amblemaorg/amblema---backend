@@ -93,15 +93,15 @@ class SchoolPageContentService():
 
     def get(self, id):
 
-        currentPeriod = SchoolYear.objects(isDeleted=False, status="1").first()
+        currentPeriod = SchoolYear.objects(isDeleted=False, status="1").only("pecaSetting").first()
         code = id.split("_", 1)[0]
         school = SchoolUser.objects(code=code, isDeleted=False).first()
         nearbySchools = SchoolUser.objects(
             code__ne=code,
-            isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True)[:3]
+            isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image').order_by("createdAt DESC").limit(3)
         pecasIds = [peca.pecaId for peca in school.project.schoolYears]
         pecas = PecaProject.objects(
-            id__in=pecasIds, isDeleted=False).order_by('createdAt')[:5]
+            id__in=pecasIds, isDeleted=False).only("school","createdAt","schoolYearName",).order_by('createdAt').limit(5)
         currentPeca = pecas[len(pecas)-1]
 
         diagnostics = {

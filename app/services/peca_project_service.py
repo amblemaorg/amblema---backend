@@ -46,7 +46,7 @@ class PecaProjectService():
         return {"records": schema.dump(records, many=True)}, 200
 
     def getPrintOptions(self,id):
-        peca = PecaProject.objects(id=id, isDeleted=False).first()
+        peca = PecaProject.objects(id=id, isDeleted=False).only("id").first()
         if not peca:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -56,10 +56,10 @@ class PecaProjectService():
             if not printOption:
                 printOption = PecaProjectPrintOptionModel(id_peca=id)
             schemaPrint = PecaProjectPrintOption()
-            schema = YearbookSchema()
-            yearbook = peca.yearbook
+            #schema = YearbookSchema()
+            #yearbook = peca.yearbook
             printOptions = schemaPrint.dump(printOption)
-            yearbook = schema.dump(yearbook)
+            #yearbook = schema.dump(yearbook)
             pages = [x['name'] for x in printOptions['sectionsPrint']]
             data = {}
             activities = {"lapse1" : [], "lapse2" : [], "lapse3" : []}
@@ -74,13 +74,14 @@ class PecaProjectService():
                     activities['lapse3'].append(
                         {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
             data = {"activitiesPrint" : activities,"disablePages" : pages,"index" : printOptions['index'], "diagnosticPrint" : printOptions['diagnosticPrint']}
-            _logger.warning(schemaPrint.dump(printOption))
+            
             return data, 200
         except ValidationError as err:
             return err.normalized_messages(), 400
 
     def savePrintOptions(self, id, jsonData):
         peca = PecaProject.objects(id=id, isDeleted=False).only('yearbook').first()
+        
         if not peca:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
@@ -188,7 +189,9 @@ class PecaProjectService():
             sponsor = SponsorUser.objects.get(id=peca.project.sponsor.id)
             coordinator = CoordinatorUser.objects.get(
                 id=peca.project.coordinator.id)
-
+            
+            count = len(data["yearbook"]["approvalHistory"])
+            data["yearbook"]["approvalHistory"] = [data["yearbook"]["approvalHistory"][count-1]] if len(data["yearbook"]["approvalHistory"]) > 0 else []
             data['yearbook'] = self.getYearbookData(peca, school,sponsor,coordinator, data['yearbook'])
             return data, 200
         else:
@@ -439,4 +442,5 @@ class PecaProjectService():
                         'images': serialize_links(activity.yearbook.images)
                     }
                 )
+        
         return data

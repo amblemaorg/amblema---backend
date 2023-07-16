@@ -344,7 +344,11 @@ class ProjectService():
                         currentPeca = PecaProject.objects(isDeleted=False, project__id=str(
                             document.id), schoolYear=str(schoolYear.id)).first()
                         if currentPeca:
-                            currentPeca.project = document.getReference()
+                            projectReference = document.getReference()
+                            currentPeca.project = projectReference
+                            currentPeca.yearbook.sponsor.name = projectReference.sponsor["name"]
+                            currentPeca.yearbook.sponsor.content = ''
+                            currentPeca.yearbook.sponsor.image = ''
                             currentPeca.save()
 
         if document.school != oldDocument.school:
@@ -387,7 +391,12 @@ class ProjectService():
                         currentPeca = PecaProject.objects(isDeleted=False, project__id=str(
                             document.id), schoolYear=str(schoolYear.id)).first()
                         if currentPeca:
-                            currentPeca.project = document.getReference()
+                            projectReference = document.getReference()
+                            currentPeca.project = projectReference
+                            currentPeca.yearbook.school.name = projectReference.school["name"]
+                            currentPeca.yearbook.school.content = ''
+                            currentPeca.yearbook.school.image = ''
+                            
                             currentPeca.save()
 
         if document.coordinator != oldDocument.coordinator:
@@ -448,7 +457,11 @@ class ProjectService():
                         currentPeca = PecaProject.objects(isDeleted=False, project__id=str(
                             document.id), schoolYear=str(schoolYear.id)).first()
                         if currentPeca:
-                            currentPeca.project = document.getReference()
+                            projectReference = document.getReference()
+                            currentPeca.project = projectReference
+                            currentPeca.yearbook.coordinator.name = projectReference.coordinator["name"]
+                            currentPeca.yearbook.coordinator.content = ''
+                            currentPeca.yearbook.coordinator.image = ''
                             currentPeca.save()
         if document.phase == "1":
             document.stepsProgress.updateProgress()

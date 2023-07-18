@@ -444,3 +444,36 @@ class ClearApprovalHistoryPastYearService():
             return {"message": "Ejecutado"}, 200            
         except Exception as e:
             return {"message": "Cron error: "+str(e)}, 400
+        
+class CronUpdateDataProjectsService():
+    def run(self):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        print("ss")
+        if schoolYear:
+            try:
+                pecas = PecaProject.objects(
+                    isDeleted=False,
+                    schoolYear=schoolYear.id
+                ).only("id")
+                
+                for peca in pecas:
+                    print(peca.id)
+                    peca = PecaProject.objects.only("id", "project","yearbook__school","yearbook__coordinator", "yearbook__sponsor").get(id=peca.id)
+                    sponsor = SponsorUser.objects.only("id", "name").get(id=peca.project.sponsor.id)
+                    coordinator = CoordinatorUser.objects.only("id", "name").get(id=peca.project.coordinator.id)
+                    school = SchoolUser.objects.only("id", "name").get(id=peca.project.school.id)
+
+                    peca.project.school.name = school.name
+                    peca.yearbook.school.name = school.name
+                    peca.project.coordinator.name = coordinator.name
+                    peca.yearbook.coordinator.name = coordinator.name
+                    peca.project.sponsor.name = sponsor.name
+                    peca.yearbook.sponsor.name = sponsor.name
+                    peca.save()
+
+                return {"message": "Ejecutado"}, 200            
+            
+            except Exception as e:
+                return {"message": "Cron error: "+str(e)}, 400
+        else:
+            return {"message": "No hay año escolar activo"}, 200

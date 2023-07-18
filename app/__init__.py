@@ -34,7 +34,7 @@ from app.controllers.school_year_controller import (
     SchoolYearController, SchoolYearHandlerController, EnrollCtrl, 
     EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl, 
     CronDiagnisticosCtrl, CronAddDiagnosticsCtrl, CronClearApprovalHistoryCtrl,
-    ClearApprovalHistoryPastYearCtrl
+    ClearApprovalHistoryPastYearCtrl, CronUpdateDataProjectsCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -411,4 +411,7 @@ def create_app(config_instance):
     api.add_resource(CronClearApprovalHistoryCtrl, '/cron/approvalHistory/clear/<int:desde>/<int:hasta>')
 
     api.add_resource(ClearApprovalHistoryPastYearCtrl, '/clear/approvalHistoryPast')
+    
+    api.add_resource(CronUpdateDataProjectsCtrl,'/cron/update/data/projects')
+    
     return app

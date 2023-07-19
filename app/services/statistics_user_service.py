@@ -91,10 +91,11 @@ class StatisticsUserService():
                             for teacher in annualPreparation.teachers:
                                 annualPreparationTeachers[teacher.id] = teacher.annualPreparationStatus
                 schools = SchoolUser.objects(
-                    isDeleted=False, status="1", id__in=schoolsIds.keys()).only('teachers', 'id')
+                    isDeleted=False, status="1", id__in=schoolsIds.keys()).only('name','teachers', 'id')
                 for school in schools:
                     for teacher in school.teachers.filter(isDeleted=False):
                         available = True
+                        teacher.schoolName = school.name
                         for f in filters:
                             if hasattr(teacher, f['field']) and teacher[f['field']] != f['value']:
                                 available = False
@@ -113,6 +114,7 @@ class StatisticsUserService():
                     user = usersType[userType]['schema'].dump(record)
                     if userType == "3":
                         user['pecaId'] = record.pecaId
+                        user["schoolName"] = record.schoolName
                     user['addressState'] = "" if not user['addressState'] else user['addressState']['name']
                     user['addressMunicipality'] = "" if not user['addressMunicipality'] else user['addressMunicipality']['name']
                     if userType in ('0', '1'):

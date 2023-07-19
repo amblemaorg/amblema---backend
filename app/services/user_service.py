@@ -138,7 +138,7 @@ class UserService(GenericServices):
                             isDeleted=False, status="1").first()
                         if schoolYear:
                             peca = PecaProject.objects(
-                                isDeleted=False, project__school__id=recordId, schoolYear=schoolYear.pk).first()
+                                isDeleted=False, project__school__id=recordId, schoolYear=schoolYear.pk).only("id", "school", "project__school", "yearbook__school").first()
                             if peca:
                                 peca.school.name = record.name
                                 peca.school.code = record.code
@@ -163,7 +163,38 @@ class UserService(GenericServices):
                                 peca.school.facebook = record.facebook
                                 peca.school.instagram = record.instagram
                                 peca.school.twitter = record.twitter
+                                
+                                peca.project.school.name = record.name
+                                peca.yearbook.school.name = record.name
                                 peca.save()
+                    if self.Model.__name__ == 'SponsorUser':
+                        print("paso2")
+                        schoolYear = SchoolYear.objects(
+                            isDeleted=False, status="1").first()
+                        if schoolYear:
+                            print("paso2")
+                            pecas = PecaProject.objects(
+                                isDeleted=False, project__sponsor__id=recordId, schoolYear=schoolYear.pk).only("id","project__sponsor", "yearbook__sponsor")
+                            for peca in pecas:
+                                print("paso2")
+                                peca.project.sponsor.name = record.name
+                                peca.yearbook.sponsor.name = record.name
+                                peca.save()
+                    
+                    if self.Model.__name__ == 'CoordinatorUser':
+                        print("paso2")
+                        schoolYear = SchoolYear.objects(
+                            isDeleted=False, status="1").first()
+                        if schoolYear:
+                            print("paso2")
+                            pecas = PecaProject.objects(
+                                isDeleted=False, project__coordinator__id=recordId, schoolYear=schoolYear.pk).only("id","project__coordinator", "yearbook__coordinator")
+                            for peca in pecas:
+                                print("paso2")
+                                peca.project.coordinator.name = record.name
+                                peca.yearbook.coordinator.name = record.name
+                                peca.save()
+                    
 
             return schema.dump(record), 200
         except ValidationError as err:

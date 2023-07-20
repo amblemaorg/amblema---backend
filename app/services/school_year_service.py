@@ -446,7 +446,7 @@ class ClearApprovalHistoryPastYearService():
             return {"message": "Cron error: "+str(e)}, 400
         
 class CronUpdateDataProjectsService():
-    def run(self):
+    def run(self, limit, skip):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         print("ss")
         if schoolYear:
@@ -454,7 +454,7 @@ class CronUpdateDataProjectsService():
                 pecas = PecaProject.objects(
                     isDeleted=False,
                     schoolYear=schoolYear.id
-                ).only("id")
+                ).only("id").limit(limit).skip(skip)
                 
                 for peca in pecas:
                     print(peca.id)

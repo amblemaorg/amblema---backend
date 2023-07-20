@@ -116,5 +116,5 @@ class ClearApprovalHistoryPastYearCtrl(Resource):
     
 class CronUpdateDataProjectsCtrl(Resource):
     service = CronUpdateDataProjectsService()
-    def get(self):
-        return self.service.run()
+    def get(self, limit, skip):
+        return self.service.run(limit, skip)

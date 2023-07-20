@@ -412,6 +412,6 @@ def create_app(config_instance):
 
     api.add_resource(ClearApprovalHistoryPastYearCtrl, '/clear/approvalHistoryPast')
     
-    api.add_resource(CronUpdateDataProjectsCtrl,'/cron/update/data/projects')
+    api.add_resource(CronUpdateDataProjectsCtrl,'/cron/update/data/projects/<int:limit>/<int:skip>')
     
     return app

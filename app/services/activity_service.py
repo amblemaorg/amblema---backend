@@ -726,7 +726,7 @@ class ActivityService():
                             activity.status = data['status']
                             bulk_operations = []
                             pecaProjects = PecaProject.objects(
-                                schoolYear=schoolYear.id, isDeleted=False)
+                                schoolYear=schoolYear.id, isDeleted=False).only("id", "lapse1", "lapse2", "lapse3")
 
                             for peca in pecaProjects:
                                 # is active
@@ -758,13 +758,15 @@ class ActivityService():
                                 else:
                                     for act in peca['lapse{}'.format(data['lapse'])].activities:
                                         if act.id == str(activity.id):
-                                            peca['lapse{}'.format(
-                                                data['lapse'])].activities.remove(act)
-                                bulk_operations.append(
-                                    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
-                            if bulk_operations:
-                                PecaProject._get_collection() \
-                                    .bulk_write(bulk_operations, ordered=False)
+                                            act.status = "2"
+                                            #peca['lapse{}'.format(
+                                            #    data['lapse'])].activities.remove(act)
+                                peca.save()
+                                #bulk_operations.append(
+                                #    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                            #if bulk_operations:
+                            #    PecaProject._get_collection() \
+                            #        .bulk_write(bulk_operations, ordered=False)
                             break
                 if found:
                     schoolYear.save()

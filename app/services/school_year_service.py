@@ -458,7 +458,7 @@ class CronUpdateDataProjectsService():
                 
                 for peca in pecas:
                     print(peca.id)
-                    peca = PecaProject.objects.only("id", "project","yearbook__school","yearbook__coordinator", "yearbook__sponsor").get(id=peca.id)
+                    peca = PecaProject.objects.only("id", "project","yearbook__school","yearbook__coordinator", "yearbook__sponsor", "yearbook__approvalHistory").get(id=peca.id)
                     sponsor = SponsorUser.objects.only("id", "name").get(id=peca.project.sponsor.id)
                     coordinator = CoordinatorUser.objects.only("id", "name").get(id=peca.project.coordinator.id)
                     school = SchoolUser.objects.only("id", "name").get(id=peca.project.school.id)
@@ -469,6 +469,10 @@ class CronUpdateDataProjectsService():
                     peca.yearbook.coordinator.name = coordinator.name
                     peca.project.sponsor.name = sponsor.name
                     peca.yearbook.sponsor.name = sponsor.name
+                    for approval in peca.yearbook.approvalHistory:
+                        approval["detail"]["school"]["name"] = school.name
+                        approval["detail"]["coordinator"]["name"] = coordinator.name
+                        approval["detail"]["sponsor"]["name"] = sponsor.name
                     peca.save()
 
                 return {"message": "Ejecutado"}, 200            

@@ -59,11 +59,16 @@ class SchoolYearService(GenericServices):
                     }, 400
                 date = datetime.datetime.now()
                 newYearEnds = date.year + 1 if date.month > 8 else date.year
+                pecasettings = oldSchoolYear.pecaSetting
+                pecasettings.lapse1.activities = []
+                pecasettings.lapse2.activities = []
+                pecasettings.lapse3.activities = []
+
                 newSchoolYear = SchoolYear(
                     name="{} - {}".format(date.year, date.year+1),
                     startDate=date,
                     endDate=date.replace(newYearEnds, 8, 31),
-                    pecaSetting=oldSchoolYear.pecaSetting
+                    pecaSetting=pecasettings
                 )
                 newSchoolYear.pecaSetting.environmentalProject = EnvironmentalProject()
                 newSchoolYear.save()

@@ -186,6 +186,13 @@ class PecaProjectService():
             data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(
                 school.teachersTestimonials
             )
+            for i in range(1,4):
+                activities = []
+                for activity in data["lapse{}".format(i)]["activities"]:
+                    if activity["status"] == "1" or activity["status"] == "3":
+                        activities.append(activity)
+                data["lapse{}".format(i)]["activities"] = activities
+
             sponsor = SponsorUser.objects.get(id=peca.project.sponsor.id)
             coordinator = CoordinatorUser.objects.get(
                 id=peca.project.coordinator.id)

@@ -107,7 +107,7 @@ class YearbookService():
                 schema.validate(jsonData)
                 yearbook = peca.yearbook
                 data_save = {}
-                #print(yearbook.userId)
+                
                 for field in jsonData.keys():
                     if field != "pecaId" and field != "userId" and field != "status" and field != "sections" and field !="requestId" and field!="comments":
                         if field =="sponsor" or field =="coordinator" or field =="school" or field == "historicalReview":
@@ -219,7 +219,6 @@ class YearbookService():
                     data["msgs"] = img_msg
                     return data, 200
                 except Exception as e:
-                    print(e)
                     return {'status': 0, 'message': str(e)}, 400
 
             except ValidationError as err:

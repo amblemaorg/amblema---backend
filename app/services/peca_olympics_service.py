@@ -151,7 +151,7 @@ class OlympicsService():
                             try:
                                 peca.save()
                                 classified = peca['lapse{}'.format(lapse)].olympics.students.filter(status="2")
-                                print(classified)
+                                
                                 school = SchoolUser.objects(
                                         id=peca.project.school.id, isDeleted=False).first()
                                 school.olympicsSummary.classified = len(classified)

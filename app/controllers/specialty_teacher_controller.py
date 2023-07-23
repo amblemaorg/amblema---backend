@@ -24,7 +24,6 @@ class SpecialtyTeacherController(Resource):
     @jwt_required
     def post(self):
         jsonData = request.get_json()
-        print(jsonData)
         return self.service.saveRecord(jsonData)
 
 

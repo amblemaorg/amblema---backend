@@ -140,7 +140,6 @@ class GenericServices():
                         )
 
                 record.save()
-            print("salvo")
             return schema.dump(record), 200
         except ValidationError as err:
             return err.messages, 400

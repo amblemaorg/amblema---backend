@@ -462,7 +462,6 @@ class CronUpdateDataProjectsService():
                 ).only("id").limit(limit).skip(skip)
                 
                 for peca in pecas:
-                    print(peca.id)
                     peca = PecaProject.objects.only("id", "project","yearbook__school","yearbook__coordinator", "yearbook__sponsor", "yearbook__approvalHistory").get(id=peca.id)
                     sponsor = SponsorUser.objects.only("id", "name").get(id=peca.project.sponsor.id)
                     coordinator = CoordinatorUser.objects.only("id", "name").get(id=peca.project.coordinator.id)

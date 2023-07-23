@@ -47,6 +47,7 @@ class ProjectHandlerController(Resource):
     @jwt_required
     def put(self, id):
         jsonData = request.get_json()
+        print(jsonData)
         return self.service.updateRecord(
             recordId=id,
             jsonData=jsonData,

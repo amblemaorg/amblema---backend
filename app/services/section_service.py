@@ -247,7 +247,7 @@ class SectionsImportExport():
             try:
                 school_code = peca.school.code
                 school = SchoolUser.objects(code=school_code, isDeleted=False).first()
-                #print(school.id)
+                
                 if "action" in jsonData:
                     if  jsonData["action"] == "export":
                         if "sections" in jsonData:

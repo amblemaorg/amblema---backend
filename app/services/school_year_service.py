@@ -188,7 +188,6 @@ class SchoolYearService(GenericServices):
 
                 return {'msg': 'Record deleted'}, 200
             except Exception as e:
-                print(e)
                 return {'status': 0, 'message': str(e)}, 400
 
         else:
@@ -236,7 +235,6 @@ class SchoolYearService(GenericServices):
                 
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:
-                print(e)
                 return {'status': 0, 'message': str(e)}, 400
 
     def availableSchools(self):
@@ -453,7 +451,7 @@ class ClearApprovalHistoryPastYearService():
 class CronUpdateDataProjectsService():
     def run(self, limit, skip):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
-        print("ss")
+        
         if schoolYear:
             try:
                 pecas = PecaProject.objects(

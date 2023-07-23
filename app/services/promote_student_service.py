@@ -42,9 +42,9 @@ class PromoteStudentService():
             else:
                 return {"status":400, "msg": "No tiene data de periodos anteriores"},200
                 
-        except Exception as e:
-            print(e)
+        except Exception as e:   
             return {'status': 0, 'message': str(e)}, 400
+    
     def promoteStudents(self, school_code, data):
         try:
             schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
@@ -125,7 +125,7 @@ class PromoteStudentService():
             else:
                 return {"status":400, "msg": "La sección no existe"},201
         except Exception as e:
-            print(e)
+            
             return {'status': 0, 'message': str(e)}, 400
 
 class SectionsPromoteStudentService():
@@ -158,7 +158,7 @@ class SectionsPromoteStudentService():
                 return {"status": 400, "msg": "La escuela no tiene proyecto anterior"},200
                 
         except Exception as e:
-            print(e)
+            
             return {'status': 0, 'message': str(e)}, 400        
 
 class ChangeSectionStudentsService():
@@ -248,8 +248,8 @@ class ChangeSectionStudentsService():
             else:
                 return {"status": 400, "msg": "No se encontro el proyecto"},200
         except Exception as e:
-            print(e)
             return {'status': 0, 'message': str(e)}, 400
+
     def deleteStudentForSection(self, data, pecaId):
         try:
             peca = PecaProject.objects(
@@ -309,5 +309,4 @@ class ChangeSectionStudentsService():
             else:
                 return {"status": 400, "msg": "No se encontro el proyecto"},200
         except Exception as e:
-            print(e)
             return {'status': 0, 'message': str(e)}, 400

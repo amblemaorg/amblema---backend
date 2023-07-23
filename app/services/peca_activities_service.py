@@ -423,7 +423,7 @@ class ReportActivityService():
                                 if activity.status == "1" and activity.isDeleted == False:
                                     activities.append(
                                         {"name": activity.name, "title": False, "lapse": i})
-                        print("sadasda")
+                        
                         pecas = PecaProject.objects(isDeleted=False, project__coordinator__id__in=jsonData["coordinators"], schoolYear=schoolYear.id).only(
                             "id", "project", "lapse1", "lapse2", "lapse3")
                         coordinators = []
@@ -544,7 +544,7 @@ class ReportActivityService():
                                         break
                         return {"status_code": "201", "message": "Reporte", "rows": activities, "columns": schools, "matriz": matriz}, 201
         except Exception as e:
-            print(e)
+            
             return {"status_code": "500", "message": "Ha ocurrido un error"}, 201
 
     def remove_duplicates(self, list):

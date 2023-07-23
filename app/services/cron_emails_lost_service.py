@@ -13,7 +13,7 @@ import os
 class EmailsLostService():
     def run(self):
         if os.getenv('INSTANCE') != "production":
-            emails = ["fidel.alejos@gmail.com","valmore_canelon1994@hotmail.com", "morejose.15@gmail.com", "valmore@binauraldev.com"]
+            emails = ["fidel.alejos@gmail.com","morejose.15@gmail.com"]
         else:
             print("adasdadas")
             #emails = ["yelimargarita2015@hotmail.com","quintanasara4@gmail.com","edmalinda_131@hotmail.com","kuberniesi@hotmail.com","yelitzaderojas2@gmail.com","greeydym@gmail.com","erihannajobicsonka@gmail.com","bettyhcostera@hotmail.com","libmerviszerpa2@gmail.com","magastrid27@gmail.com","colinasdelangel@hotmail.com","jenaroaguirre010058@gmail.com","fundacion@madreluisa.org"]

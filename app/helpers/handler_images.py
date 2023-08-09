@@ -57,7 +57,7 @@ def upload_image(imageBase64, folder, size=None, is_yearbook=False):
                     res = requests.get("http://python:5000"+urlImage)
                 else:
                     res = requests.get(os.getenv('SERVER_URL')+urlImage)
-                print(res.status_code)
+                
                 if res.status_code != 200:
                     if is_yearbook:
                         return ''
@@ -65,7 +65,6 @@ def upload_image(imageBase64, folder, size=None, is_yearbook=False):
                         raise CSTM_Exception(message="Corrupt image",
                                 status_code=400)
         except Exception as e:
-            print(e)
             if is_yearbook:
                 return ''
             else:

@@ -349,6 +349,10 @@ class ProjectService():
                             currentPeca.yearbook.sponsor.name = projectReference.sponsor["name"]
                             currentPeca.yearbook.sponsor.content = ''
                             currentPeca.yearbook.sponsor.image = ''
+                            
+                            for approval in currentPeca.yearbook.approvalHistory:
+                                if approval["detail"]["sponsor"]["name"] != "":
+                                    approval["detail"]["sponsor"]["name"] = projectReference.sponsor["name"]
                             currentPeca.save()
 
         if document.school != oldDocument.school:
@@ -396,6 +400,9 @@ class ProjectService():
                             currentPeca.yearbook.school.name = projectReference.school["name"]
                             currentPeca.yearbook.school.content = ''
                             currentPeca.yearbook.school.image = ''
+                            for approval in currentPeca.yearbook.approvalHistory:
+                                if approval["detail"]["school"]["name"] != "":
+                                    approval["detail"]["school"]["name"] = projectReference.school["name"]
                             
                             currentPeca.save()
 
@@ -462,6 +469,10 @@ class ProjectService():
                             currentPeca.yearbook.coordinator.name = projectReference.coordinator["name"]
                             currentPeca.yearbook.coordinator.content = ''
                             currentPeca.yearbook.coordinator.image = ''
+                            for approval in currentPeca.yearbook.approvalHistory:
+                                if approval["detail"]["coordinator"]["name"] != "":
+                                    approval["detail"]["coordinator"]["name"] = projectReference.coordinator["name"]
+                            
                             currentPeca.save()
         if document.phase == "1":
             document.stepsProgress.updateProgress()

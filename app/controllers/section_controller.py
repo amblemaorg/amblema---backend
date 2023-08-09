@@ -4,7 +4,7 @@
 from flask import request
 from flask_restful import Resource
 
-from app.services.section_service import SectionService, SectionsExport
+from app.services.section_service import SectionService, SectionsImportExport
 from app.helpers.handler_request import getQueryParams
 from app.helpers.handler_authorization import jwt_required
 
@@ -35,8 +35,8 @@ class SectionHandlerController(Resource):
     def delete(self, pecaId, sectionId):
         return self.service.delete(pecaId=pecaId, sectionId=sectionId)
 
-class SectionExportController(Resource):
-    service = SectionsExport()
+class SectionsImportExportController(Resource):
+    service = SectionsImportExport()
     def post(self, pecaId):
         jsonData = request.get_json()
-        return self.service.getSections(pecaId=pecaId,jsonData=jsonData)
+        return self.service.loadSections(pecaId=pecaId,jsonData=jsonData)

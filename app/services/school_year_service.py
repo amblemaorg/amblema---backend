@@ -59,11 +59,16 @@ class SchoolYearService(GenericServices):
                     }, 400
                 date = datetime.datetime.now()
                 newYearEnds = date.year + 1 if date.month > 8 else date.year
+                pecasettings = oldSchoolYear.pecaSetting
+                pecasettings.lapse1.activities = []
+                pecasettings.lapse2.activities = []
+                pecasettings.lapse3.activities = []
+
                 newSchoolYear = SchoolYear(
                     name="{} - {}".format(date.year, date.year+1),
                     startDate=date,
                     endDate=date.replace(newYearEnds, 8, 31),
-                    pecaSetting=oldSchoolYear.pecaSetting
+                    pecaSetting=pecasettings
                 )
                 newSchoolYear.pecaSetting.environmentalProject = EnvironmentalProject()
                 newSchoolYear.save()
@@ -183,7 +188,6 @@ class SchoolYearService(GenericServices):
 
                 return {'msg': 'Record deleted'}, 200
             except Exception as e:
-                print(e)
                 return {'status': 0, 'message': str(e)}, 400
 
         else:
@@ -231,7 +235,6 @@ class SchoolYearService(GenericServices):
                 
                 return ProjectSchema(exclude=['stepsProgress']).dump(project)
             except Exception as e:
-                print(e)
                 return {'status': 0, 'message': str(e)}, 400
 
     def availableSchools(self):
@@ -448,7 +451,7 @@ class ClearApprovalHistoryPastYearService():
 class CronUpdateDataProjectsService():
     def run(self, limit, skip):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
-        print("ss")
+        
         if schoolYear:
             try:
                 pecas = PecaProject.objects(
@@ -457,7 +460,6 @@ class CronUpdateDataProjectsService():
                 ).only("id").limit(limit).skip(skip)
                 
                 for peca in pecas:
-                    print(peca.id)
                     peca = PecaProject.objects.only("id", "project","yearbook__school","yearbook__coordinator", "yearbook__sponsor", "yearbook__approvalHistory").get(id=peca.id)
                     sponsor = SponsorUser.objects.only("id", "name").get(id=peca.project.sponsor.id)
                     coordinator = CoordinatorUser.objects.only("id", "name").get(id=peca.project.coordinator.id)

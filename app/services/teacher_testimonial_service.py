@@ -127,10 +127,8 @@ class TeacherTestimonialService():
 
                     return schema.dump(teachersTestimonials), 200
                 except Exception as e:
-                    print(e)
                     return {'status': 0, 'message': str(e)}, 400
             except Exception as e:
-                print(e)
                 return {'status': 0, 'message': str(e)}, 400
             
             #except ValidationError as err:

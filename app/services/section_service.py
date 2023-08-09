@@ -237,17 +237,17 @@ class SectionService():
             return True
         return False
         """
-class SectionsExport():
+class SectionsImportExport():
     handlerMessages = HandlerMessages()
-    def getSections(self, pecaId, jsonData):
+    def loadSections(self, pecaId, jsonData):
         peca = PecaProject.objects(
-            isDeleted=False, id=pecaId).first()
+            isDeleted=False, id=pecaId).only('id', 'school', 'schoolYear').first()
 
         if peca:
             try:
                 school_code = peca.school.code
                 school = SchoolUser.objects(code=school_code, isDeleted=False).first()
-                #print(school.id)
+                
                 if "action" in jsonData:
                     if  jsonData["action"] == "export":
                         if "sections" in jsonData:
@@ -356,7 +356,7 @@ class SectionsExport():
                                     nStudents = 0
                                     
                                     for peca in pecas:
-                                        schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
+                                        schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).only('nStudents','email', 'password', 'userType', 'role', 'code', 'phone').first()
                                         peca.school.nStudents = 0
                                         for section in peca.school.sections.filter(isDeleted=False):
                                             peca.school.nStudents += len(section.students.filter(isDeleted=False))

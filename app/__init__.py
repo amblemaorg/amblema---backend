@@ -159,7 +159,9 @@ from app.controllers.promote_student_controller import PromoteStudentController,
 from app.controllers.specialty_teacher_controller import (
     SpecialtyTeacherController, SpecialtyTeacherHandlerController
 )
-
+from app.controllers.work_position_controller import (
+    WorkPositionController, WorkPositionHandlerController
+)
 from app.controllers.peca_grade_controller import PecaGradeController
 
 db = MongoEngine()
@@ -402,6 +404,11 @@ def create_app(config_instance):
                      '/specialty')
     api.add_resource(SpecialtyTeacherHandlerController,
                      '/specialty/<string:specialtyId>')
+    api.add_resource(WorkPositionController,
+                     '/work-position')
+    api.add_resource(WorkPositionHandlerController,
+                     '/work-position/<string:workPositionId>')
+    
     api.add_resource(CronDiagnisticosCtrl, '/cron/diagnosticos/<int:limit>/<int:skip>')
 
     api.add_resource(CronAddDiagnosticsCtrl, '/cron/diagonisticos/add/<int:limit>/<int:skip>')

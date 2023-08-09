@@ -69,10 +69,14 @@ class StatisticsUserService():
                 records = []
                 annualPreparationFilter = False
                 annualPreparationTeachers = {}
+                workPositionFilter = ""
                 schoolsIds = {}
                 for f in filters:
                     if f['field'] == 'annualPreparationStatus' and f['field']:
                         annualPreparationFilter = f['value']
+                        filters.remove(f)
+                    if f['field'] == 'workPosition' and f['field']:
+                        workPositionFilter = f['value']
                         filters.remove(f)
                 
                 schoolYear = SchoolYear.objects(
@@ -95,6 +99,7 @@ class StatisticsUserService():
                 for school in schools:
                     for teacher in school.teachers.filter(isDeleted=False):
                         available = True
+                        iswork = False
                         teacher.schoolName = school.name
                         for f in filters:
                             if hasattr(teacher, f['field']) and teacher[f['field']] != f['value']:
@@ -104,11 +109,20 @@ class StatisticsUserService():
                                 annualPreparationTeachers[str(teacher.id)] == annualPreparationFilter
                             ):
                             available = False
+                        
+                        if workPositionFilter:
+                            if teacher.workPosition and str(teacher.workPosition.id) == workPositionFilter:
+                                iswork = True
+                            else:
+                                iswork = False
+                        else:
+                            iswork = True    
                         if available:
                             teacher.pecaId = schoolsIds[str(school.id)]
                             if str(teacher.id) in annualPreparationTeachers:
                                 teacher.annualPreparationStatus = annualPreparationTeachers[str(teacher.id)]
-                            records.append(teacher)
+                            if iswork:
+                                records.append(teacher)
             if records:
                 for record in records:
                     user = usersType[userType]['schema'].dump(record)

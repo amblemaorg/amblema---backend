@@ -9,6 +9,7 @@ from flask import current_app
 
 from app.models.state_model import State, Municipality
 from app.models.specialty_teacher_model import SpecialtyTeacher
+from app.models.work_position_model import WorkPosition
 from app.helpers.ma_schema_validators import OneOf, only_numbers, validate_email
 from app.helpers.ma_schema_fields import MAReferenceField
 
@@ -36,6 +37,8 @@ class TeacherSchema(Schema):
         document=Municipality)
     specialty = MAReferenceField(
         document=SpecialtyTeacher, allow_none=True)
+    workPosition = MAReferenceField(
+        document=WorkPosition, allow_none=True)
     
     address = fields.Str()
     addressCity = fields.Str()

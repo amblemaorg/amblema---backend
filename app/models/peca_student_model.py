@@ -24,16 +24,16 @@ class Diagnostic(EmbeddedDocument):
         if self.multiplicationsPerMin == 0:
             self.multiplicationsPerMinIndex = None
         elif self.multiplicationsPerMin:
-            self.multiplicationsPerMinIndex = self.multiplicationsPerMin / \
-                setting.multiplicationsPerMin
+            self.multiplicationsPerMinIndex = (self.multiplicationsPerMin / \
+                setting.multiplicationsPerMin)*100
         if self.operationsPerMin == 0:
             self.operationsPerMinIndex = None
         elif self.operationsPerMin:
-            self.operationsPerMinIndex = self.operationsPerMin / setting.operationsPerMin
+            self.operationsPerMinIndex = (self.operationsPerMin / setting.operationsPerMin)*100
         if self.wordsPerMin==0:
             self.wordsPerMinIndex = None
         elif self.wordsPerMin:
-            self.wordsPerMinIndex = self.wordsPerMin / setting.wordsPerMin
+            self.wordsPerMinIndex = (self.wordsPerMin / setting.wordsPerMin)*100
 
 
 class Student(EmbeddedDocument):

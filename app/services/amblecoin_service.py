@@ -39,6 +39,7 @@ class AmbleCoinService():
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
+                print(jsonData)
                 data = schema.load(jsonData)
 
                 if not schoolYear.pecaSetting:

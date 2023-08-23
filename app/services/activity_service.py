@@ -93,7 +93,8 @@ class ActivityService():
                                 video=activity.video,
                                 checklist=[CheckElement(
                                     id=c.id, name=c.name) for c in activity.checklist] if activity.checklist else [],
-                                approvalType=activity.approvalType
+                                approvalType=activity.approvalType,
+                                order=activity.order
                             )
                         )
                         bulk_operations.append(
@@ -124,8 +125,9 @@ class ActivityService():
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
+                print(jsonData)
                 data = schema.load(jsonData, partial=True)
-
+                print(data)
                 activities = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].activities
 
@@ -135,11 +137,14 @@ class ActivityService():
                     if str(activity.id) == str(id) and not activity.isDeleted:
                         oldActivity = activity
                         found = True
+                        print("aqui")
                         for field in schema.dump(data).keys():
+                            print(field)
                             if activity[field] != data[field]:
                                 hasChanged = True
                                 activity[field] = data[field]
                         if hasChanged:
+                            print("paso")
                             activity.devName = re.sub(
                                 r'[\W_]', '_', activity.name.strip().lower())
                             dupActivities = schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.filter(
@@ -151,6 +156,7 @@ class ActivityService():
                                                    "msg": "Duplicated record found"}]}
                                     )
                             newActivity = activity
+                            print("new ", newActivity.id)
                         break
                 if not found:
                     raise RegisterNotFound(message="Record not found",
@@ -167,6 +173,8 @@ class ActivityService():
                             for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
                                 for activity in peca['lapse{}'.format(lapse)].activities:
                                     if str(activity.id) == id:
+                                        print("id ", activity.id)
+                                        print("idn ", newActivity.id)
                                         activity.name = newActivity.name
                                         activity.description = newActivity.description
                                         activity.devName = newActivity.devName
@@ -179,6 +187,7 @@ class ActivityService():
                                         activity.text = newActivity.text
                                         activity.file = newActivity.file
                                         activity.video = newActivity.video
+                                        activity.order = newActivity.order
                                         if oldActivity.checklist != None:
                                             oldCheckIds = [str(c.id)
                                                        for c in oldActivity.checklist]
@@ -199,16 +208,21 @@ class ActivityService():
                                                         CheckElement(
                                                             id=newCheckIds[k].id, name=newCheckIds[k].name)
                                                     )
+                                        print("idsss ", activity.id)
+                                    print("cammm ", activity.id)
                                 bulk_operations.append(
                                     UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                             if bulk_operations:
                                 PecaProject._get_collection().bulk_write(bulk_operations, ordered=False)
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
-
-                return schema.dump(activity), 200
-
+                print("activity final", newActivity.id)
+                if newActivity:
+                    return schema.dump(newActivity), 200
+                return schema.dump(oldActivity), 200
+                 
             except ValidationError as err:
+                print(err)
                 return err.normalized_messages(), 400
 
     def delete(self, lapse, id):
@@ -293,6 +307,7 @@ class ActivityService():
                         "id": 'initialWorkshop',
                         "name": "Taller inicial",
                         "devName": "initialWorkshop",
+                        "order": initialWorkshop.order,
                         "isStandard": True,
                         "status": initialWorkshop.status
                     }
@@ -310,6 +325,7 @@ class ActivityService():
                         "id": "amblecoins",
                         "name": "AmbLeMonedas",
                         "devName": "ambleCoins",
+                        "order": ambleCoins.order,
                         "isStandard": True,
                         "status": ambleCoins.status
                     }
@@ -326,6 +342,7 @@ class ActivityService():
                         "id": "lapseplanning",
                         "name": "Planificación de lapso",
                         "devName": "lapsePlanning",
+                        "order": lapsePlanning.order,
                         "isStandard": True,
                         "status": lapsePlanning.status
                     }
@@ -344,6 +361,7 @@ class ActivityService():
                         "id": "annualconvention",
                         "name": "Convención anual",
                         "devName": "annualConvention",
+                        "order": annualConvention.order,
                         "isStandard": True,
                         "status": annualConvention.status
                     }
@@ -362,6 +380,7 @@ class ActivityService():
                         "id": "annualpreparation",
                         "name": "Preparación anual",
                         "devName": "annualPreparation",
+                        "order": annualPreparation.order,
                         "isStandard": True,
                         "status": annualPreparation.status
                     }
@@ -380,6 +399,7 @@ class ActivityService():
                         "id": "matholympic",
                         "name": "Olimpíadas matemáticas",
                         "devName": "mathOlympic",
+                        "order": mathOlympic.order,
                         "isStandard": True,
                         "status": mathOlympic.status
                     }
@@ -397,6 +417,7 @@ class ActivityService():
                         "id": "speciallapseactivity",
                         "name": "Actividad especial de lapso",
                         "devName": "specialLapseActivity",
+                        "order": specialLapseActivity.order,
                         "isStandard": True,
                         "status": specialLapseActivity.status
                     }
@@ -414,11 +435,24 @@ class ActivityService():
                             "id": str(activity.id),
                             "name": activity.name,
                             "devName": activity.devName,
+                            "order": activity.order,
                             "isStandard": False,
-                            "status": activity.status
+                            "status": activity.status,
+                            "hasText": activity.hasText,
+                            "hasDate": activity.hasDate,
+                            "hasFile": activity.hasFile,
+                            "hasVideo": activity.hasVideo,
+                            "hasChecklist": activity.hasChecklist,
+                            "hasUpload": activity.hasUpload,
+                            "approvalType": activity.approvalType,
+                            "checklist": activity.checklist,
+                            "text": activity.text
+                            
                         }
                         records['lapse{}'.format(
                             i+1)].append(schema.dump(data))
+                records['lapse{}'.format(i+1)] = sorted(records['lapse{}'.format(i+1)], key=lambda d: d['order']) 
+        
             return records, 200
 
         else:
@@ -458,12 +492,15 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].initialWorkshop.status = data['status']
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].initialWorkshop.order = data['order']
+                        
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
                             schoolYear=schoolYear.id, isDeleted=False)
                         if data['status'] == "1":
                             initialWorkshop = InitialWorkshopPeca()
-
+                            initialWorkshop.order = data['order']
                         for peca in pecaProjects:
                             # is active
                             if data['status'] == "1":
@@ -484,6 +521,8 @@ class ActivityService():
                         ambleCoinsStg = schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].ambleCoins
                         ambleCoinsStg.status = data['status']
+                        ambleCoinsStg.order = data['order']
+
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
                             schoolYear=schoolYear.id, isDeleted=False)
@@ -492,6 +531,7 @@ class ActivityService():
                             # is active
                             if data['status'] == "1":
                                 ambleCoins = AmblecoinsPeca()
+                                ambleCoins.order = data['order']
                                 for section in peca.school.sections:
                                     ambleCoins.sections.append(
                                         AmbleSection(
@@ -521,19 +561,24 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].lapsePlanning.status = data['status']
-
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].lapsePlanning.order = data["order"]
+                        
                         lapsePlanning = schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].lapsePlanning
+                        
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
                             schoolYear=schoolYear.id, isDeleted=False)
                         if data['status'] == "1":
                             lapsePlanningStg = schoolYear.pecaSetting['lapse{}'.format(
                                 data['lapse'])].lapsePlanning
+                            lapsePlanningStg.order = data["order"]
                             lapsePlanning = LapsePlanningPeca(
                                 proposalFundationFile=lapsePlanningStg.proposalFundationFile,
                                 proposalFundationDescription=lapsePlanningStg.proposalFundationDescription,
-                                meetingDescription=lapsePlanningStg.meetingDescription
+                                meetingDescription=lapsePlanningStg.meetingDescription,
+                                order=data["order"]
                             )
 
                         for peca in pecaProjects:
@@ -555,6 +600,8 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].annualConvention.status = data['status']
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].annualConvention.order = data['order']
 
                         annualConvention = schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].annualConvention
@@ -565,6 +612,8 @@ class ActivityService():
                             pecaSettingLapse = schoolYear.pecaSetting['lapse{}'.format(
                                 data['lapse'])]
                             annualConvention = AnnualConventionPeca()
+                            annualConvention.order = data["order"]
+
                             for element in pecaSettingLapse.annualConvention.checklist:
                                 annualConvention.checklist.append(
                                     CheckElement(
@@ -600,6 +649,9 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].annualPreparation.status = data['status']
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].annualPreparation.order = data['order']
+                        
                         annualPreparation = schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].annualPreparation
                         bulk_operations = []
@@ -620,6 +672,7 @@ class ActivityService():
                                     step2Description=annualPreparation.step2Description,
                                     step3Description=annualPreparation.step3Description,
                                     step4Description=annualPreparation.step4Description,
+                                    order=data["order"]
                                 )
                                 peca['lapse{}'.format(
                                     data['lapse'])].annualPreparation = annualPreparation
@@ -642,6 +695,8 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].mathOlympic.status = data['status']
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].mathOlympic.order = data['order']
 
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
@@ -662,7 +717,8 @@ class ActivityService():
                                     description=schoolYear.pecaSetting['lapse{}'.format(
                                         data['lapse'])].mathOlympic.description,
                                     date=schoolYear.pecaSetting['lapse{}'.format(
-                                        data['lapse'])].mathOlympic.date
+                                        data['lapse'])].mathOlympic.date,
+                                    order=data["order"]
                                 )
                                 peca['lapse{}'.format(
                                     data['lapse'])].olympics = olympics
@@ -692,6 +748,8 @@ class ActivityService():
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
                             data['lapse'])].specialLapseActivity.status = data['status']
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].specialLapseActivity.order = data['order']
 
                         bulk_operations = []
 
@@ -700,7 +758,8 @@ class ActivityService():
 
                         if data['status'] == "1":
                             specialActivity = SpecialActivityPeca()
-
+                            specialActivity.order = data["order"]
+                            
                         for peca in pecaProjects:
                             # is active
                             if data['status'] == "1":
@@ -751,7 +810,8 @@ class ActivityService():
                                             isStandard=activity.isStandard,
                                             status=activity.status,
                                             createdAt=activity.createdAt,
-                                            updatedAt=activity.updatedAt
+                                            updatedAt=activity.updatedAt,
+                                            order= activity.order
                                         )
                                     )
                                 # is inactive

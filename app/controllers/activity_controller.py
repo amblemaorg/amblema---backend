@@ -31,7 +31,7 @@ class ActivityHandlerController(Resource):
 
     service = ActivityService()
     standards = {
-        'initialworkshop': InicialWorkshopService(),
+        'initialWorkshop': InicialWorkshopService(),
         'lapseplanning': LapsePlanningService(),
         'amblecoins': AmbleCoinService(),
         'annualpreparation': AnnualPreparationService(),

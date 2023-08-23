@@ -27,3 +27,5 @@ class AmblecoinsPeca(EmbeddedDocument):
     sections = fields.EmbeddedDocumentListField(AmbleSection)
     yearbook = fields.EmbeddedDocumentField(
         ActivityYearbook, default=ActivityYearbook())
+    order = fields.IntField(default=100)
+

@@ -33,6 +33,7 @@ class ActivityFields(EmbeddedDocument):
     status = fields.StringField(default="1", max_length=1)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+    order = fields.IntField(default=100)
     meta = {'allow_inheritance': True}
     
 class ActivityPeca(ActivityFields):

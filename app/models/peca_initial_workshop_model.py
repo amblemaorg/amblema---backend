@@ -35,3 +35,4 @@ class InitialWorkshopPeca(EmbeddedDocument):
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
     yearbook = fields.EmbeddedDocumentField(
         ActivityYearbook, default=ActivityYearbook())
+    order = fields.IntField(default=100)

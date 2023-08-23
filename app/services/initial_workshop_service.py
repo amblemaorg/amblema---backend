@@ -66,6 +66,9 @@ class InicialWorkshopService():
                             #initialWorkshopPeca.teachersMeetingDescription = initialWorkshop.teachersMeetingDescription
                             peca['lapse{}'.format(
                                 lapse)].initialWorkshop = InitialWorkshopPeca()
+                            peca['lapse{}'.format(
+                                lapse)].initialWorkshop.order = data["order"]
+                            
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:

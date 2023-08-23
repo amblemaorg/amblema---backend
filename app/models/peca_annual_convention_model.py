@@ -13,3 +13,4 @@ class AnnualConventionPeca(EmbeddedDocument):
     checklist = fields.EmbeddedDocumentListField(CheckElement)
     yearbook = fields.EmbeddedDocumentField(
         ActivityYearbook, default=ActivityYearbook())
+    order = fields.IntField(default=100)

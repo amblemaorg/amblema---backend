@@ -578,9 +578,9 @@ class ActivityService():
                                 proposalFundationFile=lapsePlanningStg.proposalFundationFile,
                                 proposalFundationDescription=lapsePlanningStg.proposalFundationDescription,
                                 meetingDescription=lapsePlanningStg.meetingDescription,
-                                order=data["order"]
                             )
-
+                            if "order" in data:        
+                                lapsePlanning.order = data["order"]
                         for peca in pecaProjects:
                             # is active
                             if data['status'] == "1":

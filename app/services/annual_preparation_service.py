@@ -58,6 +58,8 @@ class AnnualPreparationService():
                             annualPreparationPeca.step2Description = annualPreparation.step2Description
                             annualPreparationPeca.step3Description = annualPreparation.step3Description
                             annualPreparationPeca.step4Description = annualPreparation.step4Description
+                            annualPreparationPeca.order = annualPreparation.order
+                            
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:

@@ -4,7 +4,7 @@
 from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.helpers.ma_schema_validators import not_blank, OneOf, Range
 from app.schemas.shared_schemas import FileSchema, ReferenceSchema, ApprovalSchema
 from app.models.peca_olympics_model import Section
 
@@ -26,7 +26,8 @@ class LapsePlanningPecaSchema(Schema):
                 ["1", "2"],
                 ["pending", "approved", ]
             )))
-
+    order = fields.Int(validate=Range(min=0))
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True

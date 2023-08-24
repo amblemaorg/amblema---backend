@@ -161,3 +161,5 @@ class ActivityHandleStatus(Schema):
         ),
         required=True
     )
+    order = fields.Int(validate=Range(min=0))
+    

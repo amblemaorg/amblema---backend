@@ -61,7 +61,8 @@ class AmbleCoinService():
                             ambleCoinsPeca.teachersMeetingDescription = ambleCoins.teachersMeetingDescription
                             ambleCoinsPeca.piggyBankDescription = ambleCoins.piggyBankDescription
                             ambleCoinsPeca.piggyBankSlider = ambleCoins.piggyBankSlider
-
+                            ambleCoinsPeca.order = ambleCoins.order
+                            
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:

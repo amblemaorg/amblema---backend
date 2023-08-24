@@ -4,7 +4,7 @@
 from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.helpers.ma_schema_validators import not_blank, OneOf, Range
 
 
 class TeachersSchema(Schema):
@@ -32,7 +32,8 @@ class AnnualPreparationSchema(Schema):
     step3Description = fields.Str()
     step4Description = fields.Str()
     teachers = fields.List(fields.Nested(TeachersSchema()))
-
+    order = fields.Int(validate=Range(min=0))
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True

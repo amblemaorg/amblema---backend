@@ -49,7 +49,7 @@ class ActivityHandlerController(Resource):
     @jwt_required
     def put(self, id, lapse):
         jsonData = request.form.to_dict()
-        print("cambio")
+        
         if id in self.standards:
             return self.standards[id].save(lapse=lapse, jsonData=jsonData, files=request.files)
         return self.service.update(

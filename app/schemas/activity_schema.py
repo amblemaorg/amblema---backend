@@ -129,6 +129,9 @@ class ActivitySummarySchema(Schema):
     hasVideo = fields.Bool(required=True, default=False)
     hasChecklist = fields.Bool(required=True, default=False)
     hasUpload = fields.Bool(required=True, default=False)
+    text = fields.Str(allow_none=True)
+    file = fields.Nested(FileSchema)
+    video = fields.Nested(FileSchema)
     checklist = fields.List(
         fields.Nested(CheckTemplateSchema()),
         allow_none=True)

@@ -137,14 +137,12 @@ class ActivityService():
                     if str(activity.id) == str(id) and not activity.isDeleted:
                         oldActivity = activity
                         found = True
-                        print("aqui")
+                        
                         for field in schema.dump(data).keys():
-                            print(field)
                             if activity[field] != data[field]:
                                 hasChanged = True
                                 activity[field] = data[field]
                         if hasChanged:
-                            print("paso")
                             activity.devName = re.sub(
                                 r'[\W_]', '_', activity.name.strip().lower())
                             dupActivities = schoolYear.pecaSetting['lapse{}'.format(lapse)].activities.filter(
@@ -156,7 +154,6 @@ class ActivityService():
                                                    "msg": "Duplicated record found"}]}
                                     )
                             newActivity = activity
-                            print("new ", newActivity.id)
                         break
                 if not found:
                     raise RegisterNotFound(message="Record not found",
@@ -173,8 +170,6 @@ class ActivityService():
                             for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
                                 for activity in peca['lapse{}'.format(lapse)].activities:
                                     if str(activity.id) == id:
-                                        print("id ", activity.id)
-                                        print("idn ", newActivity.id)
                                         activity.name = newActivity.name
                                         activity.description = newActivity.description
                                         activity.devName = newActivity.devName
@@ -208,15 +203,13 @@ class ActivityService():
                                                         CheckElement(
                                                             id=newCheckIds[k].id, name=newCheckIds[k].name)
                                                     )
-                                        print("idsss ", activity.id)
-                                    print("cammm ", activity.id)
                                 bulk_operations.append(
                                     UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                             if bulk_operations:
                                 PecaProject._get_collection().bulk_write(bulk_operations, ordered=False)
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
-                print("activity final", newActivity.id)
+                
                 if newActivity:
                     return schema.dump(newActivity), 200
                 return schema.dump(oldActivity), 200
@@ -446,8 +439,9 @@ class ActivityService():
                             "hasUpload": activity.hasUpload,
                             "approvalType": activity.approvalType,
                             "checklist": activity.checklist,
-                            "text": activity.text
-                            
+                            "text": activity.text,
+                            "file": activity.file,
+                            "video": activity.video
                         }
                         records['lapse{}'.format(
                             i+1)].append(schema.dump(data))

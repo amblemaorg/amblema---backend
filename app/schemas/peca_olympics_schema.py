@@ -4,7 +4,7 @@
 from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.helpers.ma_schema_validators import not_blank, OneOf, Range
 from app.schemas.shared_schemas import FileSchema, ReferenceSchema
 from app.models.peca_olympics_model import Section
 
@@ -51,7 +51,8 @@ class OlympicsSchema(Schema):
     file = fields.Nested(FileSchema(), dump_only=True)
     description = fields.Str(dump_only=True)
     date = fields.DateTime(dump_only=True)
-
+    order = fields.Int(validate=Range(min=0))
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True

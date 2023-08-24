@@ -14,6 +14,7 @@ class InitialWorshop(EmbeddedDocument):
     id = fields.StringField(default="initialWorkshop")
     name = fields.StringField(default="Taller inicial")
     description = fields.StringField(default="")
+    devName = fields.StringField()
     # agreementFile = fields.EmbeddedDocumentField(
     #    Link, is_file=True)
     #agreementDescription = fields.StringField()
@@ -31,6 +32,7 @@ class InitialWorshop(EmbeddedDocument):
 class LapsePlanning(EmbeddedDocument):
     id = fields.StringField(default="lapseplanning")
     name = fields.StringField(default="Planificación de lapso")
+    devName = fields.StringField()
     proposalFundationFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     proposalFundationDescription = fields.StringField()
@@ -52,6 +54,7 @@ class AmbleCoins(EmbeddedDocument):
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
     order = fields.IntField(default=100)
+    devName = fields.StringField()
     
 
 class AnnualPreparation(EmbeddedDocument):
@@ -64,6 +67,7 @@ class AnnualPreparation(EmbeddedDocument):
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
     order = fields.IntField(default=100)
+    devName = fields.StringField()
     
 
 class AnnualConvention(EmbeddedDocument):
@@ -74,6 +78,7 @@ class AnnualConvention(EmbeddedDocument):
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
     order = fields.IntField(default=100)
+    devName = fields.StringField()
     
 
 class MathOlympic(EmbeddedDocument):
@@ -87,6 +92,7 @@ class MathOlympic(EmbeddedDocument):
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
     order = fields.IntField(default=100)
+    devName = fields.StringField()
     
 
 class SpecialLapseActivity(EmbeddedDocument):
@@ -96,6 +102,7 @@ class SpecialLapseActivity(EmbeddedDocument):
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
     order = fields.IntField(default=100)
+    devName = fields.StringField()
     
 
 class Lapse(EmbeddedDocument):
@@ -107,7 +114,7 @@ class Lapse(EmbeddedDocument):
     mathOlympic = fields.EmbeddedDocumentField(MathOlympic)
     specialLapseActivity = fields.EmbeddedDocumentField(SpecialLapseActivity)
     activities = fields.EmbeddedDocumentListField(Activity)
-
+    
 
 class PecaSetting(EmbeddedDocument):
     lapse1 = fields.EmbeddedDocumentField(Lapse)

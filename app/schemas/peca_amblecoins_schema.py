@@ -4,7 +4,7 @@
 from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.helpers.ma_schema_validators import not_blank, OneOf, Range
 from app.models.peca_amblecoins_model import AmbleSection
 from app.schemas.shared_schemas import FileSchema
 from app.schemas.learning_module_schema import ImageSchema
@@ -41,7 +41,8 @@ class AmblecoinsPecaSchema(Schema):
     sections = fields.List(
         fields.Nested(SectionSchema())
     )
-
+    order = fields.Int(validate=Range(min=0))
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True

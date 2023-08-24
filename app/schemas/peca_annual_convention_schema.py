@@ -5,13 +5,14 @@ import json
 from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf
+from app.helpers.ma_schema_validators import not_blank, OneOf, Range
 from app.schemas.shared_schemas import CheckSchema
 
 
 class AnnualConventionSchema(Schema):
     checklist = fields.List(fields.Nested(CheckSchema()))
-
+    order = fields.Int(validate=Range(min=0))
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True

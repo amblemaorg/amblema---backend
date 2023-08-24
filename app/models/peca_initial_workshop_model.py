@@ -36,3 +36,4 @@ class InitialWorkshopPeca(EmbeddedDocument):
     yearbook = fields.EmbeddedDocumentField(
         ActivityYearbook, default=ActivityYearbook())
     order = fields.IntField(default=100)
+    status = fields.StringField()

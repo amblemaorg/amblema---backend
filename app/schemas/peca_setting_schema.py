@@ -33,6 +33,7 @@ class InicialWorkshopSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(dump_only=True)
     description = fields.Str(validate=Length(max=100))
+    devName = fields.Str(dump_only=True)
     #agreementFile = fields.Nested(FileSchema())
     #agreementDescription = fields.Str()
     #planningMeetingFile = fields.Nested(FileSchema())
@@ -61,7 +62,8 @@ class LapsePlanningSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
     status = fields.Str(dump_only=True)
-
+    devName = fields.Str(dump_only=True)
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -82,7 +84,8 @@ class AmbleCoinsSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
     status = fields.Str(dump_only=True)
-
+    devName = fields.Str(dump_only=True)
+    
 
     class Meta:
         unknown = EXCLUDE
@@ -105,7 +108,8 @@ class AnnualPreparationSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
     status = fields.Str(dump_only=True)
-    
+    devName = fields.Str(dump_only=True)
+        
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -121,7 +125,8 @@ class AnnualConventionSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
     status = fields.Str(dump_only=True)
-
+    devName = fields.Str(dump_only=True)
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True
@@ -144,7 +149,8 @@ class MathOlympicSchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
     status = fields.Str(dump_only=True)
-
+    devName = fields.Str(dump_only=True)
+    
     
     class Meta:
         unknown = EXCLUDE
@@ -158,7 +164,8 @@ class SpecialLapseActivitySchema(Schema):
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
     status = fields.Str(dump_only=True)
-    
+    devName = fields.Str(dump_only=True)
+        
     class Meta:
         unknown = EXCLUDE
         ordered = True

@@ -70,6 +70,7 @@ class StatisticsUserService():
                 annualPreparationFilter = False
                 annualPreparationTeachers = {}
                 workPositionFilter = ""
+                stateFilter = ""
                 schoolsIds = {}
                 for f in filters:
                     if f['field'] == 'annualPreparationStatus' and f['field']:
@@ -77,6 +78,9 @@ class StatisticsUserService():
                         filters.remove(f)
                     if f['field'] == 'workPosition' and f['field']:
                         workPositionFilter = f['value']
+                        filters.remove(f)
+                    if f['field'] == 'state' and f['field']:
+                        stateFilter = f['value']
                         filters.remove(f)
                 
                 schoolYear = SchoolYear.objects(
@@ -100,6 +104,7 @@ class StatisticsUserService():
                     for teacher in school.teachers.filter(isDeleted=False):
                         available = True
                         iswork = False
+                        isstate = False
                         teacher.schoolName = school.name
                         for f in filters:
                             if hasattr(teacher, f['field']) and teacher[f['field']] != f['value']:
@@ -117,11 +122,20 @@ class StatisticsUserService():
                                 iswork = False
                         else:
                             iswork = True    
+                        
+                        if stateFilter:
+                            if teacher.addressState and str(teacher.addressState.id) == stateFilter:
+                                isstate = True
+                            else:
+                                isstate = False
+                        else:
+                            isstate = True    
+                        
                         if available:
                             teacher.pecaId = schoolsIds[str(school.id)]
                             if str(teacher.id) in annualPreparationTeachers:
                                 teacher.annualPreparationStatus = annualPreparationTeachers[str(teacher.id)]
-                            if iswork:
+                            if iswork and isstate:
                                 records.append(teacher)
             if records:
                 for record in records:

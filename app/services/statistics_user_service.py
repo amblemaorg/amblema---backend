@@ -71,6 +71,7 @@ class StatisticsUserService():
                 annualPreparationTeachers = {}
                 workPositionFilter = ""
                 stateFilter = ""
+                schoolFilter = ""
                 schoolsIds = {}
                 for f in filters:
                     if f['field'] == 'annualPreparationStatus' and f['field']:
@@ -82,14 +83,24 @@ class StatisticsUserService():
                     if f['field'] == 'state' and f['field']:
                         stateFilter = f['value']
                         filters.remove(f)
+                    if f['field'] == 'school' and f['field']:
+                        schoolFilter = f['value']
+                        filters.remove(f)
                 
                 schoolYear = SchoolYear.objects(
                     isDeleted=False, status="1").only('id').first()
-                pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
-                    'project__school__id',
-                    'lapse1__annualPreparation',
-                    'lapse2__annualPreparation',
-                    'lapse3__annualPreparation')
+                if schoolFilter:    
+                    pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False, project__school__id=schoolFilter).only(
+                        'project__school__id',
+                        'lapse1__annualPreparation',
+                        'lapse2__annualPreparation',
+                        'lapse3__annualPreparation')
+                else:
+                    pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
+                        'project__school__id',
+                        'lapse1__annualPreparation',
+                        'lapse2__annualPreparation',
+                        'lapse3__annualPreparation')
                 for peca in pecas:
                     schoolsIds[peca.project.school.id] = str(peca.id)
                     for i in range(1, 4):

@@ -73,20 +73,22 @@ class StatisticsUserService():
                 stateFilter = ""
                 schoolFilter = ""
                 schoolsIds = {}
+                filters_availables = filters.copy()
                 for f in filters:
                     if f['field'] == 'annualPreparationStatus' and f['field']:
                         annualPreparationFilter = f['value']
-                        filters.remove(f)
+                        filters_availables.remove(f)
                     if f['field'] == 'workPosition' and f['field']:
                         workPositionFilter = f['value']
-                        filters.remove(f)
+                        filters_availables.remove(f)
                     if f['field'] == 'state' and f['field']:
                         stateFilter = f['value']
-                        filters.remove(f)
+                        filters_availables.remove(f)
                     if f['field'] == 'school' and f['field']:
                         schoolFilter = f['value']
-                        filters.remove(f)
+                        filters_availables.remove(f)
                 
+                filters = filters_availables
                 schoolYear = SchoolYear.objects(
                     isDeleted=False, status="1").only('id').first()
                 if schoolFilter:    
@@ -112,6 +114,7 @@ class StatisticsUserService():
                 schools = SchoolUser.objects(
                     isDeleted=False, status="1", id__in=schoolsIds.keys()).only('name','teachers', 'id')
                 for school in schools:
+                    #print("school ",school.id)
                     for teacher in school.teachers.filter(isDeleted=False):
                         available = True
                         iswork = False

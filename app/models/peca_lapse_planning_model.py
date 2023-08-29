@@ -23,3 +23,5 @@ class LapsePlanningPeca(EmbeddedDocument):
     yearbook = fields.EmbeddedDocumentField(
         ActivityYearbook, default=ActivityYearbook())
     status = fields.StringField(default="1", max_length=1)
+    order = fields.IntField(default=100)
+

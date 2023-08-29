@@ -4,7 +4,7 @@
 from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import (OneOf, not_blank)
+from app.helpers.ma_schema_validators import (OneOf, not_blank, Range)
 from app.schemas.shared_schemas import ApprovalSchema
 from app.models.peca_special_lapse_activity_model import ItemSpecialActivity
 
@@ -43,7 +43,8 @@ class SpecialActivitySchema(Schema):
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
     isDeleted = fields.Bool(dump_only=True)
-
+    order = fields.Int(validate=Range(min=0))
+    
     class Meta:
         unknown = EXCLUDE
         ordered = True

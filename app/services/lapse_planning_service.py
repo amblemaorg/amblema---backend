@@ -41,7 +41,9 @@ class LapsePlanningService():
                     uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
-
+                data.status = jsonData["status"]
+                data.devName = jsonData["devName"]
+                
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
 
@@ -57,6 +59,7 @@ class LapsePlanningService():
                     schoolYear.save()
 
                     if lapsePlanning.status == "1":
+                        print("data status", lapsePlanning.status)
 
                         bulk_operations = []
                         for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
@@ -66,6 +69,7 @@ class LapsePlanningService():
                             lapsePlanningPeca.proposalFundationFile = lapsePlanning.proposalFundationFile
                             lapsePlanningPeca.proposalFundationDescription = lapsePlanning.proposalFundationDescription
                             lapsePlanningPeca.meetingDescription = lapsePlanning.meetingDescription
+                            lapsePlanningPeca.order = lapsePlanning.order
                             peca['lapse{}'.format(
                                 lapse)].lapsePlanning = lapsePlanningPeca
                             bulk_operations.append(

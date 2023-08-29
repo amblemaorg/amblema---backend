@@ -40,17 +40,22 @@ class InicialWorkshopService():
                     uploadedfiles = upload_files(validFiles, folder)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
-
+                data.status = jsonData["status"]
+                data.devName = jsonData["devName"]
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
                 initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].initialWorkshop
                 for field in schema.dump(data).keys():
+                    print("-------")
+                    print(field)
+                    print(data[field])
                     initialWorkshop[field] = data[field]
                 try:
                     schoolYear.pecaSetting['lapse{}'.format(
                         lapse)].initialWorkshop = initialWorkshop
                     schoolYear.save()
+                    print("status ", initialWorkshop.status)
                     if initialWorkshop.status == "1":
 
                         bulk_operations = []
@@ -66,6 +71,11 @@ class InicialWorkshopService():
                             #initialWorkshopPeca.teachersMeetingDescription = initialWorkshop.teachersMeetingDescription
                             peca['lapse{}'.format(
                                 lapse)].initialWorkshop = InitialWorkshopPeca()
+                            peca['lapse{}'.format(
+                                lapse)].initialWorkshop.order = data["order"]
+                            peca['lapse{}'.format(
+                                lapse)].initialWorkshop.status = data["status"]
+                            
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:

@@ -12,7 +12,7 @@ from marshmallow import (
     ValidationError)
 
 from app.schemas import fields
-from app.helpers.ma_schema_validators import not_blank, OneOf, Length
+from app.helpers.ma_schema_validators import not_blank, OneOf, Length, Range
 from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 
 
@@ -20,14 +20,14 @@ class ActivitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True, validate=not_blank)
     devName = fields.Str(dump_only=True)
-    description = fields.Str(validate=Length(max=100))
+    description = fields.Str(allow_none=True, validate=Length(max=100))
     hasText = fields.Bool(required=True, default=False)
     hasDate = fields.Bool(required=True, default=False)
     hasFile = fields.Bool(required=True, default=False)
     hasVideo = fields.Bool(required=True, default=False)
     hasChecklist = fields.Bool(required=True, default=False)
     hasUpload = fields.Bool(required=True, default=False)
-    text = fields.Str(validate=not_blank)
+    text = fields.Str(allow_none=True)
     file = fields.Nested(FileSchema)
     video = fields.Nested(FileSchema)
     checklist = fields.List(
@@ -45,6 +45,7 @@ class ActivitySchema(Schema):
             ["active", "inactive"]
         )
     )
+    order = fields.Int(validate=Range(min=0))
     isStandard = fields.Bool(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
@@ -116,11 +117,31 @@ class ActivitySummarySchema(Schema):
     name = fields.Str(dump_only=True)
     devName = fields.Str(dump_only=True)
     isStandard = fields.Bool(default=False, dump_only=True)
+    order = fields.Int(validate=Range(min=0))
     status = fields.Str(
         validate=OneOf(
             ["1", "2"],
             ["active", "inactive"]
         ), default="1")
+    hasText = fields.Bool(required=True, default=False)
+    hasDate = fields.Bool(required=True, default=False)
+    hasFile = fields.Bool(required=True, default=False)
+    hasVideo = fields.Bool(required=True, default=False)
+    hasChecklist = fields.Bool(required=True, default=False)
+    hasUpload = fields.Bool(required=True, default=False)
+    text = fields.Str(allow_none=True)
+    file = fields.Nested(FileSchema)
+    video = fields.Nested(FileSchema)
+    checklist = fields.List(
+        fields.Nested(CheckTemplateSchema()),
+        allow_none=True)
+    approvalType = fields.Str(
+        validate=OneOf(
+            ["1", "2", "3", "4", "5"],
+            ["onlyAdmin", "fillAllFields", "approvalRequest",
+                "internalApproval", "not required"]
+        ), required=True)
+    
 
 
 class ActivityHandleStatus(Schema):
@@ -140,3 +161,5 @@ class ActivityHandleStatus(Schema):
         ),
         required=True
     )
+    order = fields.Int(validate=Range(min=0))
+    

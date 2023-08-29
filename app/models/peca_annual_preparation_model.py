@@ -23,3 +23,4 @@ class AnnualPreparationPeca(EmbeddedDocument):
     step3Description = fields.StringField()
     step4Description = fields.StringField()
     teachers = fields.EmbeddedDocumentListField(Teacher)
+    order = fields.IntField(default=100)

@@ -11,8 +11,10 @@ from app.models.monitoring_activity_model import MonitoringActivity
 
 
 class InitialWorshop(EmbeddedDocument):
+    id = fields.StringField(default="initialWorkshop")
     name = fields.StringField(default="Taller inicial")
     description = fields.StringField(default="")
+    devName = fields.StringField()
     # agreementFile = fields.EmbeddedDocumentField(
     #    Link, is_file=True)
     #agreementDescription = fields.StringField()
@@ -24,19 +26,24 @@ class InitialWorshop(EmbeddedDocument):
     #teachersMeetingDescription = fields.StringField()
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
-
+    order = fields.IntField(default=100)
+    
 
 class LapsePlanning(EmbeddedDocument):
+    id = fields.StringField(default="lapseplanning")
     name = fields.StringField(default="Planificación de lapso")
+    devName = fields.StringField()
     proposalFundationFile = fields.EmbeddedDocumentField(
         Link, is_file=True)
     proposalFundationDescription = fields.StringField()
     meetingDescription = fields.StringField()
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
-
+    order = fields.IntField(default=100)
+    
 
 class AmbleCoins(EmbeddedDocument):
+    id = fields.StringField(default="amblecoins")
     name = fields.StringField(default="AmbLeMonedas")
     description = fields.StringField(default="")
     teachersMeetingFile = fields.EmbeddedDocumentField(
@@ -46,9 +53,12 @@ class AmbleCoins(EmbeddedDocument):
     piggyBankSlider = fields.EmbeddedDocumentListField(Image)
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
-
+    order = fields.IntField(default=100)
+    devName = fields.StringField()
+    
 
 class AnnualPreparation(EmbeddedDocument):
+    id = fields.StringField(default="annualpreparation")
     name = fields.StringField(default="Preparación anual")
     step1Description = fields.StringField()
     step2Description = fields.StringField()
@@ -56,17 +66,23 @@ class AnnualPreparation(EmbeddedDocument):
     step4Description = fields.StringField()
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
-
+    order = fields.IntField(default=100)
+    devName = fields.StringField()
+    
 
 class AnnualConvention(EmbeddedDocument):
+    id = fields.StringField(default="annualconvention")
     name = fields.StringField(default="Convención anual")
     description = fields.StringField(default="")
     checklist = fields.EmbeddedDocumentListField(CheckTemplate)
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
-
+    order = fields.IntField(default=100)
+    devName = fields.StringField()
+    
 
 class MathOlympic(EmbeddedDocument):
+    id = fields.StringField(default="matholympic")
     name = fields.StringField(default="Olimpíadas matemáticas")
     description = fields.StringField()
     webDescription = fields.StringField()
@@ -75,14 +91,19 @@ class MathOlympic(EmbeddedDocument):
     date = fields.DateTimeField(null=True)
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
-
+    order = fields.IntField(default=100)
+    devName = fields.StringField()
+    
 
 class SpecialLapseActivity(EmbeddedDocument):
+    id = fields.StringField(default="speciallapseactivity")
     name = fields.StringField(default="Actividad especial de lapso")
     description = fields.StringField(default="")
     status = fields.StringField(max_length=1, default="2")
     isStandard = fields.BooleanField(default=True)
-
+    order = fields.IntField(default=100)
+    devName = fields.StringField()
+    
 
 class Lapse(EmbeddedDocument):
     initialWorkshop = fields.EmbeddedDocumentField(InitialWorshop)
@@ -93,7 +114,7 @@ class Lapse(EmbeddedDocument):
     mathOlympic = fields.EmbeddedDocumentField(MathOlympic)
     specialLapseActivity = fields.EmbeddedDocumentField(SpecialLapseActivity)
     activities = fields.EmbeddedDocumentListField(Activity)
-
+    
 
 class PecaSetting(EmbeddedDocument):
     lapse1 = fields.EmbeddedDocumentField(Lapse)

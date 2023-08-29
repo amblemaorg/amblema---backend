@@ -39,6 +39,7 @@ class AmbleCoinService():
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
+                print(jsonData)
                 data = schema.load(jsonData)
 
                 if not schoolYear.pecaSetting:
@@ -60,7 +61,8 @@ class AmbleCoinService():
                             ambleCoinsPeca.teachersMeetingDescription = ambleCoins.teachersMeetingDescription
                             ambleCoinsPeca.piggyBankDescription = ambleCoins.piggyBankDescription
                             ambleCoinsPeca.piggyBankSlider = ambleCoins.piggyBankSlider
-
+                            ambleCoinsPeca.order = ambleCoins.order
+                            
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:

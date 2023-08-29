@@ -60,6 +60,10 @@ class AnnualConventionService():
                         for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
                             updated = False
                             pecaRegs = []
+                            peca['lapse{}'.format(lapse)].annualConvention.order = annualConvention.order
+                            print("order ", peca['lapse{}'.format(lapse)].annualConvention.order)
+                            print("order ", annualConvention.order)
+                            
                             for reg in peca['lapse{}'.format(lapse)].annualConvention.checklist:
                                 if str(reg.id) in oldIds and str(reg.id) not in newIds:
                                     peca['lapse{}'.format(
@@ -78,9 +82,9 @@ class AnnualConventionService():
                                         )
                                     )
                                     updated = True
-                            if updated:
-                                bulk_operations.append(
-                                    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                            #if updated:
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:
                             PecaProject._get_collection() \
                                 .bulk_write(bulk_operations, ordered=False)

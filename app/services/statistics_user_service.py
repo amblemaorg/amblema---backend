@@ -69,19 +69,40 @@ class StatisticsUserService():
                 records = []
                 annualPreparationFilter = False
                 annualPreparationTeachers = {}
+                workPositionFilter = ""
+                stateFilter = ""
+                schoolFilter = ""
                 schoolsIds = {}
+                filters_availables = filters.copy()
                 for f in filters:
                     if f['field'] == 'annualPreparationStatus' and f['field']:
                         annualPreparationFilter = f['value']
-                        filters.remove(f)
+                        filters_availables.remove(f)
+                    if f['field'] == 'workPosition' and f['field']:
+                        workPositionFilter = f['value']
+                        filters_availables.remove(f)
+                    if f['field'] == 'state' and f['field']:
+                        stateFilter = f['value']
+                        filters_availables.remove(f)
+                    if f['field'] == 'school' and f['field']:
+                        schoolFilter = f['value']
+                        filters_availables.remove(f)
                 
+                filters = filters_availables
                 schoolYear = SchoolYear.objects(
                     isDeleted=False, status="1").only('id').first()
-                pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
-                    'project__school__id',
-                    'lapse1__annualPreparation',
-                    'lapse2__annualPreparation',
-                    'lapse3__annualPreparation')
+                if schoolFilter:    
+                    pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False, project__school__id=schoolFilter).only(
+                        'project__school__id',
+                        'lapse1__annualPreparation',
+                        'lapse2__annualPreparation',
+                        'lapse3__annualPreparation')
+                else:
+                    pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only(
+                        'project__school__id',
+                        'lapse1__annualPreparation',
+                        'lapse2__annualPreparation',
+                        'lapse3__annualPreparation')
                 for peca in pecas:
                     schoolsIds[peca.project.school.id] = str(peca.id)
                     for i in range(1, 4):
@@ -93,8 +114,11 @@ class StatisticsUserService():
                 schools = SchoolUser.objects(
                     isDeleted=False, status="1", id__in=schoolsIds.keys()).only('name','teachers', 'id')
                 for school in schools:
+                    #print("school ",school.id)
                     for teacher in school.teachers.filter(isDeleted=False):
                         available = True
+                        iswork = False
+                        isstate = False
                         teacher.schoolName = school.name
                         for f in filters:
                             if hasattr(teacher, f['field']) and teacher[f['field']] != f['value']:
@@ -104,11 +128,29 @@ class StatisticsUserService():
                                 annualPreparationTeachers[str(teacher.id)] == annualPreparationFilter
                             ):
                             available = False
+                        
+                        if workPositionFilter:
+                            if teacher.workPosition and str(teacher.workPosition.id) == workPositionFilter:
+                                iswork = True
+                            else:
+                                iswork = False
+                        else:
+                            iswork = True    
+                        
+                        if stateFilter:
+                            if teacher.addressState and str(teacher.addressState.id) == stateFilter:
+                                isstate = True
+                            else:
+                                isstate = False
+                        else:
+                            isstate = True    
+                        
                         if available:
                             teacher.pecaId = schoolsIds[str(school.id)]
                             if str(teacher.id) in annualPreparationTeachers:
                                 teacher.annualPreparationStatus = annualPreparationTeachers[str(teacher.id)]
-                            records.append(teacher)
+                            if iswork and isstate:
+                                records.append(teacher)
             if records:
                 for record in records:
                     user = usersType[userType]['schema'].dump(record)

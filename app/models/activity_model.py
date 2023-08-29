@@ -26,6 +26,7 @@ class Activity(EmbeddedDocument):
         CheckTemplate, null=True, default=None)
     approvalType = fields.StringField(required=True, max_length=1)
     isStandard = fields.BooleanField(default=False)
+    order = fields.IntField(default=100)
     status = fields.StringField(default='2', max_length=1)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)

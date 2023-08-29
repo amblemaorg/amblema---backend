@@ -191,6 +191,7 @@ class PecaProjectService():
                 for activity in data["lapse{}".format(i)]["activities"]:
                     if activity["status"] == "1" or activity["status"] == "3":
                         activities.append(activity)
+                activities = sorted(activities, key=lambda d: d['order']) 
                 data["lapse{}".format(i)]["activities"] = activities
 
             sponsor = SponsorUser.objects.get(id=peca.project.sponsor.id)

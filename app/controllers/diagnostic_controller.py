@@ -33,3 +33,16 @@ class DiagnosticController(Resource):
             sectionId=sectionId,
             studentId=studentId
         )
+
+class DiagnosticImportController(Resource):
+    service = DiagnosticService()
+
+    @jwt_required
+    def post(self, pecaId):
+        jsonData = request.get_json()
+        return self.service.importData(
+            lapse=jsonData["lapse"],
+            pecaId=pecaId,
+            students=jsonData["students"],
+            diagnosticType=jsonData["type"],
+        )

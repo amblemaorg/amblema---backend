@@ -172,6 +172,10 @@ class DiagnosticService():
                                         'operationsPerMinIndex',
                                         'mathDate',
                                         'logicDate'))
+                                jsonData = {
+                                    "multiplicationsPerMin": student_f["resultado_mult"] if student_f["resultado_mult"] != '' else 0, 
+                                    "operationsPerMin": student_f["resultado_log"] if student_f["resultado_log"] != '' else 0, 
+                                }
                             print(jsonData)
                             data = schema.load(jsonData)
                             grade = section.grade

@@ -33,7 +33,6 @@ class DiagnosticService():
                 if student:
                     try:
                         if diagnosticType == "reading":
-                            print(jsonData)
                             schema = DiagnosticSchema(
                                 only=('wordsPerMin', 'wordsPerMinIndex', 'readingDate'))
                         elif diagnosticType == "math":
@@ -149,11 +148,8 @@ class DiagnosticService():
                 section = peca.school.sections.filter(
                     grade=student_f["grado"], name=student_f["seccion"], isDeleted=False).first()
                 if section:
-                    print("paso section")
-                    print(student_f)
                     student = section.students.filter(
                     firstName=student_f["nombre"], lastName=student_f["apellido"], gender=student_f["genero"], isDeleted=False).first()
-                    print("estudiante ", student)
                     if student:
                         try:
                             jsonData = {}
@@ -161,7 +157,7 @@ class DiagnosticService():
                                 schema = DiagnosticSchema(
                                     only=('wordsPerMin', 'wordsPerMinIndex', 'readingDate'))
                                 jsonData = {
-                                    "wordsPerMin": student_f["resultado"] if student_f["resultado"] != '' else 0, 
+                                    "wordsPerMin": student_f["resultado"] if student_f["resultado"] != '' else None, 
                                 }
                             elif diagnosticType == "math":
                                 schema = DiagnosticSchema(
@@ -173,10 +169,9 @@ class DiagnosticService():
                                         'mathDate',
                                         'logicDate'))
                                 jsonData = {
-                                    "multiplicationsPerMin": student_f["resultado_mult"] if student_f["resultado_mult"] != '' else 0, 
-                                    "operationsPerMin": student_f["resultado_log"] if student_f["resultado_log"] != '' else 0, 
+                                    "multiplicationsPerMin": student_f["resultado_mult"] if student_f["resultado_mult"] != '' else None, 
+                                    "operationsPerMin": student_f["resultado_log"] if student_f["resultado_log"] != '' else None, 
                                 }
-                            print(jsonData)
                             data = schema.load(jsonData)
                             grade = section.grade
                             setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(
@@ -188,7 +183,6 @@ class DiagnosticService():
                                 diagnostic[field] = data[field]
                             
                             if diagnosticType == "reading":
-                                print("is reading")
                                 diagnostic.readingDate = datetime.utcnow()
                             elif diagnosticType == "math":
                                 if diagnostic.multiplicationsPerMin != None and not diagnostic.mathDate:

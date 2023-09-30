@@ -24,7 +24,7 @@ class DiagnosticSchema(Schema):
     operationsPerMin = fields.Int(allow_none=True)
     operationsPerMinIndex = fields.Decimal(
         dump_only=True, places=2, as_string=True)
-    wordsPerMin = fields.Int(min=0)
+    wordsPerMin = fields.Int(allow_none=True)
     wordsPerMinIndex = fields.Decimal(
         dump_only=True, places=2, as_string=True)
     readingDate = fields.DateTime(dump_only=True)

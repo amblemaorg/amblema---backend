@@ -142,7 +142,7 @@ from app.controllers.student_controller import (
 from app.controllers.statistics_controller import (
     UserSummaryController, DiagnosticReportController, UserReportController, OlympicsReportCtrl, ActiveSponsorsGraphicController, InactiveSponsorsGraphicController, NumberActiveSchoolsController
 )
-from app.controllers.diagnostic_controller import DiagnosticController
+from app.controllers.diagnostic_controller import DiagnosticController, DiagnosticImportController
 from app.controllers.teacher_testimonial_controller import (
     TeacherTestimonialController
 )
@@ -343,6 +343,8 @@ def create_app(config_instance):
                      '/pecaprojects/students/<string:pecaId>/<string:sectionId>/<string:studentId>')
     api.add_resource(DiagnosticController,
                      '/pecaprojects/diagnostics/<string:diagnostic>/<string:lapse>/<string:pecaId>/<string:sectionId>/<string:studentId>')
+    api.add_resource(DiagnosticImportController, 
+                     '/diagnostic/load/<string:pecaId>')
     api.add_resource(PecaAmblecoinsController,
                      '/pecaprojects/amblecoins/<string:pecaId>/<string:lapse>')
     api.add_resource(PecaAmbleSectionCtrl,

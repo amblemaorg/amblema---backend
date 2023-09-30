@@ -118,14 +118,14 @@ class SchoolPageContentService():
                         hasInfo = True
                 if hasInfo:
                     for lapse in [1, 2, 3]:
+                        value = peca.school.diagnostics['lapse{}'.format(
+                                    lapse)][diag]
                         diagnostics[diag].append(
                             {
                                 'createdAt': peca.createdAt,
                                 'label': peca.schoolYearName,
                                 'serie': 'Lapso {}'.format(lapse),
-                                'value': peca.school.diagnostics['lapse{}'.format(
-                                    lapse)][diag]
-                            }
+                                'value':  round(value*100 , 2) if value < 1 else value                            }
                         )
         for diag in diagnostics.keys():
             diagnostics[diag] = sorted(

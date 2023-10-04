@@ -448,15 +448,16 @@ class PecaProjectService():
                     }
                 )
             for activity in lapse.activities:
-                lapseData['activities'].append(
-                    {
-                        'id': str(activity.id),
-                        'name': activity.name,
-                        'description': activity.yearbook.description,
-                        'images': serialize_links(activity.yearbook.images),
-                        'order': activity.order
-                    }
-                )
+                if activity.status == "1" or activity.status == "3":    
+                    lapseData['activities'].append(
+                        {
+                            'id': str(activity.id),
+                            'name': activity.name,
+                            'description': activity.yearbook.description,
+                            'images': serialize_links(activity.yearbook.images),
+                            'order': activity.order
+                        }
+                    )
             lapseData['activities'] = sorted(lapseData['activities'], key=lambda d: d['order'])
         
         return data

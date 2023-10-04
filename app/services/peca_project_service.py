@@ -392,7 +392,8 @@ class PecaProjectService():
                         'id': 'initialWorkshop',
                         'name': 'Taller inicial',
                         'description': lapse.initialWorkshop.yearbook.description,
-                        'images': serialize_links(lapse.initialWorkshop.yearbook.images)
+                        'images': serialize_links(lapse.initialWorkshop.yearbook.images),
+                        'order': lapse.initialWorkshop.order
                     }
                 )
 
@@ -402,7 +403,8 @@ class PecaProjectService():
                         'id': 'ambleCoins',
                         'name': 'AmbLeMonedas',
                         'description': lapse.ambleCoins.yearbook.description,
-                        'images': serialize_links(lapse.ambleCoins.yearbook.images)
+                        'images': serialize_links(lapse.ambleCoins.yearbook.images),
+                        'order': lapse.ambleCoins.order
                     }
                 )
             if lapse.lapsePlanning:
@@ -411,7 +413,8 @@ class PecaProjectService():
                         'id': 'lapsePlanning',
                         'name': 'Planificación de lapso',
                         'description': lapse.lapsePlanning.yearbook.description,
-                        'images': serialize_links(lapse.lapsePlanning.yearbook.images)
+                        'images': serialize_links(lapse.lapsePlanning.yearbook.images),
+                        'order': lapse.lapsePlanning.order
                     }
                 )
             if lapse.annualConvention:
@@ -420,7 +423,8 @@ class PecaProjectService():
                         'id': 'annualConvention',
                         'name': 'Convención anual',
                         'description': lapse.annualConvention.yearbook.description,
-                        'images': serialize_links(lapse.annualConvention.yearbook.images)
+                        'images': serialize_links(lapse.annualConvention.yearbook.images),
+                        'order': lapse.annualConvention.order
                     }
                 )
             if lapse.olympics:
@@ -429,7 +433,8 @@ class PecaProjectService():
                         'id': 'olympics',
                         'name': 'Olimpíadas matemáticas',
                         'description': lapse.olympics.yearbook.description,
-                        'images': serialize_links(lapse.olympics.yearbook.images)
+                        'images': serialize_links(lapse.olympics.yearbook.images),
+                        'order': lapse.olympics.order
                     }
                 )
             if lapse.specialActivity:
@@ -438,7 +443,8 @@ class PecaProjectService():
                         'id': 'specialActivity',
                         'name': 'Actividad especial de lapso {}'.format(i),
                         'description': lapse.specialActivity.yearbook.description,
-                        'images': serialize_links(lapse.specialActivity.yearbook.images)
+                        'images': serialize_links(lapse.specialActivity.yearbook.images),
+                        'order': lapse.specialActivity.order
                     }
                 )
             for activity in lapse.activities:
@@ -447,8 +453,10 @@ class PecaProjectService():
                         'id': str(activity.id),
                         'name': activity.name,
                         'description': activity.yearbook.description,
-                        'images': serialize_links(activity.yearbook.images)
+                        'images': serialize_links(activity.yearbook.images),
+                        'order': activity.order
                     }
                 )
+            lapseData['activities'] = sorted(lapseData['activities'], key=lambda d: d['order'])
         
         return data

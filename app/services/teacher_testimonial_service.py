@@ -53,7 +53,7 @@ class TeacherTestimonialService():
                                            payload={"userId":  userId})
 
                 schema = TeacherTestimonialSchema()
-
+                
                 teachersTestimonials = school.teachersTestimonials
                 newTeachersTestimonials = copy.copy(teachersTestimonials)
                 if teachersTestimonials.isInApproval:
@@ -68,29 +68,29 @@ class TeacherTestimonialService():
                     folder = folder + \
                         '/{}'.format(len([name for name in os.listdir(DIR)]) + 1
                                      if os.path.exists(DIR) else 1)
-                    for testimonial in jsonData['testimonials']:
+                    testimonials = copy.copy(jsonData['testimonials'])
+                    jsonData["testimonials"] = []
+                
+                    for testimonial in testimonials:
                         teacher = school.teachers.filter(
                             id=testimonial['teacherId'], isDeleted=False).first()
                         if teacher:
                             testimonial['firstName'] = teacher.firstName
                             testimonial['lastName'] = teacher.lastName
-                        else:
-                            raise RegisterNotFound(message="Record not found",
-                                                   status_code=404,
-                                                   payload={"teacherId": testimonial['teacherId']})
-                        if 'id' not in testimonial:
-                            testimonial['id'] = str(fields.ObjectId())
-                        if str(testimonial['image']).startswith('data'):
-                            testimonial['image'] = upload_image(
-                                testimonial['image'], folder, None)
-
+                            if 'id' not in testimonial:
+                                testimonial['id'] = str(fields.ObjectId())
+                            if str(testimonial['image']).startswith('data'):
+                                testimonial['image'] = upload_image(
+                                    testimonial['image'], folder, None)
+                            jsonData["testimonials"].append(testimonial)
+                
                 data = schema.load(jsonData)
-
+                
                 approvalRequired = False
                 oldTestimonials = {}
                 for testimonial in teachersTestimonials.testimonials:
                     oldTestimonials[testimonial.id] = testimonial
-
+                
                 for field in data.keys():
                     if teachersTestimonials[field] != data[field]:
                         if field == 'testimonials':

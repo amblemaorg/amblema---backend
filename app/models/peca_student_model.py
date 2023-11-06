@@ -21,16 +21,24 @@ class Diagnostic(EmbeddedDocument):
     readingDate = fields.DateTimeField()
 
     def calculateIndex(self, setting):
-        if self.multiplicationsPerMin == 0:
+        if self.multiplicationsPerMin == None:
+            self.multiplicationsPerMinIndex = None
+        elif self.multiplicationsPerMin == 0:
             self.multiplicationsPerMinIndex = None
         elif self.multiplicationsPerMin:
             self.multiplicationsPerMinIndex = (self.multiplicationsPerMin / \
                 setting.multiplicationsPerMin)*100
-        if self.operationsPerMin == 0:
+        
+        if self.operationsPerMin == None:
+            self.operationsPerMinIndex = None
+        elif self.operationsPerMin == 0:
             self.operationsPerMinIndex = None
         elif self.operationsPerMin:
             self.operationsPerMinIndex = (self.operationsPerMin / setting.operationsPerMin)*100
-        if self.wordsPerMin==0:
+
+        if self.wordsPerMin==None:
+            self.wordsPerMinIndex = None
+        elif self.wordsPerMin==0:
             self.wordsPerMinIndex = None
         elif self.wordsPerMin:
             self.wordsPerMinIndex = (self.wordsPerMin / setting.wordsPerMin)*100

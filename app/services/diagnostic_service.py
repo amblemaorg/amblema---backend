@@ -190,11 +190,13 @@ class DiagnosticService():
                                 if diagnostic.operationsPerMin != None and not diagnostic.logicDate:
                                     diagnostic.logicDate = datetime.utcnow()
                             diagnostic.calculateIndex(setting)
-                            section.refreshDiagnosticsSummary()
-
+                
                         except ValidationError as err:
                             return err.normalized_messages(), 400
-                        
+
+            for section in peca.school.sections:
+                section.refreshDiagnosticsSummary()
+
             peca.school.refreshDiagnosticsSummary()
             peca.save()
             schoolYear = peca.schoolYear.fetch()

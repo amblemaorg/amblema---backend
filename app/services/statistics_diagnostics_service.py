@@ -109,8 +109,7 @@ class StatisticsDiagnosticService():
                                     'cardType': student.cardType
                                 }
                                 for diag in diagnosticsSearch:
-                                    if studentLapse[diagnostics[diag]]:
-
+                                    if studentLapse[diagnostics[diag]] != None:
                                         hasResult = True
                                         # set lapse and diagnostic available
                                         sectionLapse['available'] = True

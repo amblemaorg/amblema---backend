@@ -119,21 +119,20 @@ class StatisticsDiagnosticService():
                                         goal = sectionLapse[diag]['goal']
                                         sectionLapse[diag]['participants'] += 1
                                         sectionLapse[diag]['resultTotal'] += studentLapse[diagnostics[diag]]
-                                        sectionLapse[diag]['indexTotal'] += float(studentLapse['{}Index'.format(
-                                            diagnostics[diag])])
+                                        sectionLapse[diag]['indexTotal'] += float(studentLapse['{}Index'.format(diagnostics[diag])]) if studentLapse['{}Index'.format(diagnostics[diag])]!=None else 0
                                         if studentLapse[diagnostics[diag]] > goal:
                                             sectionLapse[diag]['overGoalStudents'] += 1
 
                                         # set dates of diagnostics
                                         diagnosticsDates['lapse{}'.format(i+1)][diag].append(
-                                            studentLapse['{}Date'.format(diag)]
+                                            studentLapse['{}Date'.format(diag)] if studentLapse['{}Date'.format(diag)] != None else datetime.today()
                                         )
 
                                         # add diagnostic data to student
                                         studentData[diagnostics[diag]
                                                     ] = studentLapse[diagnostics[diag]]
                                         studentData['{}Index'.format(
-                                            diagnostics[diag])] = float(studentLapse['{}Index'.format(diagnostics[diag])])
+                                            diagnostics[diag])] = float(studentLapse['{}Index'.format(diagnostics[diag])]) if studentLapse['{}Index'.format(diagnostics[diag])] != None else 0
 
                                 # add student to lapse
                                 if hasResult:

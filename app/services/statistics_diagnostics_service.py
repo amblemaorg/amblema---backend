@@ -60,7 +60,7 @@ class StatisticsDiagnosticService():
                     sectionData['name'] = section.name
                     sectionData['teacher'] = section.teacher.firstName + \
                         ' ' + section.teacher.lastName
-                    sectionData['enrollment'] = len(section.students)
+                    sectionData['enrollment'] = len(section.students.filter(isDeleted=False))
 
                     for i in range(3):
 
@@ -133,13 +133,19 @@ class StatisticsDiagnosticService():
                                                     ] = studentLapse[diagnostics[diag]]
                                         studentData['{}Index'.format(
                                             diagnostics[diag])] = float(studentLapse['{}Index'.format(diagnostics[diag])]) if studentLapse['{}Index'.format(diagnostics[diag])] != None else 0
-
+                                    else:
+                                        studentData[diagnostics[diag]] = None
+                                        studentData['{}Index'.format(
+                                            diagnostics[diag])] = None
+                                
                                 # add student to lapse
-                                if hasResult:
-                                    sectionLapse['students'].append(
-                                        studentData)
-                                    sectionData['lapse{}'.format(
-                                        i+1)] = sectionLapse
+                                #if hasResult:
+                                sectionLapse['students'].append(
+                                    studentData)
+                                sectionData['lapse{}'.format(
+                                    i+1)] = sectionLapse
+                                
+                                    
 
                     sectionSummaryAvailable = True
                     for i in range(3):

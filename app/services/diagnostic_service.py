@@ -141,7 +141,7 @@ class DiagnosticService():
 
         peca = PecaProject.objects(
             isDeleted=False,
-            id=pecaId).first()
+            id=pecaId).only('school', 'schoolYear').first()
 
         if peca:
             for student_f in students:

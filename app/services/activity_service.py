@@ -167,7 +167,7 @@ class ActivityService():
                         schoolYear.save()
                         if newActivity.status == "1":
                             bulk_operations = []
-                            for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
+                            for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('lapse1', 'lapse2', 'lapse3'):
                                 for activity in peca['lapse{}'.format(lapse)].activities:
                                     if str(activity.id) == id:
                                         activity.name = newActivity.name

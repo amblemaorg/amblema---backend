@@ -39,6 +39,7 @@ class OlympicsService():
 
         if peca:
             try:
+                paso = False
                 schema = StudentSchema()
 
                 if not peca['lapse{}'.format(lapse)].olympics:
@@ -53,6 +54,7 @@ class OlympicsService():
                                                status_code=404,
                                                payload={"section: ": jsonData["section"]})
                 if "student" in jsonData and section:
+                    paso = True
                     student = section.students.filter(
                         id=jsonData['student']).first()
                     if not student:
@@ -85,29 +87,31 @@ class OlympicsService():
                 student = Student()
                 for field in data.keys():
                     student[field] = data[field]
+                if paso:
+                    olympics['students'].append(student)
+                    try:
+                        peca['lapse{}'.format(lapse)].olympics = olympics
+                        peca.save()
+                        school = SchoolUser.objects(
+                            id=peca.project.school.id, isDeleted=False).first()
+                        school.olympicsSummary.inscribed += 1
+                        if student.status == "2":
+                            school.olympicsSummary.classified += 1
+                            if student.result:
+                                if student.result == "1":
+                                    school.olympicsSummary.medalsGold += 1
+                                elif student.result == "2":
+                                    school.olympicsSummary.medalsSilver += 1
+                                elif student.result == "3":
+                                    school.olympicsSummary.medalsBronze += 1
+                        school.save()
 
-                olympics['students'].append(student)
-                try:
-                    peca['lapse{}'.format(lapse)].olympics = olympics
-                    peca.save()
-                    school = SchoolUser.objects(
-                        id=peca.project.school.id, isDeleted=False).first()
-                    school.olympicsSummary.inscribed += 1
-                    if student.status == "2":
-                        school.olympicsSummary.classified += 1
-                        if student.result:
-                            if student.result == "1":
-                                school.olympicsSummary.medalsGold += 1
-                            elif student.result == "2":
-                                school.olympicsSummary.medalsSilver += 1
-                            elif student.result == "3":
-                                school.olympicsSummary.medalsBronze += 1
-                    school.save()
-
+                        return schema.dump(student), 200
+                    except Exception as e:
+                        return {'status': 0, 'message': str(e)}, 400
+                else:
                     return schema.dump(student), 200
-                except Exception as e:
-                    return {'status': 0, 'message': str(e)}, 400
-
+                    
             except ValidationError as err:
                 return err.normalized_messages(), 400
         else:

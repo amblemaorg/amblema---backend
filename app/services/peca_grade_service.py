@@ -83,14 +83,14 @@ class PecaGradeService():
                                         student[field] = data[field]
 
                                     olympics['students'].append(student)
-                                    try:
-                                        peca['lapse{}'.format(
-                                            jsonData["lapse"])].olympics = olympics
-                                        peca.save()
-                                        peca.reload()
-                                        
-                                    except Exception as e:
-                                        return {'status': 0, 'message': str(e)},400
+                        try:
+                            peca['lapse{}'.format(
+                                jsonData["lapse"])].olympics = olympics
+                            peca.save()
+                            peca.reload()
+                            
+                        except Exception as e:
+                            return {'status': 0, 'message': str(e)},400
                         
                         classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
                         school.olympicsSummary.classified = len(classified)
@@ -130,9 +130,9 @@ class PecaGradeService():
                             found = True
                             peca['lapse{}'.format(jsonData["lapse"])].olympics.students.remove(student)
                             break
-                    if found:
-                        peca.save()
-                        peca.reload()
+                
+                peca.save()
+                peca.reload()
                 
                 classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
                 school = SchoolUser.objects(

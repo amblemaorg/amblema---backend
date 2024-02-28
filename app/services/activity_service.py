@@ -1,7 +1,7 @@
 # app/services/activity_service.py
 
 
-import re
+import re, copy
 
 from flask import current_app
 from marshmallow import ValidationError
@@ -125,9 +125,9 @@ class ActivityService():
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
-                print(jsonData)
+                
                 data = schema.load(jsonData, partial=True)
-                print(data)
+                
                 activities = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].activities
 
@@ -135,7 +135,7 @@ class ActivityService():
                 hasChanged = False
                 for activity in activities:
                     if str(activity.id) == str(id) and not activity.isDeleted:
-                        oldActivity = activity
+                        oldActivity = copy.deepcopy(activity)
                         found = True
                         
                         for field in schema.dump(data).keys():
@@ -165,6 +165,7 @@ class ActivityService():
                         schoolYear.pecaSetting['lapse{}'.format(
                             lapse)].activities = activities
                         schoolYear.save()
+                        
                         if newActivity.status == "1":
                             bulk_operations = []
                             for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('lapse1', 'lapse2', 'lapse3'):
@@ -183,20 +184,27 @@ class ActivityService():
                                         activity.file = newActivity.file
                                         activity.video = newActivity.video
                                         activity.order = newActivity.order
+                                        
                                         if oldActivity.checklist != None:
                                             oldCheckIds = [str(c.id)
                                                        for c in oldActivity.checklist]
                                         else:
                                             oldCheckIds = []
                                         newCheckIds = {}
+                                        newCheckIds_id = []
+                                        
                                         if newActivity.checklist:
                                             for c in newActivity.checklist:
                                                 newCheckIds[str(c.id)] = c
+                                                newCheckIds_id.append(str(c.id))
+                                        
                                         if activity.hasChecklist and oldActivity.checklist != newActivity.checklist:
+                                            activity_copy = copy.deepcopy(activity)
                                             for c in activity.checklist:
-                                                if str(c.id) not in newCheckIds:
-                                                    activity.checklist.remove(
+                                                if str(c.id) not in newCheckIds_id:
+                                                    activity_copy.checklist.remove(
                                                         c)
+                                            activity.checklist = activity_copy.checklist
                                             for k in newCheckIds.keys():
                                                 if k not in oldCheckIds:
                                                     activity.checklist.append(

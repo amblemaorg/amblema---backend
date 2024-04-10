@@ -59,8 +59,6 @@ class LapsePlanningService():
                     schoolYear.save()
 
                     if lapsePlanning.status == "1":
-                        print("data status", lapsePlanning.status)
-
                         bulk_operations = []
                         for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
 

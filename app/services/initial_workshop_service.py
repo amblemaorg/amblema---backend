@@ -47,15 +47,12 @@ class InicialWorkshopService():
                 initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].initialWorkshop
                 for field in schema.dump(data).keys():
-                    print("-------")
-                    print(field)
-                    print(data[field])
                     initialWorkshop[field] = data[field]
                 try:
                     schoolYear.pecaSetting['lapse{}'.format(
                         lapse)].initialWorkshop = initialWorkshop
                     schoolYear.save()
-                    print("status ", initialWorkshop.status)
+                    
                     if initialWorkshop.status == "1":
 
                         bulk_operations = []

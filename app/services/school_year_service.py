@@ -1,7 +1,7 @@
 # app/services/school_year_service.py
 
 
-import re
+import re, copy
 import datetime
 from datetime import timedelta
 
@@ -392,7 +392,7 @@ class CronClearApprovalHistoryService():
                         for elem in reversed(elementos_filtrados):
                             if elem.status != "2" and elem.status != "3":
                                 nueva_lista.append(elem)
-
+                            
                             if elem.status == "2" and not encontrado_ultimo:
                                 nueva_lista.append(elem)
                                 encontrado_ultimo = True
@@ -483,3 +483,85 @@ class CronUpdateDataProjectsService():
                 return {"message": "Cron error: "+str(e)}, 400
         else:
             return {"message": "No hay año escolar activo"}, 200
+        
+class CronUpdateDataActiviyProjectsService():
+    def run(self, limit, skip):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        
+        if schoolYear:
+            activities_lapse1 = schoolYear.pecaSetting['lapse1'].activities
+            activities_lapse2 = schoolYear.pecaSetting['lapse2'].activities
+            activities_lapse3 = schoolYear.pecaSetting['lapse3'].activities
+            try:
+                pecas = PecaProject.objects(
+                    isDeleted=False,
+                    schoolYear=schoolYear.id
+                ).only("id", "lapse1", "lapse2", "lapse3").limit(limit).skip(skip)
+                
+                for peca in pecas:
+                    for activity in activities_lapse1:
+                        oldCheckIds = []
+                        newCheckIds = {}
+                        newCheckIds_id = []
+                        if activity.hasChecklist:
+                            oldCheckIds = [str(c.id) for c in activity.checklist]
+                            for act_peca in peca.lapse1.activities:
+                                if str(activity.id) == str(act_peca.id) and not activity.isDeleted:
+                                    oldActivity = copy.deepcopy(act_peca)
+                                    for c in act_peca.checklist:
+                                        newCheckIds[str(c.id)] = c
+                                        newCheckIds_id.append(str(c.id))
+                                    
+                                    if activity.hasChecklist and activity.checklist != act_peca.checklist:
+                                        for c in act_peca.checklist:
+                                            if str(c.id) not in oldCheckIds:
+                                                oldActivity.checklist.remove(
+                                                    c)
+                                        act_peca.checklist = oldActivity.checklist
+                    
+                    for activity in activities_lapse2:
+                        oldCheckIds = []
+                        newCheckIds = {}
+                        newCheckIds_id = []
+                        if activity.hasChecklist:
+                            oldCheckIds = [str(c.id) for c in activity.checklist]
+                            for act_peca in peca.lapse2.activities:
+                                if str(activity.id) == str(act_peca.id) and not activity.isDeleted:
+                                    oldActivity = copy.deepcopy(act_peca)
+                                    for c in act_peca.checklist:
+                                        newCheckIds[str(c.id)] = c
+                                        newCheckIds_id.append(str(c.id))
+                                    if activity.hasChecklist and activity.checklist != act_peca.checklist:
+                                        for c in act_peca.checklist:
+                                            if str(c.id) not in oldCheckIds:
+                                                oldActivity.checklist.remove(
+                                                    c)
+                                        act_peca.checklist = oldActivity.checklist
+                    
+                    for activity in activities_lapse3:
+                        oldCheckIds = []
+                        newCheckIds = {}
+                        newCheckIds_id = []
+                        if activity.hasChecklist:
+                            oldCheckIds = [str(c.id) for c in activity.checklist]
+                            for act_peca in peca.lapse3.activities:
+                                if str(activity.id) == str(act_peca.id) and not activity.isDeleted:
+                                    oldActivity = copy.deepcopy(act_peca)
+                                    for c in act_peca.checklist:
+                                        newCheckIds[str(c.id)] = c
+                                        newCheckIds_id.append(str(c.id))
+                                    
+                                    if activity.hasChecklist and activity.checklist != act_peca.checklist:
+                                        for c in act_peca.checklist:
+                                            if str(c.id) not in oldCheckIds:
+                                                oldActivity.checklist.remove(
+                                                    c)
+                                        act_peca.checklist = oldActivity.checklist
+                    peca.save()
+                return {"message": "Ejecutado"}, 200            
+            
+            except Exception as e:
+                return {"message": "Cron error: "+str(e)}, 400
+        else:
+            return {"message": "No hay año escolar activo"}, 200
+        

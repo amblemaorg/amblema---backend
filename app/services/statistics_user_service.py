@@ -114,7 +114,6 @@ class StatisticsUserService():
                 schools = SchoolUser.objects(
                     isDeleted=False, status="1", id__in=schoolsIds.keys()).only('name','teachers', 'id')
                 for school in schools:
-                    #print("school ",school.id)
                     for teacher in school.teachers.filter(isDeleted=False):
                         available = True
                         iswork = False

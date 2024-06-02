@@ -50,7 +50,22 @@ class StatisticsDiagnosticService():
             data['sections'] = []
             data['yearSummaryAvailable'] = False
             data['yearSummary'] = {}
-
+            data["totales"] = {
+                'lapse1':{},
+                'lapse2':{},
+                'lapse3':{},
+            }
+            for diag in diagnosticsSearch:
+                data["totales"]['lapse1'][diag] = {
+                    'studentsMeta': 0
+                }
+                data["totales"]['lapse2'][diag] = {
+                    'studentsMeta': 0
+                }
+                data["totales"]['lapse3'][diag] = {
+                    'studentsMeta': 0
+                }
+            
             for section in peca.school.sections:
                 if int(section.grade) > 0 and not section.isDeleted:
 
@@ -123,10 +138,12 @@ class StatisticsDiagnosticService():
                                         if diag == "reading":
                                             if studentLapse[diagnostics[diag]] >= goal:
                                                 sectionLapse[diag]['overGoalStudents'] += 1
+                                                data["totales"]["lapse{}".format(i+1)][diag]["studentsMeta"] += 1
 
                                         if diag in ["math", "logic"]:
                                             if studentLapse[diagnostics[diag]] == goal:
                                                 sectionLapse[diag]['overGoalStudents'] += 1
+                                                data["totales"]["lapse{}".format(i+1)][diag]["studentsMeta"] += 1
 
                                         # set dates of diagnostics
                                         diagnosticsDates['lapse{}'.format(i+1)][diag].append(

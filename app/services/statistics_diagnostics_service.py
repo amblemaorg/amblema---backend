@@ -65,41 +65,7 @@ class StatisticsDiagnosticService():
                 data["totales"]['lapse3'][diag] = {
                     'studentsMeta': 0
                 }
-            """data['totales'] = {
-                'lapse1':{
-                    'math': {
-                        'studentsMeta': 0,
-                    },
-                    'logic': {
-                        'studentsMeta': 0,
-                    },
-                    'reading': {
-                        'studentsMeta': 0,
-                    }
-                },
-                'lapse2':{
-                    'math': {
-                        'studentsMeta': 0,
-                    },
-                    'logic': {
-                        'studentsMeta': 0,
-                    },
-                    'reading': {
-                        'studentsMeta': 0,
-                    }
-                },
-                'lapse3':{
-                    'math': {
-                        'studentsMeta': 0,
-                    },
-                    'logic': {
-                        'studentsMeta': 0,
-                    },
-                    'reading': {
-                        'studentsMeta': 0,
-                    }
-                }
-            }"""
+            
             for section in peca.school.sections:
                 if int(section.grade) > 0 and not section.isDeleted:
 

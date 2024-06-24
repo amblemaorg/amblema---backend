@@ -228,7 +228,7 @@ class StatisticsDiagnosticService():
                                 # improvement percentage
                                 sectionSummary[diag]['improvementPercentage'] = ((sectionSummary[diag]['lapse3']['resultAverage'] -
                                                                                   sectionSummary[diag]['lapse1']['resultAverage'])
-                                                                                 * 100/sectionSummary[diag]['lapse3']['resultAverage'])
+                                                                                 * 100/sectionSummary[diag]['lapse3']['resultAverage']) if sectionSummary[diag]['lapse3']['resultAverage'] > 0 else 0
                                 sectionSummary[diag]['totalIndexAverage'] = (sectionSummary[diag]['lapse1']['indexAverage'] +
                                                                              sectionSummary[diag]['lapse2']['indexAverage'] +
                                                                              sectionSummary[diag]['lapse3']['indexAverage'])/3

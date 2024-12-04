@@ -72,7 +72,7 @@ class StatisticsService():
 
     def get_diagnostics_last_five_years(self):
 
-        periods = SchoolYear.objects(isDeleted=False).order_by('createdAt')[:5]
+        periods = SchoolYear.objects(isDeleted=False).order_by('-createdAt')[:5]
         data = {
             'wordsPerMinIndex': [],
             'multiplicationsPerMinIndex': [],

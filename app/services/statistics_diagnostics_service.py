@@ -202,10 +202,10 @@ class StatisticsDiagnosticService():
                     if sectionSummaryAvailable:
                         sectionSummary = {}
                         for diag in diagnosticsSearch:
-                            available = True
+                            available = False
                             for i in range(3):
-                                if not sectionData['lapse{}'.format(i+1)][diag]['available']:
-                                    available = False
+                                if sectionData['lapse{}'.format(i+1)][diag]['available']:
+                                    available = True
                             if available:
                                 sectionSummary[diag] = {}
                                 data['yearSummaryAvailable'] = True

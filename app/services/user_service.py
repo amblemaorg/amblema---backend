@@ -14,7 +14,7 @@ from app.helpers.handler_files import validate_files, upload_files
 from app.services.generic_service import GenericServices
 from app.blueprints.web_content.models.web_content import WebContent
 from app.helpers.handler_messages import HandlerMessages
-
+from app.models.coordinator_user_model import CoordinatorUser
 
 class UserService(GenericServices):
 
@@ -291,3 +291,20 @@ class UserService(GenericServices):
             return {'status': 0, 'message': str(e)}, 400
 
         return {"message": "Record deleted successfully"}, 200
+
+class ResendEmailCoordinator():
+    def post(self, id):
+        try:
+            user = CoordinatorUser.objects(isDeleted=False, id=id).first()
+            if not user:
+                return {'status': 0, 'message': "user not found"}, 400
+
+            password = user.generatePassword()
+            user.password = password
+            user.setHashPassword()
+            user.save()
+            user.sendRegistrationEmail(password)
+
+            return {"message": "Email Resend successfully"}, 200
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400

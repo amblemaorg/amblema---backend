@@ -23,7 +23,7 @@ from app.controllers.entity_controller import (
     EntityController, EntityHandlerController
 )
 from app.controllers.user_controller import (
-    UserController, UserHandlerController
+    UserController, UserHandlerController, ResendEmailCoordinatorController
 )
 from app.controllers.learning_module_controller import (
     LearningController,
@@ -424,5 +424,8 @@ def create_app(config_instance):
     
     api.add_resource(CronUpdateDataProjectsCtrl,'/cron/update/data/projects/<int:limit>/<int:skip>')
     api.add_resource(CronUpdateDataActivityProjectsCtrl,'/cron/update/data/activities/<int:limit>/<int:skip>')
+    
+
+    api.add_resource(ResendEmailCoordinatorController, '/resend/email/coordinator/<id>')
     
     return app

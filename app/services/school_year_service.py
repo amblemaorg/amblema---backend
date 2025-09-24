@@ -9,6 +9,7 @@ from flask import current_app
 from marshmallow import ValidationError
 from pymongo import UpdateOne
 from mongoengine.queryset.visitor import Q
+from mongoengine import get_db
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
@@ -318,6 +319,83 @@ class CronDiagnosticosService():
     def run(self, limit, skip):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         if schoolYear:
+            pipeline = [
+                {"$match": {"schoolYear": schoolYear.id, "isDeleted": False}},
+                {"$project": {
+                    "id": "$_id",
+                    "school": "$school",
+                    "schoolYear": "$schoolYear",
+                    "latestApproval": {
+                        "$arrayElemAt": [
+                            {"$slice": [
+                                {"$reverseArray": "$yearbook.approvalHistory"}, 
+                                1
+                            ]}, 
+                            0
+                        ]
+                    }
+                }},
+                {"$skip": skip},
+                {"$limit": limit}
+            ]
+
+            # Ejecutar la consulta de agregación
+            db = get_db()
+            peca_projects = list(db.peca_project.aggregate(pipeline))
+            
+            # Procesar cada proyecto Peca
+            for project in peca_projects:
+                # Recuperar la instancia real de PecaProject por ID
+                peca_id = project["id"]
+
+                # Modificar el valor en el último approvalHistory directamente en la base de datos
+                latest_approval = project.get("latestApproval")
+                diagnostic_summary = latest_approval["detail"]["lapse1"]["diagnosticSummary"]                   
+
+                # Recuperar la instancia de PecaProject para continuar con el procesamiento
+                peca = PecaProject.objects(id=peca_id).only('id','school','schoolYear').first()
+
+                # Iterar sobre las secciones de la escuela
+                for section in peca.school.sections.filter(isDeleted=False):
+                    if section.grade != "0":
+                        # Configuración del objetivo según el grado
+                        setting = schoolYear.pecaSetting.goalSetting[f'grade{section.grade}']
+                        
+                        # Procesar cada estudiante
+                        for student in section.students.filter(isDeleted=False):
+                            for lapse in [1, 2, 3]:
+                                diagnostic = student[f'lapse{lapse}']
+                                if diagnostic:
+                                    diagnostic.calculateIndex(setting)
+                    
+                    # Actualizar los resúmenes de diagnóstico
+                    section.refreshDiagnosticsSummary()
+                    for summary in diagnostic_summary:
+                        if summary["grade"] == section.grade and summary["name"] == section.name:
+                            summary["wordsPerMinIndex"] = section.diagnostics["lapse1"]["wordsPerMinIndex"]
+                            summary["operationsPerMinIndex"] = section.diagnostics["lapse1"]["operationsPerMinIndex"]
+                            summary["multiplicationsPerMinIndex"] = section.diagnostics["lapse1"]["multiplicationsPerMinIndex"]
+                            summary["wordsPerMin"] = section.diagnostics["lapse1"]["wordsPerMin"]
+                            summary["operationsPerMin"] = section.diagnostics["lapse1"]["operationsPerMin"]
+                            summary["multiplicationsPerMin"] = section.diagnostics["lapse1"]["multiplicationsPerMin"]
+                    peca.school.refreshDiagnosticsSummary()
+                
+                # Guardar y recargar la instancia de PecaProject
+                peca.save()
+                peca.reload()
+                
+                db.pecaproject.update_one(
+                    {"_id": peca_id, "yearbook.approvalHistory.id": latest_approval["id"]},
+                    {"$set": {"yearbook.approvalHistory.$.detail.lapse1.diagnosticSummary": diagnostic_summary}}
+                )
+                # Actualizar el resumen de diagnóstico del año escolar
+                schoolYearPeca = peca.schoolYear.fetch()
+                schoolYearPeca.refreshDiagnosticsSummary()
+                schoolYearPeca.save()
+
+            return {"message": "Cron ejecutado"}, 200
+
+            """ 
             pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('id','school','schoolYear').limit(limit).skip(skip)
             for peca in pecas:
                 for section in peca.school.sections.filter(isDeleted=False):
@@ -335,7 +413,8 @@ class CronDiagnosticosService():
                 schoolYearPeca = peca.schoolYear.fetch()
                 schoolYearPeca.refreshDiagnosticsSummary()
                 schoolYearPeca.save()
-            return {"message": "Cron ejecutado"}, 200            
+            return {"message": "Cron ejecutado"}, 200  
+            """          
         else:
             return {"message": "No hay año escolar activo"}, 200
 

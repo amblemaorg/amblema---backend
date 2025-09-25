@@ -359,7 +359,7 @@ class CronDiagnosticosService():
                 for section in peca.school.sections.filter(isDeleted=False):
                     if section.grade != "0":
                         # Configuración del objetivo según el grado
-                        setting = schoolYear.pecaSetting.goalSetting[f'grade{section.grade}']
+                        setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(section.grade)]
                         
                         # Procesar cada estudiante
                         for student in section.students.filter(isDeleted=False):

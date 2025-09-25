@@ -364,7 +364,7 @@ class CronDiagnosticosService():
                         # Procesar cada estudiante
                         for student in section.students.filter(isDeleted=False):
                             for lapse in [1, 2, 3]:
-                                diagnostic = student[f'lapse{lapse}']
+                                diagnostic = student['lapse{}'.format(lapse)]
                                 if diagnostic:
                                     diagnostic.calculateIndex(setting)
                     

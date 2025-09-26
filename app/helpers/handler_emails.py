@@ -38,11 +38,24 @@ def send_email(body, plainTextBody, subject, to):
     # Create secure connection with server and send email
     context = ssl.create_default_context()
     try:
-        with smtplib.SMTP_SSL("email-smtp.us-east-1.amazonaws.com", 465, context=context) as server:
+        """with smtplib.SMTP_SSL("email-smtp.us-east-1.amazonaws.com", 465, context=context) as server:
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.sendmail(
                 SMTP_FROM, to, msg.as_string()
             )
+            return True"""
+        
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.ehlo()  # Identificarse con el servidor
+            server.starttls(context=context)  # Iniciar cifrado TLS
+            server.ehlo()  # Re-identificarse después de TLS
+            
+            # Iniciar sesión con credenciales de Gmail
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            
+            # Enviar correo
+            server.sendmail(SMTP_FROM, to.split(','), msg.as_string())
+            
             return True
     except Exception as e:
         return {'msg': str(e), 'to': str(to.split())}, 400

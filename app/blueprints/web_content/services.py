@@ -213,7 +213,8 @@ class SchoolPageContentService():
                 'teachersTestimonials',
                 'facebook',
                 'instagram',
-                'twitter'))
+                'twitter',
+                'nStudents'))
         data = schema.dump(school)
         data['coordinator'] = school.project.coordinator.name
         data['sponsor'] = school.project.sponsor.name
@@ -221,7 +222,6 @@ class SchoolPageContentService():
             school.addressMunicipality.name, school.addressState.name)
         data['nearbySchools'] = SchoolUserSchema(
             partial=True, only=('id', 'slug', 'name', 'image')).dump(nearbySchools, many=True)
-        data['nStudents'] = peca.school.nStudents
         data['diagnostics'] = diagnostics
         data['olympicsSummary']['description'] = olympicsDescription
         data['activities'] = activities

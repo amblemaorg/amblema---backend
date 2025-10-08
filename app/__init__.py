@@ -35,7 +35,7 @@ from app.controllers.school_year_controller import (
     EnrollSchoolsCtrl, CronScrollYearCtrl, CronEmptySchoolCtrl, 
     CronDiagnisticosCtrl, CronAddDiagnosticsCtrl, CronClearApprovalHistoryCtrl,
     ClearApprovalHistoryPastYearCtrl, CronUpdateDataProjectsCtrl,
-    CronUpdateDataActivityProjectsCtrl
+    CronUpdateDataActivityProjectsCtrl, CronUpdateActivityOrderCtrl
 )
 from app.controllers.step_controller import (
     StepController, StepHandlerController
@@ -427,5 +427,5 @@ def create_app(config_instance):
     
 
     api.add_resource(ResendEmailCoordinatorController, '/resend/email/coordinator/<id>')
-    
+    api.add_resource(CronUpdateActivityOrderCtrl, '/cron/update/activity/order')
     return app

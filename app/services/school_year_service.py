@@ -644,3 +644,24 @@ class CronUpdateDataActiviyProjectsService():
         else:
             return {"message": "No hay año escolar activo"}, 200
         
+class CronUpdateActivityOrderService():
+    def run(self, data):
+        schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
+        name_lapse = "lapse"+str(data["lapse"])
+        if schoolYear:
+            try:
+                pecas = PecaProject.objects(isDeleted=False, schoolYear=schoolYear.id).only('id', name_lapse)
+                
+                for peca in pecas:
+                    if data["isStandard"]:
+                        peca[name_lapse][data["activity"]]["order"] = data["order"]
+                    else:
+                        for act in peca[name_lapse]["activities"]:
+                            if act["devName"] == data["activity"]:
+                                act["order"] = data["order"]
+                    peca.save()
+                return {"message": "Ejecutado"}, 200            
+            except Exception as e:
+                return {"message": "Cron error: "+str(e)}, 400
+        else:
+            return {"message": "No hay año escolar activo"}, 200

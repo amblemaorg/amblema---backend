@@ -38,14 +38,14 @@ def send_email(body, plainTextBody, subject, to):
     # Create secure connection with server and send email
     context = ssl.create_default_context()
     try:
-        """with smtplib.SMTP_SSL("email-smtp.us-east-1.amazonaws.com", 465, context=context) as server:
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.sendmail(
                 SMTP_FROM, to, msg.as_string()
             )
-            return True"""
+            return True
         
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        """with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             print("entro al with")
             server.ehlo()  # Identificarse con el servidor
             print("elo session")
@@ -60,6 +60,6 @@ def send_email(body, plainTextBody, subject, to):
             server.sendmail(SMTP_FROM, to.split(','), msg.as_string())
             print("sendemail")
             
-            return True
+            return True"""
     except Exception as e:
         return {'msg': str(e), 'to': str(to.split())}, 400

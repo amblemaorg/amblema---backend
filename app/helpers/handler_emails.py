@@ -37,19 +37,22 @@ def send_email(body, plainTextBody, subject, to):
     msg.attach(part)
     # Create secure connection with server and send email
     context = ssl.create_default_context()
-    print("PASO")
-    print("SMTP_USERNAME", SMTP_USERNAME)
-    print("SMTP_PASSWORD", SMTP_PASSWORD)
-    print("SMTP_FROM", SMTP_FROM)
-    print("SMTP_HOST", SMTP_HOST)
-    print("SMTP_PORT", SMTP_PORT)
+    current_app.logger.info("PASO")
+    current_app.logger.info(SMTP_USERNAME)
+    current_app.logger.info(SMTP_PASSWORD)
+    current_app.logger.info(SMTP_FROM)
+    current_app.logger.info(SMTP_HOST)
+    current_app.logger.info(SMTP_PORT)
         
     try:
         with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+            current_app.logger.info("with")
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            current_app.logger.info("login")
             server.sendmail(
                 SMTP_FROM, to, msg.as_string()
             )
+            current_app.logger.info("sendemail")
             return True
         
         """with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:

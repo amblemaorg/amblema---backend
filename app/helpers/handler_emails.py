@@ -22,7 +22,7 @@ def send_email(body, plainTextBody, subject, to):
     SMTP_FROM = current_app.config.get('SMTP_FROM')
     SMTP_HOST = current_app.config.get('SMTP_HOST')
     SMTP_PORT = current_app.config.get('SMTP_PORT')
-
+    
     msg = MIMEMultipart("alternative")
     to = to
     msg['Subject'] = Header(subject, 'utf-8')
@@ -46,15 +46,19 @@ def send_email(body, plainTextBody, subject, to):
             return True"""
         
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            print("entro al with")
             server.ehlo()  # Identificarse con el servidor
+            print("elo session")
             server.starttls(context=context)  # Iniciar cifrado TLS
+            print("starttls")
             server.ehlo()  # Re-identificarse después de TLS
-            
+            print("ehlo()")
             # Iniciar sesión con credenciales de Gmail
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            
+            print("login smtp")
             # Enviar correo
             server.sendmail(SMTP_FROM, to.split(','), msg.as_string())
+            print("sendemail")
             
             return True
     except Exception as e:

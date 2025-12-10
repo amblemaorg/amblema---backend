@@ -142,12 +142,16 @@ class DiagnosticService():
         peca = PecaProject.objects(
             isDeleted=False,
             id=pecaId).only('school', 'schoolYear').first()
+        
+        affected_sections = set()
 
         if peca:
             for student_f in students:
                 section = peca.school.sections.filter(
                     grade=student_f["grado"], name=student_f["seccion"], isDeleted=False).first()
                 if section:
+                    affected_sections.add(section.id)
+
                     student = section.students.filter(
                     firstName=student_f["nombre"], lastName=student_f["apellido"], gender=student_f["genero"], isDeleted=False).first()
                     if student:
@@ -195,7 +199,8 @@ class DiagnosticService():
                             return err.normalized_messages(), 400
 
             for section in peca.school.sections:
-                section.refreshDiagnosticsSummary()
+                if section.id in affected_sections:
+                    section.refreshDiagnosticsSummary()
 
             peca.school.refreshDiagnosticsSummary()
             peca.save()

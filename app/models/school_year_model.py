@@ -97,7 +97,7 @@ class SchoolYear(Document):
                 "operationsPerMinIndexSum": 0
             }
 
-        pecas = PecaProject.objects(schoolYear=self.pk, isDeleted=False)
+        pecas = PecaProject.objects(schoolYear=self.pk, isDeleted=False).only("school", "lapse1", "lapse2", "lapse3")
 
         for peca in pecas:
             for lapse in range(1, 4):

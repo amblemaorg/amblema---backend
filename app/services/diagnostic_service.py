@@ -173,9 +173,10 @@ class DiagnosticService():
                                         'mathDate',
                                         'logicDate'))
                                 jsonData = {
-                                    "multiplicationsPerMin": student_f["resultado_mult"] if student_f["resultado_mult"] != '' else None, 
-                                    "operationsPerMin": student_f["resultado_log"] if student_f["resultado_log"] != '' else None, 
+                                    "multiplicationsPerMin": student_f["resultado_mult"].strip() if student_f["resultado_mult"].strip() != '' else None, 
+                                    "operationsPerMin": student_f["resultado_log"].strip() if student_f["resultado_log"].strip() != '' else None, 
                                 }
+                                
                             data = schema.load(jsonData)
                             grade = section.grade
                             setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(

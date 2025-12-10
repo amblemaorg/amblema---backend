@@ -20,13 +20,13 @@ from app.models.school_year_model import SchoolYear
 class DiagnosticSchema(Schema):
     multiplicationsPerMin = fields.Int(allow_none=True)
     multiplicationsPerMinIndex = fields.Decimal(
-        dump_only=True, places=2, as_string=True)
+        dump_only=True, places=2, as_string=True, allow_none=True)
     operationsPerMin = fields.Int(allow_none=True)
     operationsPerMinIndex = fields.Decimal(
-        dump_only=True, places=2, as_string=True)
+        dump_only=True, places=2, as_string=True, allow_none=True)
     wordsPerMin = fields.Int(allow_none=True)
     wordsPerMinIndex = fields.Decimal(
-        dump_only=True, places=2, as_string=True)
+        dump_only=True, places=2, as_string=True, allow_none=True)
     readingDate = fields.DateTime(dump_only=True)
     mathDate = fields.DateTime(dump_only=True)
     logicDate = fields.DateTime(dump_only=True)

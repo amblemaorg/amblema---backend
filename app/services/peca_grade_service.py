@@ -92,12 +92,20 @@ class PecaGradeService():
                         except Exception as e:
                             return {'status': 0, 'message': str(e)},400
                         
-                        classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
+                        classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")
+                        classifiedNational = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(statusNational="2")
+                        
                         school.olympicsSummary.classified = len(classified)
                         school.olympicsSummary.inscribed = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students)
                         school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
                         school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
                         school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+
+                        school.olympicsSummary.inscribedNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1"))
+                        school.olympicsSummary.classifiedNational = len(classifiedNational)
+                        school.olympicsSummary.medalsGoldNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="1", statusNational="2"))
+                        school.olympicsSummary.medalsSilverNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="2", statusNational="2"))
+                        school.olympicsSummary.medalsBronzeNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="3", statusNational="2"))
                 
                         school.save()
                         school.reload()
@@ -134,7 +142,9 @@ class PecaGradeService():
                 peca.save()
                 peca.reload()
                 
-                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
+                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")
+                classifiedNational = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(statusNational="2")
+
                 school = SchoolUser.objects(
                     id=peca.project.school.id, isDeleted=False).first()
                 school.olympicsSummary.classified = len(classified)
@@ -142,6 +152,12 @@ class PecaGradeService():
                 school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
                 school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
                 school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+
+                school.olympicsSummary.inscribedNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1"))
+                school.olympicsSummary.classifiedNational = len(classifiedNational)
+                school.olympicsSummary.medalsGoldNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="1", statusNational="2"))
+                school.olympicsSummary.medalsSilverNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="2", statusNational="2"))
+                school.olympicsSummary.medalsBronzeNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="3", statusNational="2"))
                 school.save()
                 return {"status": 201, "message": "Se han eliminado los estudiantes con éxito"}, 201
                 
@@ -174,7 +190,9 @@ class PecaGradeService():
                         peca.save()
                         peca.reload()
                 
-                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")   
+                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")
+                classifiedNational = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(statusNational="2")
+
                 school = SchoolUser.objects(
                     id=peca.project.school.id, isDeleted=False).first()
                 school.olympicsSummary.classified = len(classified)
@@ -182,6 +200,12 @@ class PecaGradeService():
                 school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
                 school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
                 school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+
+                school.olympicsSummary.inscribedNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1"))
+                school.olympicsSummary.classifiedNational = len(classifiedNational)
+                school.olympicsSummary.medalsGoldNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="1", statusNational="2"))
+                school.olympicsSummary.medalsSilverNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="2", statusNational="2"))
+                school.olympicsSummary.medalsBronzeNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="3", statusNational="2"))
                 school.save()
                 return {"status": 201, "message": "Se han cambiado el estatus de los estudiantes con éxito"}, 201
                 

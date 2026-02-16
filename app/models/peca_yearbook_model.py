@@ -16,11 +16,18 @@ class Lapse(EmbeddedDocument):
     readingDiagnosticAnalysis = fields.StringField(default='')
     mathDiagnosticAnalysis = fields.StringField(default='')
     logicDiagnosticAnalysis = fields.StringField(default='')
+class GroupPhoto(EmbeddedDocument):
+    name = fields.StringField(null=True)
+    image = fields.StringField(null=True)
+    content = fields.StringField(null=True)
+    groupedSections = fields.ListField(fields.StringField())
+
 class Yearbook(EmbeddedDocument):
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
     sponsor = fields.EmbeddedDocumentField(Entity, default=Entity())
     school = fields.EmbeddedDocumentField(Entity, default=Entity())
     coordinator = fields.EmbeddedDocumentField(Entity, default=Entity())
+    groupPhoto = fields.EmbeddedDocumentField(GroupPhoto, default=GroupPhoto())
     lapse1 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
     lapse2 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
     lapse3 = fields.EmbeddedDocumentField(Lapse, default=Lapse())

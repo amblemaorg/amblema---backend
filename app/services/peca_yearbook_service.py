@@ -67,6 +67,9 @@ class YearbookService():
                 if str(jsonData['coordinator']['image']).startswith('data'):
                     jsonData['coordinator']['image'] = upload_image(
                         jsonData['coordinator']['image'], folder, None)
+                if str(jsonData['groupPhoto']['image']).startswith('data'):
+                    jsonData['groupPhoto']['image'] = upload_image(
+                        jsonData['groupPhoto']['image'], folder, None)
                 
                 if "sections" in jsonData: 
                     for section in jsonData['sections']:
@@ -110,16 +113,48 @@ class YearbookService():
                 
                 for field in jsonData.keys():
                     if field != "pecaId" and field != "userId" and field != "status" and field != "sections" and field !="requestId" and field!="comments":
-                        if field =="sponsor" or field =="coordinator" or field =="school" or field == "historicalReview":
+                        if field =="sponsor" or field =="coordinator" or field =="school" or field == "historicalReview" or field == "groupPhoto":
                             is_url = False
                             if jsonData[field]["image"] != None:
                                 if jsonData[field]["image"].find(os.getenv('SERVER_URL')) != -1:
                                     is_url = True
                                     jsonData[field]["image"] = jsonData[field]["image"].replace(os.getenv('SERVER_URL')+"/", "") if jsonData[field]["image"] != None else None 
-                            if yearbook[field]["image"] != jsonData[field]["image"] or yearbook[field]["content"] != jsonData[field]["content"]:
+                            if yearbook[field]["image"] != jsonData[field]["image"] or yearbook[field]["content"] != jsonData[field]["content"] or (field == 'groupPhoto' and yearbook[field]["groupedSections"] != jsonData[field]["groupedSections"]):
                                 if is_url:
                                     jsonData[field]["image"] = os.getenv('SERVER_URL')+"/"+jsonData[field]["image"]
                                 data_save[field] = jsonData[field]
+                                
+                                # Add groupedSectionsContent for backoffice display
+                                # Add groupedSectionsContent for backoffice display
+                                if field == 'groupPhoto' and "groupedSections" in jsonData[field]:
+                                    content_list = []
+                                    # Filter and collect sections
+                                    selected_sections = []
+                                    for section_id in jsonData[field]["groupedSections"]:
+                                        for school_section in peca.school.sections.filter(isDeleted=False):
+                                            if str(school_section.id) == section_id:
+                                                selected_sections.append(school_section)
+                                                break
+                                    
+                                    # Sort sections by grade
+                                    selected_sections.sort(key=lambda x: x.grade)
+                                    
+                                    # Map grades to names
+                                    GRADE_MAP = {
+                                        "0": "Preescolar",
+                                        "1": "1er Grado",
+                                        "2": "2do Grado",
+                                        "3": "3er Grado",
+                                        "4": "4to Grado",
+                                        "5": "5to Grado",
+                                        "6": "6to Grado"
+                                    }
+
+                                    for section in selected_sections:
+                                        grade_name = GRADE_MAP.get(section.grade, section.grade)
+                                        content_list.append("{} Sección {}".format(grade_name, section.name))
+                                        
+                                    data_save[field]["groupedSectionsContent"] = content_list
                         elif field == "lapse1" or field == "lapse2" or field == "lapse3":
                             data_save[field] = {}
                             if "readingDiagnosticAnalysis" in jsonData[field]:

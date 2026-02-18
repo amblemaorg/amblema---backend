@@ -94,6 +94,7 @@ class SchoolUserSchema(UserSchema):
     slider = fields.List(fields.Nested(ImageStatusSchema), dump_only=True)
     activitiesSlider = fields.List(MAImageField(), dump_only=True)
     olympicsSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
+    olympicsReadingSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
     teachersTestimonials = fields.Nested(
         TeacherTestimonialSchema, dump_only=True)
 

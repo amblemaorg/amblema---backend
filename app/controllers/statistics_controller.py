@@ -53,7 +53,8 @@ class OlympicsReportCtrl(Resource):
 
     @jwt_required
     def get(self, startPeriodId, endPeriodId):
-        return self.service.get(startPeriodId, endPeriodId)
+        olympicsType = request.args.get('olympicsType', 'math')
+        return self.service.get(startPeriodId, endPeriodId, olympicsType=olympicsType)
 
 
 class ActiveSponsorsGraphicController(Resource):

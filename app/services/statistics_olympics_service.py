@@ -16,7 +16,7 @@ from app.helpers.error_helpers import RegisterNotFound
 
 class StatisticsOlympicsService():
 
-    def get(self, startPeriodId, endPeriodId):
+    def get(self, startPeriodId, endPeriodId, olympicsType='math'):
 
         startPeriod = SchoolYear.objects(
             id=startPeriodId, isDeleted=False).first()
@@ -91,7 +91,11 @@ class StatisticsOlympicsService():
             }
             grades = {}
             for i in range(1, 4):
-                olympics = peca['lapse{}'.format(i)].olympics
+                if olympicsType == 'reading':
+                    olympics = peca['lapse{}'.format(i)].readingOlympics
+                else:
+                    olympics = peca['lapse{}'.format(i)].olympics
+
                 if olympics:
                     for student in olympics.students:
                         if student.section.grade in grades:

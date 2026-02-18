@@ -25,6 +25,7 @@ from app.models.peca_environmental_project_model import EnvironmentalProjectPeca
 class Lapse(EmbeddedDocument):
     ambleCoins = fields.EmbeddedDocumentField(AmblecoinsPeca)
     olympics = fields.EmbeddedDocumentField(Olympics)
+    readingOlympics = fields.EmbeddedDocumentField(Olympics)
     annualPreparation = fields.EmbeddedDocumentField(AnnualPreparationPeca)
     annualConvention = fields.EmbeddedDocumentField(AnnualConventionPeca)
     lapsePlanning = fields.EmbeddedDocumentField(LapsePlanningPeca)

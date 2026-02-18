@@ -93,6 +93,20 @@ class MathOlympic(EmbeddedDocument):
     isStandard = fields.BooleanField(default=True)
     order = fields.IntField(default=100)
     devName = fields.StringField()
+
+
+class ReadingOlympics(EmbeddedDocument):
+    id = fields.StringField(default="readingolympics")
+    name = fields.StringField(default="Olimpíada de Lectura")
+    description = fields.StringField()
+    webDescription = fields.StringField()
+    file = fields.EmbeddedDocumentField(
+        Link, is_file=True)
+    date = fields.DateTimeField(null=True)
+    status = fields.StringField(max_length=1, default="2")
+    isStandard = fields.BooleanField(default=True)
+    order = fields.IntField(default=100)
+    devName = fields.StringField()
     
 
 class SpecialLapseActivity(EmbeddedDocument):
@@ -112,6 +126,7 @@ class Lapse(EmbeddedDocument):
     annualConvention = fields.EmbeddedDocumentField(AnnualConvention)
     annualPreparation = fields.EmbeddedDocumentField(AnnualPreparation)
     mathOlympic = fields.EmbeddedDocumentField(MathOlympic)
+    readingOlympics = fields.EmbeddedDocumentField(ReadingOlympics)
     specialLapseActivity = fields.EmbeddedDocumentField(SpecialLapseActivity)
     activities = fields.EmbeddedDocumentListField(Activity)
     

@@ -33,6 +33,7 @@ class PecaGradeService():
         else:
             return {"status": 400, "msg": "No existe el peca project"}, 200
     
+
     def post(self, pecaId, jsonData):
         peca = PecaProject.objects(
             isDeleted=False,
@@ -42,8 +43,14 @@ class PecaGradeService():
         if peca:
             try:
                 schema = StudentSchema()
+                olympicsType = jsonData.get('olympicsType', 'math')
 
-                if not peca['lapse{}'.format(jsonData["lapse"])].olympics:
+                if olympicsType == 'reading':
+                    olympics_lapse = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
+                else:
+                    olympics_lapse = peca['lapse{}'.format(jsonData["lapse"])].olympics
+
+                if not olympics_lapse:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
                                            payload={"olympics lapse: ": jsonData["lapse"]})
@@ -55,8 +62,8 @@ class PecaGradeService():
                             raise RegisterNotFound(message="Record not found",
                                                 status_code=404,
                                                 payload={"grades: ": grade})
-                        olympics = peca['lapse{}'.format(
-                            jsonData["lapse"])].olympics
+                        
+                        olympics = olympics_lapse
                         school = SchoolUser.objects(
                                     id=peca.project.school.id, isDeleted=False).first()
                                 
@@ -84,31 +91,52 @@ class PecaGradeService():
 
                                     olympics['students'].append(student)
                         try:
-                            peca['lapse{}'.format(
-                                jsonData["lapse"])].olympics = olympics
+                            if olympicsType == 'reading':
+                                peca['lapse{}'.format(jsonData["lapse"])].readingOlympics = olympics
+                            else:
+                                peca['lapse{}'.format(jsonData["lapse"])].olympics = olympics
                             peca.save()
                             peca.reload()
                             
                         except Exception as e:
                             return {'status': 0, 'message': str(e)},400
                         
-                        classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")
-                        classifiedNational = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(statusNational="2")
-                        
-                        school.olympicsSummary.classified = len(classified)
-                        school.olympicsSummary.inscribed = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students)
-                        school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
-                        school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
-                        school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+                        if olympicsType == 'reading':
+                            olympics_data = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
+                        else:
+                            olympics_data = peca['lapse{}'.format(jsonData["lapse"])].olympics
 
-                        school.olympicsSummary.inscribedNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1"))
-                        school.olympicsSummary.classifiedNational = len(classifiedNational)
-                        school.olympicsSummary.medalsGoldNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="1", statusNational="2"))
-                        school.olympicsSummary.medalsSilverNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="2", statusNational="2"))
-                        school.olympicsSummary.medalsBronzeNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="3", statusNational="2"))
+                        classified = olympics_data.students.filter(status="2")
+                        classifiedNational = olympics_data.students.filter(statusNational="2")
+                        
+                        if olympicsType == 'reading':
+                            start_reading_olympics = True
+                            school.olympicsReadingSummary.classified = len(classified)
+                            school.olympicsReadingSummary.inscribed = len(olympics_data.students)
+                            school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", status="2"))
+                            school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", status="2"))
+                            school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", status="2"))
+                            
+                            school.olympicsReadingSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
+                            school.olympicsReadingSummary.classifiedNational = len(classifiedNational)
+                            school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
+                            school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
+                            school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                        else:
+                            school.olympicsSummary.classified = len(classified)
+                            school.olympicsSummary.inscribed = len(olympics_data.students)
+                            school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", status="2"))
+                            school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", status="2"))
+                            school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", status="2"))
+
+                            school.olympicsSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
+                            school.olympicsSummary.classifiedNational = len(classifiedNational)
+                            school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
+                            school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
+                            school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
                 
-                        school.save()
-                        school.reload()
+                            school.save()
+                            school.reload()
                                     
                     return {'status': 201, 'message': "Se registraron los estudiantes exitosamente"},201
                 else:
@@ -127,38 +155,76 @@ class PecaGradeService():
         if peca:
             try:
                 schema = StudentSchema()
-                if not peca['lapse{}'.format(jsonData["lapse"])].olympics:
+                olympicsType = jsonData.get('olympicsType', 'math')
+
+                if olympicsType == 'reading':
+                    olympics_lapse = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
+                else:
+                    olympics_lapse = peca['lapse{}'.format(jsonData["lapse"])].olympics
+
+                if not olympics_lapse:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
                                            payload={"olympics lapse: ": jsonData["lapse"]})
+                
+                # olympics = olympics_lapse # Use this reference
+                # Need to be careful with reference updates in MongoEngine, easier to modify the list in place if possible
+                
                 for studentId in jsonData["students"]:
                     found = False
-                    for student in peca['lapse{}'.format(jsonData["lapse"])].olympics.students:
+                    # We need to iterate over the correct list
+                    students_list = olympics_lapse.students
+                    for student in students_list:
                         if student.id == studentId:
                             found = True
-                            peca['lapse{}'.format(jsonData["lapse"])].olympics.students.remove(student)
+                            students_list.remove(student)
                             break
                 
-                peca.save()
-                peca.reload()
+                try:
+                    peca.save()
+                    peca.reload()
+                except Exception as e:
+                     return {'status': 0, 'message': str(e)},400
+
+                if olympicsType == 'reading':
+                     olympics_data = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
+                else:
+                     olympics_data = peca['lapse{}'.format(jsonData["lapse"])].olympics
                 
-                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")
-                classifiedNational = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(statusNational="2")
+                classified = olympics_data.students.filter(status="2")
+                classifiedNational = olympics_data.students.filter(statusNational="2")
 
                 school = SchoolUser.objects(
                     id=peca.project.school.id, isDeleted=False).first()
-                school.olympicsSummary.classified = len(classified)
-                school.olympicsSummary.inscribed = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students)
-                school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
-                school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
-                school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+                
+                if olympicsType == 'reading':
+                    school.olympicsReadingSummary.classified = len(classified)
+                    school.olympicsReadingSummary.inscribed = len(olympics_data.students)
+                    school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", status="2"))
+                    school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", status="2"))
+                    school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", status="2"))
+                    
+                    school.olympicsReadingSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
+                    school.olympicsReadingSummary.classifiedNational = len(classifiedNational)
+                    school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
+                    school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
+                    school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.save()
 
-                school.olympicsSummary.inscribedNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1"))
-                school.olympicsSummary.classifiedNational = len(classifiedNational)
-                school.olympicsSummary.medalsGoldNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="1", statusNational="2"))
-                school.olympicsSummary.medalsSilverNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="2", statusNational="2"))
-                school.olympicsSummary.medalsBronzeNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="3", statusNational="2"))
-                school.save()
+                elif olympicsType == 'math':
+                    school.olympicsSummary.classified = len(classified)
+                    school.olympicsSummary.inscribed = len(olympics_data.students)
+                    school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", status="2"))
+                    school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", status="2"))
+                    school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", status="2"))
+
+                    school.olympicsSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
+                    school.olympicsSummary.classifiedNational = len(classifiedNational)
+                    school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
+                    school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
+                    school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.save()
+
                 return {"status": 201, "message": "Se han eliminado los estudiantes con éxito"}, 201
                 
             except ValidationError as err:
@@ -175,38 +241,66 @@ class PecaGradeService():
         if peca:
             try:
                 schema = StudentSchema()
-                if not peca['lapse{}'.format(jsonData["lapse"])].olympics:
+                olympicsType = jsonData.get('olympicsType', 'math')
+
+                if olympicsType == 'reading':
+                    olympics_lapse = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
+                else:
+                    olympics_lapse = peca['lapse{}'.format(jsonData["lapse"])].olympics
+
+                if not olympics_lapse:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
                                            payload={"olympics lapse: ": jsonData["lapse"]})
+                
                 for studentId in jsonData["students"]:
-                    found = False
-                    for student in peca['lapse{}'.format(jsonData["lapse"])].olympics.students:
+                    for student in olympics_lapse.students:
                         if student.id == studentId:
-                            found = True
                             student.status = jsonData["status"]
                             break
-                    if found:
-                        peca.save()
-                        peca.reload()
                 
-                classified = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(status="2")
-                classifiedNational = peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(statusNational="2")
+                peca.save()
+                peca.reload()
+                
+                if olympicsType == 'reading':
+                     olympics_data = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
+                else:
+                     olympics_data = peca['lapse{}'.format(jsonData["lapse"])].olympics
+
+                classified = olympics_data.students.filter(status="2")
+                classifiedNational = olympics_data.students.filter(statusNational="2")
 
                 school = SchoolUser.objects(
                     id=peca.project.school.id, isDeleted=False).first()
-                school.olympicsSummary.classified = len(classified)
-                school.olympicsSummary.inscribed = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students)
-                school.olympicsSummary.medalsGold = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1", status="2"))
-                school.olympicsSummary.medalsSilver = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="2", status="2"))
-                school.olympicsSummary.medalsBronze = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="3", status="2"))
+                
+                if olympicsType == 'reading':
+                    school.olympicsReadingSummary.classified = len(classified)
+                    school.olympicsReadingSummary.inscribed = len(olympics_data.students)
+                    school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", status="2"))
+                    school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", status="2"))
+                    school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", status="2"))
+                    
+                    school.olympicsReadingSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
+                    school.olympicsReadingSummary.classifiedNational = len(classifiedNational)
+                    school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
+                    school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
+                    school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.save()
 
-                school.olympicsSummary.inscribedNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(result="1"))
-                school.olympicsSummary.classifiedNational = len(classifiedNational)
-                school.olympicsSummary.medalsGoldNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="1", statusNational="2"))
-                school.olympicsSummary.medalsSilverNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="2", statusNational="2"))
-                school.olympicsSummary.medalsBronzeNational = len(peca['lapse{}'.format(jsonData["lapse"])].olympics.students.filter(resultNational="3", statusNational="2"))
-                school.save()
+                elif olympicsType == 'math':
+                    school.olympicsSummary.classified = len(classified)
+                    school.olympicsSummary.inscribed = len(olympics_data.students)
+                    school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", status="2"))
+                    school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", status="2"))
+                    school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", status="2"))
+
+                    school.olympicsSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
+                    school.olympicsSummary.classifiedNational = len(classifiedNational)
+                    school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
+                    school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
+                    school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.save()
+                    
                 return {"status": 201, "message": "Se han cambiado el estatus de los estudiantes con éxito"}, 201
                 
             except ValidationError as err:

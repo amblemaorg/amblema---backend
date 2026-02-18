@@ -131,10 +131,15 @@ class SchoolPageContentService():
             diagnostics[diag] = sorted(
                 diagnostics[diag], reverse=True, key=lambda x: (x['createdAt']))
         olympicsDescription = ""
+        olympicsReadingDescription = ""
         for lapse in [1, 2, 3]:
             if currentPeriod.pecaSetting['lapse{}'.format(lapse)].mathOlympic.status == "1":
                 olympicsDescription = currentPeriod.pecaSetting['lapse{}'.format(
                     lapse)].mathOlympic.description
+
+            if currentPeriod.pecaSetting['lapse{}'.format(lapse)].readingOlympics.status == "1":
+                olympicsReadingDescription = currentPeriod.pecaSetting['lapse{}'.format(
+                    lapse)].readingOlympics.description
 
         actsId = {}
         activities = []
@@ -209,6 +214,7 @@ class SchoolPageContentService():
                 'nAdministrativeStaff',
                 'nLaborStaff',
                 'olympicsSummary',
+                'olympicsReadingSummary',
                 'activitiesSlider',
                 'teachersTestimonials',
                 'facebook',
@@ -223,7 +229,8 @@ class SchoolPageContentService():
         data['nearbySchools'] = SchoolUserSchema(
             partial=True, only=('id', 'slug', 'name', 'image')).dump(nearbySchools, many=True)
         data['diagnostics'] = diagnostics
-        data['olympicsSummary']['description'] = olympicsDescription
+        data['olympicsSummary']['description'] = olympicsDescription  
+        data['olympicsReadingSummary']['description'] = olympicsReadingDescription
         data['activities'] = activities
         data['nextActivities'] = nextActivities
 

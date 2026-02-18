@@ -271,6 +271,23 @@ class PecaProjectService():
             else:
                 peca['lapse{}'.format(i)].olympics = None
 
+            if pecaSettingLapse.readingOlympics.status == "1":
+                peca['lapse{}'.format(i)].readingOlympics = Olympics(
+                    file = pecaSettingLapse.readingOlympics.file,
+                    description = pecaSettingLapse.readingOlympics.description,
+                    date = pecaSettingLapse.readingOlympics.date
+                )
+                if pecaSettingLapse.readingOlympics.date:
+                    peca.scheduleActivity(
+                            devName="readingOlympics__date",
+                            activityId="readingolympics",
+                            subject="Olimpíada de Lectura",
+                            startTime=pecaSettingLapse.readingOlympics.date,
+                            description=pecaSettingLapse.readingOlympics.description
+                        )
+            else:
+                peca['lapse{}'.format(i)].readingOlympics = None
+
             if pecaSettingLapse.annualPreparation.status == "1":
                 peca['lapse{}'.format(i)].annualPreparation = AnnualPreparationPeca(
                     step1Description=pecaSettingLapse.annualPreparation.step1Description,
@@ -435,6 +452,16 @@ class PecaProjectService():
                         'description': lapse.olympics.yearbook.description,
                         'images': serialize_links(lapse.olympics.yearbook.images),
                         'order': lapse.olympics.order
+                    }
+                )
+            if lapse.readingOlympics:
+                lapseData['activities'].append(
+                    {
+                        'id': 'readingOlympics',
+                        'name': 'Olimpíada de Lectura',
+                        'description': lapse.readingOlympics.yearbook.description,
+                        'images': serialize_links(lapse.readingOlympics.yearbook.images),
+                        'order': lapse.readingOlympics.order
                     }
                 )
             if lapse.specialActivity:

@@ -64,6 +64,8 @@ class SchoolUser(User):
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
     olympicsSummary = fields.EmbeddedDocumentField(
         OlympicsSummary, default=OlympicsSummary())
+    olympicsReadingSummary = fields.EmbeddedDocumentField(
+        OlympicsSummary, default=OlympicsSummary())
 
     def addProject(self, project):
         self.project = project.getReference()

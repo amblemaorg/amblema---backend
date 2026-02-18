@@ -32,6 +32,7 @@ from app.schemas.peca_environmental_project_schema import EnvironmentalProjectPe
 class LapseSchema(Schema):
     ambleCoins = fields.Nested(AmblecoinsPecaSchema)
     olympics = fields.Nested(OlympicsSchema)
+    readingOlympics = fields.Nested(OlympicsSchema)
     annualPreparation = fields.Nested(AnnualPreparationSchema)
     annualConvention = fields.Nested(AnnualConventionSchema)
     lapsePlanning = fields.Nested(LapsePlanningPecaSchema)

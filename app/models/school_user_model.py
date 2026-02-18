@@ -19,6 +19,11 @@ class OlympicsSummary(EmbeddedDocument):
     medalsGold = fields.IntField(default=0)
     medalsSilver = fields.IntField(default=0)
     medalsBronze = fields.IntField(default=0)
+    inscribedNational = fields.IntField(default=0)
+    classifiedNational = fields.IntField(default=0)
+    medalsGoldNational = fields.IntField(default=0)
+    medalsSilverNational = fields.IntField(default=0)
+    medalsBronzeNational = fields.IntField(default=0)
 
 
 class SchoolUser(User):
@@ -58,6 +63,8 @@ class SchoolUser(User):
     yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
     olympicsSummary = fields.EmbeddedDocumentField(
+        OlympicsSummary, default=OlympicsSummary())
+    olympicsReadingSummary = fields.EmbeddedDocumentField(
         OlympicsSummary, default=OlympicsSummary())
 
     def addProject(self, project):

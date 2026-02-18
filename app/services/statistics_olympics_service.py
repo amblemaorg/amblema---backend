@@ -16,7 +16,7 @@ from app.helpers.error_helpers import RegisterNotFound
 
 class StatisticsOlympicsService():
 
-    def get(self, startPeriodId, endPeriodId):
+    def get(self, startPeriodId, endPeriodId, olympicsType='math'):
 
         startPeriod = SchoolYear.objects(
             id=startPeriodId, isDeleted=False).first()
@@ -39,7 +39,11 @@ class StatisticsOlympicsService():
                 'classifiedStudents': 0,
                 'studentsGoldMedal': 0,
                 'studentsSilverMedal': 0,
-                'studentsBronzeMedal': 0
+                'studentsBronzeMedal': 0,
+                'classifiedStudentsNational': 0,
+                'studentsGoldMedalNational': 0,
+                'studentsSilverMedalNational': 0,
+                'studentsBronzeMedalNational': 0
             }
         }
 
@@ -53,7 +57,11 @@ class StatisticsOlympicsService():
                     'totalClassified': 0,
                     'totalGoldMedals': 0,
                     'totalSilverMedals': 0,
-                    'totalBronzeMedals': 0
+                    'totalBronzeMedals': 0,
+                    'totalClassifiedNational': 0,
+                    'totalGoldMedalsNational': 0,
+                    'totalSilverMedalsNational': 0,
+                    'totalBronzeMedalsNational': 0
                 }
             }
 
@@ -75,11 +83,19 @@ class StatisticsOlympicsService():
                     'totalGoldMedals': 0,
                     'totalSilverMedals': 0,
                     'totalBronzeMedals': 0,
+                    'totalClassifiedNational': 0,
+                    'totalGoldMedalsNational': 0,
+                    'totalSilverMedalsNational': 0,
+                    'totalBronzeMedalsNational': 0,
                 }
             }
             grades = {}
             for i in range(1, 4):
-                olympics = peca['lapse{}'.format(i)].olympics
+                if olympicsType == 'reading':
+                    olympics = peca['lapse{}'.format(i)].readingOlympics
+                else:
+                    olympics = peca['lapse{}'.format(i)].olympics
+
                 if olympics:
                     for student in olympics.students:
                         if student.section.grade in grades:
@@ -92,8 +108,17 @@ class StatisticsOlympicsService():
                                             grades[student.section.grade]['sections'][student.section.name]['medalsGold'] += 1
                                         elif student.result == "2":
                                             grades[student.section.grade]['sections'][student.section.name]['medalsSilver'] += 1
-                                        elif student.result == "3":
                                             grades[student.section.grade]['sections'][student.section.name]['medalsBronze'] += 1
+                                    
+                                    if student.statusNational == "2":
+                                        grades[student.section.grade]['sections'][student.section.name]['classifiedNational'] += 1
+                                        if student.resultNational:
+                                            if student.resultNational == "1":
+                                                grades[student.section.grade]['sections'][student.section.name]['medalsGoldNational'] += 1
+                                            elif student.resultNational == "2":
+                                                grades[student.section.grade]['sections'][student.section.name]['medalsSilverNational'] += 1
+                                            elif student.resultNational == "3":
+                                                grades[student.section.grade]['sections'][student.section.name]['medalsBronzeNational'] += 1
                             else:
                                 grades[student.section.grade]['sections'][student.section.name] = {
                                     'name': student.section.name,
@@ -101,7 +126,11 @@ class StatisticsOlympicsService():
                                     'classified': 1 if student.status == "2" else 0,
                                     'medalsGold': 1 if student.result == "1" else 0,
                                     'medalsSilver': 1 if student.result == "2" else 0,
-                                    'medalsBronze': 1 if student.result == "3" else 0
+                                    'medalsBronze': 1 if student.result == "3" else 0,
+                                    'classifiedNational': 1 if student.statusNational == "2" else 0,
+                                    'medalsGoldNational': 1 if student.resultNational == "1" else 0,
+                                    'medalsSilverNational': 1 if student.resultNational == "2" else 0,
+                                    'medalsBronzeNational': 1 if student.resultNational == "3" else 0
                                 }
 
                         else:
@@ -114,7 +143,11 @@ class StatisticsOlympicsService():
                                         'classified': 1 if student.status == "2" else 0,
                                         'medalsGold': 1 if student.result == "1" else 0,
                                         'medalsSilver': 1 if student.result == "2" else 0,
-                                        'medalsBronze': 1 if student.result == "3" else 0
+                                        'medalsBronze': 1 if student.result == "3" else 0,
+                                        'classifiedNational': 1 if student.statusNational == "2" else 0,
+                                        'medalsGoldNational': 1 if student.resultNational == "1" else 0,
+                                        'medalsSilverNational': 1 if student.resultNational == "2" else 0,
+                                        'medalsBronzeNational': 1 if student.resultNational == "3" else 0
                                     }
                                 }
                             }
@@ -130,6 +163,10 @@ class StatisticsOlympicsService():
                     schoolSummary['total']['totalGoldMedals'] += section['medalsGold']
                     schoolSummary['total']['totalSilverMedals'] += section['medalsSilver']
                     schoolSummary['total']['totalBronzeMedals'] += section['medalsBronze']
+                    schoolSummary['total']['totalClassifiedNational'] += section['classifiedNational']
+                    schoolSummary['total']['totalGoldMedalsNational'] += section['medalsGoldNational']
+                    schoolSummary['total']['totalSilverMedalsNational'] += section['medalsSilverNational']
+                    schoolSummary['total']['totalBronzeMedalsNational'] += section['medalsBronzeNational']
                     periods[str(
                         peca.schoolYear.pk)]['total']['totalEnrolled'] += section['inscribed']
                     periods[str(
@@ -140,6 +177,14 @@ class StatisticsOlympicsService():
                         peca.schoolYear.pk)]['total']['totalSilverMedals'] += section['medalsSilver']
                     periods[str(
                         peca.schoolYear.pk)]['total']['totalBronzeMedals'] += section['medalsBronze']
+                    periods[str(
+                        peca.schoolYear.pk)]['total']['totalClassifiedNational'] += section['classifiedNational']
+                    periods[str(
+                        peca.schoolYear.pk)]['total']['totalGoldMedalsNational'] += section['medalsGoldNational']
+                    periods[str(
+                        peca.schoolYear.pk)]['total']['totalSilverMedalsNational'] += section['medalsSilverNational']
+                    periods[str(
+                        peca.schoolYear.pk)]['total']['totalBronzeMedalsNational'] += section['medalsBronzeNational']
 
                 gradeSummary['sections'] = sorted(
                     gradeSummary['sections'], key=lambda x: (x['name']))
@@ -169,6 +214,10 @@ class StatisticsOlympicsService():
                 reportData['finalScore']['studentsGoldMedal'] += period['total']['totalGoldMedals']
                 reportData['finalScore']['studentsSilverMedal'] += period['total']['totalSilverMedals']
                 reportData['finalScore']['studentsBronzeMedal'] += period['total']['totalBronzeMedals']
+                reportData['finalScore']['classifiedStudentsNational'] += period['total']['totalClassifiedNational']
+                reportData['finalScore']['studentsGoldMedalNational'] += period['total']['totalGoldMedalsNational']
+                reportData['finalScore']['studentsSilverMedalNational'] += period['total']['totalSilverMedalsNational']
+                reportData['finalScore']['studentsBronzeMedalNational'] += period['total']['totalBronzeMedalsNational']
         reportData['allPeriods'] = sorted(
             reportData['allPeriods'], key=lambda x: (x['academicPeriod'][0]))
         return reportData, 200

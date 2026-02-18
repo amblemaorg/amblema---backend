@@ -14,12 +14,14 @@ class PecaOlympicsController(Resource):
 
     @jwt_required
     def get(self, pecaId, lapse):
-        return self.service.getOlympics(pecaId, lapse)
+        olympicsType = request.args.get('type', 'math')
+        return self.service.getOlympics(pecaId, lapse, olympicsType)
 
     @jwt_required
     def post(self, pecaId, lapse):
+        olympicsType = request.args.get('type', 'math')
         jsonData = request.get_json()
-        return self.service.saveStudent(pecaId, lapse, jsonData)
+        return self.service.saveStudent(pecaId, lapse, jsonData, olympicsType)
 
 
 class PecaOlympicsHandlerCtrl(Resource):
@@ -27,9 +29,11 @@ class PecaOlympicsHandlerCtrl(Resource):
 
     @jwt_required
     def put(self, pecaId, lapse, studentId):
+        olympicsType = request.args.get('type', 'math')
         jsonData = request.get_json()
-        return self.service.updateStudent(pecaId, lapse, studentId, jsonData)
+        return self.service.updateStudent(pecaId, lapse, studentId, jsonData, olympicsType)
 
     @jwt_required
     def delete(self, pecaId, lapse, studentId):
-        return self.service.deleteStudent(pecaId, lapse, studentId)
+        olympicsType = request.args.get('type', 'math')
+        return self.service.deleteStudent(pecaId, lapse, studentId, olympicsType)

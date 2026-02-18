@@ -20,6 +20,11 @@ class OlympicsSummarySchema(Schema):
     medalsGold = fields.Int()
     medalsSilver = fields.Int()
     medalsBronze = fields.Int()
+    inscribedNational = fields.Int()
+    classifiedNational = fields.Int()
+    medalsGoldNational = fields.Int()
+    medalsSilverNational = fields.Int()
+    medalsBronzeNational = fields.Int()
 
 
 class SchoolUserSchema(UserSchema):
@@ -89,6 +94,7 @@ class SchoolUserSchema(UserSchema):
     slider = fields.List(fields.Nested(ImageStatusSchema), dump_only=True)
     activitiesSlider = fields.List(MAImageField(), dump_only=True)
     olympicsSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
+    olympicsReadingSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
     teachersTestimonials = fields.Nested(
         TeacherTestimonialSchema, dump_only=True)
 

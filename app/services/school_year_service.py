@@ -185,6 +185,25 @@ class SchoolYearService(GenericServices):
                     school.olympicsSummary.medalsSilver = 0
                     school.olympicsSummary.medalsBronze = 0
                     school.olympicsSummary.inscribed = 0
+
+                    school.olympicsSummary.medalsGoldNational = 0
+                    school.olympicsSummary.classifiedNational = 0
+                    school.olympicsSummary.medalsSilverNational = 0
+                    school.olympicsSummary.medalsBronzeNational = 0
+                    school.olympicsSummary.inscribedNational = 0
+
+                    school.olympicsReadingSummary.medalsGold = 0
+                    school.olympicsReadingSummary.classified = 0
+                    school.olympicsReadingSummary.medalsSilver = 0
+                    school.olympicsReadingSummary.medalsBronze = 0
+                    school.olympicsReadingSummary.inscribed = 0
+                    school.olympicsReadingSummary.medalsGoldNational = 0
+                    school.olympicsReadingSummary.classifiedNational = 0
+                    school.olympicsReadingSummary.medalsSilverNational = 0
+                    school.olympicsReadingSummary.medalsBronzeNational = 0
+                    school.olympicsReadingSummary.inscribedNational = 0
+
+
                     school.save()
 
                 return {'msg': 'Record deleted'}, 200

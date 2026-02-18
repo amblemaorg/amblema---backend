@@ -135,8 +135,8 @@ class PecaGradeService():
                             school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
                             school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
                 
-                            school.save()
-                            school.reload()
+                        school.save()
+                        school.reload()
                                     
                     return {'status': 201, 'message': "Se registraron los estudiantes exitosamente"},201
                 else:

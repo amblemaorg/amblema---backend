@@ -160,6 +160,10 @@ class YearbookService():
                                     if peca[field].olympics.yearbook.description != activity["description"] or len(peca[field].olympics.yearbook.images) != len(activity["images"]):
                                         data_save[field]["activities"].append(activity)
                                         found = True
+                                elif activity['id'] == 'readingolympics':
+                                    if peca[field].readingOlympics.yearbook.description != activity["description"] or len(peca[field].readingOlympics.yearbook.images) != len(activity["images"]):
+                                        data_save[field]["activities"].append(activity)
+                                        found = True
                                 elif activity['id'] == 'specialActivity':
                                     if peca[field].specialActivity.yearbook.description != activity["description"] or len(peca[field].specialActivity.yearbook.images) != len(activity["images"]):
                                         data_save[field]["activities"].append(activity)

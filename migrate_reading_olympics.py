@@ -78,6 +78,7 @@ with app.app_context():
                 updated_count += 1
             else:
                 print(f"  No changes needed for SchoolYear {sy.name}")
+        """
         # PecaProject Migration
         from app.models.peca_project_model import PecaProject
         from app.models.peca_olympics_model import Olympics
@@ -125,6 +126,7 @@ with app.app_context():
         print(f"Total SchoolYears updated: {updated_count}")
         print(f"Total PecaProjects checked: {peca_count}")
         print(f"Total PecaProjects updated: {peca_updated_count}")
+        """
     except Exception as e:
         print(f"Error during migration: {e}")
         import traceback

@@ -457,7 +457,7 @@ class PecaProjectService():
             if lapse.readingOlympics:
                 lapseData['activities'].append(
                     {
-                        'id': 'readingOlympics',
+                        'id': 'readingolympics',
                         'name': 'Olimpíada de Lectura',
                         'description': lapse.readingOlympics.yearbook.description,
                         'images': serialize_links(lapse.readingOlympics.yearbook.images),

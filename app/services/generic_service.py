@@ -45,9 +45,28 @@ class GenericServices():
             for f in filters:
                 filterList.append(Q(**{f['field']: f['value']}))
 
-        records = self.Model.objects(isDeleted=False).filter(
-            reduce(operator.and_, filterList)
-        ).order_by(order_by).paginate(page=page, per_page=page_size)
+        records_qs = self.Model.objects(isDeleted=False)
+        if filters:
+            records_qs = records_qs.filter(reduce(operator.and_, filterList))
+            
+        records_qs = records_qs.order_by(order_by)
+        
+        if hasattr(records_qs, 'paginate'):
+            records = records_qs.paginate(page=page, per_page=page_size)
+        else:
+             import math
+             total = records_qs.count()
+             items = records_qs.skip((page - 1) * page_size).limit(page_size).all()
+             pages = int(math.ceil(total / float(page_size))) if page_size else 0
+             
+             class Pagination:
+                 def __init__(self, items, total, pages, page):
+                     self.items = items
+                     self.total = total
+                     self.pages = pages
+                     self.page = page
+                     
+             records = Pagination(items, total, pages, page)
 
         return {
             "records": schema.dump(records.items, many=True),

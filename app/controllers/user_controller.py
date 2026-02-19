@@ -25,7 +25,10 @@ class UserController(Resource):
     def get(self):
         filters = getQueryParams(request)
         service = getService(request)
-        return service.getAllRecords(filters=filters)
+        only = None
+        if 'only' in request.args:
+            only = request.args['only'].split(',')
+        return service.getAllRecords(filters=filters, only=only)
 
     @jwt_required
     def post(self):

@@ -279,17 +279,26 @@ class RequestContentApproval(Document):
                                         if activity['id'] == pecaAct.id:
                                             pecaAct.yearbook = yearActivity
 
-                        for history in peca.yearbook.approvalHistory:
-                            if history.id == str(document.id):
-                                history.status = document.status
+                        # Updated to separate collection
+                        from app.models.yearbook_approval_model import YearbookApproval
+                        yearbook_approval = YearbookApproval.objects(pecaId=str(peca.id), approval__id=str(document.id)).first()
+                        if yearbook_approval:
+                            yearbook_approval.approval.status = document.status
+                            yearbook_approval.save()
+                        
                         peca.yearbook.isInApproval = False
                         peca.save()
                     elif document.status in ('3', '4'):  # rejected or cancelled
                         peca.yearbook.isInApproval = False
-                        for history in peca.yearbook.approvalHistory:
-                            if history.id == str(document.id):
-                                history.status = document.status
-                                history.comments = document.comments
+                        
+                        # Updated to separate collection
+                        from app.models.yearbook_approval_model import YearbookApproval
+                        yearbook_approval = YearbookApproval.objects(pecaId=str(peca.id), approval__id=str(document.id)).first()
+                        if yearbook_approval:
+                            yearbook_approval.approval.status = document.status
+                            yearbook_approval.approval.comments = document.comments
+                            yearbook_approval.save()
+
                         peca.save()
                  # lapse planning
                 elif document.type == "8":

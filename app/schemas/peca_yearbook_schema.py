@@ -54,7 +54,7 @@ class YearbookSchema(Schema):
     lapse2 = fields.Nested(LapseSchema)
     lapse3 = fields.Nested(LapseSchema)
     isInApproval = fields.Bool()
-    approvalHistory = fields.List(fields.Nested(ApprovalSchema()))
+
     updatedAt = fields.DateTime()
 
     class Meta:

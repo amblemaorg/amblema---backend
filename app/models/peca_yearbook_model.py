@@ -25,5 +25,5 @@ class Yearbook(EmbeddedDocument):
     lapse2 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
     lapse3 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
     isInApproval = fields.BooleanField(default=False)
-    approvalHistory = fields.EmbeddedDocumentListField(Approval)
+
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

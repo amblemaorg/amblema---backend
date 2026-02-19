@@ -8,6 +8,7 @@ import os.path
 
 from app.models.peca_project_model import PecaProject
 from app.models.peca_yearbook_model import Yearbook
+from app.models.yearbook_approval_model import YearbookApproval
 from app.schemas.peca_yearbook_schema import YearbookSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
@@ -170,6 +171,7 @@ class YearbookService():
                                         if activity['id'] == pecaAct.id:
                                             if pecaAct.yearbook.description != activity["description"] or len(pecaAct.yearbook.images) != len(activity["images"]):
                                                 data_save[field]["activities"].append(activity)
+                            
                         elif yearbook[field] != jsonData[field]:
                             data_save[field] = jsonData[field]
 
@@ -198,20 +200,25 @@ class YearbookService():
                             detail=data_save
                         ).save()
                         yearbook.isInApproval = True
-                        yearbook.approvalHistory.append(
-                            Approval(
+                        
+                        YearbookApproval(
+                            pecaId=pecaId,
+                            approval=Approval(
                                 id=str(request.id),
                                 user=user.id,
                                 detail=jsonData
                             )
-                        )
+                        ).save()
                     else:
                         del jsonData["requestId"]
                         request.detail = data_save
                         request.save()
-                        for history in yearbook.approvalHistory:
-                            if history.id == str(request.id):
-                                history.detail = jsonData
+                        # Update the approval in YearbookApproval collection
+                        approval_record = YearbookApproval.objects(pecaId=pecaId, approval__id=str(request.id)).first()
+                        if approval_record:
+                            approval_record.approval.detail = jsonData
+                            approval_record.save()
+                            
                     peca.save()
                     data = schema.dump(yearbook)
                     data = pecaService.getYearbookData(peca, school, sponsor, coordinator, data)

@@ -398,7 +398,7 @@ class ActivityService():
 
                     data = {
                         "id": "matholympic",
-                        "name": "Olimpíada Recreativas de Matemática y Lengua",
+                        "name": "Olimpíada Recreativas de Matemática",
                         "devName": "mathOlympic",
                         "order": mathOlympic.order,
                         "isStandard": True,
@@ -417,7 +417,7 @@ class ActivityService():
 
                     data = {
                         "id": "readingolympics",
-                        "name": "Olimpíada de Lengua",
+                        "name": "Olimpíada Recreativas de Lengua",
                         "devName": "readingolympics",
                         "order": readingOlympics.order,
                         "isStandard": True,
@@ -761,7 +761,7 @@ class ActivityService():
                                     peca.scheduleActivity(
                                         devName="olympics__date",
                                         activityId="mathOlympic",
-                                        subject="Olimpíada Recreativas de Matemática y Lengua",
+                                        subject="Olimpíada Recreativas de Matemática",
                                         startTime=olympics.date,
                                         description=olympics.description
                                     )
@@ -812,7 +812,7 @@ class ActivityService():
                                     peca.scheduleActivity(
                                         devName="readingOlympics__date",
                                         activityId="readingolympics",
-                                        subject="Olimpíada de Lengua",
+                                        subject="Olimpíada Recreativas de Lengua",
                                         startTime=olympics.date,
                                         description=olympics.description
                                     )

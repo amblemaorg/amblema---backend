@@ -281,7 +281,7 @@ class PecaProjectService():
                     peca.scheduleActivity(
                             devName="readingOlympics__date",
                             activityId="readingolympics",
-                            subject="Olimpíada de Lectura",
+                            subject="Olimpíada de Lengua",
                             startTime=pecaSettingLapse.readingOlympics.date,
                             description=pecaSettingLapse.readingOlympics.description
                         )
@@ -458,7 +458,7 @@ class PecaProjectService():
                 lapseData['activities'].append(
                     {
                         'id': 'readingolympics',
-                        'name': 'Olimpíada de Lectura',
+                        'name': 'Olimpíada de Lengua',
                         'description': lapse.readingOlympics.yearbook.description,
                         'images': serialize_links(lapse.readingOlympics.yearbook.images),
                         'order': lapse.readingOlympics.order

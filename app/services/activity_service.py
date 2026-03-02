@@ -417,7 +417,7 @@ class ActivityService():
 
                     data = {
                         "id": "readingolympics",
-                        "name": "Olimpíada de Lectura",
+                        "name": "Olimpíada de Lengua",
                         "devName": "readingolympics",
                         "order": readingOlympics.order,
                         "isStandard": True,
@@ -812,7 +812,7 @@ class ActivityService():
                                     peca.scheduleActivity(
                                         devName="readingOlympics__date",
                                         activityId="readingolympics",
-                                        subject="Olimpíada de Lectura",
+                                        subject="Olimpíada de Lengua",
                                         startTime=olympics.date,
                                         description=olympics.description
                                     )

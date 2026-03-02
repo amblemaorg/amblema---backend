@@ -97,7 +97,7 @@ class MathOlympic(EmbeddedDocument):
 
 class ReadingOlympics(EmbeddedDocument):
     id = fields.StringField(default="readingolympics")
-    name = fields.StringField(default="Olimpíada de Lectura")
+    name = fields.StringField(default="Olimpíada de Lengua")
     description = fields.StringField()
     webDescription = fields.StringField()
     file = fields.EmbeddedDocumentField(

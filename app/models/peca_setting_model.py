@@ -83,7 +83,7 @@ class AnnualConvention(EmbeddedDocument):
 
 class MathOlympic(EmbeddedDocument):
     id = fields.StringField(default="matholympic")
-    name = fields.StringField(default="Olimpíada Recreativas de Matemática y Lengua")
+    name = fields.StringField(default="Olimpíada Recreativas de Matemática")
     description = fields.StringField()
     webDescription = fields.StringField()
     file = fields.EmbeddedDocumentField(
@@ -97,7 +97,7 @@ class MathOlympic(EmbeddedDocument):
 
 class ReadingOlympics(EmbeddedDocument):
     id = fields.StringField(default="readingolympics")
-    name = fields.StringField(default="Olimpíada de Lengua")
+    name = fields.StringField(default="Olimpíada Recreativas de Lengua")
     description = fields.StringField()
     webDescription = fields.StringField()
     file = fields.EmbeddedDocumentField(

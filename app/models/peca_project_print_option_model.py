@@ -1,7 +1,4 @@
-from email.policy import default
-from unicodedata import name
 from mongoengine import Document, EmbeddedDocument, fields
-from flask import current_app
 
 class ActivityModel(EmbeddedDocument):
   name = fields.StringField(default='')
@@ -19,3 +16,4 @@ class PecaProjectPrintOptionModel(Document):
   activitiesPrint = fields.EmbeddedDocumentListField(ActivityModel)
   sectionsPrint = fields.EmbeddedDocumentListField(SectionModel)
   diagnosticPrint = fields.BooleanField(default=True)
+  groupedGradesPrint = fields.ListField(fields.StringField(), default=list)

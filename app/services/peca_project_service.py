@@ -73,7 +73,7 @@ class PecaProjectService():
                 elif activity['lapse'] == 'lapse3':
                     activities['lapse3'].append(
                         {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
-            data = {"activitiesPrint" : activities,"disablePages" : pages,"index" : printOptions['index'], "diagnosticPrint" : printOptions['diagnosticPrint']}
+            data = {"activitiesPrint" : activities,"disablePages" : pages,"index" : printOptions['index'], "diagnosticPrint" : printOptions.get('diagnosticPrint', True), "groupedGradesPrint" : printOptions.get('groupedGradesPrint', [])}
             
             return data, 200
         except ValidationError as err:
@@ -95,6 +95,8 @@ class PecaProjectService():
             schema = YearbookSchema()
             keys = [x for x in jsonData.keys()]
             keysBase = [x for x in printOptions.keys()]
+            if 'groupedGradesPrint' not in keysBase:
+                keysBase.append('groupedGradesPrint')
             _logger.warning(keysBase)
             for key in keys:
                 if key not in keysBase:
@@ -137,11 +139,15 @@ class PecaProjectService():
                         section = SectionModel(name=sectionJson['name'], print=sectionJson['print'])
                         printOption.sectionsPrint.append(section)
                     continue
+
+                if key == 'groupedGradesPrint':
+                    printOption.groupedGradesPrint = jsonData[key]
+                    continue
             try:
                 _logger.warning("PRE-GUARDADO")
                 printOption.save()
                 _logger.warning("GUARDADO")
-                return schema.dump(printOption), 200
+                return printSchema.dump(printOption), 200
             except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:

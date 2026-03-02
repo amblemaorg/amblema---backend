@@ -60,7 +60,7 @@ class MathOlympicService():
                                 peca.scheduleActivity(
                                     devName="olympics__date",
                                     activityId="mathOlympic",
-                                    subject="Olimpíada Recreativas de Matemática y Lengua",
+                                    subject="Olimpíada Recreativas de Matemática",
                                     startTime=mathOlympic.date,
                                     description=mathOlympic.description
                                 )

@@ -60,7 +60,7 @@ class ReadingOlympicsService():
                                 peca.scheduleActivity(
                                     devName="readingolympics__date",
                                     activityId="readingolympics",
-                                    subject="Olimpíada de Lengua",
+                                    subject="Olimpíada Recreativas de Lengua",
                                     startTime=readingOlympics.date,
                                     description=readingOlympics.description
                                 )

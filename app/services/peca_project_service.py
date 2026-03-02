@@ -264,7 +264,7 @@ class PecaProjectService():
                     peca.scheduleActivity(
                             devName="olympics__date",
                             activityId="mathOlympic",
-                            subject="Olimpíada Recreativas de Matemática y Lengua",
+                            subject="Olimpíada Recreativas de Matemática",
                             startTime=pecaSettingLapse.mathOlympic.date,
                             description=pecaSettingLapse.mathOlympic.description
                         )
@@ -281,7 +281,7 @@ class PecaProjectService():
                     peca.scheduleActivity(
                             devName="readingOlympics__date",
                             activityId="readingolympics",
-                            subject="Olimpíada de Lengua",
+                            subject="Olimpíada Recreativas de Lengua",
                             startTime=pecaSettingLapse.readingOlympics.date,
                             description=pecaSettingLapse.readingOlympics.description
                         )
@@ -448,7 +448,7 @@ class PecaProjectService():
                 lapseData['activities'].append(
                     {
                         'id': 'olympics',
-                        'name': 'Olimpíada Recreativas de Matemática y Lengua',
+                        'name': 'Olimpíada Recreativas de Matemática',
                         'description': lapse.olympics.yearbook.description,
                         'images': serialize_links(lapse.olympics.yearbook.images),
                         'order': lapse.olympics.order
@@ -458,7 +458,7 @@ class PecaProjectService():
                 lapseData['activities'].append(
                     {
                         'id': 'readingolympics',
-                        'name': 'Olimpíada de Lengua',
+                        'name': 'Olimpíada Recreativas de Lengua',
                         'description': lapse.readingOlympics.yearbook.description,
                         'images': serialize_links(lapse.readingOlympics.yearbook.images),
                         'order': lapse.readingOlympics.order

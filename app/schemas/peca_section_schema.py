@@ -59,6 +59,7 @@ class SectionSchema(Schema):
     goals = fields.Nested(GradeSettingSchema, dump_only=True)
     image = MAImageField(allow_none=True, validate=validate_image,
                          folder='sections')
+    groupedWith = fields.Str(dump_only=True)
     createdAt = fields.DateTime(dump_only=True)
     updatedAt = fields.DateTime(dump_only=True)
 

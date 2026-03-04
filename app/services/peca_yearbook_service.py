@@ -79,6 +79,8 @@ class YearbookService():
                                 found = True
                                 section['name'] = oldSection.name
                                 section['grade'] = oldSection.grade
+                                if 'groupedWith' in section:
+                                    oldSection.groupedWith = section['groupedWith']
                                 break
                         if not found:
                             raise RegisterNotFound(message="Record not found",

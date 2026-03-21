@@ -17,6 +17,7 @@ from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
 class OlympicsSummarySchema(Schema):
     inscribed = fields.Int()
     classified = fields.Int()
+    participant = fields.Int()
     medalsGold = fields.Int()
     medalsSilver = fields.Int()
     medalsBronze = fields.Int()

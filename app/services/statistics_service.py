@@ -71,15 +71,18 @@ class StatisticsService():
         }
 
     def get_diagnostics_last_five_years(self):
-
         periods = SchoolYear.objects(isDeleted=False).order_by('-createdAt')[:5]
+
         data = {
             'wordsPerMinIndex': [],
             'multiplicationsPerMinIndex': [],
-            'operationsPerMinIndex': []
+            'operationsPerMinIndex': [],
+            'mathOlympics': [],
+            'readingOlympics': []
         }
+        
         for period in periods:
-            for diag in data.keys():
+            for diag in ['wordsPerMinIndex', 'multiplicationsPerMinIndex', 'operationsPerMinIndex']:
                 hasInfo = False
                 for lapse in [1, 2, 3]:
                     if period.diagnostics['lapse{}'.format(
@@ -96,6 +99,33 @@ class StatisticsService():
                                     lapse)][diag]
                             }
                         )
+            
+            # Olympics
+            summary = period.olympicsSummary
+            for olympicsType in ['math', 'reading']:
+                diagKey = 'mathOlympics' if olympicsType == 'math' else 'readingOlympics'
+                prefix = 'math' if olympicsType == 'math' else 'reading'
+                
+                enrolled = getattr(summary, '{}EnrolledCount'.format(prefix))
+                if enrolled > 0:
+                    series_map = {
+                        'Oro Regional': '{}MedalsGold'.format(prefix),
+                        'Plata Regional': '{}MedalsSilver'.format(prefix),
+                        'Bronce Regional': '{}MedalsBronze'.format(prefix),
+                        'Oro Nacional': '{}MedalsGoldNational'.format(prefix),
+                        'Plata Nacional': '{}MedalsSilverNational'.format(prefix),
+                        'Bronce Nacional': '{}MedalsBronzeNational'.format(prefix)
+                    }
+                    medals_sum = sum([getattr(summary, attr) for attr in series_map.values()])
+                    if medals_sum > 0:
+                        for label, attr in series_map.items():
+                            data[diagKey].append({
+                                'createdAt': period.createdAt,
+                                'label': period.name,
+                                'serie': label,
+                                'value': getattr(summary, attr)
+                            })
+
         for diag in data.keys():
             data[diag] = sorted(
                 data[diag], reverse=True, key=lambda x: (x['createdAt']))

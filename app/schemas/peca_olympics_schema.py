@@ -28,8 +28,8 @@ class StudentSchema(Schema):
     status = fields.Str(
         validate=(
             OneOf(
-                ["1", "2"],
-                ["registered", "qualified"]
+                ["1", "2", "3"],
+                ["registered", "participant", "qualified"]
             )))
     result = fields.String(
         allow_none=True,
@@ -43,7 +43,7 @@ class StudentSchema(Schema):
         validate=(
             OneOf(
                 ["1", "2"],
-                ["registered", "qualified", ]
+                ["participant", "qualified"]
             )))
     resultNational = fields.String(
         allow_none=True,

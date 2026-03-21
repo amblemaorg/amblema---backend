@@ -262,7 +262,7 @@ class PecaReadingOlympicsTest(unittest.TestCase):
 
         # edit student status in reading olympics
         requestData = {
-            "status": "2",  # qualified
+            "status": "3",  # qualified
             "result": None  # without result
         }
         res = self.client().put(
@@ -275,7 +275,7 @@ class PecaReadingOlympicsTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual('2', result['status'])
+        self.assertEqual('3', result['status'])
 
         # add student result in reading olympics
         requestData = {
@@ -292,7 +292,7 @@ class PecaReadingOlympicsTest(unittest.TestCase):
 
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('1', result['result'])
-        self.assertEqual('2', result['status'])
+        self.assertEqual('3', result['status'])
 
        # delete student from reading olympics
         res = self.client().delete(

@@ -92,3 +92,20 @@ class Diagnostics(EmbeddedDocument):
         DiagnosticSummary, default=DiagnosticSummary())
     summary = fields.EmbeddedDocumentField(
         DiagnosticSummary, default=DiagnosticSummary())
+
+
+class OlympicsSummary(EmbeddedDocument):
+    mathEnrolledCount = fields.IntField(default=0)
+    mathMedalsGold = fields.IntField(default=0)
+    mathMedalsSilver = fields.IntField(default=0)
+    mathMedalsBronze = fields.IntField(default=0)
+    mathMedalsGoldNational = fields.IntField(default=0)
+    mathMedalsSilverNational = fields.IntField(default=0)
+    mathMedalsBronzeNational = fields.IntField(default=0)
+    readingEnrolledCount = fields.IntField(default=0)
+    readingMedalsGold = fields.IntField(default=0)
+    readingMedalsSilver = fields.IntField(default=0)
+    readingMedalsBronze = fields.IntField(default=0)
+    readingMedalsGoldNational = fields.IntField(default=0)
+    readingMedalsSilverNational = fields.IntField(default=0)
+    readingMedalsBronzeNational = fields.IntField(default=0)

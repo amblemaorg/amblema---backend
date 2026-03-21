@@ -36,6 +36,7 @@ class StatisticsOlympicsService():
             'allPeriods': [],
             'finalScore': {
                 'enrolledStudents': 0,
+                'participantStudents': 0,
                 'classifiedStudents': 0,
                 'studentsGoldMedal': 0,
                 'studentsSilverMedal': 0,
@@ -54,6 +55,7 @@ class StatisticsOlympicsService():
                 'schools': [],
                 'total': {
                     'totalEnrolled': 0,
+                    'totalParticipant': 0,
                     'totalClassified': 0,
                     'totalGoldMedals': 0,
                     'totalSilverMedals': 0,
@@ -79,6 +81,7 @@ class StatisticsOlympicsService():
                 'grades': [],
                 'total': {
                     'totalEnrolled': 0,
+                    'totalParticipant': 0,
                     'totalClassified': 0,
                     'totalGoldMedals': 0,
                     'totalSilverMedals': 0,
@@ -101,13 +104,16 @@ class StatisticsOlympicsService():
                         if student.section.grade in grades:
                             if student.section.name in grades[student.section.grade]['sections']:
                                 grades[student.section.grade]['sections'][student.section.name]['inscribed'] += 1
-                                if student.status == "2":
+                                if student.status in ["2", "3"]:
+                                    grades[student.section.grade]['sections'][student.section.name]['participant'] += 1
+                                if student.status == "3":
                                     grades[student.section.grade]['sections'][student.section.name]['classified'] += 1
                                     if student.result:
                                         if student.result == "1":
                                             grades[student.section.grade]['sections'][student.section.name]['medalsGold'] += 1
                                         elif student.result == "2":
                                             grades[student.section.grade]['sections'][student.section.name]['medalsSilver'] += 1
+                                        elif student.result == "3":
                                             grades[student.section.grade]['sections'][student.section.name]['medalsBronze'] += 1
                                     
                                     if student.statusNational == "2":
@@ -123,7 +129,8 @@ class StatisticsOlympicsService():
                                 grades[student.section.grade]['sections'][student.section.name] = {
                                     'name': student.section.name,
                                     'inscribed': 1,
-                                    'classified': 1 if student.status == "2" else 0,
+                                    'participant': 1 if student.status in ["2", "3"] else 0,
+                                    'classified': 1 if student.status == "3" else 0,
                                     'medalsGold': 1 if student.result == "1" else 0,
                                     'medalsSilver': 1 if student.result == "2" else 0,
                                     'medalsBronze': 1 if student.result == "3" else 0,
@@ -140,7 +147,8 @@ class StatisticsOlympicsService():
                                     student.section.name: {
                                         'name': student.section.name,
                                         'inscribed': 1,
-                                        'classified': 1 if student.status == "2" else 0,
+                                        'participant': 1 if student.status in ["2", "3"] else 0,
+                                        'classified': 1 if student.status == "3" else 0,
                                         'medalsGold': 1 if student.result == "1" else 0,
                                         'medalsSilver': 1 if student.result == "2" else 0,
                                         'medalsBronze': 1 if student.result == "3" else 0,
@@ -154,11 +162,33 @@ class StatisticsOlympicsService():
             for grade in grades.values():
                 gradeSummary = {
                     'name': grade['name'],
+                    'totalInscribed': 0,
+                    'totalParticipant': 0,
+                    'totalClassified': 0,
+                    'totalGoldMedals': 0,
+                    'totalSilverMedals': 0,
+                    'totalBronzeMedals': 0,
+                    'totalClassifiedNational': 0,
+                    'totalGoldMedalsNational': 0,
+                    'totalSilverMedalsNational': 0,
+                    'totalBronzeMedalsNational': 0,
                     'sections': []
                 }
                 for section in grade['sections'].values():
                     gradeSummary['sections'].append(section)
+                    gradeSummary['totalInscribed'] += section['inscribed']
+                    gradeSummary['totalParticipant'] += section.get('participant', 0)
+                    gradeSummary['totalClassified'] += section['classified']
+                    gradeSummary['totalGoldMedals'] += section['medalsGold']
+                    gradeSummary['totalSilverMedals'] += section['medalsSilver']
+                    gradeSummary['totalBronzeMedals'] += section['medalsBronze']
+                    gradeSummary['totalClassifiedNational'] += section['classifiedNational']
+                    gradeSummary['totalGoldMedalsNational'] += section['medalsGoldNational']
+                    gradeSummary['totalSilverMedalsNational'] += section['medalsSilverNational']
+                    gradeSummary['totalBronzeMedalsNational'] += section['medalsBronzeNational']
+
                     schoolSummary['total']['totalEnrolled'] += section['inscribed']
+                    schoolSummary['total']['totalParticipant'] += section.get('participant', 0)
                     schoolSummary['total']['totalClassified'] += section['classified']
                     schoolSummary['total']['totalGoldMedals'] += section['medalsGold']
                     schoolSummary['total']['totalSilverMedals'] += section['medalsSilver']
@@ -169,6 +199,8 @@ class StatisticsOlympicsService():
                     schoolSummary['total']['totalBronzeMedalsNational'] += section['medalsBronzeNational']
                     periods[str(
                         peca.schoolYear.pk)]['total']['totalEnrolled'] += section['inscribed']
+                    periods[str(
+                        peca.schoolYear.pk)]['total']['totalParticipant'] += section.get('participant', 0)
                     periods[str(
                         peca.schoolYear.pk)]['total']['totalClassified'] += section['classified']
                     periods[str(
@@ -210,6 +242,7 @@ class StatisticsOlympicsService():
                 }
                 reportData['allPeriods'].append(periodSummary)
                 reportData['finalScore']['enrolledStudents'] += period['total']['totalEnrolled']
+                reportData['finalScore']['participantStudents'] += period['total']['totalParticipant']
                 reportData['finalScore']['classifiedStudents'] += period['total']['totalClassified']
                 reportData['finalScore']['studentsGoldMedal'] += period['total']['totalGoldMedals']
                 reportData['finalScore']['studentsSilverMedal'] += period['total']['totalSilverMedals']

@@ -57,7 +57,7 @@ def recalculate_summary(lapse_olympics, summary):
 
 with app.app_context():
     try:
-        peca_projects = PecaProject.objects(isDeleted=False)
+        peca_projects = PecaProject.objects(isDeleted=False).only('id', 'lapse1', 'lapse2', 'lapse3', 'project')
         peca_count = 0
         peca_updated_count = 0
         students_updated_count = 0

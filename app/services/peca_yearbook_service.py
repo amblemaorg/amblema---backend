@@ -19,6 +19,7 @@ from app.models.request_content_approval_model import RequestContentApproval
 from app.helpers.handler_images import upload_image
 from resources.images import path_images
 from app.services.peca_project_service import PecaProjectService
+from app.models.peca_yearbook_grouped_section_model import PecaYearbookGroupedSection
 
 
 class YearbookService():
@@ -55,19 +56,19 @@ class YearbookService():
                 folder = folder + \
                     '/{}'.format(len([name for name in os.listdir(DIR)]) + 1
                                  if os.path.exists(DIR) else 1)
-                if str(jsonData['historicalReview']['image']).startswith('data'):
+                if 'historicalReview' in jsonData and str(jsonData['historicalReview']['image']).startswith('data'):
                     jsonData['historicalReview']['image'] = upload_image(
                         jsonData['historicalReview']['image'], folder, None)
-                if str(jsonData['sponsor']['image']).startswith('data'):
+                if 'sponsor' in jsonData and str(jsonData['sponsor']['image']).startswith('data'):
                     jsonData['sponsor']['image'] = upload_image(
                         jsonData['sponsor']['image'], folder, None)
-                if str(jsonData['school']['image']).startswith('data'):
+                if 'school' in jsonData and str(jsonData['school']['image']).startswith('data'):
                     jsonData['school']['image'] = upload_image(
                         jsonData['school']['image'], folder, None)
-                if str(jsonData['coordinator']['image']).startswith('data'):
+                if 'coordinator' in jsonData and str(jsonData['coordinator']['image']).startswith('data'):
                     jsonData['coordinator']['image'] = upload_image(
                         jsonData['coordinator']['image'], folder, None)
-                if str(jsonData['groupPhoto']['image']).startswith('data'):
+                if 'groupPhoto' in jsonData and str(jsonData['groupPhoto']['image']).startswith('data'):
                     jsonData['groupPhoto']['image'] = upload_image(
                         jsonData['groupPhoto']['image'], folder, None)
                 
@@ -79,8 +80,6 @@ class YearbookService():
                                 found = True
                                 section['name'] = oldSection.name
                                 section['grade'] = oldSection.grade
-                                if 'groupedWith' in section:
-                                    oldSection.groupedWith = section['groupedWith']
                                 break
                         if not found:
                             raise RegisterNotFound(message="Record not found",
@@ -91,24 +90,24 @@ class YearbookService():
                                 section['image'], folder, None)
                 img_msg = []
                 for lapse in [1, 2, 3]:
-                    for activity in range(len(jsonData['lapse{}'.format(lapse)]['activities'])):
-                        act = jsonData['lapse{}'.format(
-                            lapse)]['activities'][activity]
-                        images_save = []
-                        for image in range(len(act['images'])):
-                            img = act['images'][image]
-                            if str(img).startswith('data'):
-                                imgd = upload_image(
-                                    img, folder, None, True)
-                                if imgd != '' and imgd != None:
-                                    images_save.append(imgd)
+                    lapse_key = 'lapse{}'.format(lapse)
+                    if lapse_key in jsonData:
+                        for activity in range(len(jsonData[lapse_key]['activities'])):
+                            act = jsonData[lapse_key]['activities'][activity]
+                            images_save = []
+                            for image in range(len(act['images'])):
+                                img = act['images'][image]
+                                if str(img).startswith('data'):
+                                    imgd = upload_image(
+                                        img, folder, None, True)
+                                    if imgd != '' and imgd != None:
+                                        images_save.append(imgd)
+                                    else:
+                                        img_msg.append('La imagen '+str(image+1)+' es corrupta')
                                 else:
-                                    img_msg.append('La imagen '+str(image+1)+' es corrupta')
-                            else:
-                                images_save.append(img)
-                                
-                        jsonData['lapse{}'.format(
-                                        lapse)]['activities'][activity]['images'] = images_save
+                                    images_save.append(img)
+                                    
+                            jsonData[lapse_key]['activities'][activity]['images'] = images_save
                 schema.validate(jsonData)
                 yearbook = peca.yearbook
                 data_save = {}
@@ -224,7 +223,7 @@ class YearbookService():
                         if jsonData["requestId"] != "" and jsonData["requestId"]!=None:
                            request = RequestContentApproval.objects(id=jsonData["requestId"], project__id=peca.project.id, type="7", status="1", isDeleted=False).first()
                                         
-                    
+
                     if not request:
                         if yearbook.isInApproval:
                             return {
@@ -264,6 +263,49 @@ class YearbookService():
 
             except ValidationError as err:
                 return err.normalized_messages(), 400
+
+    def get_section_grouping(self, pecaId):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).first()
+
+        if peca:
+            groups = PecaYearbookGroupedSection.objects(pecaId=peca.id)
+            result = []
+            for group in groups:
+                 result.append({"sectionId": group.sectionId, "groupedWith": group.groupedWith})
+            return {"status": "1", "data": result}, 200
+        else:
+            raise RegisterNotFound(message="Record not found",
+                                   status_code=404,
+                                   payload={"pecaId": pecaId})
+
+    def save_section_grouping(self, pecaId, jsonData):
+        peca = PecaProject.objects(
+            isDeleted=False,
+            id=pecaId,
+        ).first()
+
+        if peca:
+            try:
+                if "sections" in jsonData:
+                    for section in jsonData['sections']:
+                        existingGroup = PecaYearbookGroupedSection.objects(pecaId=peca.id, sectionId=section['id']).first()
+                        if 'groupedWith' in section and section['groupedWith'] is not None:
+                            if existingGroup:
+                                existingGroup.groupedWith = section['groupedWith']
+                                existingGroup.save()
+                            else:
+                                newGroup = PecaYearbookGroupedSection(pecaId=peca.id, sectionId=section['id'], groupedWith=section['groupedWith'])
+                                newGroup.save()
+                        else:
+                            if existingGroup:
+                                existingGroup.delete()
+                
+                return {"status": "1", "msg": "Record saved"}, 200
+            except Exception as e:
+                return {'status': 0, 'message': str(e)}, 400
         else:
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,

@@ -28,7 +28,6 @@ class SectionImageSchema(Schema):
     grade = fields.Str()
     image = MAImageField(allow_none=True, validate=validate_image,
                          folder='sections')
-    groupedWith = fields.Str(allow_none=True)
     class Meta:
         unknown = EXCLUDE
         ordered = True

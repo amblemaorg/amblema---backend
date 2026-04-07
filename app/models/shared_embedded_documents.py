@@ -95,17 +95,26 @@ class Diagnostics(EmbeddedDocument):
 
 
 class OlympicsSummary(EmbeddedDocument):
+    meta = {'strict': False}
     mathEnrolledCount = fields.IntField(default=0)
+    mathParticipant = fields.IntField(default=0)
+    mathClassified = fields.IntField(default=0)
     mathMedalsGold = fields.IntField(default=0)
     mathMedalsSilver = fields.IntField(default=0)
     mathMedalsBronze = fields.IntField(default=0)
+    mathParticipantRegional = fields.IntField(default=0)
+    mathClassifiedRegional = fields.IntField(default=0)
     mathMedalsGoldNational = fields.IntField(default=0)
     mathMedalsSilverNational = fields.IntField(default=0)
     mathMedalsBronzeNational = fields.IntField(default=0)
     readingEnrolledCount = fields.IntField(default=0)
+    readingParticipant = fields.IntField(default=0)
+    readingClassified = fields.IntField(default=0)
     readingMedalsGold = fields.IntField(default=0)
     readingMedalsSilver = fields.IntField(default=0)
     readingMedalsBronze = fields.IntField(default=0)
+    readingParticipantRegional = fields.IntField(default=0)
+    readingClassifiedRegional = fields.IntField(default=0)
     readingMedalsGoldNational = fields.IntField(default=0)
     readingMedalsSilverNational = fields.IntField(default=0)
     readingMedalsBronzeNational = fields.IntField(default=0)

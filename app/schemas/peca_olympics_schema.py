@@ -38,6 +38,13 @@ class StudentSchema(Schema):
                 ["1", "2", "3"],
                 ["gold", "silver", "bronze"]
             )))
+    statusRegional = fields.String(
+        allow_none=True,
+        validate=(
+            OneOf(
+                ["1", "2"],
+                ["participant", "qualified"]
+            )))
     statusNational = fields.String(
         allow_none=True,
         validate=(

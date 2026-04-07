@@ -21,6 +21,8 @@ class OlympicsSummarySchema(Schema):
     medalsGold = fields.Int()
     medalsSilver = fields.Int()
     medalsBronze = fields.Int()
+    participantRegional = fields.Int()
+    classifiedRegional = fields.Int()
     inscribedNational = fields.Int()
     classifiedNational = fields.Int()
     medalsGoldNational = fields.Int()

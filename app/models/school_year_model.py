@@ -153,16 +153,24 @@ class SchoolYear(Document):
 
         res = {
             'mathEnrolledCount': 0,
+            'mathParticipant': 0,
+            'mathClassified': 0,
             'mathMedalsGold': 0,
             'mathMedalsSilver': 0,
             'mathMedalsBronze': 0,
+            'mathParticipantRegional': 0,
+            'mathClassifiedRegional': 0,
             'mathMedalsGoldNational': 0,
             'mathMedalsSilverNational': 0,
             'mathMedalsBronzeNational': 0,
             'readingEnrolledCount': 0,
+            'readingParticipant': 0,
+            'readingClassified': 0,
             'readingMedalsGold': 0,
             'readingMedalsSilver': 0,
             'readingMedalsBronze': 0,
+            'readingParticipantRegional': 0,
+            'readingClassifiedRegional': 0,
             'readingMedalsGoldNational': 0,
             'readingMedalsSilverNational': 0,
             'readingMedalsBronzeNational': 0
@@ -184,13 +192,22 @@ class SchoolYear(Document):
                 if olympics:
                     for student in olympics.students:
                         res['mathEnrolledCount'] += 1
+                        if student.status in ["2", "3"]:
+                            res['mathParticipant'] += 1
                         if student.status == "3":
+                            res['mathClassified'] += 1
+                        
+                        if student.statusRegional in ["1", "2"]:
+                            res['mathParticipantRegional'] += 1
+                        if student.statusRegional == "2":
+                            res['mathClassifiedRegional'] += 1
                             if student.result == "1":
                                 res['mathMedalsGold'] += 1
                             elif student.result == "2":
                                 res['mathMedalsSilver'] += 1
                             elif student.result == "3":
                                 res['mathMedalsBronze'] += 1
+                        
                         if student.statusNational == "2":
                             if student.resultNational == "1":
                                 res['mathMedalsGoldNational'] += 1
@@ -204,13 +221,22 @@ class SchoolYear(Document):
                 if readingOlympics:
                     for student in readingOlympics.students:
                         res['readingEnrolledCount'] += 1
+                        if student.status in ["2", "3"]:
+                            res['readingParticipant'] += 1
                         if student.status == "3":
+                            res['readingClassified'] += 1
+
+                        if student.statusRegional in ["1", "2"]:
+                            res['readingParticipantRegional'] += 1
+                        if student.statusRegional == "2":
+                            res['readingClassifiedRegional'] += 1
                             if student.result == "1":
                                 res['readingMedalsGold'] += 1
                             elif student.result == "2":
                                 res['readingMedalsSilver'] += 1
                             elif student.result == "3":
                                 res['readingMedalsBronze'] += 1
+                        
                         if student.statusNational == "2":
                             if student.resultNational == "1":
                                 res['readingMedalsGoldNational'] += 1

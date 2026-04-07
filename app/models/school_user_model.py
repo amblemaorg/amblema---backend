@@ -14,12 +14,15 @@ from app.models.peca_student_model import StudentClass
 
 
 class OlympicsSummary(EmbeddedDocument):
+    meta = {'strict': False}
     inscribed = fields.IntField(default=0)
     participant = fields.IntField(default=0)
     classified = fields.IntField(default=0)
     medalsGold = fields.IntField(default=0)
     medalsSilver = fields.IntField(default=0)
     medalsBronze = fields.IntField(default=0)
+    participantRegional = fields.IntField(default=0)
+    classifiedRegional = fields.IntField(default=0)
     inscribedNational = fields.IntField(default=0)
     classifiedNational = fields.IntField(default=0)
     medalsGoldNational = fields.IntField(default=0)

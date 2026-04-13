@@ -225,7 +225,9 @@ class RequestContentApproval(Document):
                             for section in data['sections']:
                                 for oldSection in peca.school.sections.filter(isDeleted=False):
                                     if str(oldSection.id) == section['id']:
-                                        oldSection['image'] = section['image']
+                                        oldSection.image = section.get('image')
+                                        if 'groupedWith' in section:
+                                            oldSection.groupedWith = section['groupedWith']
                         if school.yearbook != peca.yearbook.school or school.historicalReview != peca.yearbook.historicalReview:
                             if school.yearbook != peca.yearbook.school:
                                 school.yearbook = peca.yearbook.school

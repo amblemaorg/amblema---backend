@@ -151,6 +151,7 @@ from app.controllers.peca_special_lapse_activity_controller import (
     PecaSpecialActivityController
 )
 from app.controllers.peca_yearbook_controller import PecaYearbookController
+from app.controllers.peca_yearbook_section_grouping_controller import PecaYearbookSectionGroupingController
 from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
@@ -372,6 +373,8 @@ def create_app(config_instance):
                      '/pecaprojects/schedule/<string:pecaId>')
     api.add_resource(PecaYearbookController,
                      '/pecaprojects/yearbook/<string:pecaId>')
+    api.add_resource(PecaYearbookSectionGroupingController,
+                     '/pecaprojects/yearbook/sectiongrouping/<string:pecaId>')
     api.add_resource(PecaEnvironmentalProjectCtrl,
                      '/pecaprojects/environmentalproject/<string:pecaId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')

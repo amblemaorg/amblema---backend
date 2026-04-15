@@ -382,10 +382,13 @@ class PecaProjectService():
                         'name': section.name,
                         'wordsPerMin': summary['lapse{}'.format(i)]['wordsPerMin'],
                         'wordsPerMinIndex': summary['lapse{}'.format(i)]['wordsPerMinIndex'],
+                        'wordsPerMinCount': summary['lapse{}'.format(i)]['wordsPerMinCount'],
                         'multiplicationsPerMin': summary['lapse{}'.format(i)]['multiplicationsPerMin'],
                         'multiplicationsPerMinIndex': summary['lapse{}'.format(i)]['multiplicationsPerMinIndex'],
+                        'multiplicationsPerMinCount': summary['lapse{}'.format(i)]['multiplicationsPerMinCount'],
                         'operationsPerMin': summary['lapse{}'.format(i)]['operationsPerMin'],
-                        'operationsPerMinIndex': summary['lapse{}'.format(i)]['operationsPerMinIndex']
+                        'operationsPerMinIndex': summary['lapse{}'.format(i)]['operationsPerMinIndex'],
+                        'operationsPerMinCount': summary['lapse{}'.format(i)]['operationsPerMinCount']
                     }
                 )
         for i in range(1, 4):

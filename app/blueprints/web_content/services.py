@@ -101,8 +101,8 @@ class SchoolPageContentService():
             isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image')[:3]
         pecasIds = [peca.pecaId for peca in school.project.schoolYears]
         pecas = PecaProject.objects(
-            id__in=pecasIds, isDeleted=False).only("school","createdAt","schoolYearName",).order_by('createdAt').limit(5)
-        currentPeca = pecas[len(pecas)-1]
+            id__in=pecasIds, isDeleted=False).only("school","createdAt","schoolYearName",).order_by('-createdAt').limit(5)
+        currentPeca = pecas[0]
 
         diagnostics = {
             'wordsPerMinIndex': [],

@@ -66,12 +66,14 @@ class School(EmbeddedDocument):
             for lapse in range(1, 4):
                 for diag in diagnosticsList:
                     if section.diagnostics['lapse{}'.format(lapse)][diag]:
-                        summary['lapse{}'.format(
-                            lapse)]['{}Count'.format(diag)] += 1
-                        summary['lapse{}'.format(
-                            lapse)]['{}Sum'.format(diag)] += section.diagnostics['lapse{}'.format(lapse)][diag]
-                        summary['lapse{}'.format(
-                            lapse)]['{}IndexSum'.format(diag)] += section.diagnostics['lapse{}'.format(lapse)]['{}Index'.format(diag)]
+                        count = section.diagnostics['lapse{}'.format(lapse)]['{}Count'.format(diag)]
+                        if count > 0:
+                            summary['lapse{}'.format(
+                                lapse)]['{}Count'.format(diag)] += count
+                            summary['lapse{}'.format(
+                                lapse)]['{}Sum'.format(diag)] += section.diagnostics['lapse{}'.format(lapse)][diag] * count
+                            summary['lapse{}'.format(
+                                lapse)]['{}IndexSum'.format(diag)] += section.diagnostics['lapse{}'.format(lapse)]['{}Index'.format(diag)] * count
 
         for i in range(1, 4):
             lapseSummary = summary['lapse{}'.format(i)]
@@ -79,14 +81,16 @@ class School(EmbeddedDocument):
             for diag in diagnosticsList:
                 if lapseSummary['{}Count'.format(diag)]:
                     avg = round(lapseSummary['{}Sum'.format(diag)] /
-                                lapseSummary['{}Count'.format(diag)], 3)
+                                lapseSummary['{}Count'.format(diag)], 2)
                     avgIndex = round(lapseSummary['{}IndexSum'.format(diag)] /
-                                     lapseSummary['{}Count'.format(diag)], 3)
+                                     lapseSummary['{}Count'.format(diag)], 2)
                     lapse[diag] = avg
                     lapse['{}Index'.format(diag)] = avgIndex
+                    lapse['{}Count'.format(diag)] = lapseSummary['{}Count'.format(diag)]
                 else:
                     lapse[diag] = 0
                     lapse['{}Index'.format(diag)] = 0
+                    lapse['{}Count'.format(diag)] = 0
 
         for diag in diagnosticsList:
             if self.diagnostics.lapse1[diag] and self.diagnostics.lapse2[diag] and self.diagnostics.lapse3[diag]:
@@ -96,14 +100,14 @@ class School(EmbeddedDocument):
                         + self.diagnostics.lapse2[diag]
                         + self.diagnostics.lapse3[diag]
                     ) / 3,
-                    3)
+                    2)
                 self.diagnostics.summary['{}Index'.format(diag)] = round(
                     (
                         self.diagnostics.lapse1['{}Index'.format(diag)]
                         + self.diagnostics.lapse2['{}Index'.format(diag)]
                         + self.diagnostics.lapse3['{}Index'.format(diag)]
                     ) / 3,
-                    3)
+                    2)
             else:
                 self.diagnostics.summary[diag] = 0
                 self.diagnostics.summary['{}Index'.format(diag)] = 0

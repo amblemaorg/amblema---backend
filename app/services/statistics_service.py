@@ -108,22 +108,23 @@ class StatisticsService():
                 
                 enrolled = getattr(summary, '{}EnrolledCount'.format(prefix))
                 if enrolled > 0:
-                    series_map = {
-                        'Oro Regional': '{}MedalsGold'.format(prefix),
-                        'Plata Regional': '{}MedalsSilver'.format(prefix),
-                        'Bronce Regional': '{}MedalsBronze'.format(prefix),
-                        'Oro Nacional': '{}MedalsGoldNational'.format(prefix),
-                        'Plata Nacional': '{}MedalsSilverNational'.format(prefix),
-                        'Bronce Nacional': '{}MedalsBronzeNational'.format(prefix)
-                    }
-                    medals_sum = sum([getattr(summary, attr) for attr in series_map.values()])
+                    gold = getattr(summary, '{}MedalsGold'.format(prefix)) + getattr(summary, '{}MedalsGoldNational'.format(prefix))
+                    silver = getattr(summary, '{}MedalsSilver'.format(prefix)) + getattr(summary, '{}MedalsSilverNational'.format(prefix))
+                    bronze = getattr(summary, '{}MedalsBronze'.format(prefix)) + getattr(summary, '{}MedalsBronzeNational'.format(prefix))
+                    
+                    medals_sum = gold + silver + bronze
                     if medals_sum > 0:
-                        for label, attr in series_map.items():
+                        series_map_totals = {
+                            'Oro': gold,
+                            'Plata': silver,
+                            'Bronce': bronze
+                        }
+                        for label, value in series_map_totals.items():
                             data[diagKey].append({
                                 'createdAt': period.createdAt,
                                 'label': period.name,
                                 'serie': label,
-                                'value': getattr(summary, attr)
+                                'value': value
                             })
 
         for diag in data.keys():

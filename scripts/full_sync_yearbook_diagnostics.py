@@ -33,7 +33,7 @@ with app.app_context():
                 changed_approval = False
                 
                 for lapse_idx in [1, 2, 3]:
-                    lapse_key = f'lapse{lapse_idx}'
+                    lapse_key = 'lapse{}'.format(lapse_idx)
                     if lapse_key in detail and 'diagnosticSummary' in detail[lapse_key]:
                         new_summary = []
                         for section in sorted(peca.school.sections.filter(isDeleted=False), key=lambda x: (x.grade, x.name)):
@@ -62,7 +62,7 @@ with app.app_context():
                     # Update separate RequestContentApproval doc
                     req_detail = req.detail
                     for lapse_idx in [1, 2, 3]:
-                        lapse_key = f'lapse{lapse_idx}'
+                        lapse_key = 'lapse{}'.format(lapse_idx)
                         if lapse_key in req_detail:
                              req_detail[lapse_key]['diagnosticSummary'] = detail[lapse_key]['diagnosticSummary']
                     req.detail = req_detail
@@ -77,10 +77,10 @@ with app.app_context():
                 peca.save(validate=False)
                 updated_pecas += 1
             except Exception as e:
-                print(f"Error saving peca {peca.id}: {e}")
+                print("Error saving peca {peca_id}: {e}".format(peca_id=peca.id, e=e))
             
         project_count += 1
         if project_count % 50 == 0:
-            print(f"Processed {project_count}/{len(pecas)} projects...")
+            print("Processed {count}/{total} projects...".format(count=project_count, total=len(pecas)))
 
-    print(f"Finished. Processed {project_count} projects. Total pecas updated: {updated_pecas}, total requests updated: {updated_reqs}")
+    print("Finished. Processed {count} projects. Total pecas updated: {updated_pecas}, total requests updated: {updated_reqs}".format(count=project_count, updated_pecas=updated_pecas, updated_reqs=updated_reqs))

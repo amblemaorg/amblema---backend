@@ -102,7 +102,7 @@ class SchoolYear(Document):
         for peca in pecas:
             for lapse in range(1, 4):
                 for diag in diagnosticsList:
-                    if peca.school.diagnostics['lapse{}'.format(lapse)][diag]:
+                    if peca.school.diagnostics['lapse{}'.format(lapse)][diag] is not None:
                         summary['lapse{}'.format(
                             lapse)]['{}Count'.format(diag)] += 1
                         summary['lapse{}'.format(
@@ -122,11 +122,11 @@ class SchoolYear(Document):
                     lapse[diag] = avg
                     lapse['{}Index'.format(diag)] = avgIndex
                 else:
-                    lapse[diag] = 0
-                    lapse['{}Index'.format(diag)] = 0
+                    lapse[diag] = None
+                    lapse['{}Index'.format(diag)] = None
 
         for diag in diagnosticsList:
-            if self.diagnostics.lapse1[diag] and self.diagnostics.lapse2[diag] and self.diagnostics.lapse3[diag]:
+            if self.diagnostics.lapse1[diag] is not None and self.diagnostics.lapse2[diag] is not None and self.diagnostics.lapse3[diag] is not None:
                 self.diagnostics.summary[diag] = round(
                     (
                         self.diagnostics.lapse1[diag]
@@ -142,5 +142,5 @@ class SchoolYear(Document):
                     ) / 3,
                     3)
             else:
-                self.diagnostics.summary[diag] = 0
-                self.diagnostics.summary['{}Index'.format(diag)] = 0
+                self.diagnostics.summary[diag] = None
+                self.diagnostics.summary['{}Index'.format(diag)] = None

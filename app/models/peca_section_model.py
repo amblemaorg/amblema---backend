@@ -51,13 +51,18 @@ class Section(EmbeddedDocument):
 
         for student in self.students.filter(isDeleted=False):
             for lapse in range(1, 4):
+                lapse_data = student['lapse{}'.format(lapse)]
+                if lapse_data is None: continue
                 for diag in diagnosticsList:
-                    if student['lapse{}'.format(lapse)][diag]!= None:
+                    val_diag = lapse_data[diag]
+                    if val_diag is not None and val_diag != "":
                         summary['lapse{}'.format(
                             lapse)]['{}Count'.format(diag)] += 1
                         summary['lapse{}'.format(
-                            lapse)]['{}Sum'.format(diag)] += student['lapse{}'.format(lapse)][diag]
-                        val = student['lapse{}'.format(lapse)]['{}Index'.format(diag)] if student['lapse{}'.format(lapse)]['{}Index'.format(diag)] != None else 0
+                            lapse)]['{}Sum'.format(diag)] += float(val_diag)
+                        
+                        val_index = lapse_data['{}Index'.format(diag)]
+                        val = val_index if (val_index is not None and val_index != "") else 0
                         summary['lapse{}'.format(
                             lapse)]['{}IndexSum'.format(diag)] += float(val)
         
@@ -74,12 +79,12 @@ class Section(EmbeddedDocument):
                     lapse['{}Index'.format(diag)] = avgIndex
                     lapse['{}Count'.format(diag)] = lapseSummary['{}Count'.format(diag)]
                 else:
-                    lapse[diag] = 0
-                    lapse['{}Index'.format(diag)] = 0
+                    lapse[diag] = None
+                    lapse['{}Index'.format(diag)] = None
                     lapse['{}Count'.format(diag)] = 0
 
         for diag in diagnosticsList:
-            if self.diagnostics.lapse1[diag] and self.diagnostics.lapse2[diag] and self.diagnostics.lapse3[diag]:
+            if self.diagnostics.lapse1[diag] is not None and self.diagnostics.lapse2[diag] is not None and self.diagnostics.lapse3[diag] is not None:
                 self.diagnostics.summary[diag] = round(
                     (
                         self.diagnostics.lapse1[diag]
@@ -94,8 +99,8 @@ class Section(EmbeddedDocument):
                         + self.diagnostics.lapse3['{}Index'.format(diag)]) / 3,
                     2)
             else:
-                self.diagnostics.summary[diag] = 0
-                self.diagnostics.summary['{}Index'.format(diag)] = 0
+                self.diagnostics.summary[diag] = None
+                self.diagnostics.summary['{}Index'.format(diag)] = None
 
 """class SectionClass(Document):
     id = fields.ObjectIdField(default=fields.ObjectId)

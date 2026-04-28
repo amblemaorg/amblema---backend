@@ -44,7 +44,7 @@ def update_yearbook_data_in_approval(peca):
     # 2. Prepare new diagnostic summaries from current peca state
     new_summaries = {}
     for lapse_idx in [1, 2, 3]:
-        lapse_key = f'lapse{lapse_idx}'
+        lapse_key = 'lapse{}'.format(lapse_idx)
         summary_list = []
         for section in sorted(peca.school.sections.filter(isDeleted=False), key=lambda x: (x.grade, x.name)):
             s_diag = section.diagnostics[lapse_key]

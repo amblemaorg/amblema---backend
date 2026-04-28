@@ -12,6 +12,7 @@ from app.models.peca_student_model import Diagnostic
 from app.schemas.peca_student_schema import DiagnosticSchema
 from app.schemas.peca_section_schema import DiagnosticsSchema
 from app.helpers.error_helpers import RegisterNotFound
+from app.helpers.peca_yearbook_helper import update_yearbook_data_in_approval
 
 
 class DiagnosticService():
@@ -65,6 +66,7 @@ class DiagnosticService():
                         diagnostic.calculateIndex(setting)
                         section.refreshDiagnosticsSummary()
                         peca.school.refreshDiagnosticsSummary()
+                        update_yearbook_data_in_approval(peca)
                         peca.save()
                         schoolYear = peca.schoolYear.fetch()
                         schoolYear.refreshDiagnosticsSummary()
@@ -122,6 +124,7 @@ class DiagnosticService():
                                         lapse)].operationsPerMinIndex = None
                                 section.refreshDiagnosticsSummary()
                                 peca.school.refreshDiagnosticsSummary()
+                                update_yearbook_data_in_approval(peca)
                                 peca.school.diagnostics.lapse1.wordsPerMinIndex = 0
                                 peca.save()
                                 schoolYear = peca.schoolYear.fetch()
@@ -204,6 +207,7 @@ class DiagnosticService():
                     section.refreshDiagnosticsSummary()
 
             peca.school.refreshDiagnosticsSummary()
+            update_yearbook_data_in_approval(peca)
             peca.save()
             schoolYear = peca.schoolYear.fetch()
             schoolYear.refreshDiagnosticsSummary()

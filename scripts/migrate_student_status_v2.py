@@ -2,6 +2,8 @@
 import os
 import sys
 
+sys.path.append('/home')
+
 # Load .env
 env_file = '.env'
 if os.path.exists(env_file):

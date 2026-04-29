@@ -75,14 +75,14 @@ class Coordinate(EmbeddedDocument):
 
 
 class DiagnosticSummary(EmbeddedDocument):
-    wordsPerMin = fields.IntField(default=0)
-    wordsPerMinIndex = fields.FloatField(default=0)
+    wordsPerMin = fields.FloatField(null=True, default=None)
+    wordsPerMinIndex = fields.FloatField(null=True, default=None)
     wordsPerMinCount = fields.IntField(default=0)
-    multiplicationsPerMin = fields.IntField(default=0)
-    multiplicationsPerMinIndex = fields.FloatField(default=0)
+    multiplicationsPerMin = fields.FloatField(null=True, default=None)
+    multiplicationsPerMinIndex = fields.FloatField(null=True, default=None)
     multiplicationsPerMinCount = fields.IntField(default=0)
-    operationsPerMin = fields.IntField(default=0)
-    operationsPerMinIndex = fields.FloatField(default=0)
+    operationsPerMin = fields.FloatField(null=True, default=None)
+    operationsPerMinIndex = fields.FloatField(null=True, default=None)
     operationsPerMinCount = fields.IntField(default=0)
 
 

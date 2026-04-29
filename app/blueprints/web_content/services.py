@@ -122,7 +122,7 @@ class SchoolPageContentService():
                 hasInfo = False
                 for lapse in [1, 2, 3]:
                     if peca.school.diagnostics['lapse{}'.format(
-                                lapse)][diag]:
+                                lapse)][diag] is not None:
                         hasInfo = True
                 if hasInfo:
                     for lapse in [1, 2, 3]:
@@ -133,7 +133,8 @@ class SchoolPageContentService():
                                 'createdAt': peca.createdAt,
                                 'label': peca.schoolYearName,
                                 'serie': 'Lapso {}'.format(lapse),
-                                'value':  round(value*100 , 2) if value < 1 else value                            }
+                                'value': round(value*100, 2) if (value is not None and value < 1) else value
+                            }
                         )
         for diag in diagnostics.keys():
             diagnostics[diag] = sorted(

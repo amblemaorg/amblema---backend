@@ -1,9 +1,7 @@
 # app/schemas/peca_olympics_schema.py
 
 
-from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate
-
-from app.schemas import fields
+from marshmallow import Schema, pre_load, post_load, EXCLUDE, validate, fields
 from app.helpers.ma_schema_validators import not_blank, OneOf, Range
 from app.schemas.shared_schemas import FileSchema, ReferenceSchema
 from app.models.peca_olympics_model import Section
@@ -30,10 +28,31 @@ class StudentSchema(Schema):
     status = fields.Str(
         validate=(
             OneOf(
-                ["1", "2"],
-                ["registered", "qualified", ]
+                ["1", "2", "3"],
+                ["registered", "participant", "qualified"]
             )))
-    result = fields.Str(
+    result = fields.String(
+        allow_none=True,
+        validate=(
+            OneOf(
+                ["1", "2", "3"],
+                ["gold", "silver", "bronze"]
+            )))
+    statusRegional = fields.String(
+        allow_none=True,
+        validate=(
+            OneOf(
+                ["1", "2"],
+                ["participant", "qualified"]
+            )))
+    statusNational = fields.String(
+        allow_none=True,
+        validate=(
+            OneOf(
+                ["1", "2"],
+                ["participant", "qualified"]
+            )))
+    resultNational = fields.String(
         allow_none=True,
         validate=(
             OneOf(

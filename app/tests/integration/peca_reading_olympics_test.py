@@ -1,4 +1,4 @@
-# app/test/integration/peca_olympics_test.py
+# app/tests/integration/peca_reading_olympics_test.py
 
 
 import unittest
@@ -19,7 +19,7 @@ from app.models.state_model import State, Municipality
 from app.helpers.handler_seeds import create_standard_roles
 
 
-class PecaOlympicsTest(unittest.TestCase):
+class PecaReadingOlympicsTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app(config_instance="testing")
@@ -212,7 +212,7 @@ class PecaOlympicsTest(unittest.TestCase):
         )
         self.pecaProject.save()
 
-    def test_olympics_peca(self):
+    def test_reading_olympics_peca(self):
 
         # enable olympics for lapse1
         requestData = dict(
@@ -244,9 +244,10 @@ class PecaOlympicsTest(unittest.TestCase):
         )
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual([], result['lapse1']['olympics']['students'])
+        # Check readingOlympics
+        self.assertEqual([], result['lapse1']['readingOlympics']['students'])
 
-        # add student to olympics
+        # add student to reading olympics
         requestData = {
             "section": str(self.pecaProject.school.sections[0].id),
             "student": str(self.pecaProject.school.sections[0].students[0].id),
@@ -254,18 +255,18 @@ class PecaOlympicsTest(unittest.TestCase):
             "result": None  # without result
         }
         res = self.client().post(
-            '/pecaprojects/olympics/{}/{}'.format(self.pecaProject.id, 1),
+            '/pecaprojects/olympics/{}/{}?olympicsType=reading'.format(self.pecaProject.id, 1),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
-        # edit student status in olympics
+        # edit student status in reading olympics
         requestData = {
             "status": "3",  # qualified
             "result": None  # without result
         }
         res = self.client().put(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
+            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),
@@ -276,12 +277,12 @@ class PecaOlympicsTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual('3', result['status'])
 
-        # add student result in olympics
+        # add student result in reading olympics
         requestData = {
             "result": "1"  # gold medal
         }
         res = self.client().put(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
+            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),
@@ -293,9 +294,9 @@ class PecaOlympicsTest(unittest.TestCase):
         self.assertEqual('1', result['result'])
         self.assertEqual('3', result['status'])
 
-       # delete student from olympics
+       # delete student from reading olympics
         res = self.client().delete(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
+            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),
@@ -304,7 +305,7 @@ class PecaOlympicsTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         res = self.client().delete(
-            '/pecaprojects/olympics/{}/{}/{}'.format(
+            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),

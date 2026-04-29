@@ -17,9 +17,17 @@ from app.schemas.teacher_testimonial_schema import TeacherTestimonialSchema
 class OlympicsSummarySchema(Schema):
     inscribed = fields.Int()
     classified = fields.Int()
+    participant = fields.Int()
     medalsGold = fields.Int()
     medalsSilver = fields.Int()
     medalsBronze = fields.Int()
+    participantRegional = fields.Int()
+    classifiedRegional = fields.Int()
+    inscribedNational = fields.Int()
+    classifiedNational = fields.Int()
+    medalsGoldNational = fields.Int()
+    medalsSilverNational = fields.Int()
+    medalsBronzeNational = fields.Int()
 
 
 class SchoolUserSchema(UserSchema):
@@ -89,6 +97,7 @@ class SchoolUserSchema(UserSchema):
     slider = fields.List(fields.Nested(ImageStatusSchema), dump_only=True)
     activitiesSlider = fields.List(MAImageField(), dump_only=True)
     olympicsSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
+    olympicsReadingSummary = fields.Nested(OlympicsSummarySchema, dump_only=True)
     teachersTestimonials = fields.Nested(
         TeacherTestimonialSchema, dump_only=True)
 

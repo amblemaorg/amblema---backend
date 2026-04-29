@@ -398,11 +398,30 @@ class ActivityService():
 
                     data = {
                         "id": "matholympic",
-                        "name": "Olimpíada Recreativas de Matemática y Lengua",
+                        "name": "Olimpíada Recreativas de Matemática",
                         "devName": "mathOlympic",
                         "order": mathOlympic.order,
                         "isStandard": True,
                         "status": mathOlympic.status
+                    }
+                    records['lapse{}'.format(i+1)].append(schema.dump(data))
+                
+                readingOlympics = schoolYear.pecaSetting['lapse{}'.format(
+                    i+1)].readingOlympics
+
+                if (
+                    (not filters) or
+                    ('status' in filters and filters['status']
+                     == '1' and readingOlympics.status == '1')
+                ):
+
+                    data = {
+                        "id": "readingolympics",
+                        "name": "Olimpíada Recreativas de Lengua",
+                        "devName": "readingolympics",
+                        "order": readingOlympics.order,
+                        "isStandard": True,
+                        "status": readingOlympics.status
                     }
                     records['lapse{}'.format(i+1)].append(schema.dump(data))
 
@@ -742,7 +761,7 @@ class ActivityService():
                                     peca.scheduleActivity(
                                         devName="olympics__date",
                                         activityId="mathOlympic",
-                                        subject="Olimpíada Recreativas de Matemática y Lengua",
+                                        subject="Olimpíada Recreativas de Matemática",
                                         startTime=olympics.date,
                                         description=olympics.description
                                     )
@@ -760,6 +779,54 @@ class ActivityService():
                         if bulk_operations:
                             PecaProject._get_collection() \
                                 .bulk_write(bulk_operations, ordered=False)
+
+                    elif data['id'] == "readingolympics":
+                        found = True
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].readingOlympics.status = data['status']
+                        if "order" in data:        
+                            schoolYear.pecaSetting['lapse{}'.format(
+                                data['lapse'])].readingOlympics.order = data['order']
+
+                        bulk_operations = []
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False)
+
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                olympics = Olympics(
+                                    file=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].readingOlympics.file,
+                                    description=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].readingOlympics.description,
+                                    date=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].readingOlympics.date
+                                )
+                                if "order" in data:        
+                                    olympics.order = data["order"]
+
+                                peca['lapse{}'.format(
+                                    data['lapse'])].readingOlympics = olympics
+                                if olympics.date:
+                                    peca.scheduleActivity(
+                                        devName="readingOlympics__date",
+                                        activityId="readingolympics",
+                                        subject="Olimpíada Recreativas de Lengua",
+                                        startTime=olympics.date,
+                                        description=olympics.description
+                                    )
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(
+                                    data['lapse'])].readingOlympics = None
+                                peca.scheduleRemoveActivity('readingOlympics__date')
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
+
                     elif data['id'] == "specialLapseActivity":
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(

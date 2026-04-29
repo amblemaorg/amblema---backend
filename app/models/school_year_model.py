@@ -23,7 +23,7 @@ from app.models.peca_setting_model import (
 
 from app.models.goal_setting_model import GoalSetting, GradeSetting
 from app.models.monitoring_activity_model import MonitoringActivity
-from app.models.shared_embedded_documents import Diagnostics
+from app.models.shared_embedded_documents import Diagnostics, OlympicsSummary
 
 
 class SchoolYear(Document):
@@ -34,6 +34,8 @@ class SchoolYear(Document):
     pecaSetting = fields.EmbeddedDocumentField(PecaSetting)
     diagnostics = fields.EmbeddedDocumentField(
         Diagnostics, default=Diagnostics())
+    olympicsSummary = fields.EmbeddedDocumentField(
+        OlympicsSummary, default=OlympicsSummary())
     nStudents = fields.IntField(default=0)
     nSchools = fields.IntField(default=0)
     nTeachers = fields.IntField(default=0)
@@ -97,7 +99,8 @@ class SchoolYear(Document):
                 "operationsPerMinIndexSum": 0
             }
 
-        pecas = PecaProject.objects(schoolYear=self.pk, isDeleted=False).only("school", "lapse1", "lapse2", "lapse3")
+        pecas = PecaProject.objects(schoolYear=self.pk, isDeleted=False).only(
+            "school", "lapse1", "lapse2", "lapse3")
 
         for peca in pecas:
             for lapse in range(1, 4):
@@ -144,3 +147,103 @@ class SchoolYear(Document):
             else:
                 self.diagnostics.summary[diag] = None
                 self.diagnostics.summary['{}Index'.format(diag)] = None
+
+    def refreshOlympicsSummary(self):
+        from app.models.peca_project_model import PecaProject
+
+        res = {
+            'mathEnrolledCount': 0,
+            'mathParticipant': 0,
+            'mathClassified': 0,
+            'mathMedalsGold': 0,
+            'mathMedalsSilver': 0,
+            'mathMedalsBronze': 0,
+            'mathParticipantRegional': 0,
+            'mathClassifiedRegional': 0,
+            'mathMedalsGoldNational': 0,
+            'mathMedalsSilverNational': 0,
+            'mathMedalsBronzeNational': 0,
+            'readingEnrolledCount': 0,
+            'readingParticipant': 0,
+            'readingClassified': 0,
+            'readingMedalsGold': 0,
+            'readingMedalsSilver': 0,
+            'readingMedalsBronze': 0,
+            'readingParticipantRegional': 0,
+            'readingClassifiedRegional': 0,
+            'readingMedalsGoldNational': 0,
+            'readingMedalsSilverNational': 0,
+            'readingMedalsBronzeNational': 0
+        }
+
+        pecas = PecaProject.objects(schoolYear=self.pk, isDeleted=False).only(
+            'lapse1.olympics.students',
+            'lapse2.olympics.students',
+            'lapse3.olympics.students',
+            'lapse1.readingOlympics.students',
+            'lapse2.readingOlympics.students',
+            'lapse3.readingOlympics.students'
+        )
+
+        for peca in pecas:
+            for lapse in range(1, 4):
+                # Math
+                olympics = peca['lapse{}'.format(lapse)].olympics
+                if olympics:
+                    for student in olympics.students:
+                        res['mathEnrolledCount'] += 1
+                        if student.status in ["2", "3"]:
+                            res['mathParticipant'] += 1
+                        if student.status == "3":
+                            res['mathClassified'] += 1
+                        
+                        if student.statusRegional in ["1", "2"]:
+                            res['mathParticipantRegional'] += 1
+                        if student.statusRegional == "2":
+                            res['mathClassifiedRegional'] += 1
+                            if student.result == "1":
+                                res['mathMedalsGold'] += 1
+                            elif student.result == "2":
+                                res['mathMedalsSilver'] += 1
+                            elif student.result == "3":
+                                res['mathMedalsBronze'] += 1
+                        
+                        if student.statusNational == "2":
+                            if student.resultNational == "1":
+                                res['mathMedalsGoldNational'] += 1
+                            elif student.resultNational == "2":
+                                res['mathMedalsSilverNational'] += 1
+                            elif student.resultNational == "3":
+                                res['mathMedalsBronzeNational'] += 1
+
+                # Reading
+                readingOlympics = peca['lapse{}'.format(lapse)].readingOlympics
+                if readingOlympics:
+                    for student in readingOlympics.students:
+                        res['readingEnrolledCount'] += 1
+                        if student.status in ["2", "3"]:
+                            res['readingParticipant'] += 1
+                        if student.status == "3":
+                            res['readingClassified'] += 1
+
+                        if student.statusRegional in ["1", "2"]:
+                            res['readingParticipantRegional'] += 1
+                        if student.statusRegional == "2":
+                            res['readingClassifiedRegional'] += 1
+                            if student.result == "1":
+                                res['readingMedalsGold'] += 1
+                            elif student.result == "2":
+                                res['readingMedalsSilver'] += 1
+                            elif student.result == "3":
+                                res['readingMedalsBronze'] += 1
+                        
+                        if student.statusNational == "2":
+                            if student.resultNational == "1":
+                                res['readingMedalsGoldNational'] += 1
+                            elif student.resultNational == "2":
+                                res['readingMedalsSilverNational'] += 1
+                            elif student.resultNational == "3":
+                                res['readingMedalsBronzeNational'] += 1
+
+        for field, value in res.items():
+            self.olympicsSummary[field] = value

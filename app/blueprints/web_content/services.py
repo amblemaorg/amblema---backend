@@ -20,6 +20,9 @@ from app.models.peca_project_model import PecaProject
 from app.models.school_year_model import SchoolYear
 from app.models.project_model import Project
 from app.models.state_model import State
+from app.models.olympics_history_model import OlympicsHistory
+from app.schemas.olympics_history_schema import OlympicsHistorySchema
+from app.services.olympics_history_service import OlympicsHistoryService
 
 
 class WebContentService(GenericServices):
@@ -42,6 +45,11 @@ class WebContentService(GenericServices):
                 data['homePage']['nSponsors'] = counts['nSponsors']
                 data['homePage']['nCoordinators'] = counts['nCoordinators']
                 data['homePage']['diagnostics'] = statisticsService.get_diagnostics_last_five_years()
+                
+                olympicsHistoryService = OlympicsHistoryService(
+                    Model=OlympicsHistory, Schema=OlympicsHistorySchema)
+                olympicsHistory, status = olympicsHistoryService.getRecord()
+                data['homePage']['olympicsHistory'] = olympicsHistory
             if page == 'sponsorPage':
                 data['sponsorPage']['sponsors'] = sorted(
                     data['sponsorPage']['sponsors'], key=lambda x: (x['position']))
@@ -132,10 +140,15 @@ class SchoolPageContentService():
             diagnostics[diag] = sorted(
                 diagnostics[diag], reverse=True, key=lambda x: (x['createdAt']))
         olympicsDescription = ""
+        olympicsReadingDescription = ""
         for lapse in [1, 2, 3]:
             if currentPeriod.pecaSetting['lapse{}'.format(lapse)].mathOlympic.status == "1":
                 olympicsDescription = currentPeriod.pecaSetting['lapse{}'.format(
                     lapse)].mathOlympic.description
+
+            if currentPeriod.pecaSetting['lapse{}'.format(lapse)].readingOlympics.status == "1":
+                olympicsReadingDescription = currentPeriod.pecaSetting['lapse{}'.format(
+                    lapse)].readingOlympics.description
 
         actsId = {}
         activities = []
@@ -210,6 +223,7 @@ class SchoolPageContentService():
                 'nAdministrativeStaff',
                 'nLaborStaff',
                 'olympicsSummary',
+                'olympicsReadingSummary',
                 'activitiesSlider',
                 'teachersTestimonials',
                 'facebook',
@@ -224,7 +238,8 @@ class SchoolPageContentService():
         data['nearbySchools'] = SchoolUserSchema(
             partial=True, only=('id', 'slug', 'name', 'image')).dump(nearbySchools, many=True)
         data['diagnostics'] = diagnostics
-        data['olympicsSummary']['description'] = olympicsDescription
+        data['olympicsSummary']['description'] = olympicsDescription  
+        data['olympicsReadingSummary']['description'] = olympicsReadingDescription
         data['activities'] = activities
         data['nextActivities'] = nextActivities
 

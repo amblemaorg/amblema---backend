@@ -1,29 +1,29 @@
-# app/services/math_olimpic_service.py
+# app/services/reading_olympics_service.py
 
 from flask import current_app
 from marshmallow import ValidationError
 from pymongo import UpdateOne
 
 from app.models.school_year_model import SchoolYear
-from app.models.peca_setting_model import MathOlympic
-from app.schemas.peca_setting_schema import MathOlympicSchema
+from app.models.peca_setting_model import ReadingOlympics
+from app.schemas.peca_setting_schema import ReadingOlympicsSchema
 from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 
 
-class MathOlympicService():
+class ReadingOlympicsService():
 
-    filesPath = 'math_olympics'
+    filesPath = 'reading_olympics'
 
     def get(self, lapse):
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only("pecaSetting").first()
 
         if schoolYear:
-            schema = MathOlympicSchema()
-            mathOlympic = schoolYear.pecaSetting['lapse{}'.format(
-                lapse)].mathOlympic
-            return schema.dump(mathOlympic), 200
+            schema = ReadingOlympicsSchema()
+            readingOlympics = schoolYear.pecaSetting['lapse{}'.format(
+                lapse)].readingOlympics
+            return schema.dump(readingOlympics), 200
 
     def save(self, lapse, jsonData, files=None):
         from app.models.peca_project_model import PecaProject
@@ -33,8 +33,8 @@ class MathOlympicService():
 
         if schoolYear:
             try:
-                schema = MathOlympicSchema()
-                documentFiles = getFileFields(MathOlympic)
+                schema = ReadingOlympicsSchema()
+                documentFiles = getFileFields(ReadingOlympics)
                 if files and documentFiles:
                     validFiles = validate_files(files, documentFiles)
                     uploadedfiles = upload_files(validFiles, self.filesPath)
@@ -43,36 +43,36 @@ class MathOlympicService():
 
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
-                mathOlympic = schoolYear.pecaSetting['lapse{}'.format(
-                    lapse)].mathOlympic
+                readingOlympics = schoolYear.pecaSetting['lapse{}'.format(
+                    lapse)].readingOlympics
                 for field in schema.dump(data).keys():
-                    mathOlympic[field] = data[field]
+                    readingOlympics[field] = data[field]
                 try:
                     schoolYear.save()
-                    if mathOlympic.status == "1":
+                    if readingOlympics.status == "1":
                         bulk_operations = []
                         for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
                             olympicsPeca = peca['lapse{}'.format(
-                                lapse)].olympics
-                            olympicsPeca.description = mathOlympic.description
-                            olympicsPeca.file = mathOlympic.file
-                            if mathOlympic.date and mathOlympic.date != olympicsPeca.date:
+                                lapse)].readingOlympics
+                            olympicsPeca.description = readingOlympics.description
+                            olympicsPeca.file = readingOlympics.file
+                            if readingOlympics.date and readingOlympics.date != olympicsPeca.date:
                                 peca.scheduleActivity(
-                                    devName="olympics__date",
-                                    activityId="mathOlympic",
-                                    subject="Olimpíada Recreativas de Matemática",
-                                    startTime=mathOlympic.date,
-                                    description=mathOlympic.description
+                                    devName="readingolympics__date",
+                                    activityId="readingolympics",
+                                    subject="Olimpíada Recreativas de Lengua",
+                                    startTime=readingOlympics.date,
+                                    description=readingOlympics.description
                                 )
-                            olympicsPeca.date = mathOlympic.date
-                            olympicsPeca.order = mathOlympic.order
+                            olympicsPeca.date = readingOlympics.date
+                            olympicsPeca.order = readingOlympics.order
                             
                             bulk_operations.append(
                                 UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
                         if bulk_operations:
                             PecaProject._get_collection() \
                                 .bulk_write(bulk_operations, ordered=False)
-                    return schema.dump(mathOlympic), 200
+                    return schema.dump(readingOlympics), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
 

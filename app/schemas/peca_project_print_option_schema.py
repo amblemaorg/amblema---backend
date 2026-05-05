@@ -7,8 +7,6 @@ from marshmallow import (
     validates_schema,
     ValidationError)
 from app.schemas import fields
-from flask import current_app
-
 class ActivitySchema(Schema):
   name = fields.Str(allow_none=True) 
   print = fields.Bool()
@@ -25,3 +23,4 @@ class PecaProjectPrintOption(Schema):
   activitiesPrint = fields.List(fields.Nested(ActivitySchema))
   sectionsPrint = fields.List(fields.Nested(SectionSchema))
   diagnosticPrint = fields.Bool()
+  groupedGradesPrint = fields.List(fields.Str())

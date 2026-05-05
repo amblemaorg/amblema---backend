@@ -16,7 +16,7 @@ from app.helpers.ma_schema_validators import not_blank, OneOf, validate_image, L
 from app.helpers.ma_schema_fields import MAImageField
 from app.schemas.shared_schemas import FileSchema, CheckTemplateSchema
 from app.models.peca_setting_model import (
-    LapsePlanning, InitialWorshop, Lapse, PecaSetting)
+    LapsePlanning, InitialWorshop, Lapse, PecaSetting, ReadingOlympics)
 from app.schemas.learning_module_schema import ImageSchema
 from app.schemas.activity_schema import ActivitySchema
 from app.schemas.goal_setting_schema import GoalSettingSchema
@@ -171,6 +171,23 @@ class SpecialLapseActivitySchema(Schema):
         ordered = True
 
 
+class ReadingOlympicsSchema(Schema):
+    id = fields.Str(dump_only=True)
+    name = fields.Str(dump_only=True)
+    file = fields.Nested(FileSchema())
+    description = fields.Str(validate=Length(max=730))
+    webDescription = fields.Str(validate=Length(max=100))
+    date = fields.DateTime(allow_none=True)
+    isStandard = fields.Bool(dump_only=True)
+    order = fields.Int(validate=Range(min=0))
+    status = fields.Str(dump_only=True)
+    devName = fields.Str(dump_only=True)
+    
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
+
 class LapseSchema(Schema):
     initialWorshop = fields.Nested(InicialWorkshopSchema)
     lapsePlanning = fields.Nested(LapsePlanningSchema)
@@ -178,6 +195,7 @@ class LapseSchema(Schema):
     annualConvention = fields.Nested(AnnualConventionSchema)
     annualPreparation = fields.Nested(AnnualPreparationSchema)
     mathOlympic = fields.Nested(MathOlympicSchema)
+    readingOlympics = fields.Nested(ReadingOlympicsSchema)
     specialLapseActivity = fields.Nested(SpecialLapseActivitySchema)
     activities = fields.List(fields.Nested(ActivitySchema))
 

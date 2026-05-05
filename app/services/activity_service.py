@@ -518,7 +518,7 @@ class ActivityService():
                         
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
                         if data['status'] == "1":
                             initialWorkshop = InitialWorkshopPeca()
                             if "order" in data:        
@@ -548,7 +548,7 @@ class ActivityService():
 
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         for peca in pecaProjects:
                             # is active
@@ -594,7 +594,7 @@ class ActivityService():
                         
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
                         if data['status'] == "1":
                             lapsePlanningStg = schoolYear.pecaSetting['lapse{}'.format(
                                 data['lapse'])].lapsePlanning
@@ -634,7 +634,7 @@ class ActivityService():
                             data['lapse'])].annualConvention
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
                         if data['status'] == "1":
                             pecaSettingLapse = schoolYear.pecaSetting['lapse{}'.format(
                                 data['lapse'])]
@@ -685,7 +685,7 @@ class ActivityService():
                             data['lapse'])].annualPreparation
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         if data['status'] == "1":
                             for i in ['1','2','3']:
@@ -732,7 +732,7 @@ class ActivityService():
 
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         #if data['status'] == "1":
                         #    for i in ['1','2','3']:
@@ -789,7 +789,7 @@ class ActivityService():
 
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         for peca in pecaProjects:
                             # is active
@@ -837,7 +837,7 @@ class ActivityService():
                         bulk_operations = []
 
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         if data['status'] == "1":
                             specialActivity = SpecialActivityPeca()

@@ -32,7 +32,7 @@ ImageSchema.image = MAImageField(
 class InicialWorkshopSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(dump_only=True)
-    description = fields.Str(validate=Length(max=100))
+    description = fields.Str(validate=Length(max=300))
     devName = fields.Str(dump_only=True)
     #agreementFile = fields.Nested(FileSchema())
     #agreementDescription = fields.Str()
@@ -76,7 +76,7 @@ class LapsePlanningSchema(Schema):
 class AmbleCoinsSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(dump_only=True)
-    description = fields.Str(validate=Length(max=100))
+    description = fields.Str(validate=Length(max=300))
     teachersMeetingFile = fields.Nested(FileSchema())
     teachersMeetingDescription = fields.Str(validate=Length(max=730))
     piggyBankDescription = fields.Str()
@@ -120,7 +120,7 @@ class CheckTmpSchema(CheckTemplateSchema):
 class AnnualConventionSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(dump_only=True)
-    description = fields.Str(validate=Length(max=100))
+    description = fields.Str(validate=Length(max=300))
     checklist = fields.List(fields.Nested(CheckTmpSchema))
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
@@ -144,7 +144,7 @@ class MathOlympicSchema(Schema):
     name = fields.Str(dump_only=True)
     file = fields.Nested(FileSchema())
     description = fields.Str(validate=Length(max=730))
-    webDescription = fields.Str(validate=Length(max=100))
+    webDescription = fields.Str(validate=Length(max=300))
     date = fields.DateTime(allow_none=True)
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
@@ -160,7 +160,7 @@ class MathOlympicSchema(Schema):
 class SpecialLapseActivitySchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(dump_only=True)
-    description = fields.Str(validate=Length(max=100))
+    description = fields.Str(validate=Length(max=300))
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))
     status = fields.Str(dump_only=True)
@@ -176,7 +176,7 @@ class ReadingOlympicsSchema(Schema):
     name = fields.Str(dump_only=True)
     file = fields.Nested(FileSchema())
     description = fields.Str(validate=Length(max=730))
-    webDescription = fields.Str(validate=Length(max=100))
+    webDescription = fields.Str(validate=Length(max=300))
     date = fields.DateTime(allow_none=True)
     isStandard = fields.Bool(dump_only=True)
     order = fields.Int(validate=Range(min=0))

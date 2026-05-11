@@ -110,7 +110,12 @@ class SchoolPageContentService():
             isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image')[:3]
         pecasIds = [peca.pecaId for peca in school.project.schoolYears]
         pecas = PecaProject.objects(
-            id__in=pecasIds, isDeleted=False).only("school","createdAt","schoolYearName", "yearbook").order_by('-createdAt').limit(5)
+            id__in=pecasIds, isDeleted=False).only(
+                "school.diagnostics",
+                "createdAt",
+                "schoolYearName",
+                "schedule"
+            ).order_by('-createdAt').limit(5)
         currentPeca = pecas[0]
 
         diagnostics = {
@@ -123,7 +128,7 @@ class SchoolPageContentService():
                 hasInfo = False
                 for lapse in [1, 2, 3]:
                     if peca.school.diagnostics['lapse{}'.format(
-                                lapse)][diag] is not None:
+                                 lapse)][diag] is not None:
                         hasInfo = True
                 if hasInfo:
                     for lapse in [1, 2, 3]:
@@ -156,15 +161,29 @@ class SchoolPageContentService():
         nextActivities = []
         # find last approved yearbook
         yearbook_activities = {}
-        for peca in pecas:
-            if peca.yearbook and peca.yearbook.approvalHistory:
-                last_approved = None
-                for approval in reversed(peca.yearbook.approvalHistory):
-                    if approval.status == "2":
-                        last_approved = approval
-                        break
-                if last_approved and 'detail' in last_approved:
-                    detail = last_approved.detail
+        # We query the latest project that has an approved yearbook among ALL project years
+        peca_with_approved_yb = PecaProject.objects(
+            id__in=pecasIds,
+            yearbook__approvalHistory__status="2"
+        ).only(
+            "yearbook.approvalHistory.status",
+            "yearbook.approvalHistory.id"
+        ).order_by("-createdAt").first()
+
+        if peca_with_approved_yb:
+            match_index = -1
+            for i, approval in enumerate(peca_with_approved_yb.yearbook.approvalHistory):
+                if approval.status == "2":
+                    match_index = i
+            
+            if match_index != -1:
+                # Fetch only the matched approval with its full detail using slice
+                peca_match = PecaProject.objects(id=peca_with_approved_yb.id).fields(
+                    slice__yearbook__approvalHistory=[match_index, 1]
+                ).only('yearbook.approvalHistory').first()
+                
+                if peca_match and peca_match.yearbook.approvalHistory:
+                    detail = peca_match.yearbook.approvalHistory[0].detail
                     for i in range(1, 4):
                         lapse_key = 'lapse{}'.format(i)
                         if lapse_key in detail and 'activities' in detail[lapse_key]:
@@ -172,8 +191,6 @@ class SchoolPageContentService():
                                 if 'id' in act and 'images' in act and act['images']:
                                     if act['id'] not in yearbook_activities:
                                         yearbook_activities[act['id']] = act['images']
-                    # Once we find an approved yearbook, we stop (it's the "last" one)
-                    break
         
         id_map = {
             'initialWorkshop': 'initialWorkshop',

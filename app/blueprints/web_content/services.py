@@ -238,8 +238,18 @@ class SchoolPageContentService():
                     actsId['mathOlympic'] = setting.mathOlympic
                     activities.append(
                         {
-                            'name': setting.mathOlympic.name,
+                            'name': "Olimpíadas Recreativas de Matemática",
                             'description': setting.mathOlympic.webDescription,
+                            'slider': serialize_links(images[-5:])
+                        })
+            if setting.readingOlympics.status == "1" and 'readingOlympics' not in actsId:
+                images = yearbook_activities.get('readingolympics', [])
+                if images:
+                    actsId['readingOlympics'] = setting.readingOlympics
+                    activities.append(
+                        {
+                            'name': "Olimpíadas Recreativas de Lengua",
+                            'description': setting.readingOlympics.webDescription,
                             'slider': serialize_links(images[-5:])
                         })
             if setting.specialLapseActivity.status == "1" and 'specialLapseActivity' not in actsId:

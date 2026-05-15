@@ -166,6 +166,7 @@ from app.controllers.work_position_controller import (
     WorkPositionController, WorkPositionHandlerController
 )
 from app.controllers.peca_grade_controller import PecaGradeController
+from app.controllers.test_email_controller import TestEmailController
 
 db = MongoEngine()
 compress = Compress()
@@ -433,4 +434,5 @@ def create_app(config_instance):
 
     api.add_resource(ResendEmailCoordinatorController, '/resend/email/coordinator/<id>')
     api.add_resource(CronUpdateActivityOrderCtrl, '/cron/update/activity/order')
+    api.add_resource(TestEmailController, '/test-email')
     return app

@@ -1,7 +1,7 @@
 version: '3'
 services:
   python:
-    image: devbinaural/flask-mongo:1.1.1
+    #image: devbinaural/flask-mongo:1.1.1
     build: .
     container_name: amblema_${INSTANCE}_back
     ports:
@@ -17,6 +17,11 @@ services:
       SMTP_FROM: $SMTP_FROM
       SMTP_HOST: $SMTP_HOST
       SMTP_PORT: $SMTP_PORT
+      GMAIL_CLIENT_ID: $GMAIL_CLIENT_ID
+      GMAIL_CLIENT_SECRET: $GMAIL_CLIENT_SECRET
+      GMAIL_REFRESH_TOKEN: $GMAIL_REFRESH_TOKEN
+      GMAIL_FROM: $GMAIL_FROM
+      GMAIL_FROM_NAME: $GMAIL_FROM_NAME
     volumes:
       - .:/home
     networks:

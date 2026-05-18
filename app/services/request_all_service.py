@@ -20,13 +20,19 @@ from app.schemas.request_find_school_schema import ReqFindSchoolSchema
 
 
 class RequestsAll():
-    def getAllContactsRequest(self, filters=None):
+    def getAllContactsRequest(self, filters=None, only=None):
+        query_filters = {'isDeleted': False}
+        if filters:
+            for f in filters:
+                if f['field'] == 'status':
+                    query_filters['status'] = f['value']
+
         coordinatorReq = CoordinatorContact.objects(
-            isDeleted=False).order_by('-createdAt')
+            **query_filters).order_by('-createdAt')
         sponsorReq = SponsorContact.objects(
-            isDeleted=False).order_by('-createdAt')
+            **query_filters).order_by('-createdAt')
         schoolReq = SchoolContact.objects(
-            isDeleted=False).order_by('-createdAt')
+            **query_filters).order_by('-createdAt')
 
         coords = []
         for coord in coordinatorReq:
@@ -44,30 +50,54 @@ class RequestsAll():
         requests = coords + sponsors + schools
         requests = sorted(requests, reverse=True, key=lambda x: x['createdAt'])
 
+        if only:
+            coord_only = [f for f in only if f in CoordinatorContactSchema().fields.keys()]
+            sponsor_only = [f for f in only if f in SponsorContactSchema().fields.keys()]
+            school_only = [f for f in only if f in SchoolContactSchema().fields.keys()]
+        else:
+            coord_only = None
+            sponsor_only = None
+            school_only = None
+
         jsonRequests = []
         for request in requests:
             if request['type'] == 'coordinator':
-                data = CoordinatorContactSchema().dump(request['record'])
+                data = CoordinatorContactSchema(only=coord_only).dump(request['record']) if coord_only else CoordinatorContactSchema().dump(request['record'])
                 data['type'] = 'coordinator'
                 data['name'] = request['record']['firstName'] + \
                     ' ' + request['record']['lastName']
             if request['type'] == 'sponsor':
-                data = SponsorContactSchema().dump(request['record'])
+                data = SponsorContactSchema(only=sponsor_only).dump(request['record']) if sponsor_only else SponsorContactSchema().dump(request['record'])
                 data['type'] = 'sponsor'
             if request['type'] == 'school':
-                data = SchoolContactSchema().dump(request['record'])
+                data = SchoolContactSchema(only=school_only).dump(request['record']) if school_only else SchoolContactSchema().dump(request['record'])
                 data['type'] = 'school'
             jsonRequests.append(data)
 
         return {"records": jsonRequests}, 200
 
-    def getAllFindRequest(self, filters=None):
+    def getAllFindRequest(self, filters=None, only=None):
+        query_filters = {'isDeleted': False}
+        if filters:
+            for f in filters:
+                if f['field'] == 'status':
+                    query_filters['status'] = f['value']
+
         coordinatorReq = RequestFindCoordinator.objects(
-            isDeleted=False).order_by('-createdAt')
+            **query_filters).order_by('-createdAt')
         sponsorReq = RequestFindSponsor.objects(
-            isDeleted=False).order_by('-createdAt')
+            **query_filters).order_by('-createdAt')
         schoolReq = RequestFindSchool.objects(
-            isDeleted=False).order_by('-createdAt')
+            **query_filters).order_by('-createdAt')
+
+        if only:
+            coord_only = [f for f in only if f in ReqFindCoordSchema().fields.keys()]
+            sponsor_only = [f for f in only if f in ReqFindSponsorSchema().fields.keys()]
+            school_only = [f for f in only if f in ReqFindSchoolSchema().fields.keys()]
+        else:
+            coord_only = None
+            sponsor_only = None
+            school_only = None
 
         coords = []
         for coord in coordinatorReq:
@@ -79,7 +109,7 @@ class RequestsAll():
                     'type': 'coordinator',
                     'user': coord.user.name,
                     'createdAt': coord.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
-                    'record': ReqFindCoordSchema().dump(coord),
+                    'record': ReqFindCoordSchema(only=coord_only).dump(coord) if coord_only else ReqFindCoordSchema().dump(coord),
                     'status': coord.status
                 }
             )
@@ -93,7 +123,7 @@ class RequestsAll():
                     'type': 'sponsor',
                     'user': sponsor.user.name,
                     'createdAt': sponsor.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
-                    'record': ReqFindSponsorSchema().dump(sponsor),
+                    'record': ReqFindSponsorSchema(only=sponsor_only).dump(sponsor) if sponsor_only else ReqFindSponsorSchema().dump(sponsor),
                     'status': sponsor.status
                 }
             )
@@ -107,7 +137,7 @@ class RequestsAll():
                     'type': 'school',
                     'user': school.user.name,
                     'createdAt': school.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
-                    'record': ReqFindSchoolSchema().dump(school),
+                    'record': ReqFindSchoolSchema(only=school_only).dump(school) if school_only else ReqFindSchoolSchema().dump(school),
                     'status': school.status
                 }
             )

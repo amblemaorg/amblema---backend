@@ -14,7 +14,11 @@ class ReqContactAllController(Resource):
 
     @jwt_required
     def get(self):
-        return self.service.getAllContactsRequest()
+        filters = getQueryParams(request)
+        only = None
+        if 'only' in request.args:
+            only = request.args['only'].split(',')
+        return self.service.getAllContactsRequest(filters=filters, only=only)
 
 
 class ReqFindAllController(Resource):
@@ -22,4 +26,8 @@ class ReqFindAllController(Resource):
 
     @jwt_required
     def get(self):
-        return self.service.getAllFindRequest()
+        filters = getQueryParams(request)
+        only = None
+        if 'only' in request.args:
+            only = request.args['only'].split(',')
+        return self.service.getAllFindRequest(filters=filters, only=only)

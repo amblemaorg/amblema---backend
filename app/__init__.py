@@ -23,7 +23,7 @@ from app.controllers.entity_controller import (
     EntityController, EntityHandlerController
 )
 from app.controllers.user_controller import (
-    UserController, UserHandlerController, ResendEmailCoordinatorController
+    UserController, UserHandlerController, ResendEmailCoordinatorController, ResendEmailSponsorController
 )
 from app.controllers.learning_module_controller import (
     LearningController,
@@ -433,6 +433,7 @@ def create_app(config_instance):
     
 
     api.add_resource(ResendEmailCoordinatorController, '/resend/email/coordinator/<id>')
+    api.add_resource(ResendEmailSponsorController, '/resend/email/sponsor')
     api.add_resource(CronUpdateActivityOrderCtrl, '/cron/update/activity/order')
     api.add_resource(TestEmailController, '/test-email')
     return app

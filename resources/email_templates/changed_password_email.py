@@ -74,7 +74,7 @@ def changedPasswordEmail(email, password):
                                                                         <td align="center">
                                                                             <br>
                                                                             <p style="padding: 70px 85px 0px 85px;color: #00353A;font-weight:bold;line-height:22px">
-                                                                                Si quieres contactar con nuestro equipo, no dudes en hacerlo a través de info@amblema.org
+                                                                                Si quieres contactar con nuestro equipo, no dudes en hacerlo a través de amblemaorg@gmail.com
                                                                             </p>
                                                                             <p style="margin:20px 10px 0px 10px;color: #00353A;font-weight:bold;line-height:20px">Ten un excelente día</p>
                                                                             <p style="margin:0px 10px 20px 10px;color: #00353A;font-weight:bold;line-height:20px">Fundación AmbLeMa</p> 
@@ -121,7 +121,7 @@ def changedPasswordEmailPlainText(email, password):
   Usuario: """+email+"""
   Contraseña: """+password+"""
 
-  Si quieres contactar con nuestro equipo, no dudes en hacerlo a través de info@amblema.org
+  Si quieres contactar con nuestro equipo, no dudes en hacerlo a través de amblemaorg@gmail.com
 
   Ten un excelente día
   Fundación AmbLeMa

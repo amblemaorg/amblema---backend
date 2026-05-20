@@ -23,6 +23,11 @@ class Config(object):
     SMTP_FROM = os.getenv('SMTP_FROM')
     SMTP_HOST = os.getenv('SMTP_HOST')
     SMTP_PORT = os.getenv('SMTP_PORT')
+    GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
+    GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET')
+    GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN')
+    GMAIL_FROM = os.getenv('GMAIL_FROM')
+    GMAIL_FROM_NAME = os.getenv('GMAIL_FROM_NAME')
 
 
 class TestingConfig(Config):

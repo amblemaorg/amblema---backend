@@ -420,7 +420,7 @@ class PecaYearbookTest(unittest.TestCase):
                 },
                 {
                     "id": "olympics",
-                    "name": "Olimpíada Recreativas de Matemática y Lengua",
+                    "name": "Olimpíada Recreativas de Matemática",
                     "description": None,
                     "images": [
                     ]
@@ -515,7 +515,7 @@ class PecaYearbookTest(unittest.TestCase):
                     },
                     {
                         "id": "mathOlympic",
-                        "name": "Olimpíada Recreativas de Matemática y Lengua",
+                        "name": "Olimpíada Recreativas de Matemática",
                         "description": "",
                         "images": [test_image]
                     }

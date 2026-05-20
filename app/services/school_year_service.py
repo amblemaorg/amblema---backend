@@ -185,6 +185,25 @@ class SchoolYearService(GenericServices):
                     school.olympicsSummary.medalsSilver = 0
                     school.olympicsSummary.medalsBronze = 0
                     school.olympicsSummary.inscribed = 0
+
+                    school.olympicsSummary.medalsGoldNational = 0
+                    school.olympicsSummary.classifiedNational = 0
+                    school.olympicsSummary.medalsSilverNational = 0
+                    school.olympicsSummary.medalsBronzeNational = 0
+                    school.olympicsSummary.inscribedNational = 0
+
+                    school.olympicsReadingSummary.medalsGold = 0
+                    school.olympicsReadingSummary.classified = 0
+                    school.olympicsReadingSummary.medalsSilver = 0
+                    school.olympicsReadingSummary.medalsBronze = 0
+                    school.olympicsReadingSummary.inscribed = 0
+                    school.olympicsReadingSummary.medalsGoldNational = 0
+                    school.olympicsReadingSummary.classifiedNational = 0
+                    school.olympicsReadingSummary.medalsSilverNational = 0
+                    school.olympicsReadingSummary.medalsBronzeNational = 0
+                    school.olympicsReadingSummary.inscribedNational = 0
+
+
                     school.save()
 
                 return {'msg': 'Record deleted'}, 200
@@ -282,17 +301,18 @@ class SchoolYearService(GenericServices):
             nTeachers = 0
             nStudents = 0
             for peca in pecas:
-                schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
-                peca.school.nTeachers = len(schoolUser.teachers.filter(isDeleted=False))
-                schoolUser.nTeachers = peca.school.nTeachers
-                peca.school.nStudents = 0
-                for section in peca.school.sections.filter(isDeleted=False):
-                    peca.school.nStudents += len(section.students.filter(isDeleted=False))
-                schoolUser.nStudents = peca.school.nStudents
-                peca.save()
-                schoolUser.save()
-                nTeachers += peca.school.nTeachers
-                nStudents += peca.school.nStudents
+                schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id, status="1").first()
+                if schoolUser:
+                    peca.school.nTeachers = len(schoolUser.teachers.filter(isDeleted=False))
+                    schoolUser.nTeachers = peca.school.nTeachers
+                    peca.school.nStudents = 0
+                    for section in peca.school.sections.filter(isDeleted=False):
+                        peca.school.nStudents += len(section.students.filter(isDeleted=False))
+                    schoolUser.nStudents = peca.school.nStudents
+                    peca.save()
+                    schoolUser.save()
+                    nTeachers += peca.school.nTeachers
+                    nStudents += peca.school.nStudents
             schoolYear.nStudents = nStudents
             schoolYear.nTeachers = nTeachers
             schoolYear.save()

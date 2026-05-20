@@ -76,29 +76,28 @@ class ActivityService():
                     schoolYear.save()
 
                     bulk_operations = []
-                    for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
-                        peca['lapse{}'.format(lapse)].activities.append(
-                            ActivityPeca(
-                                id=str(activity.id),
-                                name=activity.name,
-                                devName=activity.devName,
-                                hasText=activity.hasText,
-                                hasDate=activity.hasDate,
-                                hasFile=activity.hasFile,
-                                hasVideo=activity.hasVideo,
-                                hasChecklist=activity.hasChecklist,
-                                hasUpload=activity.hasUpload,
-                                text=activity.text,
-                                file=activity.file,
-                                video=activity.video,
-                                checklist=[CheckElement(
-                                    id=c.id, name=c.name) for c in activity.checklist] if activity.checklist else [],
-                                approvalType=activity.approvalType,
-                                order=activity.order
-                            )
-                        )
+                    activity_peca = ActivityPeca(
+                        id=str(activity.id),
+                        name=activity.name,
+                        devName=activity.devName,
+                        hasText=activity.hasText,
+                        hasDate=activity.hasDate,
+                        hasFile=activity.hasFile,
+                        hasVideo=activity.hasVideo,
+                        hasChecklist=activity.hasChecklist,
+                        hasUpload=activity.hasUpload,
+                        text=activity.text,
+                        file=activity.file,
+                        video=activity.video,
+                        checklist=[CheckElement(
+                            id=c.id, name=c.name) for c in activity.checklist] if activity.checklist else [],
+                        approvalType=activity.approvalType,
+                        order=activity.order
+                    )
+                    activity_peca_dict = activity_peca.to_mongo().to_dict()
+                    for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('id'):
                         bulk_operations.append(
-                            UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                            UpdateOne({'_id': peca.id}, {'$push': {'lapse{}.activities'.format(lapse): activity_peca_dict}}))
                     if bulk_operations:
                         PecaProject._get_collection() \
                             .bulk_write(bulk_operations, ordered=False)
@@ -169,7 +168,7 @@ class ActivityService():
                         if newActivity.status == "1":
                             bulk_operations = []
                             for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('lapse1', 'lapse2', 'lapse3'):
-                                for activity in peca['lapse{}'.format(lapse)].activities:
+                                for i, activity in enumerate(peca['lapse{}'.format(lapse)].activities):
                                     if str(activity.id) == id:
                                         activity.name = newActivity.name
                                         activity.description = newActivity.description
@@ -187,7 +186,7 @@ class ActivityService():
                                         
                                         if oldActivity.checklist != None:
                                             oldCheckIds = [str(c.id)
-                                                       for c in oldActivity.checklist]
+                                                        for c in oldActivity.checklist]
                                         else:
                                             oldCheckIds = []
                                         newCheckIds = {}
@@ -211,10 +210,14 @@ class ActivityService():
                                                         CheckElement(
                                                             id=newCheckIds[k].id, name=newCheckIds[k].name)
                                                     )
-                                bulk_operations.append(
-                                    UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
-                            if bulk_operations:
-                                PecaProject._get_collection().bulk_write(bulk_operations, ordered=False)
+                                        set_query = {
+                                            'lapse{}.activities.{}'.format(lapse, i): activity.to_mongo().to_dict()
+                                        }
+                                        bulk_operations.append(
+                                            UpdateOne({'_id': peca.id}, {'$set': set_query}))
+                                        break
+                                if bulk_operations:
+                                    PecaProject._get_collection().bulk_write(bulk_operations, ordered=False)
                     except Exception as e:
                         return {'status': 0, 'message': str(e)}, 400
                 
@@ -265,13 +268,9 @@ class ActivityService():
                             lapse)].activities = activities
                         schoolYear.save()
                         bulk_operations = []
-                        for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False):
-                            for activity in peca['lapse{}'.format(lapse)].activities:
-                                if str(activity.id) == id:
-                                    peca['lapse{}'.format(lapse)].activities.remove(
-                                        activity)
+                        for peca in PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('id'):
                             bulk_operations.append(
-                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                                UpdateOne({'_id': peca.id}, {'$pull': {'lapse{}.activities'.format(lapse): {'id': id}}}))
                         if bulk_operations:
                             PecaProject._get_collection().bulk_write(bulk_operations, ordered=False)
                         return {"message": "Record deleted successfully"}, 200
@@ -398,11 +397,30 @@ class ActivityService():
 
                     data = {
                         "id": "matholympic",
-                        "name": "Olimpíada Recreativas de Matemática y Lengua",
+                        "name": "Olimpíada Recreativas de Matemática",
                         "devName": "mathOlympic",
                         "order": mathOlympic.order,
                         "isStandard": True,
                         "status": mathOlympic.status
+                    }
+                    records['lapse{}'.format(i+1)].append(schema.dump(data))
+                
+                readingOlympics = schoolYear.pecaSetting['lapse{}'.format(
+                    i+1)].readingOlympics
+
+                if (
+                    (not filters) or
+                    ('status' in filters and filters['status']
+                     == '1' and readingOlympics.status == '1')
+                ):
+
+                    data = {
+                        "id": "readingolympics",
+                        "name": "Olimpíada Recreativas de Lengua",
+                        "devName": "readingolympics",
+                        "order": readingOlympics.order,
+                        "isStandard": True,
+                        "status": readingOlympics.status
                     }
                     records['lapse{}'.format(i+1)].append(schema.dump(data))
 
@@ -500,7 +518,7 @@ class ActivityService():
                         
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
                         if data['status'] == "1":
                             initialWorkshop = InitialWorkshopPeca()
                             if "order" in data:        
@@ -530,7 +548,7 @@ class ActivityService():
 
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         for peca in pecaProjects:
                             # is active
@@ -576,7 +594,7 @@ class ActivityService():
                         
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
                         if data['status'] == "1":
                             lapsePlanningStg = schoolYear.pecaSetting['lapse{}'.format(
                                 data['lapse'])].lapsePlanning
@@ -616,7 +634,7 @@ class ActivityService():
                             data['lapse'])].annualConvention
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
                         if data['status'] == "1":
                             pecaSettingLapse = schoolYear.pecaSetting['lapse{}'.format(
                                 data['lapse'])]
@@ -667,7 +685,7 @@ class ActivityService():
                             data['lapse'])].annualPreparation
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         if data['status'] == "1":
                             for i in ['1','2','3']:
@@ -714,7 +732,7 @@ class ActivityService():
 
                         bulk_operations = []
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         #if data['status'] == "1":
                         #    for i in ['1','2','3']:
@@ -742,7 +760,7 @@ class ActivityService():
                                     peca.scheduleActivity(
                                         devName="olympics__date",
                                         activityId="mathOlympic",
-                                        subject="Olimpíada Recreativas de Matemática y Lengua",
+                                        subject="Olimpíada Recreativas de Matemática",
                                         startTime=olympics.date,
                                         description=olympics.description
                                     )
@@ -760,6 +778,54 @@ class ActivityService():
                         if bulk_operations:
                             PecaProject._get_collection() \
                                 .bulk_write(bulk_operations, ordered=False)
+
+                    elif data['id'] == "readingolympics":
+                        found = True
+                        schoolYear.pecaSetting['lapse{}'.format(
+                            data['lapse'])].readingOlympics.status = data['status']
+                        if "order" in data:        
+                            schoolYear.pecaSetting['lapse{}'.format(
+                                data['lapse'])].readingOlympics.order = data['order']
+
+                        bulk_operations = []
+                        pecaProjects = PecaProject.objects(
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
+
+                        for peca in pecaProjects:
+                            # is active
+                            if data['status'] == "1":
+                                olympics = Olympics(
+                                    file=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].readingOlympics.file,
+                                    description=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].readingOlympics.description,
+                                    date=schoolYear.pecaSetting['lapse{}'.format(
+                                        data['lapse'])].readingOlympics.date
+                                )
+                                if "order" in data:        
+                                    olympics.order = data["order"]
+
+                                peca['lapse{}'.format(
+                                    data['lapse'])].readingOlympics = olympics
+                                if olympics.date:
+                                    peca.scheduleActivity(
+                                        devName="readingOlympics__date",
+                                        activityId="readingolympics",
+                                        subject="Olimpíada Recreativas de Lengua",
+                                        startTime=olympics.date,
+                                        description=olympics.description
+                                    )
+                            # is inactive
+                            else:
+                                peca['lapse{}'.format(
+                                    data['lapse'])].readingOlympics = None
+                                peca.scheduleRemoveActivity('readingOlympics__date')
+                            bulk_operations.append(
+                                UpdateOne({'_id': peca.id}, {'$set': peca.to_mongo().to_dict()}))
+                        if bulk_operations:
+                            PecaProject._get_collection() \
+                                .bulk_write(bulk_operations, ordered=False)
+
                     elif data['id'] == "specialLapseActivity":
                         found = True
                         schoolYear.pecaSetting['lapse{}'.format(
@@ -771,7 +837,7 @@ class ActivityService():
                         bulk_operations = []
 
                         pecaProjects = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False)
+                            schoolYear=schoolYear.id, isDeleted=False).exclude('yearbook')
 
                         if data['status'] == "1":
                             specialActivity = SpecialActivityPeca()

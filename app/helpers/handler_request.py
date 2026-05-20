@@ -5,6 +5,7 @@ def getQueryParams(request):
     if request.args:
         filters = []
         for key in request.args.keys():
-            filters.append({"field": key, "value": request.args.get(key)})
+            if key != 'only':
+                filters.append({"field": key, "value": request.args.get(key)})
         return filters
     return []

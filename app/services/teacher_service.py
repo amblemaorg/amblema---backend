@@ -57,11 +57,12 @@ class TeacherService():
                     period = SchoolYear.objects(
                         isDeleted=False, status="1").first()
                     if period:
-                        PecaProject.objects(project__school__id=str(school.id), isDeleted=False, schoolYear=period.id).update(
-                            set__school__nTeachers=school.nTeachers
-                        )
-                        period.nTeachers += 1
-                        period.save()
+                        peca = PecaProject.objects(project__school__id=str(school.id), isDeleted=False, schoolYear=period.id).first()
+                        if peca and school.status == "1":
+                            peca.school.nTeachers = school.nTeachers
+                            peca.save()
+                            period.nTeachers += 1
+                            period.save()
                     return schema.dump(teacher), 200
                 except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
@@ -164,11 +165,12 @@ class TeacherService():
                     """
 
                     if period:
-                        PecaProject.objects(project__school__id=str(school.id), isDeleted=False, schoolYear=period.id).update(
-                            set__school__nTeachers=school.nTeachers
-                        )
-                        period.nTeachers -= 1
-                        period.save()
+                        peca = PecaProject.objects(project__school__id=str(school.id), isDeleted=False, schoolYear=period.id).first()
+                        if peca and school.status == "1":
+                            peca.school.nTeachers = school.nTeachers
+                            peca.save()
+                            period.nTeachers -= 1
+                            period.save()
 
                     return "Record deleted successfully", 200
                 except Exception as e:

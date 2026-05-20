@@ -44,11 +44,28 @@ class LapseSchema(Schema):
     @post_load
     def make_document(self, data, **kwargs):
         return Lapse(**data)
+
+class GroupPhotoSchema(Schema):
+    name = fields.Str(allow_none=True)
+    image = MAImageField(allow_none=True)
+    content = fields.Str(allow_none=True)
+    groupedSections = fields.List(fields.Str())
+
+    class Meta:
+        unknown = EXCLUDE
+        ordered = True
+
+    @post_load
+    def make_document(self, data, **kwargs):
+        from app.models.peca_yearbook_model import GroupPhoto
+        return GroupPhoto(**data)
+
 class YearbookSchema(Schema):
     historicalReview = fields.Nested(EntitySchema)
     sponsor = fields.Nested(EntitySchema)
     school = fields.Nested(EntitySchema)
     coordinator = fields.Nested(EntitySchema)
+    groupPhoto = fields.Nested(GroupPhotoSchema)
     sections = fields.List(fields.Nested(SectionImageSchema))
     lapse1 = fields.Nested(LapseSchema)
     lapse2 = fields.Nested(LapseSchema)

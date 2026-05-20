@@ -20,8 +20,11 @@ class ReqProjectApprovalController(Resource):
     @jwt_required
     def get(self):
         filters = getQueryParams(request)
+        only = None
+        if 'only' in request.args:
+            only = request.args['only'].split(',')
         return self.service.getAllRecords(
-            filters=filters)
+            filters=filters, only=only)
 
 
 class ReqProjectApprovalHandlerController(Resource):

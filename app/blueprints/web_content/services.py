@@ -20,6 +20,10 @@ from app.models.peca_project_model import PecaProject
 from app.models.school_year_model import SchoolYear
 from app.models.project_model import Project
 from app.models.state_model import State
+from app.models.olympics_history_model import OlympicsHistory
+from app.schemas.olympics_history_schema import OlympicsHistorySchema
+from app.services.olympics_history_service import OlympicsHistoryService
+from app.helpers.ma_schema_fields import serialize_links
 
 
 class WebContentService(GenericServices):
@@ -42,6 +46,11 @@ class WebContentService(GenericServices):
                 data['homePage']['nSponsors'] = counts['nSponsors']
                 data['homePage']['nCoordinators'] = counts['nCoordinators']
                 data['homePage']['diagnostics'] = statisticsService.get_diagnostics_last_five_years()
+                
+                olympicsHistoryService = OlympicsHistoryService(
+                    Model=OlympicsHistory, Schema=OlympicsHistorySchema)
+                olympicsHistory, status = olympicsHistoryService.getRecord()
+                data['homePage']['olympicsHistory'] = olympicsHistory
             if page == 'sponsorPage':
                 data['sponsorPage']['sponsors'] = sorted(
                     data['sponsorPage']['sponsors'], key=lambda x: (x['position']))
@@ -101,8 +110,13 @@ class SchoolPageContentService():
             isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image')[:3]
         pecasIds = [peca.pecaId for peca in school.project.schoolYears]
         pecas = PecaProject.objects(
-            id__in=pecasIds, isDeleted=False).only("school","createdAt","schoolYearName",).order_by('createdAt').limit(5)
-        currentPeca = pecas[len(pecas)-1]
+            id__in=pecasIds, isDeleted=False).only(
+                "school.diagnostics",
+                "createdAt",
+                "schoolYearName",
+                "schedule"
+            ).order_by('-createdAt').limit(5)
+        currentPeca = pecas[0]
 
         diagnostics = {
             'wordsPerMinIndex': [],
@@ -114,7 +128,7 @@ class SchoolPageContentService():
                 hasInfo = False
                 for lapse in [1, 2, 3]:
                     if peca.school.diagnostics['lapse{}'.format(
-                                lapse)][diag]:
+                                 lapse)][diag] is not None:
                         hasInfo = True
                 if hasInfo:
                     for lapse in [1, 2, 3]:
@@ -125,72 +139,145 @@ class SchoolPageContentService():
                                 'createdAt': peca.createdAt,
                                 'label': peca.schoolYearName,
                                 'serie': 'Lapso {}'.format(lapse),
-                                'value':  round(value*100 , 2) if value < 1 else value                            }
+                                'value': round(value*100, 2) if (value is not None and value < 1) else value
+                            }
                         )
         for diag in diagnostics.keys():
             diagnostics[diag] = sorted(
                 diagnostics[diag], reverse=True, key=lambda x: (x['createdAt']))
         olympicsDescription = ""
+        olympicsReadingDescription = ""
         for lapse in [1, 2, 3]:
             if currentPeriod.pecaSetting['lapse{}'.format(lapse)].mathOlympic.status == "1":
                 olympicsDescription = currentPeriod.pecaSetting['lapse{}'.format(
                     lapse)].mathOlympic.description
 
+            if currentPeriod.pecaSetting['lapse{}'.format(lapse)].readingOlympics.status == "1":
+                olympicsReadingDescription = currentPeriod.pecaSetting['lapse{}'.format(
+                    lapse)].readingOlympics.description
+
         actsId = {}
         activities = []
         nextActivities = []
+        # find last approved yearbook
+        yearbook_activities = {}
+        # We query the latest project that has an approved yearbook among ALL project years
+        peca_with_approved_yb = PecaProject.objects(
+            id__in=pecasIds,
+            yearbook__approvalHistory__status="2"
+        ).only(
+            "yearbook.approvalHistory.status",
+            "yearbook.approvalHistory.id"
+        ).order_by("-createdAt").first()
+
+        if peca_with_approved_yb:
+            match_index = -1
+            for i, approval in enumerate(peca_with_approved_yb.yearbook.approvalHistory):
+                if approval.status == "2":
+                    match_index = i
+            
+            if match_index != -1:
+                # Fetch only the matched approval with its full detail using slice
+                peca_match = PecaProject.objects(id=peca_with_approved_yb.id).fields(
+                    slice__yearbook__approvalHistory=[match_index, 1]
+                ).only('yearbook.approvalHistory').first()
+                
+                if peca_match and peca_match.yearbook.approvalHistory:
+                    detail = peca_match.yearbook.approvalHistory[0].detail
+                    for i in range(1, 4):
+                        lapse_key = 'lapse{}'.format(i)
+                        if lapse_key in detail and 'activities' in detail[lapse_key]:
+                            for act in detail[lapse_key]['activities']:
+                                if 'id' in act and 'images' in act and act['images']:
+                                    if act['id'] not in yearbook_activities:
+                                        yearbook_activities[act['id']] = act['images']
+        
+        id_map = {
+            'initialWorkshop': 'initialWorkshop',
+            'ambleCoins': 'ambleCoins',
+            'annualConvention': 'annualConvention',
+            'mathOlympic': 'olympics',
+            'specialLapseActivity': 'specialActivity'
+        }
+
         for lapse in [1, 2, 3]:
             setting = currentPeriod.pecaSetting['lapse{}'.format(lapse)]
             if setting.initialWorkshop.status == "1" and 'initialWorkshop' not in actsId:
-                actsId['initialWorkshop'] = setting.initialWorkshop
-                activities.append(
-                    {
-                        'name': setting.initialWorkshop.name,
-                        'description': setting.initialWorkshop.description
-                    })
-            if setting.ambleCoins.status == "1" and 'ambleCoins' not in actsId:
-                actsId['ambleCoins'] = setting.ambleCoins
-                activities.append(
-                    {
-                        'name': setting.ambleCoins.name,
-                        'description': setting.ambleCoins.description
-                    })
-            if setting.annualConvention.status == "1" and 'annualConvention' not in actsId:
-                actsId['annualConvention'] = setting.annualConvention
-                activities.append(
-                    {
-                        'name': setting.annualConvention.name,
-                        'description': setting.annualConvention.description
-                    })
-            if setting.mathOlympic.status == "1" and 'mathOlympic' not in actsId:
-                actsId['mathOlympic'] = setting.mathOlympic
-                activities.append(
-                    {
-                        'name': setting.mathOlympic.name,
-                        'description': setting.mathOlympic.webDescription
-                    })
-            if setting.specialLapseActivity.status == "1" and 'specialLapseActivity' not in actsId:
-                actsId['specialLapseActivity'] = setting.specialLapseActivity
-                activities.append(
-                    {
-                        'name': setting.specialLapseActivity.name,
-                        'description': setting.specialLapseActivity.description
-                    })
-            for genericAct in setting.activities:
-                if genericAct.status == "1" and str(genericAct.id) not in actsId and not genericAct.isDeleted:
-                    actsId[str(genericAct.id)] = genericAct
+                images = yearbook_activities.get('initialWorkshop', [])
+                if images:
+                    actsId['initialWorkshop'] = setting.initialWorkshop
                     activities.append(
                         {
-                            'name': genericAct.name,
-                            'description': genericAct.description
+                            'name': setting.initialWorkshop.name,
+                            'description': setting.initialWorkshop.description,
+                            'slider': serialize_links(images[-5:])
                         })
-        if currentPeriod.pecaSetting.environmentalProject.name:
-            activities.append(
-                {
-                    'name': currentPeriod.pecaSetting.environmentalProject.name,
-                    'description': currentPeriod.pecaSetting.environmentalProject.description
-                }
-            )
+            if setting.ambleCoins.status == "1" and 'ambleCoins' not in actsId:
+                images = yearbook_activities.get('ambleCoins', [])
+                if images:
+                    actsId['ambleCoins'] = setting.ambleCoins
+                    activities.append(
+                        {
+                            'name': setting.ambleCoins.name,
+                            'description': setting.ambleCoins.description,
+                            'slider': serialize_links(images[-5:])
+                        })
+            if setting.annualConvention.status == "1" and 'annualConvention' not in actsId:
+                images = yearbook_activities.get('annualConvention', [])
+                if images:
+                    actsId['annualConvention'] = setting.annualConvention
+                    activities.append(
+                        {
+                            'name': setting.annualConvention.name,
+                            'description': setting.annualConvention.description,
+                            'slider': serialize_links(images[-5:])
+                        })
+            if setting.mathOlympic.status == "1" and 'mathOlympic' not in actsId:
+                images = yearbook_activities.get('olympics', [])
+                if images:
+                    actsId['mathOlympic'] = setting.mathOlympic
+                    activities.append(
+                        {
+                            'name': "Olimpíadas Recreativas de Matemática",
+                            'description': setting.mathOlympic.webDescription,
+                            'slider': serialize_links(images[-5:])
+                        })
+            if setting.readingOlympics.status == "1" and 'readingOlympics' not in actsId:
+                images = yearbook_activities.get('readingolympics', [])
+                if images:
+                    actsId['readingOlympics'] = setting.readingOlympics
+                    activities.append(
+                        {
+                            'name': "Olimpíadas Recreativas de Lengua",
+                            'description': setting.readingOlympics.webDescription,
+                            'slider': serialize_links(images[-5:])
+                        })
+            if setting.specialLapseActivity.status == "1" and 'specialLapseActivity' not in actsId:
+                images = yearbook_activities.get('specialActivity', [])
+                if images:
+                    actsId['specialLapseActivity'] = setting.specialLapseActivity
+                    activities.append(
+                        {
+                            'name': setting.specialLapseActivity.name,
+                            'description': setting.specialLapseActivity.description,
+                            'slider': serialize_links(images[-5:])
+                        })
+            for genericAct in setting.activities:
+                if genericAct.status == "1" and str(genericAct.id) not in actsId and not genericAct.isDeleted:
+                    images = yearbook_activities.get(str(genericAct.id), [])
+                    if images:
+                        actsId[str(genericAct.id)] = genericAct
+                        activities.append(
+                            {
+                                'name': genericAct.name,
+                                'description': genericAct.description,
+                                'slider': serialize_links(images[-5:])
+                            })
+        
+        # Environmental project usually doesn't have images in yearbook activities list
+        # but if we wanted to support it, we'd need to check where its images are stored.
+        # Based on requirement "In case it doesn't have an image uploaded, don't show", 
+        # we skip it if it's not in yearbook_activities.
         for act in currentPeca.schedule:
             if act.activityId in actsId:
                 nextActivities.append({
@@ -209,6 +296,7 @@ class SchoolPageContentService():
                 'nAdministrativeStaff',
                 'nLaborStaff',
                 'olympicsSummary',
+                'olympicsReadingSummary',
                 'activitiesSlider',
                 'teachersTestimonials',
                 'facebook',
@@ -223,7 +311,8 @@ class SchoolPageContentService():
         data['nearbySchools'] = SchoolUserSchema(
             partial=True, only=('id', 'slug', 'name', 'image')).dump(nearbySchools, many=True)
         data['diagnostics'] = diagnostics
-        data['olympicsSummary']['description'] = olympicsDescription
+        data['olympicsSummary']['description'] = olympicsDescription  
+        data['olympicsReadingSummary']['description'] = olympicsReadingDescription
         data['activities'] = activities
         data['nextActivities'] = nextActivities
 

@@ -21,6 +21,9 @@ class Student(EmbeddedDocument):
     section = fields.EmbeddedDocumentField(Section)
     status = fields.StringField(default="1")
     result = fields.StringField(null=True)
+    statusRegional = fields.StringField(null=True)
+    statusNational = fields.StringField(null=True)
+    resultNational = fields.StringField(null=True)
 
 
 class Olympics(EmbeddedDocument):

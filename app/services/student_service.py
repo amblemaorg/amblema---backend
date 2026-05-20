@@ -12,6 +12,7 @@ from app.helpers.error_helpers import RegisterNotFound
 from app.models.school_user_model import SchoolUser
 from app.models.school_year_model import SchoolYear
 from app.helpers.handler_messages import HandlerMessages
+from app.helpers.peca_yearbook_helper import update_yearbook_data_in_approval
 
 
 class StudentService():
@@ -119,6 +120,7 @@ class StudentService():
                         if self.checkForDuplicated(section, student):
                             return {"status": "1", "msg": "Duplicated record found"}, 400
                         try:
+                            update_yearbook_data_in_approval(peca)
                             peca.save()
                         
                             school = SchoolUser.objects(id=peca.project.school.id).first()
@@ -207,6 +209,7 @@ class StudentService():
                         
                             school.save()
                         peca.school.nStudents -= 1
+                        update_yearbook_data_in_approval(peca)
                         peca.save()
                         
                         SchoolUser.objects(code=peca.school.code).update(

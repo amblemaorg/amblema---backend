@@ -317,3 +317,21 @@ class ResendEmailCoordinator():
             return {"message": "Email Resend successfully"}, 200
         except Exception as e:
             return {'status': 0, 'message': str(e)}, 400
+
+class ResendEmailSponsor():
+    def post(self, email):
+        try:
+            from app.models.sponsor_user_model import SponsorUser
+            user = SponsorUser.objects(isDeleted=False, email=email).first()
+            if not user:
+                return {'status': 0, 'message': "user not found"}, 400
+
+            password = user.generatePassword()
+            user.password = password
+            user.setHashPassword()
+            user.save()
+            user.sendRegistrationEmail(password)
+
+            return {"message": "Email Resend successfully"}, 200
+        except Exception as e:
+            return {'status': 0, 'message': str(e)}, 400

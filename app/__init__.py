@@ -23,7 +23,7 @@ from app.controllers.entity_controller import (
     EntityController, EntityHandlerController
 )
 from app.controllers.user_controller import (
-    UserController, UserHandlerController, ResendEmailCoordinatorController
+    UserController, UserHandlerController, ResendEmailCoordinatorController, ResendEmailSponsorController
 )
 from app.controllers.learning_module_controller import (
     LearningController,
@@ -147,10 +147,12 @@ from app.controllers.diagnostic_controller import DiagnosticController, Diagnost
 from app.controllers.teacher_testimonial_controller import (
     TeacherTestimonialController
 )
+from app.controllers.olympics_history_controller import OlympicsHistoryController
 from app.controllers.peca_special_lapse_activity_controller import (
     PecaSpecialActivityController
 )
 from app.controllers.peca_yearbook_controller import PecaYearbookController
+from app.controllers.peca_yearbook_section_grouping_controller import PecaYearbookSectionGroupingController
 from app.controllers.monitoring_activities_controller import (
     MonitoringActivitiesController
 )
@@ -164,6 +166,7 @@ from app.controllers.work_position_controller import (
     WorkPositionController, WorkPositionHandlerController
 )
 from app.controllers.peca_grade_controller import PecaGradeController
+from app.controllers.test_email_controller import TestEmailController
 
 db = MongoEngine()
 compress = Compress()
@@ -313,6 +316,7 @@ def create_app(config_instance):
     api.add_resource(ActivityHandlerController,
                      '/pecasetting/activities/<string:id>/<string:lapse>')
     api.add_resource(GoalSettingController, '/pecasetting/goalsetting')
+    api.add_resource(OlympicsHistoryController, '/pecasetting/olympicshistory')
     api.add_resource(ReqStepApprovalController, '/requestsstepapproval')
     api.add_resource(ReqProjectApprovalController, '/requestsprojectapproval')
     api.add_resource(ReqProjectApprovalHandlerController,
@@ -372,6 +376,8 @@ def create_app(config_instance):
                      '/pecaprojects/schedule/<string:pecaId>')
     api.add_resource(PecaYearbookController,
                      '/pecaprojects/yearbook/<string:pecaId>')
+    api.add_resource(PecaYearbookSectionGroupingController,
+                     '/pecaprojects/yearbook/sectiongrouping/<string:pecaId>')
     api.add_resource(PecaEnvironmentalProjectCtrl,
                      '/pecaprojects/environmentalproject/<string:pecaId>')
     api.add_resource(UserSummaryController, '/statistics/usersummary')
@@ -427,5 +433,7 @@ def create_app(config_instance):
     
 
     api.add_resource(ResendEmailCoordinatorController, '/resend/email/coordinator/<id>')
+    api.add_resource(ResendEmailSponsorController, '/resend/email/sponsor')
     api.add_resource(CronUpdateActivityOrderCtrl, '/cron/update/activity/order')
+    api.add_resource(TestEmailController, '/test-email')
     return app

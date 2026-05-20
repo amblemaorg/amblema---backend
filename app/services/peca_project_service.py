@@ -75,7 +75,7 @@ class PecaProjectService():
                 elif activity['lapse'] == 'lapse3':
                     activities['lapse3'].append(
                         {"name": activity['name'],"print": activity['print'], "expandGallery": activity['expandGallery']})
-            data = {"activitiesPrint" : activities,"disablePages" : pages,"index" : printOptions['index'], "diagnosticPrint" : printOptions['diagnosticPrint']}
+            data = {"activitiesPrint" : activities,"disablePages" : pages,"index" : printOptions['index'], "diagnosticPrint" : printOptions.get('diagnosticPrint', True), "groupedGradesPrint" : printOptions.get('groupedGradesPrint', [])}
             
             return data, 200
         except ValidationError as err:
@@ -97,6 +97,8 @@ class PecaProjectService():
             schema = YearbookSchema()
             keys = [x for x in jsonData.keys()]
             keysBase = [x for x in printOptions.keys()]
+            if 'groupedGradesPrint' not in keysBase:
+                keysBase.append('groupedGradesPrint')
             _logger.warning(keysBase)
             for key in keys:
                 if key not in keysBase:
@@ -139,11 +141,15 @@ class PecaProjectService():
                         section = SectionModel(name=sectionJson['name'], print=sectionJson['print'])
                         printOption.sectionsPrint.append(section)
                     continue
+
+                if key == 'groupedGradesPrint':
+                    printOption.groupedGradesPrint = jsonData[key]
+                    continue
             try:
                 _logger.warning("PRE-GUARDADO")
                 printOption.save()
                 _logger.warning("GUARDADO")
-                return schema.dump(printOption), 200
+                return printSchema.dump(printOption), 200
             except Exception as e:
                     return {'status': 0, 'message': str(e)}, 400
         except ValidationError as err:
@@ -272,12 +278,29 @@ class PecaProjectService():
                     peca.scheduleActivity(
                             devName="olympics__date",
                             activityId="mathOlympic",
-                            subject="Olimpíada Recreativas de Matemática y Lengua",
+                            subject="Olimpíada Recreativas de Matemática",
                             startTime=pecaSettingLapse.mathOlympic.date,
                             description=pecaSettingLapse.mathOlympic.description
                         )
             else:
                 peca['lapse{}'.format(i)].olympics = None
+
+            if pecaSettingLapse.readingOlympics.status == "1":
+                peca['lapse{}'.format(i)].readingOlympics = Olympics(
+                    file = pecaSettingLapse.readingOlympics.file,
+                    description = pecaSettingLapse.readingOlympics.description,
+                    date = pecaSettingLapse.readingOlympics.date
+                )
+                if pecaSettingLapse.readingOlympics.date:
+                    peca.scheduleActivity(
+                            devName="readingOlympics__date",
+                            activityId="readingolympics",
+                            subject="Olimpíada Recreativas de Lengua",
+                            startTime=pecaSettingLapse.readingOlympics.date,
+                            description=pecaSettingLapse.readingOlympics.description
+                        )
+            else:
+                peca['lapse{}'.format(i)].readingOlympics = None
 
             if pecaSettingLapse.annualPreparation.status == "1":
                 peca['lapse{}'.format(i)].annualPreparation = AnnualPreparationPeca(
@@ -384,10 +407,13 @@ class PecaProjectService():
                         'name': section.name,
                         'wordsPerMin': summary['lapse{}'.format(i)]['wordsPerMin'],
                         'wordsPerMinIndex': summary['lapse{}'.format(i)]['wordsPerMinIndex'],
+                        'wordsPerMinCount': summary['lapse{}'.format(i)]['wordsPerMinCount'],
                         'multiplicationsPerMin': summary['lapse{}'.format(i)]['multiplicationsPerMin'],
                         'multiplicationsPerMinIndex': summary['lapse{}'.format(i)]['multiplicationsPerMinIndex'],
+                        'multiplicationsPerMinCount': summary['lapse{}'.format(i)]['multiplicationsPerMinCount'],
                         'operationsPerMin': summary['lapse{}'.format(i)]['operationsPerMin'],
-                        'operationsPerMinIndex': summary['lapse{}'.format(i)]['operationsPerMinIndex']
+                        'operationsPerMinIndex': summary['lapse{}'.format(i)]['operationsPerMinIndex'],
+                        'operationsPerMinCount': summary['lapse{}'.format(i)]['operationsPerMinCount']
                     }
                 )
         for i in range(1, 4):
@@ -439,10 +465,20 @@ class PecaProjectService():
                 lapseData['activities'].append(
                     {
                         'id': 'olympics',
-                        'name': 'Olimpíada Recreativas de Matemática y Lengua',
+                        'name': 'Olimpíada Recreativas de Matemática',
                         'description': lapse.olympics.yearbook.description,
                         'images': serialize_links(lapse.olympics.yearbook.images),
                         'order': lapse.olympics.order
+                    }
+                )
+            if lapse.readingOlympics:
+                lapseData['activities'].append(
+                    {
+                        'id': 'readingolympics',
+                        'name': 'Olimpíada Recreativas de Lengua',
+                        'description': lapse.readingOlympics.yearbook.description,
+                        'images': serialize_links(lapse.readingOlympics.yearbook.images),
+                        'order': lapse.readingOlympics.order
                     }
                 )
             if lapse.specialActivity:

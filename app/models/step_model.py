@@ -17,8 +17,8 @@ from app.services.step_service import StepsService
 
 
 class Step(Document):
-    name = fields.StringField(required=True, unique_c=True)
-    devName = fields.StringField(required=True, unique_c=True)
+    name = fields.StringField(required=True)
+    devName = fields.StringField(required=True)
     tag = fields.StringField(required=True, max_length=1)
     hasText = fields.BooleanField(required=True, default=False)
     hasDate = fields.BooleanField(required=True, default=False)

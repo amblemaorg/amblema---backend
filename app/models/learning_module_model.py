@@ -40,7 +40,7 @@ class Quiz(EmbeddedDocument):
 
 
 class LearningModule(Document):
-    name = fields.StringField(required=True, unique_c=True, max_length=60)
+    name = fields.StringField(required=True, unique=True, max_length=60)
     title = fields.StringField(required=True, max_length=140)
     description = fields.StringField(required=True, max_length=2800)
     secondaryTitle = fields.StringField(null=True, max_length=140)
@@ -56,7 +56,11 @@ class LearningModule(Document):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
-    meta = {'collection': 'learning_modules', 'ordering': ['priority']}
+    meta = {
+        'collection': 'learning_modules',
+        'ordering': ['priority'],
+        'indexes': ['isDeleted']
+    }
 
     def clean(self):
         self.updatedAt = datetime.utcnow()

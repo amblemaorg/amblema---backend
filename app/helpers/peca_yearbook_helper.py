@@ -34,12 +34,7 @@ def update_yearbook_data_in_approval(peca):
         status="1"
     ).order_by("-createdAt").first()
 
-    # 1.2 Ensure yearbook.approvalHistory is loaded (it might be empty if yearbook was partially loaded)
-    if not peca.yearbook or not peca.yearbook.approvalHistory:
-        from app.models.peca_project_model import PecaProject
-        temp_peca = PecaProject.objects(id=peca.id).only('yearbook').first()
-        if temp_peca:
-            peca.yearbook = temp_peca.yearbook
+
 
     # 2. Prepare new diagnostic summaries from current peca state
     new_summaries = {}
@@ -107,12 +102,16 @@ def update_yearbook_data_in_approval(peca):
             pending_request.detail = detail
             pending_request.save(validate=False)
 
-    # 5. Update embedded Approval in Peca project history
+    # 5. Update embedded Approval in YearbookApproval collection
     # Only update the pending ones and the single MOST RECENT approved one.
+    from app.models.yearbook_approval_model import YearbookApproval
     sync_embedded = False
     found_approved = False
     
-    for approval in reversed(peca.yearbook.approvalHistory):
+    approvals = YearbookApproval.objects(pecaId=str(peca.id)).order_by('-createdAt')
+    
+    for yearbook_approval in approvals:
+        approval = yearbook_approval.approval
         is_pending = approval.status == "1"
         is_approved = approval.status == "2"
         
@@ -128,6 +127,7 @@ def update_yearbook_data_in_approval(peca):
             if 'sections' in app_detail:
                 app_detail['sections'] = new_sections
             approval.detail = app_detail
+            yearbook_approval.save(validate=False)
             sync_embedded = True
             
             if is_approved:

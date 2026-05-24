@@ -92,7 +92,7 @@ from app.controllers.request_project_approval_controller import (
 from app.controllers.request_content_approval_controller import (
     ReqContentApprovalController, ReqContentApprovalHandlerController)
 from app.controllers.request_all_controller import (
-    ReqContactAllController, ReqFindAllController)
+    ReqContactAllController, ReqFindAllController, PendingNotificationsController)
 from app.controllers.activity_controller import (
     ActivityController, ActivityHandlerController, ActivitySummaryController
 )
@@ -323,6 +323,7 @@ def create_app(config_instance):
                      '/requestsprojectapproval/<string:id>')
     api.add_resource(ReqContactAllController, '/contactrequests')
     api.add_resource(ReqFindAllController, '/findrequests')
+    api.add_resource(PendingNotificationsController, '/pendingnotifications')
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(PecaProjectHandlerPrintOptionsController, '/pecaprojects/<string:id>/printoptions')

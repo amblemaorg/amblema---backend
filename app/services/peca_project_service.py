@@ -122,7 +122,7 @@ class PecaProjectService():
                         preventDuplicate.append(activityJson['name'])
                         if activityJson['name'] in activitiesExist:
                             printOption.activitiesPrint.pop(activitiesExist.index(activityJson['name']))
-                        activity = ActivityModel(name=activityJson['name'], print=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
+                        activity = ActivityModel(name=activityJson['name'], printOption=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
                         printOption.activitiesPrint.append(activity)
                     continue
 
@@ -138,7 +138,7 @@ class PecaProjectService():
                             printOption.sectionsPrint.pop(sectionsExist.index(sectionJson['name']))
                             if sectionJson['print'] == True:
                                 continue
-                        section = SectionModel(name=sectionJson['name'], print=sectionJson['print'])
+                        section = SectionModel(name=sectionJson['name'], printOption=sectionJson['print'])
                         printOption.sectionsPrint.append(section)
                     continue
 

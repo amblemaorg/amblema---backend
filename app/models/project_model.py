@@ -118,7 +118,10 @@ class Project(Document):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
-    meta = {'collection': 'projects'}
+    meta = {
+        'collection': 'projects',
+        'indexes': ['isDeleted', 'status', 'schoolYear']
+    }
 
     def checkStepApproval(self, step):
         if step.hasDate and not step.date:

@@ -7,4 +7,12 @@ class YearbookApproval(Document):
     approval = fields.EmbeddedDocumentField(Approval)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
-    meta = {'collection': 'yearbook_approval'}
+    meta = {
+        'collection': 'yearbook_approval',
+        'indexes': [
+            # Compound index for fast retrieval of approvals by pecaId, sorted by newest
+            ('pecaId', '-createdAt'),
+            # Index for fast retrieval of approved yearbooks
+            'approval.status'
+        ]
+    }

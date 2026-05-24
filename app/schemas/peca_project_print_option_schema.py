@@ -9,13 +9,13 @@ from marshmallow import (
 from app.schemas import fields
 class ActivitySchema(Schema):
   name = fields.Str(allow_none=True) 
-  print = fields.Bool()
+  printOption = fields.Bool(data_key="print", attribute="printOption")
   expandGallery = fields.Bool()
   lapse = fields.Str()
 
 class SectionSchema(Schema):
   name = fields.Str()
-  print = fields.Bool()
+  printOption = fields.Bool(data_key="print", attribute="printOption")
 
 class PecaProjectPrintOption(Schema):
   id_peca = fields.Str(required=True)

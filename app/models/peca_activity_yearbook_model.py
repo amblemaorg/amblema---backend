@@ -6,7 +6,7 @@ from bson import ObjectId
 from mongoengine import EmbeddedDocument, fields
 
 class PrintOption(EmbeddedDocument):
-    print = fields.BooleanField(default=True)
+    printOption = fields.BooleanField(db_field='print', default=True)
     expandGallery = fields.BooleanField(default=True)
 class ActivityYearbook(EmbeddedDocument):
     id = fields.StringField()

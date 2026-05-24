@@ -28,7 +28,10 @@ class RequestContentApproval(Document):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
-    meta = {'collection': 'requests_content_approval'}
+    meta = {
+        'collection': 'requests_content_approval',
+        'indexes': ['isDeleted', 'status', 'project', ('status', '-updatedAt')]
+    }
 
     def clean(self):
         if not current_app.config.get("TESTING"):
@@ -538,11 +541,13 @@ class RequestContentApproval(Document):
                         id=document.detail['pecaId']).first()
 
                     peca.yearbook.isInApproval = False
-                    for history in peca.yearbook.approvalHistory:
-                        if history.id == str(document.id):
-                            history.status = document.status
-                            peca.save()
-                            break
+                    peca.save()
+                    
+                    from app.models.yearbook_approval_model import YearbookApproval
+                    yearbook_approval = YearbookApproval.objects(pecaId=str(peca.id), approval__id=str(document.id)).first()
+                    if yearbook_approval:
+                        yearbook_approval.approval.status = "4"
+                        yearbook_approval.save()
             #lapsePlanning                
             elif document.type == "8":
                 from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema

@@ -49,6 +49,10 @@ class PecaProject(Document):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
+    meta = {
+        'collection': 'peca_project',
+        'indexes': ['isDeleted', 'schoolYear']
+    }
 
     def clean(self):
         if not current_app.config.get("TESTING"):

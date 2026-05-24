@@ -32,10 +32,10 @@ def get_db():
         # Extract db name from URL
         db_name = db_url.split('/')[-1].split('?')[0]
         db = client[db_name]
-        logger.info(f"Connected to database: {db_name}")
+        logger.info("Connected to database: {}".format(db_name))
         return db
     except Exception as e:
-        logger.error(f"Failed to connect to database: {e}")
+        logger.error("Failed to connect to database: {}".format(e))
         sys.exit(1)
 
 def migrate_approvals():
@@ -60,7 +60,7 @@ def migrate_approvals():
     except:
         count = projects_cursor.count()
     
-    logger.info(f"Found {count} PecaProjects with approvalHistory to migrate.")
+    logger.info("Found {} PecaProjects with approvalHistory to migrate.".format(count))
 
     if count == 0:
         logger.info("No projects to migrate.")
@@ -78,13 +78,13 @@ def migrate_approvals():
         # Fetch the full project document individually
         project = peca_project_collection.find_one({"_id": pid})
         if not project:
-            logger.warning(f"Project {pid} not found during iteration.")
+            logger.warning("Project {} not found during iteration.".format(pid))
             continue
 
         peca_id = str(project['_id'])
         approval_history = project.get('yearbook', {}).get('approvalHistory', [])
         
-        logger.info(f"Processing PecaProject {peca_id} with {len(approval_history)} approvals.")
+        logger.info("Processing PecaProject {} with {} approvals.".format(peca_id, len(approval_history)))
         
         project_approvals_migrated = 0
         try:
@@ -114,22 +114,27 @@ def migrate_approvals():
                     {"$unset": {"yearbook.approvalHistory": ""}}
                 )
                 if result.modified_count > 0:
-                    logger.info(f"Successfully migrated {project_approvals_migrated} approvals for {peca_id}. Removed field from PecaProject.")
+                    logger.info("Successfully migrated {} approvals for {}. Removed field from PecaProject.".format(project_approvals_migrated, peca_id))
                     migrated_total += project_approvals_migrated
                 else:
-                     logger.warning(f"Migrated data but failed to unset field for {peca_id} (maybe already unset?).")
+                     logger.warning("Migrated data but failed to unset field for {} (maybe already unset?).".format(peca_id))
             else:
-                logger.error(f"Mismatch in count for {peca_id}: Expected {len(approval_history)}, found {saved_count}. NOT removing old data.")
+                logger.error("Mismatch in count for {}: Expected {}, found {}. NOT removing old data.".format(peca_id, len(approval_history), saved_count))
                 errors += 1
 
         except Exception as e:
-            logger.error(f"Error migrating PecaProject {peca_id}: {e}")
+            logger.error("Error migrating PecaProject {}: {}".format(peca_id, e))
             errors += 1
 
-    logger.info(f"Migration completed. Total approvals migrated: {migrated_total}. Errors: {errors}")
+    logger.info("Migration completed. Total approvals migrated: {}. Errors: {}".format(migrated_total, errors))
 
 if __name__ == "__main__":
-    confirm = input("Are you sure you want to run this migration? (yes/no): ")
+    try:
+        input_func = raw_input
+    except NameError:
+        input_func = input
+        
+    confirm = input_func("Are you sure you want to run this migration? (yes/no): ")
     if confirm.lower() == 'yes':
         migrate_approvals()
     else:

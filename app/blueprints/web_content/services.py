@@ -161,36 +161,22 @@ class SchoolPageContentService():
         nextActivities = []
         # find last approved yearbook
         yearbook_activities = {}
-        # We query the latest project that has an approved yearbook among ALL project years
-        peca_with_approved_yb = PecaProject.objects(
-            id__in=pecasIds,
-            yearbook__approvalHistory__status="2"
-        ).only(
-            "yearbook.approvalHistory.status",
-            "yearbook.approvalHistory.id"
+        # We query the latest approved yearbook across all pecaIds
+        from app.models.yearbook_approval_model import YearbookApproval
+        approved_yb = YearbookApproval.objects(
+            pecaId__in=[str(pid) for pid in pecasIds],
+            approval__status="2"
         ).order_by("-createdAt").first()
 
-        if peca_with_approved_yb:
-            match_index = -1
-            for i, approval in enumerate(peca_with_approved_yb.yearbook.approvalHistory):
-                if approval.status == "2":
-                    match_index = i
-            
-            if match_index != -1:
-                # Fetch only the matched approval with its full detail using slice
-                peca_match = PecaProject.objects(id=peca_with_approved_yb.id).fields(
-                    slice__yearbook__approvalHistory=[match_index, 1]
-                ).only('yearbook.approvalHistory').first()
-                
-                if peca_match and peca_match.yearbook.approvalHistory:
-                    detail = peca_match.yearbook.approvalHistory[0].detail
-                    for i in range(1, 4):
-                        lapse_key = 'lapse{}'.format(i)
-                        if lapse_key in detail and 'activities' in detail[lapse_key]:
-                            for act in detail[lapse_key]['activities']:
-                                if 'id' in act and 'images' in act and act['images']:
-                                    if act['id'] not in yearbook_activities:
-                                        yearbook_activities[act['id']] = act['images']
+        if approved_yb:
+            detail = approved_yb.approval.detail
+            for i in range(1, 4):
+                lapse_key = 'lapse{}'.format(i)
+                if lapse_key in detail and 'activities' in detail[lapse_key]:
+                    for act in detail[lapse_key]['activities']:
+                        if 'id' in act and 'images' in act and act['images']:
+                            if act['id'] not in yearbook_activities:
+                                yearbook_activities[act['id']] = act['images']
         
         id_map = {
             'initialWorkshop': 'initialWorkshop',

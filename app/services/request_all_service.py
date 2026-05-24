@@ -8,6 +8,8 @@ from flask import current_app
 from app.models.request_find_coordinator_model import RequestFindCoordinator
 from app.models.request_find_sponsor_model import RequestFindSponsor
 from app.models.request_find_school_model import RequestFindSchool
+from app.models.request_project_approval_model import RequestProjectApproval
+from app.models.request_content_approval_model import RequestContentApproval
 from app.models.coordinator_contact_model import CoordinatorContact
 from app.models.school_contact_model import SchoolContact
 from app.models.sponsor_contact_model import SponsorContact
@@ -20,6 +22,108 @@ from app.schemas.request_find_school_schema import ReqFindSchoolSchema
 
 
 class RequestsAll():
+    def getPendingNotifications(self):
+        from app.models.school_year_model import SchoolYear
+        notifications = []
+        
+        active_school_year = SchoolYear.objects(isDeleted=False, status="1").first()
+        if not active_school_year:
+            return {"records": []}, 200
+
+        query_filters = {
+            'isDeleted': False,
+            'status': "1"
+        }
+        
+        if active_school_year.startDate and active_school_year.endDate:
+            start_date = datetime.datetime.combine(active_school_year.startDate, datetime.time.min)
+            end_date = datetime.datetime.combine(active_school_year.endDate, datetime.time.max)
+            query_filters['createdAt__gte'] = start_date
+            query_filters['createdAt__lte'] = end_date
+        
+        # 1. Project Requests (ContactRequests) - notiType 1
+        coordinatorReq = CoordinatorContact.objects(**query_filters)
+        sponsorReq = SponsorContact.objects(**query_filters)
+        schoolReq = SchoolContact.objects(**query_filters)
+        
+        for req in coordinatorReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 1,
+                'user': {'name': req.firstName + ' ' + req.lastName},
+                'createdAt': req.createdAt
+            })
+        for req in sponsorReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 1,
+                'user': {'name': req.name},
+                'createdAt': req.createdAt
+            })
+        for req in schoolReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 1,
+                'user': {'name': req.name},
+                'createdAt': req.createdAt
+            })
+            
+        # 2. User Creation Requests (FindRequests) - notiType 2
+        coordFindReq = RequestFindCoordinator.objects(**query_filters)
+        sponsorFindReq = RequestFindSponsor.objects(**query_filters)
+        schoolFindReq = RequestFindSchool.objects(**query_filters)
+        
+        for req in coordFindReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 2,
+                'user': {'name': req.user.name},
+                'createdAt': req.createdAt
+            })
+        for req in sponsorFindReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 2,
+                'user': {'name': req.user.name},
+                'createdAt': req.createdAt
+            })
+        for req in schoolFindReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 2,
+                'user': {'name': req.user.name},
+                'createdAt': req.createdAt
+            })
+            
+        # 3. Project Validation Requests - notiType 3
+        projectApprovalReq = RequestProjectApproval.objects(**query_filters)
+        for req in projectApprovalReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 3,
+                'user': None,
+                'createdAt': req.createdAt
+            })
+            
+        # 4. Request Content - notiType 4
+        contentApprovalReq = RequestContentApproval.objects(**query_filters)
+        for req in contentApprovalReq:
+            notifications.append({
+                'id': str(req.id),
+                'notiType': 4,
+                'user': {'name': req.user.name} if req.user else None,
+                'createdAt': req.createdAt
+            })
+            
+        # Sort all by createdAt desc
+        notifications = sorted(notifications, reverse=True, key=lambda x: x['createdAt'])
+        
+        # Format dates to string
+        for noti in notifications:
+            noti['createdAt'] = noti['createdAt'].strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+            
+        return {"records": notifications}, 200
+
     def getAllContactsRequest(self, filters=None, only=None):
         query_filters = {'isDeleted': False}
         if filters:

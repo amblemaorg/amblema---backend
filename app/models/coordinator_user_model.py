@@ -36,7 +36,7 @@ class CoordinatorUser(User):
     firstName = fields.StringField(required=True)
     lastName = fields.StringField(required=True)
     cardType = fields.StringField(required=True)
-    cardId = fields.StringField(required=True, unique_c=True)
+    cardId = fields.StringField(required=True)
     phone = fields.StringField(required=True)
     gender = fields.StringField(max_length=1)
     birthdate = fields.DateTimeField(required=True)

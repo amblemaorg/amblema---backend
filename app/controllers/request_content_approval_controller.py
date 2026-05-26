@@ -24,6 +24,22 @@ class ReqContentApprovalController(Resource):
         only = None
         if 'only' in request.args:
             only = request.args['only'].split(',')
+        
+        page = request.args.get('page')
+        per_page = request.args.get('per_page')
+
+        if page and per_page:
+            new_filters = []
+            for f in filters:
+                if f['field'] == 'page' or f['field'] == 'per_page':
+                    continue
+                new_filters.append(f)
+            return self.service.getPaginatedData(
+                filters=new_filters,
+                page=int(page),
+                page_size=int(per_page)
+            )
+
         return self.service.getAllRecords(
             filters=filters, only=only)
 

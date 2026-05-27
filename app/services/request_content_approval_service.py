@@ -63,6 +63,7 @@ class RequestContentApprovalService(GenericServices):
         
             recordsJson.append(data)
         
+<<<<<<< HEAD
         
         response = {"records": recordsJson}
         
@@ -75,3 +76,60 @@ class RequestContentApprovalService(GenericServices):
             }
             
         return response, 200
+=======
+        return {"records": recordsJson}, 200
+
+    def getPaginatedData(self, filters=None, page=1, page_size=10):
+        """
+        get paginated and optimized records for table
+        """
+        records_qs = self.Model.objects(isDeleted=False)
+
+        if filters:
+            filterList = []
+            for f in filters:
+                filterList.append(Q(**{f['field']: f['value']}))
+            records_qs = records_qs.filter(reduce(operator.and_, filterList))
+
+        # Order by status (1 = pending comes first), then by updatedAt desc
+        records_qs = records_qs.order_by("status", "-updatedAt")
+
+        import math
+        total = records_qs.count()
+        items = records_qs.skip((page - 1) * page_size).limit(page_size).only(
+            'id', 'code', 'project', 'type', 'user', 'status', 'updatedAt', 'createdAt'
+        ).all()
+        pages = int(math.ceil(total / float(page_size))) if page_size else 0
+
+        recordsJson = []
+        for record in items:
+            data = {
+                "id": str(record.id),
+                "code": record.code,
+                "type": record.type,
+                "status": record.status,
+                "createdAt": record.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' if record.createdAt else None,
+                "updatedAt": record.updatedAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' if record.updatedAt else None
+            }
+            if record.project:
+                data["project"] = {
+                    "id": str(record.project.id),
+                    "code": record.project.code
+                }
+            if record.user:
+                data["user"] = {
+                    "id": str(record.user.id),
+                    "name": record.user.name
+                }
+                data["typeUser"] = record.user.userType
+            recordsJson.append(data)
+
+        return {
+            "records": recordsJson,
+            "pagination": {
+                "total_records": total,
+                "total_pages": pages,
+                "page": page,
+            }
+        }, 200
+>>>>>>> f055f1d044fa236b5edbae5a56d0211f069db42f

@@ -92,7 +92,13 @@ from app.controllers.request_project_approval_controller import (
 from app.controllers.request_content_approval_controller import (
     ReqContentApprovalController, ReqContentApprovalHandlerController)
 from app.controllers.request_all_controller import (
+<<<<<<< HEAD
     ReqContactAllController, ReqFindAllController, PendingNotificationsController)
+=======
+    ReqContactAllController, ReqFindAllController)
+from app.controllers.notifications_controller import (
+    NotificationsPendingController)
+>>>>>>> f055f1d044fa236b5edbae5a56d0211f069db42f
 from app.controllers.activity_controller import (
     ActivityController, ActivityHandlerController, ActivitySummaryController
 )
@@ -323,7 +329,11 @@ def create_app(config_instance):
                      '/requestsprojectapproval/<string:id>')
     api.add_resource(ReqContactAllController, '/contactrequests')
     api.add_resource(ReqFindAllController, '/findrequests')
+<<<<<<< HEAD
     api.add_resource(PendingNotificationsController, '/pendingnotifications')
+=======
+    api.add_resource(NotificationsPendingController, '/notifications/pending')
+>>>>>>> f055f1d044fa236b5edbae5a56d0211f069db42f
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(PecaProjectHandlerPrintOptionsController, '/pecaprojects/<string:id>/printoptions')

@@ -29,6 +29,7 @@ class ReqContentApprovalController(Resource):
         
         if 'only' in request.args:
             only = request.args['only'].split(',')
+<<<<<<< HEAD
             
         if page and per_page:
             from app.models.user_model import User
@@ -97,6 +98,26 @@ class ReqContentApprovalController(Resource):
             skip = request.args.get('skip', 0, type=int)
             return self.service.getAllRecords(
                 filters=filters, only=only, limit=limit, skip=skip)
+=======
+        
+        page = request.args.get('page')
+        per_page = request.args.get('per_page')
+
+        if page and per_page:
+            new_filters = []
+            for f in filters:
+                if f['field'] == 'page' or f['field'] == 'per_page':
+                    continue
+                new_filters.append(f)
+            return self.service.getPaginatedData(
+                filters=new_filters,
+                page=int(page),
+                page_size=int(per_page)
+            )
+
+        return self.service.getAllRecords(
+            filters=filters, only=only)
+>>>>>>> f055f1d044fa236b5edbae5a56d0211f069db42f
 
 
 class ReqContentApprovalHandlerController(Resource):

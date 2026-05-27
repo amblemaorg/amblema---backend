@@ -48,5 +48,6 @@ class RequestContentApprovalSchema(Schema):
 
     @post_dump
     def process_dump(self, data, **kwargs):
-        data['detail'] = serialize_links(data['detail'])
+        if 'detail' in data:
+            data['detail'] = serialize_links(data['detail'])
         return data

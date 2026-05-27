@@ -22,6 +22,47 @@ class ProjectController(Resource):
     @jwt_required
     def get(self):
         filters = getQueryParams(request)
+        
+        # Handling pagination params
+        page = request.args.get('page')
+        per_page = request.args.get('per_page')
+
+        if page and per_page:
+            # Custom filter mapping for related fields
+            from app.models.coordinator_user_model import CoordinatorUser
+            from app.models.school_user_model import SchoolUser
+            from app.models.sponsor_user_model import SponsorUser
+            from mongoengine import Q
+
+            # Transform filters
+            new_filters = []
+            for f in filters:
+                if f['field'] == 'coordinator':
+                    # Search coordinators by name
+                    coordinators = CoordinatorUser.objects(
+                        Q(firstName__icontains=f['value']) | Q(lastName__icontains=f['value'])
+                    ).only('id')
+                    new_filters.append({'field': 'coordinator__in', 'value': [c.id for c in coordinators]})
+                elif f['field'] == 'school':
+                    schools = SchoolUser.objects(name__icontains=f['value']).only('id')
+                    new_filters.append({'field': 'school__in', 'value': [s.id for s in schools]})
+                elif f['field'] == 'sponsor':
+                    sponsors = SponsorUser.objects(name__icontains=f['value']).only('id')
+                    new_filters.append({'field': 'sponsor__in', 'value': [s.id for s in sponsors]})
+                elif f['field'] in ['phase', 'status']:
+                     new_filters.append(f)
+                elif f['field'] == 'page' or f['field'] == 'per_page':
+                    continue
+                else:
+                    new_filters.append(f)
+
+            return self.service.getPaginatedRecords(
+                filters=new_filters,
+                exclude=("stepsProgress",),
+                page=int(page),
+                page_size=int(per_page)
+            )
+
         return self.service.getAllRecords(
             filters=filters,
             exclude=(

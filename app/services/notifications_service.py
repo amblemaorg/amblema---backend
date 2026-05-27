@@ -52,7 +52,7 @@ class NotificationsService:
                 'id': str(doc.id),
                 'notiType': 1,
                 'createdAt': doc.createdAt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
-                'name': f"{doc.firstName} {doc.lastName}"
+                'name': "{} {}".format(doc.firstName, doc.lastName)
             })
 
         sponsor_contacts = SponsorContact.objects(**query_kwargs).only('id', 'createdAt')

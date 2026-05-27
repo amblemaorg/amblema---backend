@@ -63,20 +63,6 @@ class RequestContentApprovalService(GenericServices):
         
             recordsJson.append(data)
         
-<<<<<<< HEAD
-        
-        response = {"records": recordsJson}
-        
-        if page is not None:
-            total_pages = int(math.ceil(total_records / float(limit))) if limit else 0
-            response["pagination"] = {
-                "total_records": total_records,
-                "total_pages": total_pages,
-                "page": page
-            }
-            
-        return response, 200
-=======
         return {"records": recordsJson}, 200
 
     def getPaginatedData(self, filters=None, page=1, page_size=10):
@@ -132,4 +118,3 @@ class RequestContentApprovalService(GenericServices):
                 "page": page,
             }
         }, 200
->>>>>>> f055f1d044fa236b5edbae5a56d0211f069db42f

@@ -24,8 +24,8 @@ class RequestsAll():
         query_filters = {'isDeleted': False}
         if filters:
             for f in filters:
-                if f['field'] == 'status':
-                    query_filters['status'] = f['value']
+                if f['field'] in ['status', 'createdAt__gte', 'createdAt__lte']:
+                    query_filters[f['field']] = f['value']
 
         coordinatorReq = CoordinatorContact.objects(
             **query_filters).order_by('-createdAt')
@@ -80,8 +80,8 @@ class RequestsAll():
         query_filters = {'isDeleted': False}
         if filters:
             for f in filters:
-                if f['field'] == 'status':
-                    query_filters['status'] = f['value']
+                if f['field'] in ['status', 'createdAt__gte', 'createdAt__lte']:
+                    query_filters[f['field']] = f['value']
 
         coordinatorReq = RequestFindCoordinator.objects(
             **query_filters).order_by('-createdAt')

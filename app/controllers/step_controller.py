@@ -20,7 +20,13 @@ class StepController(Resource):
 
     @jwt_required
     def get(self):
+        from app.models.school_year_model import SchoolYear
         filters = getQueryParams(request)
+        active_sy = SchoolYear.objects(isDeleted=False, status="1").first()
+        if active_sy:
+            has_sy = any(f.get('field') == 'schoolYear' for f in filters)
+            if not has_sy:
+                filters.append({"field": "schoolYear", "value": str(active_sy.id)})
         return self.service.getAllRecords(filters=filters)
 
     @jwt_required

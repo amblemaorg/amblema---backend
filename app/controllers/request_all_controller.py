@@ -7,6 +7,7 @@ from flask_restful import Resource
 from app.services.request_all_service import RequestsAll
 from app.helpers.handler_request import getQueryParams
 from app.helpers.handler_authorization import jwt_required
+from app.helpers.school_year_filter import get_school_year_date_filters
 
 
 class ReqContactAllController(Resource):
@@ -15,6 +16,10 @@ class ReqContactAllController(Resource):
     @jwt_required
     def get(self):
         filters = getQueryParams(request)
+        if not filters:
+            filters = []
+        filters.extend(get_school_year_date_filters())
+        
         only = None
         if 'only' in request.args:
             only = request.args['only'].split(',')
@@ -27,6 +32,10 @@ class ReqFindAllController(Resource):
     @jwt_required
     def get(self):
         filters = getQueryParams(request)
+        if not filters:
+            filters = []
+        filters.extend(get_school_year_date_filters())
+        
         only = None
         if 'only' in request.args:
             only = request.args['only'].split(',')

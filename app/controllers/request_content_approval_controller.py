@@ -10,6 +10,7 @@ from app.schemas.request_content_approval_schema import RequestContentApprovalSc
 from app.services.request_content_approval_service import RequestContentApprovalService
 from app.helpers.handler_request import getQueryParams
 from app.helpers.handler_authorization import jwt_required
+from app.helpers.school_year_filter import get_school_year_date_filters
 
 
 class ReqContentApprovalController(Resource):
@@ -21,6 +22,10 @@ class ReqContentApprovalController(Resource):
     @jwt_required
     def get(self):
         filters = getQueryParams(request)
+        if not filters:
+            filters = []
+        filters.extend(get_school_year_date_filters())
+        
         only = None
         
         # Handling pagination params

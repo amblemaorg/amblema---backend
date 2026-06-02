@@ -1,10 +1,15 @@
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import importlib
 import pkgutil
 from app import create_app
 import app.models
+
 from mongoengine.base.common import _document_registry
 from mongoengine import Document
+
 
 config_instance = os.getenv('INSTANCE')
 app_instance = create_app(config_instance)

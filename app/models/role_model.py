@@ -28,8 +28,8 @@ class Permission(EmbeddedDocument):
 
 
 class Role(Document):
-    name = fields.StringField(unique_c=True, required=True)
-    devName = fields.StringField(unique_c=True)
+    name = fields.StringField(required=True)
+    devName = fields.StringField()
     status = fields.StringField(max_length=1, default='1')
     isStandard = fields.BooleanField(default=False)
     isDeleted = fields.BooleanField(default=False)
@@ -38,7 +38,8 @@ class Role(Document):
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     meta = {
         'ordering': ['+name', '+permissions__entityName'],
-        'collection': 'roles'
+        'collection': 'roles',
+        'indexes': ['isDeleted', 'status', 'isStandard']
     }
 
     def clean(self):

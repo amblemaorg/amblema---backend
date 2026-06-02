@@ -28,7 +28,10 @@ class RequestContentApproval(Document):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
-    meta = {'collection': 'requests_content_approval'}
+    meta = {
+        'collection': 'requests_content_approval',
+        'indexes': ['isDeleted', 'status', 'project', ('status', '-updatedAt')]
+    }
 
     def clean(self):
         if not current_app.config.get("TESTING"):
@@ -281,17 +284,26 @@ class RequestContentApproval(Document):
                                         if activity['id'] == pecaAct.id:
                                             pecaAct.yearbook = yearActivity
 
-                        for history in peca.yearbook.approvalHistory:
-                            if history.id == str(document.id):
-                                history.status = document.status
+                        # Updated to separate collection
+                        from app.models.yearbook_approval_model import YearbookApproval
+                        yearbook_approval = YearbookApproval.objects(pecaId=str(peca.id), approval__id=str(document.id)).first()
+                        if yearbook_approval:
+                            yearbook_approval.approval.status = document.status
+                            yearbook_approval.save()
+                        
                         peca.yearbook.isInApproval = False
                         peca.save()
                     elif document.status in ('3', '4'):  # rejected or cancelled
                         peca.yearbook.isInApproval = False
-                        for history in peca.yearbook.approvalHistory:
-                            if history.id == str(document.id):
-                                history.status = document.status
-                                history.comments = document.comments
+                        
+                        # Updated to separate collection
+                        from app.models.yearbook_approval_model import YearbookApproval
+                        yearbook_approval = YearbookApproval.objects(pecaId=str(peca.id), approval__id=str(document.id)).first()
+                        if yearbook_approval:
+                            yearbook_approval.approval.status = document.status
+                            yearbook_approval.approval.comments = document.comments
+                            yearbook_approval.save()
+
                         peca.save()
                  # lapse planning
                 elif document.type == "8":
@@ -529,11 +541,13 @@ class RequestContentApproval(Document):
                         id=document.detail['pecaId']).first()
 
                     peca.yearbook.isInApproval = False
-                    for history in peca.yearbook.approvalHistory:
-                        if history.id == str(document.id):
-                            history.status = document.status
-                            peca.save()
-                            break
+                    peca.save()
+                    
+                    from app.models.yearbook_approval_model import YearbookApproval
+                    yearbook_approval = YearbookApproval.objects(pecaId=str(peca.id), approval__id=str(document.id)).first()
+                    if yearbook_approval:
+                        yearbook_approval.approval.status = "4"
+                        yearbook_approval.save()
             #lapsePlanning                
             elif document.type == "8":
                 from app.schemas.peca_lapse_planning_schema import LapsePlanningPecaSchema

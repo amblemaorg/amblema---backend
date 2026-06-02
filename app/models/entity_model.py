@@ -11,7 +11,7 @@ from mongoengine import (
 
 
 class Action(EmbeddedDocument):
-    name = fields.StringField(unique_c=True, required=True)
+    name = fields.StringField(unique=True, required=True)
     label = fields.StringField(required=True)
     sort = fields.IntField()
     isDeleted = fields.BooleanField(default=False)
@@ -19,7 +19,7 @@ class Action(EmbeddedDocument):
 
 
 class Entity(Document):
-    name = fields.StringField(unique_c=True, required=True)
+    name = fields.StringField(unique=True, required=True)
     devName = fields.StringField()
     isDeleted = fields.BooleanField(default=False)
     actions = fields.EmbeddedDocumentListField(Action)

@@ -48,7 +48,10 @@ class RequestFindSchool(Document):
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
-    meta = {'collection': 'requests_find_school'}
+    meta = {
+        'collection': 'requests_find_school',
+        'indexes': ['isDeleted', 'status']
+    }
 
     def clean(self):
         self.updatedAt = datetime.utcnow()

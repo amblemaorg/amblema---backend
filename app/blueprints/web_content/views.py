@@ -93,7 +93,7 @@ class PostViewPaginated(MethodView):
             )
             finalFilters.extend(filtersWithOperator)
 
-        return self.service.getPaginatedRecords(filters=finalFilters, page=page_number, page_size=page_size)
+        return self.service.getPaginatedRecords(filters=finalFilters, page=page_number, page_size=page_size, order_by='-createdAt')
 
 
 class PostHandlerView(MethodView):

@@ -24,6 +24,7 @@ class RequestProjectApproval(Document):
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
     meta = {'collection': 'requests_project_approval',
+            'indexes': ['isDeleted', 'status'],
             'ordering': ['-createdAt']}
 
     @classmethod

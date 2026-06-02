@@ -42,4 +42,7 @@ class RequestStepApproval(Document):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     isDeleted = fields.BooleanField(default=False)
-    meta = {'collection': 'requests_step_approval'}
+    meta = {
+        'collection': 'requests_step_approval',
+        'indexes': ['isDeleted', 'status', 'project']
+    }

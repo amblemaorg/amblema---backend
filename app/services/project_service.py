@@ -350,9 +350,12 @@ class ProjectService():
                             currentPeca.yearbook.sponsor.content = ''
                             currentPeca.yearbook.sponsor.image = ''
                             
-                            for approval in currentPeca.yearbook.approvalHistory:
-                                if approval["detail"]["sponsor"]["name"] != "":
-                                    approval["detail"]["sponsor"]["name"] = projectReference.sponsor["name"]
+                            from app.models.yearbook_approval_model import YearbookApproval
+                            yearbook_approvals = YearbookApproval.objects(pecaId=str(currentPeca.id))
+                            for approval in yearbook_approvals:
+                                if approval.approval.detail['sponsor']['name'] != "":
+                                    approval.approval.detail['sponsor']['name'] = projectReference.sponsor["name"]
+                                    approval.save()
                             currentPeca.save()
 
         if document.school != oldDocument.school:
@@ -400,9 +403,13 @@ class ProjectService():
                             currentPeca.yearbook.school.name = projectReference.school["name"]
                             currentPeca.yearbook.school.content = ''
                             currentPeca.yearbook.school.image = ''
-                            for approval in currentPeca.yearbook.approvalHistory:
-                                if approval["detail"]["school"]["name"] != "":
-                                    approval["detail"]["school"]["name"] = projectReference.school["name"]
+                            
+                            from app.models.yearbook_approval_model import YearbookApproval
+                            yearbook_approvals = YearbookApproval.objects(pecaId=str(currentPeca.id))
+                            for approval in yearbook_approvals:
+                                if approval.approval.detail['school']['name'] != "":
+                                    approval.approval.detail['school']['name'] = projectReference.school["name"]
+                                    approval.save()
                             
                             currentPeca.save()
 
@@ -469,9 +476,13 @@ class ProjectService():
                             currentPeca.yearbook.coordinator.name = projectReference.coordinator["name"]
                             currentPeca.yearbook.coordinator.content = ''
                             currentPeca.yearbook.coordinator.image = ''
-                            for approval in currentPeca.yearbook.approvalHistory:
-                                if approval["detail"]["coordinator"]["name"] != "":
-                                    approval["detail"]["coordinator"]["name"] = projectReference.coordinator["name"]
+                            
+                            from app.models.yearbook_approval_model import YearbookApproval
+                            yearbook_approvals = YearbookApproval.objects(pecaId=str(currentPeca.id))
+                            for approval in yearbook_approvals:
+                                if approval.approval.detail['coordinator']['name'] != "":
+                                    approval.approval.detail['coordinator']['name'] = projectReference.coordinator["name"]
+                                    approval.save()
                             
                             currentPeca.save()
         if document.phase == "1":

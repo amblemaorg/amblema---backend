@@ -12,6 +12,7 @@ from mongoengine import Q
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
 from app.models.peca_yearbook_model import Yearbook
+from app.models.yearbook_approval_model import YearbookApproval
 from app.models.peca_project_print_option_model import PecaProjectPrintOptionModel
 from app.schemas.peca_project_schema import PecaProjectSchema, SchoolSchema
 from app.models.peca_project_print_option_model import ActivityModel, SectionModel
@@ -21,6 +22,7 @@ from app.helpers.handler_files import validate_files, upload_files
 from app.helpers.document_metadata import getFileFields
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.ma_schema_fields import serialize_links
+from app.schemas.shared_schemas import ApprovalSchema
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -120,7 +122,7 @@ class PecaProjectService():
                         preventDuplicate.append(activityJson['name'])
                         if activityJson['name'] in activitiesExist:
                             printOption.activitiesPrint.pop(activitiesExist.index(activityJson['name']))
-                        activity = ActivityModel(name=activityJson['name'], print=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
+                        activity = ActivityModel(name=activityJson['name'], printOption=activityJson['print'], expandGallery=activityJson['expandGallery'], lapse=activityJson['lapse'])
                         printOption.activitiesPrint.append(activity)
                     continue
 
@@ -136,7 +138,7 @@ class PecaProjectService():
                             printOption.sectionsPrint.pop(sectionsExist.index(sectionJson['name']))
                             if sectionJson['print'] == True:
                                 continue
-                        section = SectionModel(name=sectionJson['name'], print=sectionJson['print'])
+                        section = SectionModel(name=sectionJson['name'], printOption=sectionJson['print'])
                         printOption.sectionsPrint.append(section)
                     continue
 
@@ -204,8 +206,13 @@ class PecaProjectService():
             coordinator = CoordinatorUser.objects.get(
                 id=peca.project.coordinator.id)
             
-            count = len(data["yearbook"]["approvalHistory"])
-            data["yearbook"]["approvalHistory"] = [data["yearbook"]["approvalHistory"][count-1]] if len(data["yearbook"]["approvalHistory"]) > 0 else []
+            # Fetch the last approval from the new YearbookApproval collection
+            last_approval = YearbookApproval.objects(pecaId=str(peca.id)).order_by('-createdAt').first()
+            if last_approval:
+                data["yearbook"]["approvalHistory"] = [ApprovalSchema().dump(last_approval.approval)]
+            else:
+                 data["yearbook"]["approvalHistory"] = []
+
             data['yearbook'] = self.getYearbookData(peca, school,sponsor,coordinator, data['yearbook'])
             return data, 200
         else:
@@ -228,6 +235,7 @@ class PecaProjectService():
         from app.schemas.peca_environmental_project_schema import EnvironmentalProjectPecaSchema
         from app.schemas.environmental_project_schema import EnvironmentalProjectSchema
         from app.models.shared_embedded_documents import CheckElement
+
 
         schoolYear = SchoolYear.objects(
             isDeleted=False, status="1").only('pecaSetting').first()

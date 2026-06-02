@@ -40,3 +40,11 @@ class ReqFindAllController(Resource):
         if 'only' in request.args:
             only = request.args['only'].split(',')
         return self.service.getAllFindRequest(filters=filters, only=only)
+
+
+class PendingNotificationsController(Resource):
+    service = RequestsAll()
+
+    @jwt_required
+    def get(self):
+        return self.service.getPendingNotifications()

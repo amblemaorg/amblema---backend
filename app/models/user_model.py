@@ -19,7 +19,7 @@ from resources.email_templates.changed_password_email import changedPasswordEmai
 class User(DynamicDocument):
     objects = QuerySetManager()
     name = fields.StringField()
-    email = fields.EmailField(unique_c=True, required=True)
+    email = fields.EmailField(required=True)
     password = fields.StringField(required=True)
     userType = fields.StringField(required=True)
     role = fields.ReferenceField('Role', required=True)
@@ -33,7 +33,9 @@ class User(DynamicDocument):
     isDeleted = fields.BooleanField(default=False)
     meta = {
         'allow_inheritance': True,
-        'collection': 'users'}
+        'collection': 'users',
+        'indexes': ['isDeleted', 'status', 'userType', 'role']
+    }
 
     def clean(self):
         """Initialize the user"""

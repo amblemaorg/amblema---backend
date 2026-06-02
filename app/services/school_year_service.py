@@ -339,102 +339,58 @@ class CronDiagnosticosService():
     def run(self, limit, skip):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         if schoolYear:
-            pipeline = [
-                {"$match": {"schoolYear": schoolYear.id, "isDeleted": False}},
-                {"$project": {
-                    "id": "$_id",
-                    "school": "$school",
-                    "schoolYear": "$schoolYear",
-                    "latestApproval": {
-                        "$arrayElemAt": [
-                            {"$slice": [
-                                {"$reverseArray": "$yearbook.approvalHistory"}, 
-                                1
-                            ]}, 
-                            0
-                        ]
-                    }
-                }},
-                {"$skip": skip},
-                {"$limit": limit}
-            ]
-
-            # Ejecutar la consulta de agregación
-            db = get_db()
-            peca_projects = list(db.peca_project.aggregate(pipeline))
+            from app.models.yearbook_approval_model import YearbookApproval
             
-            # Procesar cada proyecto Peca
-            for project in peca_projects:
-                # Recuperar la instancia real de PecaProject por ID
-                peca_id = project["id"]
-
+            # Fetch pecas with skip and limit
+            peca_projects = PecaProject.objects(
+                schoolYear=schoolYear.id, isDeleted=False
+            ).only('id', 'school', 'schoolYear').skip(skip).limit(limit)
+            
+            for peca in peca_projects:
                 # Modificar el valor en el último approvalHistory directamente en la base de datos
-                latest_approval = project.get("latestApproval")
-                diagnostic_summary = latest_approval["detail"]["lapse1"]["diagnosticSummary"]                   
+                latest_approval = YearbookApproval.objects(pecaId=str(peca.id)).order_by('-createdAt').first()
+                
+                if latest_approval and latest_approval.approval.detail.get('lapse1'):
+                    diagnostic_summary = latest_approval.approval.detail['lapse1']['diagnosticSummary']
 
-                # Recuperar la instancia de PecaProject para continuar con el procesamiento
-                peca = PecaProject.objects(id=peca_id).only('id','school','schoolYear').first()
-
-                # Iterar sobre las secciones de la escuela
-                for section in peca.school.sections.filter(isDeleted=False):
-                    if section.grade != "0":
-                        # Configuración del objetivo según el grado
-                        setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(section.grade)]
+                    # Iterar sobre las secciones de la escuela
+                    for section in peca.school.sections.filter(isDeleted=False):
+                        if section.grade != "0":
+                            # Configuración del objetivo según el grado
+                            setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(section.grade)]
+                            
+                            # Procesar cada estudiante
+                            for student in section.students.filter(isDeleted=False):
+                                for lapse in [1, 2, 3]:
+                                    diagnostic = student['lapse{}'.format(lapse)]
+                                    if diagnostic:
+                                        diagnostic.calculateIndex(setting)
                         
-                        # Procesar cada estudiante
-                        for student in section.students.filter(isDeleted=False):
-                            for lapse in [1, 2, 3]:
-                                diagnostic = student['lapse{}'.format(lapse)]
-                                if diagnostic:
-                                    diagnostic.calculateIndex(setting)
+                        # Actualizar los resúmenes de diagnóstico
+                        section.refreshDiagnosticsSummary()
+                        for summary in diagnostic_summary:
+                            if summary["grade"] == section.grade and summary["name"] == section.name:
+                                summary["wordsPerMinIndex"] = section.diagnostics["lapse1"]["wordsPerMinIndex"]
+                                summary["operationsPerMinIndex"] = section.diagnostics["lapse1"]["operationsPerMinIndex"]
+                                summary["multiplicationsPerMinIndex"] = section.diagnostics["lapse1"]["multiplicationsPerMinIndex"]
+                                summary["wordsPerMin"] = section.diagnostics["lapse1"]["wordsPerMin"]
+                                summary["operationsPerMin"] = section.diagnostics["lapse1"]["operationsPerMin"]
+                                summary["multiplicationsPerMin"] = section.diagnostics["lapse1"]["multiplicationsPerMin"]
+                        peca.school.refreshDiagnosticsSummary()
                     
-                    # Actualizar los resúmenes de diagnóstico
-                    section.refreshDiagnosticsSummary()
-                    for summary in diagnostic_summary:
-                        if summary["grade"] == section.grade and summary["name"] == section.name:
-                            summary["wordsPerMinIndex"] = section.diagnostics["lapse1"]["wordsPerMinIndex"]
-                            summary["operationsPerMinIndex"] = section.diagnostics["lapse1"]["operationsPerMinIndex"]
-                            summary["multiplicationsPerMinIndex"] = section.diagnostics["lapse1"]["multiplicationsPerMinIndex"]
-                            summary["wordsPerMin"] = section.diagnostics["lapse1"]["wordsPerMin"]
-                            summary["operationsPerMin"] = section.diagnostics["lapse1"]["operationsPerMin"]
-                            summary["multiplicationsPerMin"] = section.diagnostics["lapse1"]["multiplicationsPerMin"]
-                    peca.school.refreshDiagnosticsSummary()
-                
-                # Guardar y recargar la instancia de PecaProject
-                peca.save()
-                peca.reload()
-                
-                db.pecaproject.update_one(
-                    {"_id": peca_id, "yearbook.approvalHistory.id": latest_approval["id"]},
-                    {"$set": {"yearbook.approvalHistory.$.detail.lapse1.diagnosticSummary": diagnostic_summary}}
-                )
-                # Actualizar el resumen de diagnóstico del año escolar
-                schoolYearPeca = peca.schoolYear.fetch()
-                schoolYearPeca.refreshDiagnosticsSummary()
-                schoolYearPeca.save()
+                    # Guardar y recargar la instancia de PecaProject
+                    peca.save()
+                    
+                    # Update YearbookApproval
+                    latest_approval.approval.detail['lapse1']['diagnosticSummary'] = diagnostic_summary
+                    latest_approval.save()
+                    
+                    # Actualizar el resumen de diagnóstico del año escolar
+                    schoolYearPeca = peca.schoolYear.fetch()
+                    schoolYearPeca.refreshDiagnosticsSummary()
+                    schoolYearPeca.save()
 
             return {"message": "Cron ejecutado"}, 200
-
-            """ 
-            pecas = PecaProject.objects(schoolYear=schoolYear.id, isDeleted=False).only('id','school','schoolYear').limit(limit).skip(skip)
-            for peca in pecas:
-                for section in peca.school.sections.filter(isDeleted=False):
-                    if section.grade != "0":
-                        setting = schoolYear.pecaSetting.goalSetting['grade{}'.format(section.grade)]
-                        for student in section.students.filter(isDeleted=False):
-                            for lapse in [1,2,3]:
-                                diagnostic = student['lapse{}'.format(lapse)]
-                                if diagnostic:
-                                    diagnostic.calculateIndex(setting)
-                    section.refreshDiagnosticsSummary()
-                    peca.school.refreshDiagnosticsSummary()
-                peca.save()
-                peca.reload()
-                schoolYearPeca = peca.schoolYear.fetch()
-                schoolYearPeca.refreshDiagnosticsSummary()
-                schoolYearPeca.save()
-            return {"message": "Cron ejecutado"}, 200  
-            """          
         else:
             return {"message": "No hay año escolar activo"}, 200
 
@@ -462,6 +418,8 @@ class CronClearApprovalHistoryService():
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
         if schoolYear:
             try:
+                from app.models.yearbook_approval_model import YearbookApproval
+                
                 # Obtengo el primer día del mes desde
                 fecha_inicio = datetime.datetime(datetime.datetime.now().year, desde, 1)
 
@@ -470,17 +428,18 @@ class CronClearApprovalHistoryService():
                 fecha_fin = fecha_fin.replace(day=1) - timedelta(days=1)
                 
                 pecas = PecaProject.objects(
-                    yearbook__approvalHistory__updatedAt__lt=fecha_inicio,
                     isDeleted=False,
                     schoolYear=schoolYear.id
                 ).only("id")
                 
                 for peca in pecas:
-                    peca = PecaProject.objects.only("id", "yearbook__approvalHistory").get(id=peca.id)
+                    # Fetch all approvals for this peca
+                    approvals = YearbookApproval.objects(pecaId=str(peca.id)).order_by('createdAt')
+                    
                     # Filtro los datos que necesito mantener
                     elementos_filtrados = [
-                        elem for elem in peca.yearbook.approvalHistory
-                        if ((elem.status == "1" or elem.status == "2" or elem.status=="3") and elem.updatedAt >= fecha_inicio)  
+                        elem for elem in approvals
+                        if ((elem.approval.status == "1" or elem.approval.status == "2" or elem.approval.status=="3") and elem.updatedAt >= fecha_inicio)  
                     ]
                     
                     # Dejamos solo el ultimo historico aprobado
@@ -489,25 +448,25 @@ class CronClearApprovalHistoryService():
                     encontrado_rechazado = False
                     if elementos_filtrados:
                         for elem in reversed(elementos_filtrados):
-                            if elem.status != "2" and elem.status != "3":
+                            if elem.approval.status != "2" and elem.approval.status != "3":
                                 nueva_lista.append(elem)
                             
-                            if elem.status == "2" and not encontrado_ultimo:
+                            if elem.approval.status == "2" and not encontrado_ultimo:
                                 nueva_lista.append(elem)
                                 encontrado_ultimo = True
 
-                            if elem.status == "3" and not encontrado_rechazado:
+                            if elem.approval.status == "3" and not encontrado_rechazado:
                                 nueva_lista.append(elem)
                                 encontrado_rechazado = True
 
                         if nueva_lista:
                             elementos_filtrados = list(reversed(nueva_lista))
                     
-                    # Actualizar approvalHistory con los elementos filtrados
-                    peca.yearbook.approvalHistory = elementos_filtrados
-                    
-                    # Guardar los cambios en el documento
-                    peca.save()    
+                    # Delete approvals not in elementos_filtrados
+                    keep_ids = [str(elem.id) for elem in elementos_filtrados]
+                    for approval in approvals:
+                        if str(approval.id) not in keep_ids:
+                            approval.delete()
                 
                 return {"message": "Cron ejecutado"}, 200            
             except Exception as e:
@@ -518,6 +477,7 @@ class CronClearApprovalHistoryService():
 class ClearApprovalHistoryPastYearService():
     def run(self):
         try:
+            from app.models.yearbook_approval_model import YearbookApproval
             schoolYears = SchoolYear.objects(isDeleted=False, status = "2")
             for schoolYear in schoolYears:
                 pecas = PecaProject.objects(
@@ -526,22 +486,24 @@ class ClearApprovalHistoryPastYearService():
                 ).only("id")
                 
                 for peca in pecas:
-                    peca = PecaProject.objects.only("id", "yearbook__approvalHistory").get(id=peca.id)
+                    # Fetch approvals
+                    approvals = YearbookApproval.objects(pecaId=str(peca.id)).order_by('createdAt')
+                    
                     # Filtro los datos que necesito mantener
                     elementos_filtrados = [
-                        elem for elem in peca.yearbook.approvalHistory
-                        if (elem.status == "2")
+                        elem for elem in approvals
+                        if (elem.approval.status == "2")
                     ]
                     
                     # Dejamos solo el ultimo historico aprobado
                     if elementos_filtrados:
                         elementos_filtrados = [elementos_filtrados[-1]]
-                    
-                    # Actualizar approvalHistory con los elementos filtrados
-                    peca.yearbook.approvalHistory = elementos_filtrados
                         
-                    # Guardar los cambios en el documento
-                    peca.save()  
+                    # Delete others
+                    keep_ids = [str(elem.id) for elem in elementos_filtrados]
+                    for approval in approvals:
+                        if str(approval.id) not in keep_ids:
+                            approval.delete()
 
             return {"message": "Ejecutado"}, 200            
         except Exception as e:
@@ -550,34 +512,39 @@ class ClearApprovalHistoryPastYearService():
 class CronUpdateDataProjectsService():
     def run(self, limit, skip):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
-        
         if schoolYear:
             try:
+                from app.models.yearbook_approval_model import YearbookApproval
+                
                 pecas = PecaProject.objects(
                     isDeleted=False,
                     schoolYear=schoolYear.id
-                ).only("id").limit(limit).skip(skip)
+                ).only("id", "project").skip(skip).limit(limit)
                 
                 for peca in pecas:
-                    peca = PecaProject.objects.only("id", "project","yearbook__school","yearbook__coordinator", "yearbook__sponsor", "yearbook__approvalHistory").get(id=peca.id)
-                    sponsor = SponsorUser.objects.only("id", "name").get(id=peca.project.sponsor.id)
-                    coordinator = CoordinatorUser.objects.only("id", "name").get(id=peca.project.coordinator.id)
-                    school = SchoolUser.objects.only("id", "name").get(id=peca.project.school.id)
-
-                    peca.project.school.name = school.name
-                    peca.yearbook.school.name = school.name
-                    peca.project.coordinator.name = coordinator.name
-                    peca.yearbook.coordinator.name = coordinator.name
-                    peca.project.sponsor.name = sponsor.name
-                    peca.yearbook.sponsor.name = sponsor.name
-                    for approval in peca.yearbook.approvalHistory:
-                        approval["detail"]["school"]["name"] = school.name
-                        approval["detail"]["coordinator"]["name"] = coordinator.name
-                        approval["detail"]["sponsor"]["name"] = sponsor.name
-                    peca.save()
-
-                return {"message": "Ejecutado"}, 200            
-            
+                    projectReference = peca.project
+                    
+                    # Fetch approvals
+                    approvals = YearbookApproval.objects(pecaId=str(peca.id))
+                    
+                    for approval in approvals:
+                        updated = False
+                        if approval.approval.detail['sponsor']['name'] != "" and approval.approval.detail['sponsor']['name'] != projectReference.sponsor["name"]:
+                            approval.approval.detail['sponsor']['name'] = projectReference.sponsor["name"]
+                            updated = True
+                            
+                        if approval.approval.detail['school']['name'] != "" and approval.approval.detail['school']['name'] != projectReference.school["name"]:
+                            approval.approval.detail['school']['name'] = projectReference.school["name"]
+                            updated = True
+                            
+                        if approval.approval.detail['coordinator']['name'] != "" and approval.approval.detail['coordinator']['name'] != projectReference.coordinator["name"]:
+                            approval.approval.detail['coordinator']['name'] = projectReference.coordinator["name"]
+                            updated = True
+                        
+                        if updated:
+                            approval.save()
+                
+                return {"message": "Cron ejecutado"}, 200            
             except Exception as e:
                 return {"message": "Cron error: "+str(e)}, 400
         else:

@@ -21,7 +21,7 @@ from app.schemas import fields
 
 
 class State(Document):
-    name = StringField(unique_c=True, required=True)
+    name = StringField(required=True)
     polygon = PolygonField()
     isDeleted = BooleanField(default=False)
     createdAt = DateTimeField(default=datetime.utcnow)
@@ -33,7 +33,7 @@ class State(Document):
 
 
 class Municipality(Document):
-    name = StringField(unique_c=True, required=True)
+    name = StringField(required=True)
     state = ReferenceField(State, required=True)
     polygon = PolygonField()
     isDeleted = BooleanField(default=False)

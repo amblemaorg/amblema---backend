@@ -27,6 +27,11 @@ class ReqContentApprovalController(Resource):
         filters.extend(get_school_year_date_filters())
         
         only = None
+        
+        # Handling pagination params
+        page = request.args.get('page')
+        per_page = request.args.get('per_page')
+        
         if 'only' in request.args:
             only = request.args['only'].split(',')
         

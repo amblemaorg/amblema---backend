@@ -31,7 +31,7 @@ class OlympicsSummary(EmbeddedDocument):
 
 
 class SchoolUser(User):
-    code = fields.StringField(required=True, unique_c=True)
+    code = fields.StringField(required=True)
     phone = fields.StringField(required=True)
     image = fields.StringField(null=True)
     schoolType = fields.StringField(null=True, max_length=1)

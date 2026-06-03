@@ -30,7 +30,7 @@ class RequestContentApproval(Document):
     isDeleted = fields.BooleanField(default=False)
     meta = {
         'collection': 'requests_content_approval',
-        'indexes': ['isDeleted', 'status', 'project', ('status', '-updatedAt')]
+        'indexes': ['isDeleted', 'status', 'project.id', ('status', '-updatedAt')]
     }
 
     def clean(self):

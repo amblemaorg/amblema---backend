@@ -287,3 +287,58 @@ class StatisticsDiagnosticService():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"schoolYearId": schoolYearId, "schoolId": schoolId})
+
+    def get_pins_report(self, schoolYearId):
+        schoolYear = SchoolYear.objects(id=schoolYearId).first()
+        if not schoolYear:
+            raise RegisterNotFound(message="School year not found",
+                                   status_code=404,
+                                   payload={"schoolYearId": schoolYearId})
+
+        pecas = PecaProject.objects(
+            schoolYear=schoolYearId,
+            isDeleted=False
+        )
+
+        data = {
+            'schoolYear': schoolYear.name,
+            'date': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ'),
+            'schools': []
+        }
+
+        for peca in pecas:
+            enrollment = 0
+            for section in peca.school.sections:
+                if not section.isDeleted:
+                    for student in section.students:
+                        if not student.isDeleted:
+                            enrollment += 1
+
+            school_data = {
+                'schoolName': peca.school.name,
+                'state': peca.school.addressState.name if peca.school.addressState else "",
+                'enrollment': enrollment,
+                'readingOverGoal': 0,
+                'mathOverGoal': 0,
+                'logicOverGoal': 0
+            }
+
+            for section in peca.school.sections:
+                if section.grade.isdigit() and int(section.grade) > 0 and not section.isDeleted:
+                    for student in section.students:
+                        if not student.isDeleted:
+                            studentLapse = student.lapse3
+                            if studentLapse:
+                                if studentLapse.wordsPerMinIndex is not None and float(studentLapse.wordsPerMinIndex) >= 100:
+                                    school_data['readingOverGoal'] += 1
+                                if studentLapse.multiplicationsPerMinIndex is not None and float(studentLapse.multiplicationsPerMinIndex) >= 100:
+                                    school_data['mathOverGoal'] += 1
+                                if studentLapse.operationsPerMinIndex is not None and float(studentLapse.operationsPerMinIndex) >= 100:
+                                    school_data['logicOverGoal'] += 1
+
+            data['schools'].append(school_data)
+
+        # Sort schools by state and schoolName case-insensitively
+        data['schools'] = sorted(data['schools'], key=lambda x: (x['state'].lower(), x['schoolName'].lower()))
+
+        return data, 200

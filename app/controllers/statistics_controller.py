@@ -82,3 +82,12 @@ class NumberActiveSchoolsController(Resource):
     @jwt_required
     def get(self, startPeriodId, endPeriodId):
         return self.service.get(startPeriodId, endPeriodId)
+
+
+class PinsReportController(Resource):
+
+    service = StatisticsDiagnosticService()
+
+    @jwt_required
+    def get(self, schoolYearId):
+        return self.service.get_pins_report(schoolYearId)

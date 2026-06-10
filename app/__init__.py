@@ -143,7 +143,7 @@ from app.controllers.student_controller import (
     StudentController, StudentHandlerController
 )
 from app.controllers.statistics_controller import (
-    UserSummaryController, DiagnosticReportController, UserReportController, OlympicsReportCtrl, ActiveSponsorsGraphicController, InactiveSponsorsGraphicController, NumberActiveSchoolsController
+    UserSummaryController, DiagnosticReportController, UserReportController, OlympicsReportCtrl, ActiveSponsorsGraphicController, InactiveSponsorsGraphicController, NumberActiveSchoolsController, PinsReportController
 )
 from app.controllers.diagnostic_controller import DiagnosticController, DiagnosticImportController
 from app.controllers.teacher_testimonial_controller import (
@@ -390,6 +390,8 @@ def create_app(config_instance):
                      '/statistics/olympicsreport/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(DiagnosticReportController,
                      '/statistics/diagnosticsreport/<string:schoolYearId>/<string:schoolId>')
+    api.add_resource(PinsReportController,
+                     '/statistics/pinsreport/<string:schoolYearId>')
     api.add_resource(ActiveSponsorsGraphicController,
                      '/statistics/activesponsorsgraphic/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(InactiveSponsorsGraphicController,

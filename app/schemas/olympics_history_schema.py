@@ -8,7 +8,6 @@ class OlympicsHistoryDataSchema(Schema):
     regionalGold = fields.Int()
     regionalSilver = fields.Int()
     regionalBronze = fields.Int()
-    nationalClassified = fields.Int()
     nationalGold = fields.Int()
     nationalSilver = fields.Int()
     nationalBronze = fields.Int()

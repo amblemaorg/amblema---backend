@@ -4,11 +4,11 @@ from datetime import datetime
 from mongoengine import Document, EmbeddedDocument, fields
 
 class OlympicsHistoryData(EmbeddedDocument):
+    meta = {'strict': False}
     regionalClassified = fields.IntField(default=0)
     regionalGold = fields.IntField(default=0)
     regionalSilver = fields.IntField(default=0)
     regionalBronze = fields.IntField(default=0)
-    nationalClassified = fields.IntField(default=0)
     nationalGold = fields.IntField(default=0)
     nationalSilver = fields.IntField(default=0)
     nationalBronze = fields.IntField(default=0)

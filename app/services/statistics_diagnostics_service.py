@@ -135,13 +135,8 @@ class StatisticsDiagnosticService():
                                         sectionLapse[diag]['participants'] += 1
                                         sectionLapse[diag]['resultTotal'] += studentLapse[diagnostics[diag]]
                                         sectionLapse[diag]['indexTotal'] += float(studentLapse['{}Index'.format(diagnostics[diag])]) if studentLapse['{}Index'.format(diagnostics[diag])]!=None else 0
-                                        if diag == "reading":
+                                        if diag in ["reading", "math", "logic"]:
                                             if studentLapse[diagnostics[diag]] >= goal:
-                                                sectionLapse[diag]['overGoalStudents'] += 1
-                                                data["totales"]["lapse{}".format(i+1)][diag]["studentsMeta"] += 1
-
-                                        if diag in ["math", "logic"]:
-                                            if studentLapse[diagnostics[diag]] == goal:
                                                 sectionLapse[diag]['overGoalStudents'] += 1
                                                 data["totales"]["lapse{}".format(i+1)][diag]["studentsMeta"] += 1
 

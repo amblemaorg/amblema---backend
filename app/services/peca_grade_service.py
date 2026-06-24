@@ -105,9 +105,9 @@ class PecaGradeService():
                             olympics_data = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
                         else:
                             olympics_data = peca['lapse{}'.format(jsonData["lapse"])].olympics
-
-                        classified = olympics_data.students.filter(status="3")
-                        classifiedNational = olympics_data.students.filter(statusNational="2")
+                        
+                        school = SchoolUser.objects(
+                            id=peca.project.school.id, isDeleted=False).first()
                         
                         if olympicsType == 'reading':
                             school.olympicsReadingSummary.inscribed = len(olympics_data.students)
@@ -115,34 +115,34 @@ class PecaGradeService():
                             school.olympicsReadingSummary.classified = len(olympics_data.students.filter(status="3"))
                             
                             school.olympicsReadingSummary.participantRegional = len([s for s in olympics_data.students if s.statusRegional in ["1", "2"]])
-                            school.olympicsReadingSummary.classifiedRegional = len(olympics_data.students.filter(statusRegional="2"))
+                            school.olympicsReadingSummary.classifiedRegional = 0
                             
-                            school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="2"))
-                            school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="2"))
-                            school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="2"))
+                            school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="1"))
+                            school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="1"))
+                            school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="1"))
                             
                             school.olympicsReadingSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
-                            school.olympicsReadingSummary.classifiedNational = len(classifiedNational)
-                            school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
-                            school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
-                            school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                            school.olympicsReadingSummary.classifiedNational = 0
+                            school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="1"))
+                            school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="1"))
+                            school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="1"))
                         else:
                             school.olympicsSummary.inscribed = len(olympics_data.students)
                             school.olympicsSummary.participant = len([s for s in olympics_data.students if s.status in ["2", "3"]])
                             school.olympicsSummary.classified = len(olympics_data.students.filter(status="3"))
                             
                             school.olympicsSummary.participantRegional = len([s for s in olympics_data.students if s.statusRegional in ["1", "2"]])
-                            school.olympicsSummary.classifiedRegional = len(olympics_data.students.filter(statusRegional="2"))
+                            school.olympicsSummary.classifiedRegional = 0
                             
-                            school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="2"))
-                            school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="2"))
-                            school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="2"))
+                            school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="1"))
+                            school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="1"))
+                            school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="1"))
 
                             school.olympicsSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
-                            school.olympicsSummary.classifiedNational = len(classifiedNational)
-                            school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
-                            school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
-                            school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                            school.olympicsSummary.classifiedNational = 0
+                            school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="1"))
+                            school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="1"))
+                            school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="1"))
                 
                         school.save()
                         school.reload()
@@ -196,13 +196,10 @@ class PecaGradeService():
                      return {'status': 0, 'message': str(e)},400
 
                 if olympicsType == 'reading':
-                     olympics_data = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
+                    olympics_data = peca['lapse{}'.format(jsonData["lapse"])].readingOlympics
                 else:
-                     olympics_data = peca['lapse{}'.format(jsonData["lapse"])].olympics
+                    olympics_data = peca['lapse{}'.format(jsonData["lapse"])].olympics
                 
-                classified = olympics_data.students.filter(status="3")
-                classifiedNational = olympics_data.students.filter(statusNational="2")
-
                 school = SchoolUser.objects(
                     id=peca.project.school.id, isDeleted=False).first()
                 
@@ -212,17 +209,17 @@ class PecaGradeService():
                     school.olympicsReadingSummary.classified = len(olympics_data.students.filter(status="3"))
                     
                     school.olympicsReadingSummary.participantRegional = len([s for s in olympics_data.students if s.statusRegional in ["1", "2"]])
-                    school.olympicsReadingSummary.classifiedRegional = len(olympics_data.students.filter(statusRegional="2"))
+                    school.olympicsReadingSummary.classifiedRegional = 0
                     
-                    school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="2"))
-                    school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="2"))
-                    school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="2"))
+                    school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="1"))
+                    school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="1"))
+                    school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="1"))
                     
                     school.olympicsReadingSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
-                    school.olympicsReadingSummary.classifiedNational = len(classifiedNational)
-                    school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
-                    school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
-                    school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.olympicsReadingSummary.classifiedNational = 0
+                    school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="1"))
+                    school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="1"))
+                    school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="1"))
                     school.save()
 
                 elif olympicsType == 'math':
@@ -231,17 +228,17 @@ class PecaGradeService():
                     school.olympicsSummary.classified = len(olympics_data.students.filter(status="3"))
                     
                     school.olympicsSummary.participantRegional = len([s for s in olympics_data.students if s.statusRegional in ["1", "2"]])
-                    school.olympicsSummary.classifiedRegional = len(olympics_data.students.filter(statusRegional="2"))
+                    school.olympicsSummary.classifiedRegional = 0
                     
-                    school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="2"))
-                    school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="2"))
-                    school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="2"))
+                    school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="1"))
+                    school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="1"))
+                    school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="1"))
 
                     school.olympicsSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
-                    school.olympicsSummary.classifiedNational = len(classifiedNational)
-                    school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
-                    school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
-                    school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.olympicsSummary.classifiedNational = 0
+                    school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="1"))
+                    school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="1"))
+                    school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="1"))
                     school.save()
 
                 return {"status": 201, "message": "Se han eliminado los estudiantes con éxito"}, 201
@@ -286,9 +283,6 @@ class PecaGradeService():
                 else:
                      olympics_data = peca['lapse{}'.format(jsonData["lapse"])].olympics
 
-                classified = olympics_data.students.filter(status="3")
-                classifiedNational = olympics_data.students.filter(statusNational="2")
-
                 school = SchoolUser.objects(
                     id=peca.project.school.id, isDeleted=False).first()
                 
@@ -298,17 +292,17 @@ class PecaGradeService():
                     school.olympicsReadingSummary.classified = len(olympics_data.students.filter(status="3"))
                     
                     school.olympicsReadingSummary.participantRegional = len([s for s in olympics_data.students if s.statusRegional in ["1", "2"]])
-                    school.olympicsReadingSummary.classifiedRegional = len(olympics_data.students.filter(statusRegional="2"))
+                    school.olympicsReadingSummary.classifiedRegional = 0
                     
-                    school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="2"))
-                    school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="2"))
-                    school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="2"))
+                    school.olympicsReadingSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="1"))
+                    school.olympicsReadingSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="1"))
+                    school.olympicsReadingSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="1"))
                     
                     school.olympicsReadingSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
-                    school.olympicsReadingSummary.classifiedNational = len(classifiedNational)
-                    school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
-                    school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
-                    school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.olympicsReadingSummary.classifiedNational = 0
+                    school.olympicsReadingSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="1"))
+                    school.olympicsReadingSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="1"))
+                    school.olympicsReadingSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="1"))
                     school.save()
 
                 elif olympicsType == 'math':
@@ -317,17 +311,17 @@ class PecaGradeService():
                     school.olympicsSummary.classified = len(olympics_data.students.filter(status="3"))
                     
                     school.olympicsSummary.participantRegional = len([s for s in olympics_data.students if s.statusRegional in ["1", "2"]])
-                    school.olympicsSummary.classifiedRegional = len(olympics_data.students.filter(statusRegional="2"))
+                    school.olympicsSummary.classifiedRegional = 0
                     
-                    school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="2"))
-                    school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="2"))
-                    school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="2"))
+                    school.olympicsSummary.medalsGold = len(olympics_data.students.filter(result="1", statusRegional="1"))
+                    school.olympicsSummary.medalsSilver = len(olympics_data.students.filter(result="2", statusRegional="1"))
+                    school.olympicsSummary.medalsBronze = len(olympics_data.students.filter(result="3", statusRegional="1"))
 
                     school.olympicsSummary.inscribedNational = len(olympics_data.students.filter(result="1"))
-                    school.olympicsSummary.classifiedNational = len(classifiedNational)
-                    school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="2"))
-                    school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="2"))
-                    school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="2"))
+                    school.olympicsSummary.classifiedNational = 0
+                    school.olympicsSummary.medalsGoldNational = len(olympics_data.students.filter(resultNational="1", statusNational="1"))
+                    school.olympicsSummary.medalsSilverNational = len(olympics_data.students.filter(resultNational="2", statusNational="1"))
+                    school.olympicsSummary.medalsBronzeNational = len(olympics_data.students.filter(resultNational="3", statusNational="1"))
                     school.save()
                     
                 return {"status": 201, "message": "Se han cambiado el estatus de los estudiantes con éxito"}, 201

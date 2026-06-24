@@ -106,8 +106,8 @@ class StatisticsOlympicsService():
                                 grades[student.section.grade]['sections'][student.section.name]['inscribed'] += 1
                                 if student.statusRegional in ["1", "2"]:
                                     grades[student.section.grade]['sections'][student.section.name]['participant'] += 1
-                                if student.statusRegional == "2":
                                     grades[student.section.grade]['sections'][student.section.name]['classified'] += 1
+                                if student.statusRegional == "1":
                                     if student.result:
                                         if student.result == "1":
                                             grades[student.section.grade]['sections'][student.section.name]['medalsGold'] += 1
@@ -116,30 +116,30 @@ class StatisticsOlympicsService():
                                         elif student.result == "3":
                                             grades[student.section.grade]['sections'][student.section.name]['medalsBronze'] += 1
                                     
-                                    if student.statusNational == "2":
-                                        grades[student.section.grade]['sections'][student.section.name]['classifiedNational'] += 1
-                                        if student.resultNational:
-                                            if student.resultNational == "1":
-                                                grades[student.section.grade]['sections'][student.section.name]['medalsGoldNational'] += 1
-                                            elif student.resultNational == "2":
-                                                grades[student.section.grade]['sections'][student.section.name]['medalsSilverNational'] += 1
-                                            elif student.resultNational == "3":
-                                                grades[student.section.grade]['sections'][student.section.name]['medalsBronzeNational'] += 1
+                                if student.statusNational in ["1", "2"]:
+                                    grades[student.section.grade]['sections'][student.section.name]['classifiedNational'] += 1
+                                if student.statusNational == "1":
+                                    if student.resultNational:
+                                        if student.resultNational == "1":
+                                            grades[student.section.grade]['sections'][student.section.name]['medalsGoldNational'] += 1
+                                        elif student.resultNational == "2":
+                                            grades[student.section.grade]['sections'][student.section.name]['medalsSilverNational'] += 1
+                                        elif student.resultNational == "3":
+                                            grades[student.section.grade]['sections'][student.section.name]['medalsBronzeNational'] += 1
                             else:
                                 grades[student.section.grade]['sections'][student.section.name] = {
                                     'name': student.section.name,
                                     'inscribed': 1,
                                     'participant': 1 if student.statusRegional in ["1", "2"] else 0,
-                                    'classified': 1 if student.statusRegional == "2" else 0,
-                                    'medalsGold': 1 if student.result == "1" and student.statusRegional == "2" else 0,
-                                    'medalsSilver': 1 if student.result == "2" and student.statusRegional == "2" else 0,
-                                    'medalsBronze': 1 if student.result == "3" and student.statusRegional == "2" else 0,
-                                    'classifiedNational': 1 if student.statusNational == "2" else 0,
-                                    'medalsGoldNational': 1 if student.resultNational == "1" else 0,
-                                    'medalsSilverNational': 1 if student.resultNational == "2" else 0,
-                                    'medalsBronzeNational': 1 if student.resultNational == "3" else 0
+                                    'classified': 1 if student.statusRegional in ["1", "2"] else 0,
+                                    'medalsGold': 1 if student.result == "1" and student.statusRegional == "1" else 0,
+                                    'medalsSilver': 1 if student.result == "2" and student.statusRegional == "1" else 0,
+                                    'medalsBronze': 1 if student.result == "3" and student.statusRegional == "1" else 0,
+                                    'classifiedNational': 1 if student.statusNational in ["1", "2"] else 0,
+                                    'medalsGoldNational': 1 if student.resultNational == "1" and student.statusNational == "1" else 0,
+                                    'medalsSilverNational': 1 if student.resultNational == "2" and student.statusNational == "1" else 0,
+                                    'medalsBronzeNational': 1 if student.resultNational == "3" and student.statusNational == "1" else 0
                                 }
-
                         else:
                             grades[student.section.grade] = {
                                 'name': student.section.grade,
@@ -148,14 +148,14 @@ class StatisticsOlympicsService():
                                         'name': student.section.name,
                                         'inscribed': 1,
                                         'participant': 1 if student.statusRegional in ["1", "2"] else 0,
-                                        'classified': 1 if student.statusRegional == "2" else 0,
-                                        'medalsGold': 1 if student.result == "1" and student.statusRegional == "2" else 0,
-                                        'medalsSilver': 1 if student.result == "2" and student.statusRegional == "2" else 0,
-                                        'medalsBronze': 1 if student.result == "3" and student.statusRegional == "2" else 0,
-                                        'classifiedNational': 1 if student.statusNational == "2" else 0,
-                                        'medalsGoldNational': 1 if student.resultNational == "1" else 0,
-                                        'medalsSilverNational': 1 if student.resultNational == "2" else 0,
-                                        'medalsBronzeNational': 1 if student.resultNational == "3" else 0
+                                        'classified': 1 if student.statusRegional in ["1", "2"] else 0,
+                                        'medalsGold': 1 if student.result == "1" and student.statusRegional == "1" else 0,
+                                        'medalsSilver': 1 if student.result == "2" and student.statusRegional == "1" else 0,
+                                        'medalsBronze': 1 if student.result == "3" and student.statusRegional == "1" else 0,
+                                        'classifiedNational': 1 if student.statusNational in ["1", "2"] else 0,
+                                        'medalsGoldNational': 1 if student.resultNational == "1" and student.statusNational == "1" else 0,
+                                        'medalsSilverNational': 1 if student.resultNational == "2" and student.statusNational == "1" else 0,
+                                        'medalsBronzeNational': 1 if student.resultNational == "3" and student.statusNational == "1" else 0
                                     }
                                 }
                             }

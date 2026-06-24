@@ -203,8 +203,7 @@ class SchoolYear(Document):
                         
                         if student.statusRegional in ["1", "2"]:
                             res['mathParticipantRegional'] += 1
-                        if student.statusRegional == "2":
-                            res['mathClassifiedRegional'] += 1
+                        if student.statusRegional == "1":
                             if student.result == "1":
                                 res['mathMedalsGold'] += 1
                             elif student.result == "2":
@@ -212,7 +211,7 @@ class SchoolYear(Document):
                             elif student.result == "3":
                                 res['mathMedalsBronze'] += 1
                         
-                        if student.statusNational == "2":
+                        if student.statusNational == "1":
                             if student.resultNational == "1":
                                 res['mathMedalsGoldNational'] += 1
                             elif student.resultNational == "2":
@@ -232,8 +231,7 @@ class SchoolYear(Document):
 
                         if student.statusRegional in ["1", "2"]:
                             res['readingParticipantRegional'] += 1
-                        if student.statusRegional == "2":
-                            res['readingClassifiedRegional'] += 1
+                        if student.statusRegional == "1":
                             if student.result == "1":
                                 res['readingMedalsGold'] += 1
                             elif student.result == "2":
@@ -241,7 +239,7 @@ class SchoolYear(Document):
                             elif student.result == "3":
                                 res['readingMedalsBronze'] += 1
                         
-                        if student.statusNational == "2":
+                        if student.statusNational == "1":
                             if student.resultNational == "1":
                                 res['readingMedalsGoldNational'] += 1
                             elif student.resultNational == "2":

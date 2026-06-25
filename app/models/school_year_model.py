@@ -164,6 +164,7 @@ class SchoolYear(Document):
             'mathMedalsBronze': 0,
             'mathParticipantRegional': 0,
             'mathClassifiedRegional': 0,
+            'mathParticipantNational': 0,
             'mathMedalsGoldNational': 0,
             'mathMedalsSilverNational': 0,
             'mathMedalsBronzeNational': 0,
@@ -175,6 +176,7 @@ class SchoolYear(Document):
             'readingMedalsBronze': 0,
             'readingParticipantRegional': 0,
             'readingClassifiedRegional': 0,
+            'readingParticipantNational': 0,
             'readingMedalsGoldNational': 0,
             'readingMedalsSilverNational': 0,
             'readingMedalsBronzeNational': 0
@@ -211,6 +213,8 @@ class SchoolYear(Document):
                             elif student.result == "3":
                                 res['mathMedalsBronze'] += 1
                         
+                        if student.statusNational in ["1", "2"]:
+                            res['mathParticipantNational'] += 1
                         if student.statusNational == "1":
                             if student.resultNational == "1":
                                 res['mathMedalsGoldNational'] += 1
@@ -239,6 +243,8 @@ class SchoolYear(Document):
                             elif student.result == "3":
                                 res['readingMedalsBronze'] += 1
                         
+                        if student.statusNational in ["1", "2"]:
+                            res['readingParticipantNational'] += 1
                         if student.statusNational == "1":
                             if student.resultNational == "1":
                                 res['readingMedalsGoldNational'] += 1

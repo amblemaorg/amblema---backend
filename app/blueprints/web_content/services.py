@@ -51,6 +51,62 @@ class WebContentService(GenericServices):
                     Model=OlympicsHistory, Schema=OlympicsHistorySchema)
                 olympicsHistory, status = olympicsHistoryService.getRecord()
                 data['homePage']['olympicsHistory'] = olympicsHistory
+
+                # Get current school year's olympics statistics
+                active_sy = SchoolYear.objects(isDeleted=False, status="1").first()
+                target_sy = None
+                if active_sy:
+                    has_data = False
+                    summary = active_sy.olympicsSummary
+                    if summary:
+                        if (summary.mathEnrolledCount > 0 or summary.readingEnrolledCount > 0 or
+                            summary.mathParticipantRegional > 0 or summary.readingParticipantRegional > 0):
+                            has_data = True
+                    if has_data:
+                        target_sy = active_sy
+                    else:
+                        school_years = list(SchoolYear.objects(isDeleted=False).order_by('-startDate'))
+                        try:
+                            active_idx = -1
+                            for idx, sy in enumerate(school_years):
+                                if str(sy.id) == str(active_sy.id):
+                                    active_idx = idx
+                                    break
+                            if active_idx != -1 and active_idx + 1 < len(school_years):
+                                target_sy = school_years[active_idx + 1]
+                        except Exception:
+                            pass
+                
+                if not target_sy:
+                    target_sy = active_sy if active_sy else SchoolYear.objects(isDeleted=False).order_by('-startDate').first()
+
+                if target_sy and target_sy.olympicsSummary:
+                    sum = target_sy.olympicsSummary
+                    data['homePage']['currentOlympics'] = {
+                        'schoolYearName': target_sy.name,
+                        'mathOlympics': {
+                            'participantRegional': sum.mathParticipantRegional,
+                            'goldMedal': sum.mathMedalsGold,
+                            'silverMedal': sum.mathMedalsSilver,
+                            'bronzeMedal': sum.mathMedalsBronze,
+                            'participantNational': getattr(sum, 'mathParticipantNational', 0),
+                            'goldMedalNational': sum.mathMedalsGoldNational,
+                            'silverMedalNational': sum.mathMedalsSilverNational,
+                            'bronzeMedalNational': sum.mathMedalsBronzeNational,
+                        },
+                        'readingOlympics': {
+                            'participantRegional': sum.readingParticipantRegional,
+                            'goldMedal': sum.readingMedalsGold,
+                            'silverMedal': sum.readingMedalsSilver,
+                            'bronzeMedal': sum.readingMedalsBronze,
+                            'participantNational': getattr(sum, 'readingParticipantNational', 0),
+                            'goldMedalNational': sum.readingMedalsGoldNational,
+                            'silverMedalNational': sum.readingMedalsSilverNational,
+                            'bronzeMedalNational': sum.readingMedalsBronzeNational,
+                        }
+                    }
+                else:
+                    data['homePage']['currentOlympics'] = None
             if page == 'sponsorPage':
                 data['sponsorPage']['sponsors'] = sorted(
                     data['sponsorPage']['sponsors'], key=lambda x: (x['position']))

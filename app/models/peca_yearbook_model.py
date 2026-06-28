@@ -23,6 +23,7 @@ class GroupPhoto(EmbeddedDocument):
     groupedSections = fields.ListField(fields.StringField())
 
 class Yearbook(EmbeddedDocument):
+    meta = {'strict': False}
     historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
     sponsor = fields.EmbeddedDocumentField(Entity, default=Entity())
     school = fields.EmbeddedDocumentField(Entity, default=Entity())

@@ -110,6 +110,7 @@ class OlympicsSummary(EmbeddedDocument):
     mathMedalsGoldNational = fields.IntField(default=0)
     mathMedalsSilverNational = fields.IntField(default=0)
     mathMedalsBronzeNational = fields.IntField(default=0)
+    mathParticipantNational = fields.IntField(default=0)
     readingEnrolledCount = fields.IntField(default=0)
     readingParticipant = fields.IntField(default=0)
     readingClassified = fields.IntField(default=0)
@@ -121,3 +122,4 @@ class OlympicsSummary(EmbeddedDocument):
     readingMedalsGoldNational = fields.IntField(default=0)
     readingMedalsSilverNational = fields.IntField(default=0)
     readingMedalsBronzeNational = fields.IntField(default=0)
+    readingParticipantNational = fields.IntField(default=0)

@@ -23,9 +23,9 @@ if not os.getenv('INSTANCE'):
 
 try:
     from app import create_app
-    from app.models.school_year_model import SchoolYear
-    from app.models.school_user_model import SchoolUser
     from app.models.peca_project_model import PecaProject
+    from app.models.school_user_model import SchoolUser
+    from app.models.school_year_model import SchoolYear
 except ImportError as e:
     print("Import Error: {0}".format(e))
     sys.exit(1)
@@ -43,29 +43,61 @@ print("App created. Entering app context...")
 
 with app.app_context():
     try:
-        active_sy = SchoolYear.objects(isDeleted=False, status="1").first()
-        if not active_sy:
-            print("No active school year found.")
-            sys.exit(0)
+        pecas = PecaProject.objects(isDeleted=False)
+        print("Found {0} PecaProjects.".format(len(pecas)))
 
-        print("Recalculating olympics summaries for SchoolYear: {0} ({1})".format(active_sy.name, active_sy.id))
+        modified_pecas_count = 0
+        modified_students_count = 0
 
-        pecas = PecaProject.objects(schoolYear=active_sy.id, isDeleted=False)
+        for peca in pecas:
+            peca_modified = False
+            for lapse in range(1, 4):
+                # Math Olympics
+                math_olympics = getattr(peca, 'lapse{0}'.format(lapse)).olympics
+                if math_olympics and math_olympics.students:
+                    for student in math_olympics.students:
+                        if student.statusRegional == "2":
+                            student.statusRegional = "1"
+                            peca_modified = True
+                            modified_students_count += 1
+                        if student.statusNational == "2":
+                            student.statusNational = "1"
+                            peca_modified = True
+                            modified_students_count += 1
 
-        count = 0
+                # Reading Olympics
+                reading_olympics = getattr(peca, 'lapse{0}'.format(lapse)).readingOlympics
+                if reading_olympics and reading_olympics.students:
+                    for student in reading_olympics.students:
+                        if student.statusRegional == "2":
+                            student.statusRegional = "1"
+                            peca_modified = True
+                            modified_students_count += 1
+                        if student.statusNational == "2":
+                            student.statusNational = "1"
+                            peca_modified = True
+                            modified_students_count += 1
+
+            if peca_modified:
+                peca.save()
+                modified_pecas_count += 1
+                print("Updated student statuses in PecaProject: {0}".format(peca.id))
+
+        print("Total PecaProjects updated: {0}".format(modified_pecas_count))
+        print("Total student statuses migrated: {0}".format(modified_students_count))
+
+        # Now recalculate all school summaries
+        print("Recalculating school summaries...")
+        schools_count = 0
         for peca in pecas:
             if not peca.project or not peca.project.school:
                 continue
-
             school_id = peca.project.school.id
             school = SchoolUser.objects(id=school_id, isDeleted=False).first()
-            
             if not school:
                 continue
-            
-            count += 1
-            print("Processing School: {0}".format(school.name))
 
+            schools_count += 1
             math_summary = {
                 'inscribed': 0, 'participant': 0, 'classified': 0,
                 'medalsGold': 0, 'medalsSilver': 0, 'medalsBronze': 0,
@@ -84,9 +116,9 @@ with app.app_context():
 
             for lapse in range(1, 4):
                 # Math Olympics
-                olympics = getattr(peca, 'lapse{0}'.format(lapse)).olympics
-                if olympics and olympics.students:
-                    for student in olympics.students:
+                math_olympics = getattr(peca, 'lapse{0}'.format(lapse)).olympics
+                if math_olympics and math_olympics.students:
+                    for student in math_olympics.students:
                         math_summary['inscribed'] += 1
                         if student.status in ["2", "3"]:
                             math_summary['participant'] += 1
@@ -143,23 +175,26 @@ with app.app_context():
                             elif student.resultNational == "3":
                                 reading_summary['medalsBronzeNational'] += 1
 
-            # Update SchoolUser
             for k, v in math_summary.items():
                 setattr(school.olympicsSummary, k, v)
-            
             for k, v in reading_summary.items():
                 setattr(school.olympicsReadingSummary, k, v)
-            
             school.save()
 
-        print("Total Schools Processed: {0}".format(count))
+        print("Recalculated {0} school summaries.".format(schools_count))
 
-        print("Recalculating SchoolYear olympics summary...")
-        active_sy.refreshOlympicsSummary()
-        active_sy.save()
-        print("Done!")
+        # Recalculate SchoolYear summaries
+        print("Recalculating SchoolYear summaries...")
+        school_years = SchoolYear.objects(isDeleted=False)
+        for sy in school_years:
+            sy.refreshOlympicsSummary()
+            sy.save()
+            print("Recalculated SchoolYear: {0}".format(sy.name))
+
+        print("Migration and recalculation completed successfully!")
 
     except Exception as e:
-        print("Error during recalculation: {0}".format(e))
+        print("Error during migration: {0}".format(e))
         import traceback
         traceback.print_exc()
+        sys.exit(1)

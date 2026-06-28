@@ -118,6 +118,7 @@ class StatisticsDiagnosticService():
                                     i+1)]
                                 studentLapse = student["lapse{}".format(i+1)]
                                 studentData = {
+                                    'id': str(student.id),
                                     'firstName': student.firstName,
                                     'lastName': student.lastName,
                                     'cardId': student.cardId,

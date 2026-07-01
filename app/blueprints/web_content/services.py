@@ -163,7 +163,7 @@ class SchoolPageContentService():
         school = SchoolUser.objects(code=code, isDeleted=False).first()
         nearbySchools = SchoolUser.objects(
             code__ne=code,
-            isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image')[:3]
+            isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image', 'historicalReview')[:3]
         pecasIds = [peca.pecaId for peca in school.project.schoolYears]
         pecas = PecaProject.objects(
             id__in=pecasIds, isDeleted=False).only(
@@ -350,8 +350,12 @@ class SchoolPageContentService():
         data['sponsor'] = school.project.sponsor.name
         data['address'] = '{}, {}, Venezuela'.format(
             school.addressMunicipality.name, school.addressState.name)
-        data['nearbySchools'] = SchoolUserSchema(
+        nearbySchoolsDump = SchoolUserSchema(
             partial=True, only=('id', 'slug', 'name', 'image')).dump(nearbySchools, many=True)
+        for schoolDump, schoolObj in zip(nearbySchoolsDump, nearbySchools):
+            if schoolObj.historicalReview and schoolObj.historicalReview.image:
+                schoolDump['image'] = serialize_links(schoolObj.historicalReview.image)
+        data['nearbySchools'] = nearbySchoolsDump
         data['diagnostics'] = diagnostics
         data['olympicsSummary']['description'] = olympicsDescription  
         data['olympicsReadingSummary']['description'] = olympicsReadingDescription

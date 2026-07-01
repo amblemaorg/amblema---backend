@@ -234,9 +234,9 @@ class RequestContentApproval(Document):
                         if school.yearbook != peca.yearbook.school or school.historicalReview != peca.yearbook.historicalReview:
                             if school.yearbook != peca.yearbook.school:
                                 school.yearbook = peca.yearbook.school
-                                school.image = peca.yearbook.school.image
                             if school.historicalReview != peca.yearbook.historicalReview:
                                 school.historicalReview = peca.yearbook.historicalReview
+                            school.image = peca.yearbook.historicalReview.image
                             school.save()
                         if sponsor.yearbook != peca.yearbook.sponsor:
                             sponsor.yearbook = peca.yearbook.sponsor

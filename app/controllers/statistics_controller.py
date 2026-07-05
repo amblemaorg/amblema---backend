@@ -41,10 +41,13 @@ class DiagnosticReportController(Resource):
     @jwt_required
     def get(self, schoolYearId, schoolId):
         diagnostics = None
+        lapso = None
         if request.args:
             if 'diagnostics' in request.args.keys():
                 diagnostics = request.args['diagnostics']
-        return self.service.get(schoolYearId, schoolId, diagnostics)
+            if 'lapso' in request.args.keys():
+                lapso = request.args['lapso']
+        return self.service.get(schoolYearId, schoolId, diagnostics, lapso)
 
 
 class OlympicsReportCtrl(Resource):

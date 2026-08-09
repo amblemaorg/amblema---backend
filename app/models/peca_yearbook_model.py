@@ -16,6 +16,7 @@ class Lapse(EmbeddedDocument):
     readingDiagnosticAnalysis = fields.StringField(default='')
     mathDiagnosticAnalysis = fields.StringField(default='')
     logicDiagnosticAnalysis = fields.StringField(default='')
+    environmentalDiagnosticAnalysis = fields.StringField(default='')
 class GroupPhoto(EmbeddedDocument):
     name = fields.StringField(null=True)
     image = fields.StringField(null=True)

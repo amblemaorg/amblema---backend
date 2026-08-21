@@ -138,20 +138,46 @@ class Project(Document):
 
     def checkWaitingAmblemaConfirmation(self):
         from app.models.request_project_approval_model import RequestProjectApproval
-        if (
-            self.stepsProgress.sponsor == 100
-            and self.stepsProgress.coordinator == 100
-            and self.stepsProgress.school == 100
-            and self.stepsProgress.general != 100
-        ):
-            confirmation = True
-            for step in self.stepsProgress.steps:
-                if step.tag == "1":
-                    if step.status != "3" and step.devName != "amblemaConfirmation":
-                        confirmation = False
-                    if step.status == "3" and step.devName == "amblemaConfirmation":
-                        confirmation = False
-            if confirmation:
+        has_general_steps = any(step.tag == "1" for step in self.stepsProgress.steps)
+        if has_general_steps:
+            if (
+                self.stepsProgress.sponsor == 100
+                and self.stepsProgress.coordinator == 100
+                and self.stepsProgress.school == 100
+                and self.stepsProgress.general != 100
+            ):
+                confirmation = True
+                for step in self.stepsProgress.steps:
+                    if step.tag == "1":
+                        if step.status != "3" and step.devName != "amblemaConfirmation":
+                            confirmation = False
+                        if step.status == "3" and step.devName == "amblemaConfirmation":
+                            confirmation = False
+                if confirmation:
+                    RequestProjectApproval(
+                        project={
+                            "id": str(self.id),
+                            "code": self.code,
+                            "coordinator": {
+                                "id": str(self.coordinator.id),
+                                "name": self.coordinator.firstName + " " + self.coordinator.lastName
+                            },
+                            "sponsor": {
+                                "id": str(self.sponsor.id),
+                                "name": self.sponsor.name
+                            },
+                            "school": {
+                                "id": str(self.school.id),
+                                "name": self.school.name
+                            }
+                        }
+                    ).save()
+        else:
+            if (
+                self.stepsProgress.sponsor == 100
+                and self.stepsProgress.coordinator == 100
+                and self.stepsProgress.school == 100
+            ):
                 RequestProjectApproval(
                     project={
                         "id": str(self.id),

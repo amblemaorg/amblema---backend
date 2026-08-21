@@ -5,6 +5,7 @@ from marshmallow import (
     Schema,
     fields,
     pre_load,
+    post_dump,
     EXCLUDE,
     validate,
     validates_schema,
@@ -13,6 +14,7 @@ from marshmallow import (
 from app.helpers.ma_schema_validators import not_blank, only_numbers, OneOf, Range, validate_email
 from app.helpers.ma_schema_fields import MAReferenceField, MAPointField
 from app.models.state_model import State, Municipality
+from app.models.school_user_model import SchoolUser
 
 
 class SponsorContactSchema(Schema):
@@ -39,6 +41,8 @@ class SponsorContactSchema(Schema):
     contactEmail = fields.Str(validate=validate_email)
     contactPhone = fields.Str(required=True, validate=not_blank)
     hasSchool = fields.Bool()
+    hasSchoolRegistered = fields.Bool(default=False)
+    school = MAReferenceField(document=SchoolUser, allow_none=True)
     schoolName = fields.Str(validate=not_blank)
     schoolCode = fields.Str(validate=not_blank)
     schoolEmail = fields.Str(validate=validate_email)
@@ -117,36 +121,80 @@ class SponsorContactSchema(Schema):
     def validate_schema(self, data, **kwargs):
         errors = {}
         if 'hasSchool' in data and data['hasSchool']:
-            requiredSchool = (
-                'schoolName',
-                'schoolCode',
-                'schoolEmail',
-                'schoolAddressState',
-                'schoolAddressMunicipality',
-                'schoolAddressCity',
-                'schoolPhone',
-                'schoolType',
-                'schoolPrincipalFirstName',
-                'schoolPrincipalLastName',
-                'schoolPrincipalEmail',
-                'schoolPrincipalPhone',
-                'schoolSubPrincipalFirstName',
-                'schoolSubPrincipalLastName',
-                'schoolSubPrincipalEmail',
-                'schoolSubPrincipalPhone',
-                'schoolNTeachers',
-                'schoolNAdministrativeStaff',
-                'schoolNLaborStaff',
-                'schoolNStudents',
-                'schoolNGrades',
-                'schoolNSections',
-                'schoolShift'
-            )
-            for required in requiredSchool:
-                if required not in data:
-                    errors[required] = ['Field is required']
+            if 'hasSchoolRegistered' in data and data['hasSchoolRegistered']:
+                if 'school' not in data or not data['school']:
+                    errors['school'] = ['Field is required']
+            else:
+                requiredSchool = (
+                    'schoolName',
+                    'schoolCode',
+                    'schoolEmail',
+                    'schoolAddressState',
+                    'schoolAddressMunicipality',
+                    'schoolAddressCity',
+                    'schoolPhone',
+                    'schoolType',
+                    'schoolPrincipalFirstName',
+                    'schoolPrincipalLastName',
+                    'schoolPrincipalEmail',
+                    'schoolPrincipalPhone',
+                    'schoolSubPrincipalFirstName',
+                    'schoolSubPrincipalLastName',
+                    'schoolSubPrincipalEmail',
+                    'schoolSubPrincipalPhone',
+                    'schoolNTeachers',
+                    'schoolNAdministrativeStaff',
+                    'schoolNLaborStaff',
+                    'schoolNStudents',
+                    'schoolNGrades',
+                    'schoolNSections',
+                    'schoolShift'
+                )
+                for required in requiredSchool:
+                    if required not in data or data[required] is None:
+                        errors[required] = ['Field is required']
         if errors:
             raise ValidationError(errors)
+
+    @post_dump
+    def fill_registered_school(self, data, **kwargs):
+        if data.get('hasSchool') and data.get('hasSchoolRegistered') and data.get('school'):
+            school_id = data['school']
+            if isinstance(school_id, dict):
+                school_id = school_id.get('id')
+            sc = SchoolUser.objects(id=school_id, isDeleted=False).first()
+            if sc:
+                if not data.get('schoolName'):
+                    data['schoolName'] = sc.name
+                if not data.get('schoolCode'):
+                    data['schoolCode'] = sc.code
+                if not data.get('schoolEmail'):
+                    data['schoolEmail'] = sc.email
+                if not data.get('schoolPhone'):
+                    data['schoolPhone'] = sc.phone
+                if not data.get('schoolType'):
+                    data['schoolType'] = sc.schoolType
+                if not data.get('schoolAddressState') and sc.addressState:
+                    data['schoolAddressState'] = {'id': str(sc.addressState.id), 'name': sc.addressState.name}
+                if not data.get('schoolAddressMunicipality') and sc.addressMunicipality:
+                    data['schoolAddressMunicipality'] = {'id': str(sc.addressMunicipality.id), 'name': sc.addressMunicipality.name}
+                if not data.get('schoolAddressCity') and sc.addressCity:
+                    data['schoolAddressCity'] = sc.addressCity
+                if not data.get('schoolAddressZoneType') and sc.addressZoneType:
+                    data['schoolAddressZoneType'] = sc.addressZoneType
+                if not data.get('schoolAddressZone') and sc.addressZone:
+                    data['schoolAddressZone'] = sc.addressZone
+                if not data.get('schoolAddress') and sc.address:
+                    data['schoolAddress'] = sc.address
+                if not data.get('schoolPrincipalFirstName') and sc.principalFirstName:
+                    data['schoolPrincipalFirstName'] = sc.principalFirstName
+                if not data.get('schoolPrincipalLastName') and sc.principalLastName:
+                    data['schoolPrincipalLastName'] = sc.principalLastName
+                if not data.get('schoolPrincipalEmail') and sc.principalEmail:
+                    data['schoolPrincipalEmail'] = sc.principalEmail
+                if not data.get('schoolPrincipalPhone') and sc.principalPhone:
+                    data['schoolPrincipalPhone'] = sc.principalPhone
+        return data
 
     class Meta:
         unknown = EXCLUDE

@@ -5,6 +5,7 @@ from marshmallow import (
     Schema,
     fields,
     pre_load,
+    post_dump,
     EXCLUDE,
     validate,
     validates_schema,
@@ -14,6 +15,7 @@ from app.helpers.ma_schema_validators import (
     not_blank, only_letters, only_numbers, OneOf, Range, validate_email)
 from app.helpers.ma_schema_fields import MAReferenceField, MAPointField
 from app.models.state_model import State, Municipality
+from app.models.sponsor_user_model import SponsorUser
 
 
 class SchoolContactSchema(Schema):
@@ -64,6 +66,8 @@ class SchoolContactSchema(Schema):
             ('morning', 'afternoon', 'both')
         ))
     hasSponsor = fields.Bool(required=True)
+    hasSponsorRegistered = fields.Bool(default=False)
+    sponsor = MAReferenceField(document=SponsorUser, allow_none=True)
     sponsorName = fields.Str()
     sponsorEmail = fields.Str(validate=validate_email)
     sponsorRif = fields.Str()
@@ -114,23 +118,65 @@ class SchoolContactSchema(Schema):
     def validate_schema(self, data, **kwargs):
         errors = {}
         if 'hasSponsor' in data and data['hasSponsor']:
-            requiredSponsor = (
-                'sponsorName',
-                'sponsorEmail',
-                'sponsorRif',
-                'sponsorAddressState',
-                'sponsorAddressMunicipality',
-                'sponsorAddressCity',
-                'sponsorCompanyPhone',
-                'sponsorCompanyType',
-                'sponsorContactFirstName',
-                'sponsorContactLastName',
-                'sponsorContactPhone')
-            for required in requiredSponsor:
-                if required not in data:
-                    errors[required] = ['Field is required']
+            if 'hasSponsorRegistered' in data and data['hasSponsorRegistered']:
+                if 'sponsor' not in data or not data['sponsor']:
+                    errors['sponsor'] = ['Field is required']
+            else:
+                requiredSponsor = (
+                    'sponsorName',
+                    'sponsorEmail',
+                    'sponsorRif',
+                    'sponsorAddressState',
+                    'sponsorAddressMunicipality',
+                    'sponsorAddressCity',
+                    'sponsorCompanyPhone',
+                    'sponsorCompanyType',
+                    'sponsorContactFirstName',
+                    'sponsorContactLastName',
+                    'sponsorContactPhone')
+                for required in requiredSponsor:
+                    if required not in data or data[required] is None:
+                        errors[required] = ['Field is required']
         if errors:
             raise ValidationError(errors)
+
+    @post_dump
+    def fill_registered_sponsor(self, data, **kwargs):
+        if data.get('hasSponsor') and data.get('hasSponsorRegistered') and data.get('sponsor'):
+            sponsor_id = data['sponsor']
+            if isinstance(sponsor_id, dict):
+                sponsor_id = sponsor_id.get('id')
+            sp = SponsorUser.objects(id=sponsor_id, isDeleted=False).first()
+            if sp:
+                if not data.get('sponsorName'):
+                    data['sponsorName'] = sp.name
+                if not data.get('sponsorEmail'):
+                    data['sponsorEmail'] = sp.email
+                if not data.get('sponsorRif'):
+                    data['sponsorRif'] = sp.companyRif
+                if not data.get('sponsorCompanyType'):
+                    data['sponsorCompanyType'] = sp.companyType
+                if not data.get('sponsorCompanyOtherType'):
+                    data['sponsorCompanyOtherType'] = sp.companyOtherType
+                if not data.get('sponsorCompanyPhone'):
+                    data['sponsorCompanyPhone'] = sp.companyPhone
+                if not data.get('sponsorContactFirstName'):
+                    data['sponsorContactFirstName'] = sp.contactFirstName
+                if not data.get('sponsorContactLastName'):
+                    data['sponsorContactLastName'] = sp.contactLastName
+                if not data.get('sponsorContactEmail'):
+                    data['sponsorContactEmail'] = sp.contactEmail
+                if not data.get('sponsorContactPhone'):
+                    data['sponsorContactPhone'] = sp.contactPhone
+                if not data.get('sponsorAddressState') and sp.addressState:
+                    data['sponsorAddressState'] = {'id': str(sp.addressState.id), 'name': sp.addressState.name}
+                if not data.get('sponsorAddressMunicipality') and sp.addressMunicipality:
+                    data['sponsorAddressMunicipality'] = {'id': str(sp.addressMunicipality.id), 'name': sp.addressMunicipality.name}
+                if not data.get('sponsorAddressCity') and sp.addressCity:
+                    data['sponsorAddressCity'] = sp.addressCity
+                if not data.get('sponsorAddress') and sp.address:
+                    data['sponsorAddress'] = sp.address
+        return data
 
     class Meta:
         unknown = EXCLUDE

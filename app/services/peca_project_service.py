@@ -174,7 +174,7 @@ class PecaProjectService():
             project = Project.objects(id=peca.project.id, isDeleted=False).only(
                 'stepsProgress').first()
             amblemaConfirmation = project.stepsProgress.steps.filter(
-                devName='amblemaConfirmation', tag='1').first()
+                devName='amblemaConfirmation').first()
             peca.school.sections = peca.school.sections.filter(isDeleted=False)
             peca.school.sections = sorted(peca.school.sections, key = lambda i: (i["grade"], i["name"]))
             for section in peca.school.sections:

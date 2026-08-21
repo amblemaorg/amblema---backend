@@ -23,7 +23,7 @@ from app.controllers.entity_controller import (
     EntityController, EntityHandlerController
 )
 from app.controllers.user_controller import (
-    UserController, UserHandlerController, ResendEmailCoordinatorController, ResendEmailSponsorController
+    UserController, UserHandlerController, ResendEmailCoordinatorController, ResendEmailSponsorController, SponsorOptionsController, SchoolOptionsController
 )
 from app.controllers.learning_module_controller import (
     LearningController,
@@ -238,6 +238,16 @@ def create_app(config_instance):
         UserHandlerController,
         '/users/<string:userId>',
         '/users/<string:userId>/'
+    )
+    api.add_resource(
+        SponsorOptionsController,
+        '/sponsors',
+        '/sponsors/'
+    )
+    api.add_resource(
+        SchoolOptionsController,
+        '/schools',
+        '/schools/'
     )
     api.add_resource(
         LearningController,

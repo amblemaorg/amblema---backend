@@ -51,6 +51,8 @@ class SchoolContact(Document):
     nSections = fields.IntField(required=True)
     schoolShift = fields.StringField(required=True, max_length=1)
     hasSponsor = fields.BooleanField(required=True)
+    hasSponsorRegistered = fields.BooleanField(default=False)
+    sponsor = fields.ReferenceField('SponsorUser', null=True)
     sponsorName = fields.StringField()
     sponsorEmail = fields.EmailField()
     sponsorRif = fields.StringField()
@@ -91,7 +93,7 @@ class SchoolContact(Document):
                     {"email": [{"status": "5",
                                 "msg": "Duplicated school email"}]}
                 )
-            if document.hasSponsor:
+            if document.hasSponsor and not getattr(document, 'hasSponsorRegistered', False) and document.sponsorEmail:
                 user = User.objects(
                 isDeleted=False, email=document.sponsorEmail).first()
                 if user:
@@ -99,6 +101,36 @@ class SchoolContact(Document):
                         {"sponsorEmail": [{"status": "5",
                                     "msg": "Duplicated sponsor email"}]}
                     )
+            if document.hasSponsor and getattr(document, 'hasSponsorRegistered', False) and document.sponsor:
+                sp = document.sponsor
+                if not document.sponsorName:
+                    document.sponsorName = sp.name
+                if not document.sponsorEmail:
+                    document.sponsorEmail = sp.email
+                if not document.sponsorRif:
+                    document.sponsorRif = sp.companyRif
+                if not document.sponsorCompanyPhone:
+                    document.sponsorCompanyPhone = sp.companyPhone
+                if not document.sponsorCompanyType:
+                    document.sponsorCompanyType = sp.companyType
+                if not document.sponsorCompanyOtherType:
+                    document.sponsorCompanyOtherType = sp.companyOtherType
+                if not document.sponsorContactFirstName:
+                    document.sponsorContactFirstName = sp.contactFirstName
+                if not document.sponsorContactLastName:
+                    document.sponsorContactLastName = sp.contactLastName
+                if not document.sponsorContactEmail:
+                    document.sponsorContactEmail = sp.contactEmail
+                if not document.sponsorContactPhone:
+                    document.sponsorContactPhone = sp.contactPhone
+                if not document.sponsorAddressState:
+                    document.sponsorAddressState = sp.addressState
+                if not document.sponsorAddressMunicipality:
+                    document.sponsorAddressMunicipality = sp.addressMunicipality
+                if not document.sponsorAddressCity:
+                    document.sponsorAddressCity = sp.addressCity
+                if not document.sponsorAddress:
+                    document.sponsorAddress = sp.address
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
@@ -150,35 +182,39 @@ class SchoolContact(Document):
                 project.school = schoolUser
 
                 if document.hasSponsor:
-                    sponsorUser = SponsorUser.objects(
-                        email=document.sponsorEmail).first()
-                    if not sponsorUser:
-                        sponsorUser = SponsorUser(
-                            name=document.sponsorName,
-                            email=document.sponsorEmail,
-                            userType='3',
-                            role=Role.objects(
-                                isDeleted=False, devName="sponsor").first(),
-                            addressState=document.sponsorAddressState,
-                            addressMunicipality=document.sponsorAddressMunicipality,
-                            addressCity=document.sponsorAddressCity,
-                            address=document.sponsorAddress,
-                            status='1',
-                            companyRif=document.sponsorRif,
-                            companyType=document.sponsorCompanyType,
-                            companyOtherType=document.sponsorCompanyOtherType,
-                            companyPhone=document.sponsorCompanyPhone,
-                            contactFirstName=document.sponsorContactFirstName,
-                            contactLastName=document.sponsorContactLastName,
-                            contactEmail=document.sponsorContactEmail,
-                            contactPhone=document.sponsorContactPhone
-                        )
-                        password = sponsorUser.generatePassword()
-                        sponsorUser.password = password
-                        sponsorUser.setHashPassword()
-                        sponsorUser.save()
-                        sponsorUser.sendRegistrationEmail(password)
-                    project.sponsor = sponsorUser
+                    if getattr(document, 'hasSponsorRegistered', False) and document.sponsor:
+                        sponsorUser = document.sponsor
+                    else:
+                        sponsorUser = SponsorUser.objects(
+                            email=document.sponsorEmail).first() if document.sponsorEmail else None
+                        if not sponsorUser and document.sponsorEmail:
+                            sponsorUser = SponsorUser(
+                                name=document.sponsorName,
+                                email=document.sponsorEmail,
+                                userType='3',
+                                role=Role.objects(
+                                    isDeleted=False, devName="sponsor").first(),
+                                addressState=document.sponsorAddressState,
+                                addressMunicipality=document.sponsorAddressMunicipality,
+                                addressCity=document.sponsorAddressCity,
+                                address=document.sponsorAddress,
+                                status='1',
+                                companyRif=document.sponsorRif,
+                                companyType=document.sponsorCompanyType,
+                                companyOtherType=document.sponsorCompanyOtherType,
+                                companyPhone=document.sponsorCompanyPhone,
+                                contactFirstName=document.sponsorContactFirstName,
+                                contactLastName=document.sponsorContactLastName,
+                                contactEmail=document.sponsorContactEmail,
+                                contactPhone=document.sponsorContactPhone
+                            )
+                            password = sponsorUser.generatePassword()
+                            sponsorUser.password = password
+                            sponsorUser.setHashPassword()
+                            sponsorUser.save()
+                            sponsorUser.sendRegistrationEmail(password)
+                    if sponsorUser:
+                        project.sponsor = sponsorUser
                 project.save()
 
 

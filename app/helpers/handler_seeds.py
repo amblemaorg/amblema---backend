@@ -933,261 +933,341 @@ def create_initial_steps():
     if not schoolYear:
         return "An active school year is required"
 
-    findSchool = Step(
-        name="Encontrar escuela",
-        devName="findSchool",
-        tag="1",
-        hasText=True,
-        isStandard=True,
-        approvalType="1",
-        text="Asigna una escuela al proyecto"
-    )
-    findSchool.save()
+    # Soft-delete old step templates for the active school year to replace them with the new schema
+    Step.objects(schoolYear=schoolYear.id, isDeleted=False).update(isDeleted=True)
 
-    findSponsor = Step(
-        name="Encontrar padrino",
-        devName="findSponsor",
-        tag="1",
-        hasText=True,
-        isStandard=True,
-        approvalType="1",
-        text="Asigna un padrino al proyecto"
-    )
-    findSponsor.save()
-
-    findCoordinator = Step(
-        name="Encontrar coordinador",
-        devName="findCoordinator",
-        tag="1",
-        hasText=True,
-        isStandard=True,
-        approvalType="1",
-        text="Asigna un coordinador al proyecto"
-    )
-    findCoordinator.save()
-
-    initialWorkshopPlanning = Step(
-        name="Planificación del taller inicial",
-        devName="initialWorkshopPlanning",
-        tag="1",
-        hasText=True,
-        hasVideo=True,
+    # ----------------------------------------------------
+    # ROL PADRINO (Sponsor) - tag = "3"
+    # ----------------------------------------------------
+    sponsorKnowAmblemaMethod = Step(
+        name="Conoce el método AmbLeMa",
+        devName="sponsorKnowAmblemaMethod",
+        tag="3",
+        sort=1,
         isStandard=True,
         approvalType="4",
-        text="Descripción de la planificación inicial",
-        video={"name": "some video", "url": "https://youtube.com"}
+        hasText=True,
+        hasFile=True,
+        text="Descripción del método AmbLeMa para padrinos",
+        file={"name": "Metodo_AmbLeMa.pdf", "url": "https://someurl.com/file.pdf"},
+        schoolYear=schoolYear
     )
-    initialWorkshopPlanning.save()
+    sponsorKnowAmblemaMethod.save()
 
-    amblemaConfirmation = Step(
-        name="Confirmación de AmbLeMa",
-        devName="amblemaConfirmation",
-        tag="1",
+    sponsorFindSchool = Step(
+        name="Encontrar escuela",
+        devName="sponsorFindSchool",
+        tag="3",
+        sort=2,
+        hasText=True,
         isStandard=True,
         approvalType="1",
-        hasText=True,
-        text="some description"
+        text="Asigna una escuela al proyecto",
+        schoolYear=schoolYear
     )
-    amblemaConfirmation.save()
-
-    coordinatorFillSchoolForm = Step(
-        name="Llenar planilla de escuela",
-        devName="coordinatorFillSchoolForm",
-        tag="2",
-        isStandard=True,
-        approvalType="3",
-        hasText=True,
-        text="some description"
-    )
-    coordinatorFillSchoolForm.save()
-
-    coordinatorFillSponsorForm = Step(
-        name="Llenar planilla de padrino",
-        devName="coordinatorFillSponsorForm",
-        tag="2",
-        isStandard=True,
-        approvalType="3",
-        hasText=True,
-        text="some description"
-    )
-    coordinatorFillSponsorForm.save()
-
-    coordinatorSendCurriculum = Step(
-        name="Enviar currículo vitae",
-        devName="coordinatorSendCurriculum",
-        tag="2",
-        isStandard=True,
-        approvalType="3",
-        hasUpload=True,
-        hasText=True,
-        text="some description"
-
-    )
-    coordinatorSendCurriculum.save()
-
-    corrdinatorCompleteTrainingModules = Step(
-        name="Completar módulos de formación",
-        devName="corrdinatorCompleteTrainingModules",
-        tag="2",
-        isStandard=True,
-        approvalType="2"
-    )
-    corrdinatorCompleteTrainingModules.save()
-
-    checklistInitialWorkshop = Step(
-        name="Taller inicial",
-        devName="coordinatorInitialWorkshop",
-        tag="2",
-        isStandard=True,
-        hasText=True,
-        hasChecklist=True,
-        text="some description",
-        checklist=[{"name": "Reunión con la escuela"},
-                   {"name": "Reunión con el padrino"}],
-        approvalType="2"
-    )
-    checklistInitialWorkshop.save()
+    sponsorFindSchool.save()
 
     sponsorPresentationSchool = Step(
         name="Presentación a la escuela",
         devName="sponsorPresentationSchool",
         tag="3",
+        sort=3,
         isStandard=True,
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="some description",
-        file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
+        text="Presentación del padrino a la escuela",
+        file={"name": "Presentacion_Escuela.pdf", "url": "https://someurl.com/file.pdf"},
+        schoolYear=schoolYear
     )
     sponsorPresentationSchool.save()
 
-    sponsorKnowAmblemaMethod = Step(
-        name="Conoce el método AmbLeMa",
-        devName="sponsorKnowAmblemaMethod",
-        tag="3",
-        isStandard=True,
-        approvalType="4",
-        hasText=True,
-        hasFile=True,
-        text="some description",
-        file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
-    )
-    sponsorKnowAmblemaMethod.save()
-
     sponsorFillSchoolForm = Step(
-        name="Llenar planilla de escuela",
+        name="Registrar Escuela en la página web de AmbLeMa",
         devName="sponsorFillSchoolForm",
         tag="3",
+        sort=4,
         isStandard=True,
         approvalType="3",
         hasText=True,
-        text="some description"
+        text="Llenar datos de la escuela",
+        schoolYear=schoolYear
     )
     sponsorFillSchoolForm.save()
 
-    sponsorFillCoordinatorForm = Step(
-        name="Llenar planilla de coordinador",
-        devName="sponsorFillCoordinatorForm",
+    sponsorFindCoordinator = Step(
+        name="Encontrar un Coordinador",
+        devName="sponsorFindCoordinator",
         tag="3",
-        isStandard=True,
-        approvalType="3",
+        sort=5,
         hasText=True,
-        text="some description"
+        isStandard=True,
+        approvalType="1",
+        text="Asigna un coordinador al proyecto",
+        schoolYear=schoolYear
     )
-    sponsorFillCoordinatorForm.save()
+    sponsorFindCoordinator.save()
 
     sponsorAgreementSchool = Step(
-        name="Convenio padrino - escuela",
+        name="Convenio Padrino - Escuela",
         devName="sponsorAgreementSchool",
         tag="3",
+        sort=6,
         isStandard=True,
         approvalType="3",
         hasText=True,
         hasFile=True,
         hasUpload=True,
-        text="some description",
-        file={"name": "Agreement name",
-                "url": "https://urlserver.com/files/asd.pdf"}
+        text="Convenio entre padrino y escuela",
+        file={"name": "Convenio_Padrino_Escuela.pdf", "url": "https://urlserver.com/files/asd.pdf"},
+        schoolYear=schoolYear
     )
     sponsorAgreementSchool.save()
 
-    sponsorAgreementSchoolFoundation = Step(
-        name="Convenio escuela - fundación",
-        devName="sponsorAgreementSchoolFoundation",
-        tag="3",
-        isStandard=True,
-        approvalType="3",
-        hasText=True,
-        hasFile=True,
-        hasUpload=True,
-        text="some description",
-        file={"name": "Agreement name",
-                "url": "https://urlserver.com/files/asd.pdf"}
-    )
-    sponsorAgreementSchoolFoundation.save()
-
-    schoolPresentationSponsor = Step(
-        name="Presentación al padrino",
-        devName="schoolPresentationSponsor",
-        tag="4",
+    # ----------------------------------------------------
+    # ROL COORDINADOR (Coordinator) - tag = "2"
+    # ----------------------------------------------------
+    coordinatorKnowAmblemaMethod = Step(
+        name="Conoce el método AmbLeMa",
+        devName="coordinatorKnowAmblemaMethod",
+        tag="2",
+        sort=1,
         isStandard=True,
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="some description",
-        file={"name": "Some_name.pdf", "url": "https://someurl.com/file.pdf"}
+        text="Descripción del método AmbLeMa para coordinadores",
+        file={"name": "Metodo_AmbLeMa.pdf", "url": "https://someurl.com/file.pdf"},
+        schoolYear=schoolYear
+    )
+    coordinatorKnowAmblemaMethod.save()
+
+    coordinatorProfile = Step(
+        name="Perfil del Coordinador AmbLeMa",
+        devName="coordinatorProfile",
+        tag="2",
+        sort=2,
+        isStandard=True,
+        approvalType="4",
+        hasText=True,
+        hasFile=True,
+        text="Descripción del perfil del coordinador",
+        file={"name": "Perfil_Coordinador.pdf", "url": "https://someurl.com/file.pdf"},
+        schoolYear=schoolYear
+    )
+    coordinatorProfile.save()
+
+    coordinatorSendCurriculum = Step(
+        name="Enviar Síntesis Curricular en formato PDF",
+        devName="coordinatorSendCurriculum",
+        tag="2",
+        sort=3,
+        isStandard=True,
+        approvalType="3",
+        hasUpload=True,
+        hasText=True,
+        text="Subir síntesis curricular en PDF",
+        schoolYear=schoolYear
+    )
+    coordinatorSendCurriculum.save()
+
+    corrdinatorCompleteTrainingModules = Step(
+        name="Completar Módulos de Formación (AmbLePensum)",
+        devName="corrdinatorCompleteTrainingModules",
+        tag="2",
+        sort=4,
+        isStandard=True,
+        approvalType="2",
+        schoolYear=schoolYear
+    )
+    corrdinatorCompleteTrainingModules.save()
+
+    coordinatorFindSchool = Step(
+        name="Encontrar escuela",
+        devName="coordinatorFindSchool",
+        tag="2",
+        sort=5,
+        hasText=True,
+        isStandard=True,
+        approvalType="1",
+        text="Asigna una escuela al proyecto",
+        schoolYear=schoolYear
+    )
+    coordinatorFindSchool.save()
+
+    coordinatorPresentationSchool = Step(
+        name="Presentación a la escuela",
+        devName="coordinatorPresentationSchool",
+        tag="2",
+        sort=6,
+        isStandard=True,
+        approvalType="4",
+        hasText=True,
+        hasFile=True,
+        text="Presentación a la escuela",
+        file={"name": "Presentacion_Escuela.pdf", "url": "https://someurl.com/file.pdf"},
+        schoolYear=schoolYear
+    )
+    coordinatorPresentationSchool.save()
+
+    coordinatorFillSchoolForm = Step(
+        name="Registrar Escuela en la página web de AmbLeMa",
+        devName="coordinatorFillSchoolForm",
+        tag="2",
+        sort=7,
+        isStandard=True,
+        approvalType="3",
+        hasText=True,
+        text="Llenar planilla de escuela",
+        schoolYear=schoolYear
+    )
+    coordinatorFillSchoolForm.save()
+
+    coordinatorFindSponsor = Step(
+        name="Encontrar un Padrino",
+        devName="coordinatorFindSponsor",
+        tag="2",
+        sort=8,
+        hasText=True,
+        isStandard=True,
+        approvalType="1",
+        text="Asigna un padrino al proyecto",
+        schoolYear=schoolYear
+    )
+    coordinatorFindSponsor.save()
+
+    coordinatorFillSponsorForm = Step(
+        name="Presentación al Padrino",
+        devName="coordinatorFillSponsorForm",
+        tag="2",
+        sort=9,
+        isStandard=True,
+        approvalType="3",
+        hasText=True,
+        text="Presentación del coordinador al padrino",
+        schoolYear=schoolYear
+    )
+    coordinatorFillSponsorForm.save()
+
+    initialWorkshopPlanning = Step(
+        name="Planificación del Taller Inicial",
+        devName="initialWorkshopPlanning",
+        tag="2",
+        sort=10,
+        hasText=True,
+        hasVideo=True,
+        isStandard=True,
+        approvalType="4",
+        text="Descripción de la planificación inicial",
+        video={"name": "some video", "url": "https://youtube.com"},
+        schoolYear=schoolYear
+    )
+    initialWorkshopPlanning.save()
+
+    checklistInitialWorkshop = Step(
+        name="Acuerdo entre Coordinador – Fundación AmbLeMa",
+        devName="coordinatorInitialWorkshop",
+        tag="2",
+        sort=11,
+        isStandard=True,
+        hasText=True,
+        hasChecklist=True,
+        text="Taller inicial y acuerdo con la Fundación AmbLeMa",
+        checklist=[{"name": "Reunión con la escuela"},
+                   {"name": "Reunión con el padrino"}],
+        approvalType="2",
+        schoolYear=schoolYear
+    )
+    checklistInitialWorkshop.save()
+
+    # ----------------------------------------------------
+    # ROL ESCUELA (School) - tag = "4"
+    # ----------------------------------------------------
+    schoolKnowAmblemaMethod = Step(
+        name="Conoce el método AmbLeMa",
+        devName="schoolKnowAmblemaMethod",
+        tag="4",
+        sort=1,
+        isStandard=True,
+        approvalType="4",
+        hasText=True,
+        hasFile=True,
+        text="Descripción del método AmbLeMa para escuelas",
+        file={"name": "Metodo_AmbLeMa.pdf", "url": "https://someurl.com/file.pdf"},
+        schoolYear=schoolYear
+    )
+    schoolKnowAmblemaMethod.save()
+
+    schoolFindSponsor = Step(
+        name="Encontrar un Padrino",
+        devName="schoolFindSponsor",
+        tag="4",
+        sort=2,
+        hasText=True,
+        isStandard=True,
+        approvalType="1",
+        text="Asigna un padrino al proyecto",
+        schoolYear=schoolYear
+    )
+    schoolFindSponsor.save()
+
+    schoolPresentationSponsor = Step(
+        name="Presentación al Padrino",
+        devName="schoolPresentationSponsor",
+        tag="4",
+        sort=3,
+        isStandard=True,
+        approvalType="4",
+        hasText=True,
+        hasFile=True,
+        text="Presentación de la escuela al padrino",
+        file={"name": "Presentacion_Padrino.pdf", "url": "https://someurl.com/file.pdf"},
+        schoolYear=schoolYear
     )
     schoolPresentationSponsor.save()
 
-    schoolFillSponsorForm = Step(
-        name="Llenar planilla de padrino",
-        devName="schoolFillSponsorForm",
+    schoolFindCoordinator = Step(
+        name="Encontrar un Coordinador",
+        devName="schoolFindCoordinator",
         tag="4",
-        isStandard=True,
-        approvalType="3",
+        sort=4,
         hasText=True,
-        text="some description"
-    )
-    schoolFillSponsorForm.save()
-
-    schoolFillCoordinatorForm = Step(
-        name="Llenar planilla de coordinador",
-        devName="schoolFillCoordinatorForm",
-        tag="4",
         isStandard=True,
-        approvalType="3",
-        hasText=True,
-        text="some description"
+        approvalType="1",
+        text="Asigna un coordinador al proyecto",
+        schoolYear=schoolYear
     )
-    schoolFillCoordinatorForm.save()
+    schoolFindCoordinator.save()
 
     schoolAgreementSponsor = Step(
-        name="Convenio escuela - padrino",
+        name="Convenio Padrino - Escuela",
         devName="schoolAgreementSponsor",
         tag="4",
+        sort=5,
         isStandard=True,
         approvalType="3",
         hasText=True,
         hasFile=True,
         hasUpload=True,
-        text="some description",
-        file={"name": "Agreement name",
-                "url": "https://urlserver.com/files/asd.pdf"}
+        text="Convenio entre escuela y padrino",
+        file={"name": "Convenio_Escuela_Padrino.pdf", "url": "https://urlserver.com/files/asd.pdf"},
+        schoolYear=schoolYear
     )
     schoolAgreementSponsor.save()
 
     schoolAgreementFoundation = Step(
-        name="Convenio escuela - fundación",
+        name="Convenio Escuela - Fundación",
         devName="schoolAgreementFoundation",
         tag="4",
+        sort=6,
         isStandard=True,
         approvalType="3",
         hasText=True,
         hasFile=True,
         hasUpload=True,
-        text="some description",
-        file={"name": "Agreement name",
-                "url": "https://urlserver.com/files/asd.pdf"}
+        text="Convenio entre escuela y fundación AmbLeMa",
+        file={"name": "Convenio_Escuela_Fundacion.pdf", "url": "https://urlserver.com/files/asd.pdf"},
+        schoolYear=schoolYear
     )
     schoolAgreementFoundation.save()
 

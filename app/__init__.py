@@ -23,7 +23,7 @@ from app.controllers.entity_controller import (
     EntityController, EntityHandlerController
 )
 from app.controllers.user_controller import (
-    UserController, UserHandlerController, ResendEmailCoordinatorController, ResendEmailSponsorController
+    UserController, UserHandlerController, ResendEmailCoordinatorController, ResendEmailSponsorController, SponsorOptionsController, SchoolOptionsController
 )
 from app.controllers.learning_module_controller import (
     LearningController,
@@ -53,6 +53,7 @@ from app.controllers.project_controller import (
     ProjectController, ProjectHandlerController,
     ProjectStepsController, ProjectPecaController
 )
+from app.controllers.project_signature_controller import ProjectSignatureController
 from app.controllers.request_find_coordinator_controller import (
     ReqFindCoordController, ReqFindCoordHandlerController
 )
@@ -244,6 +245,16 @@ def create_app(config_instance):
         '/users/<string:userId>/'
     )
     api.add_resource(
+        SponsorOptionsController,
+        '/sponsors',
+        '/sponsors/'
+    )
+    api.add_resource(
+        SchoolOptionsController,
+        '/schools',
+        '/schools/'
+    )
+    api.add_resource(
         LearningController,
         '/learningmodules',
         '/learningmodules/'
@@ -291,6 +302,7 @@ def create_app(config_instance):
                      '/coordinatorscontacts/<string:id>')
     api.add_resource(ProjectController, '/projects')
     api.add_resource(ProjectHandlerController, '/projects/<string:id>')
+    api.add_resource(ProjectSignatureController, '/projects/signature/<string:id>')
     api.add_resource(ProjectStepsController, '/projectsteps/<string:id>')
     api.add_resource(ProjectPecaController, '/projectpeca/<string:id>')
     api.add_resource(ReqFindCoordController, '/requestsfindcoordinator')

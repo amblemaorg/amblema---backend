@@ -91,3 +91,15 @@ class ResendEmailSponsorController(Resource):
             return {'status': 0, 'message': 'Email is required'}, 400
         service = ResendEmailSponsor()
         return service.post(jsonData['email'])
+
+class SponsorOptionsController(Resource):
+    def get(self):
+        sponsors = SponsorUser.objects(isDeleted=False, status="1").only('id', 'name')
+        records = [{"id": str(s.id), "name": s.name} for s in sponsors]
+        return {"records": records}, 200
+
+class SchoolOptionsController(Resource):
+    def get(self):
+        schools = SchoolUser.objects(isDeleted=False, status="1").only('id', 'name')
+        records = [{"id": str(s.id), "name": s.name} for s in schools]
+        return {"records": records}, 200

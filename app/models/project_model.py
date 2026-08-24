@@ -105,6 +105,14 @@ class StepsProgress(EmbeddedDocument):
             nApprovedCoordinator/nCoordinator, 4)*100
 
 
+class AgreementSignature(EmbeddedDocument):
+    role = fields.StringField(required=True)
+    signerName = fields.StringField()
+    signerTitle = fields.StringField()
+    signatureData = fields.StringField()
+    signedAt = fields.DateTimeField(default=datetime.utcnow)
+
+
 class Project(Document):
     code = fields.SequenceField(required=True, value_decorator=str)
     school = fields.ReferenceField('SchoolUser')
@@ -113,6 +121,7 @@ class Project(Document):
     schoolYear = fields.LazyReferenceField('SchoolYear')
     schoolYears = fields.EmbeddedDocumentListField(ResumePeca)
     stepsProgress = fields.EmbeddedDocumentField(StepsProgress)
+    agreementSignatures = fields.EmbeddedDocumentListField(AgreementSignature)
     phase = fields.StringField(max_length=1, default="1")
     status = fields.StringField(default='1')
     createdAt = fields.DateTimeField(default=datetime.utcnow)
@@ -138,20 +147,46 @@ class Project(Document):
 
     def checkWaitingAmblemaConfirmation(self):
         from app.models.request_project_approval_model import RequestProjectApproval
-        if (
-            self.stepsProgress.sponsor == 100
-            and self.stepsProgress.coordinator == 100
-            and self.stepsProgress.school == 100
-            and self.stepsProgress.general != 100
-        ):
-            confirmation = True
-            for step in self.stepsProgress.steps:
-                if step.tag == "1":
-                    if step.status != "3" and step.devName != "amblemaConfirmation":
-                        confirmation = False
-                    if step.status == "3" and step.devName == "amblemaConfirmation":
-                        confirmation = False
-            if confirmation:
+        has_general_steps = any(step.tag == "1" for step in self.stepsProgress.steps)
+        if has_general_steps:
+            if (
+                self.stepsProgress.sponsor == 100
+                and self.stepsProgress.coordinator == 100
+                and self.stepsProgress.school == 100
+                and self.stepsProgress.general != 100
+            ):
+                confirmation = True
+                for step in self.stepsProgress.steps:
+                    if step.tag == "1":
+                        if step.status != "3" and step.devName != "amblemaConfirmation":
+                            confirmation = False
+                        if step.status == "3" and step.devName == "amblemaConfirmation":
+                            confirmation = False
+                if confirmation:
+                    RequestProjectApproval(
+                        project={
+                            "id": str(self.id),
+                            "code": self.code,
+                            "coordinator": {
+                                "id": str(self.coordinator.id),
+                                "name": self.coordinator.firstName + " " + self.coordinator.lastName
+                            },
+                            "sponsor": {
+                                "id": str(self.sponsor.id),
+                                "name": self.sponsor.name
+                            },
+                            "school": {
+                                "id": str(self.school.id),
+                                "name": self.school.name
+                            }
+                        }
+                    ).save()
+        else:
+            if (
+                self.stepsProgress.sponsor == 100
+                and self.stepsProgress.coordinator == 100
+                and self.stepsProgress.school == 100
+            ):
                 RequestProjectApproval(
                     project={
                         "id": str(self.id),

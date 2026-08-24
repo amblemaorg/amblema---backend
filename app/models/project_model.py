@@ -105,6 +105,14 @@ class StepsProgress(EmbeddedDocument):
             nApprovedCoordinator/nCoordinator, 4)*100
 
 
+class AgreementSignature(EmbeddedDocument):
+    role = fields.StringField(required=True)
+    signerName = fields.StringField()
+    signerTitle = fields.StringField()
+    signatureData = fields.StringField()
+    signedAt = fields.DateTimeField(default=datetime.utcnow)
+
+
 class Project(Document):
     code = fields.SequenceField(required=True, value_decorator=str)
     school = fields.ReferenceField('SchoolUser')
@@ -113,6 +121,7 @@ class Project(Document):
     schoolYear = fields.LazyReferenceField('SchoolYear')
     schoolYears = fields.EmbeddedDocumentListField(ResumePeca)
     stepsProgress = fields.EmbeddedDocumentField(StepsProgress)
+    agreementSignatures = fields.EmbeddedDocumentListField(AgreementSignature)
     phase = fields.StringField(max_length=1, default="1")
     status = fields.StringField(default='1')
     createdAt = fields.DateTimeField(default=datetime.utcnow)

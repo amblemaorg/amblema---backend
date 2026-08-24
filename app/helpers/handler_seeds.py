@@ -948,7 +948,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="Descripción del método AmbLeMa para padrinos",
+        text="Si aún no está familiarizado con el método AmbLeMa, le invitamos a consultar el documento adjunto (dossier), donde encontrará respuestas claras a las preguntas fundamentales: <strong>¿Qué es AmbLeMa?, ¿en qué consiste? y ¿cuál es su propósito?</strong> Este material describe de manera precisa el método, su estructura y su alcance dentro de las escuelas, lo que le permitirá comprender cómo funciona la Herramienta Socio Educativa y el impacto que genera en la calidad educativa.",
         file={"name": "Metodo_AmbLeMa.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -962,7 +962,7 @@ def create_initial_steps():
         hasText=True,
         isStandard=True,
         approvalType="1",
-        text="Asigna una escuela al proyecto",
+        text="Si deseas apoyar la expansión de la Herramienta Educativa AmbLeMa, puedes encontrar una escuela cercana que presente necesidades diversas y cuente con un equipo directivo y docente dispuesto a asumir con responsabilidad y sentido de pertenencia la aplicación y supervisión de la Herramienta Educativa AmbLeMa, con el propósito de impulsar un verdadero salto en la Calidad Educativa.",
         schoolYear=schoolYear
     )
     sponsorFindSchool.save()
@@ -976,7 +976,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="Presentación del padrino a la escuela",
+        text="Una vez que haya identificado una escuela con necesidades y disposición para trabajar con la Herramienta Socio Educativa AmbLeMa, solicite una reunión con el personal directivo y docente para presentarles en qué consiste la herramienta y expresar su interés en apadrinar la institución.<br><br>Para facilitar esta reunión, le recomendamos revisar el documento adjunto, que contiene un resumen claro sobre la Fundación AmbLeMa, así como el enlace al video de AmbLeMa. Estos materiales le permitirán ofrecer una explicación precisa y completa del programa.<br><br>Durante este encuentro, es fundamental que la directiva comprenda el alcance del apadrinamiento, los compromisos que implica y el <strong>acompañamiento permanente que AmbLeMa brinda a los docentes</strong>, orientado a fortalecer sus prácticas pedagógicas y promover un verdadero salto en la calidad educativa. Su rol como padrino será determinante para motivar, orientar y acompañar a la escuela en este primer acercamiento al programa.",
         file={"name": "Presentacion_Escuela.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -990,7 +990,7 @@ def create_initial_steps():
         isStandard=True,
         approvalType="3",
         hasText=True,
-        text="Llenar datos de la escuela",
+        text="Si la escuela está de acuerdo en asumir el compromiso, <strong>indica a su director(a)</strong> que debe ingresar a la página web de AmbLeMa (<a href=\"https://www.amblema.org\" target=\"_blank\">www.amblema.org</a>), ir a la <strong>pestaña Inicio</strong>, desplazarse hasta el final y seleccionar la opción <strong>“¿Te gustaría que AmbLeMa esté en tu escuela?”</strong> para llenar todos los datos de la institución. Este paso es indispensable para iniciar el proceso de evaluación.<br><br>Después del registro de la escuela, deben esperar la <strong>aprobación de Fundación AmbLeMa</strong> para organizar el <strong>Taller Inicial</strong> de la herramienta educativa con todo el equipo docente.",
         schoolYear=schoolYear
     )
     sponsorFillSchoolForm.save()
@@ -1003,23 +1003,37 @@ def create_initial_steps():
         hasText=True,
         isStandard=True,
         approvalType="1",
-        text="Asigna un coordinador al proyecto",
+        text="El Coordinador AmbLeMa es una persona proactiva y con un alto sentido de responsabilidad, encargada de supervisar y evaluar en cada escuela la aplicación de la Herramienta Socio Educativa. Para desempeñarse este rol, debe cumplir con los requisitos establecidos y ser aprobado por la Fundación AmbLeMa.<br><br>Para conocer con mayor detalle el <strong>rol y las competencias</strong> que debe tener un <strong>Coordinador AmbLeMa</strong>, descarga el documento adjunto.<br><br>Si conoces a una persona que reúna el perfil de un Coordinador AmbLeMa, pídele que ingrese a la página web de AmbLeMa (<a href=\"https://www.amblema.org\" target=\"_blank\">www.amblema.org</a>), vaya a la <strong>pestaña Inicio</strong>, se desplace hasta el final y seleccione la opción <strong>“¿Te gustaría ser Coordinador AmbLeMa?”</strong>. Allí deberá llenar todos los datos solicitados.",
         schoolYear=schoolYear
     )
     sponsorFindCoordinator.save()
+
+    sponsorWorkshopPlanning = Step(
+        name="Planificación del Taller Inicial",
+        devName="sponsorWorkshopPlanning",
+        tag="3",
+        sort=6,
+        isStandard=True,
+        approvalType="1",
+        hasText=True,
+        hasFile=False,
+        hasUpload=False,
+        text="El Taller Inicial va dirigido al personal docente y directivo de la institución. Planifica con la Fundación AmbLeMa el día, lugar y la logística (incluyendo los recursos económicos) necesaria para dictar el taller. Asegura la participación de todo el personal docente de la escuela.<br><br>Es conveniente que la persona seleccionada para cumplir el rol de coordinador AmbLeMa en la escuela liderice la planificación y desarrollo del Taller Inicial, con la debida orientación de Fundación AmbLeMa.",
+        schoolYear=schoolYear
+    )
+    sponsorWorkshopPlanning.save()
 
     sponsorAgreementSchool = Step(
         name="Convenio Padrino - Escuela",
         devName="sponsorAgreementSchool",
         tag="3",
-        sort=6,
+        sort=7,
         isStandard=True,
         approvalType="3",
         hasText=True,
-        hasFile=True,
+        hasFile=False,
         hasUpload=True,
-        text="Convenio entre padrino y escuela",
-        file={"name": "Convenio_Padrino_Escuela.pdf", "url": "https://urlserver.com/files/asd.pdf"},
+        text="Para formalizar la relación entre el <strong>Padrino y la Escuela</strong>, se procede a elaborar un <strong>convenio</strong> mediante el cual se establecen los compromisos de ambas partes y se notifica a la Fundación AmbLeMa del acuerdo alcanzado. Este documento, <strong>que será firmado el día del Taller Inicial</strong>, es indispensable para autorizar la aplicación de la Herramienta Socio Educativa en la institución. En tal sentido, se adjunta un modelo de convenio como referencia.",
         schoolYear=schoolYear
     )
     sponsorAgreementSchool.save()
@@ -1036,7 +1050,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="Descripción del método AmbLeMa para coordinadores",
+        text="Si aún no está familiarizado con el método AmbLeMa, le invitamos a consultar el documento adjunto (dossier), donde encontrará respuestas claras a las preguntas fundamentales: <strong>¿Qué es AmbLeMa?, ¿en qué consiste? y ¿cuál es su propósito?</strong> Este material describe de manera precisa el método, su estructura y su alcance dentro de las escuelas, lo que le permitirá comprender cómo funciona la Herramienta Socio Educativa y el impacto que genera en la calidad educativa.",
         file={"name": "Metodo_AmbLeMa.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -1051,7 +1065,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="Descripción del perfil del coordinador",
+        text="El Coordinador AmbLeMa es una persona proactiva y con un alto sentido de responsabilidad, encargada de supervisar y evaluar en cada escuela la aplicación de la Herramienta Socio Educativa. Para desempeñarse este rol, debe cumplir con los requisitos establecidos y ser aprobado por la Fundación AmbLeMa.<br><br>Para conocer con mayor detalle el <strong>rol y las competencias</strong> que debe tener un <strong>Coordinador AmbLeMa</strong>, descarga el documento adjunto.<br><br>Una vez revisado los documentos, cambia el estatus a: <strong>Completado</strong>.",
         file={"name": "Perfil_Coordinador.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -1066,7 +1080,7 @@ def create_initial_steps():
         approvalType="3",
         hasUpload=True,
         hasText=True,
-        text="Subir síntesis curricular en PDF",
+        text="Adjunta tu currículum vitae actualizado en formato PDF. Una vez realizado este paso, mantente atento(a), ya que el Gerente General de AmbLeMa se comunicará contigo para <strong>realizar la entrevista</strong> correspondiente. Después de esta etapa, se te informarán las siguientes fases del proceso de aceptación y formación como Coordinador AmbLeMa.",
         schoolYear=schoolYear
     )
     coordinatorSendCurriculum.save()
@@ -1077,7 +1091,9 @@ def create_initial_steps():
         tag="2",
         sort=4,
         isStandard=True,
+        hasText=True,
         approvalType="2",
+        text="<strong>¡Bienvenido Fundación AmbLeMa, que comience el aprendizaje!</strong><br><br>Bienvenido al AmbLePENSUM.<br>Los Módulos de Aprendizaje muestran el Método AmbLeMa y detalla las responsabilidades del Coordinador para Hacer Que Suceda (HQS)",
         schoolYear=schoolYear
     )
     corrdinatorCompleteTrainingModules.save()
@@ -1090,7 +1106,7 @@ def create_initial_steps():
         hasText=True,
         isStandard=True,
         approvalType="1",
-        text="Asigna una escuela al proyecto",
+        text="Si deseas apoyar la expansión de la Herramienta Educativa AmbLeMa, puedes encontrar una escuela cercana que presente necesidades diversas y cuente con un equipo directivo y docente dispuesto a asumir con responsabilidad y sentido de pertenencia la aplicación y supervisión de la Herramienta Educativa AmbLeMa, con el propósito de impulsar un verdadero salto en la Calidad Educativa.",
         schoolYear=schoolYear
     )
     coordinatorFindSchool.save()
@@ -1104,7 +1120,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="Presentación a la escuela",
+        text="Una vez que haya identificado una escuela con necesidades y disposición para trabajar con la Herramienta Socio Educativa AmbLeMa, solicite una reunión con el personal directivo y docente para presentarles en qué consiste la herramienta y expresar su interés en apadrinar la institución.<br><br>Para facilitar esta reunión, le recomendamos revisar el documento adjunto, que contiene un resumen claro sobre la Fundación AmbLeMa, así como el enlace al video de AmbLeMa. Estos materiales le permitirán ofrecer una explicación precisa y completa del programa.<br><br>Durante este encuentro, es fundamental que la directiva comprenda el alcance del apadrinamiento, los compromisos que implica y el <strong>acompañamiento permanente que AmbLeMa brinda a los docentes</strong>, orientado a fortalecer sus prácticas pedagógicas y promover un verdadero salto en la calidad educativa. Su rol como padrino será determinante para motivar, orientar y acompañar a la escuela en este primer acercamiento al programa.",
         file={"name": "Presentacion_Escuela.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -1118,7 +1134,7 @@ def create_initial_steps():
         isStandard=True,
         approvalType="3",
         hasText=True,
-        text="Llenar planilla de escuela",
+        text="Si la escuela está de acuerdo en asumir el compromiso, <strong>indica a su director(a)</strong> que debe ingresar a la página web de AmbLeMa (<a href=\"https://www.amblema.org\" target=\"_blank\">www.amblema.org</a>), ir a la <strong>pestaña Inicio</strong>, desplazarse hasta el final y seleccionar la opción <strong>“¿Te gustaría que AmbLeMa esté en tu escuela?”</strong> para llenar todos los datos de la institución. Este paso es indispensable para iniciar el proceso de evaluación.<br><br>Después del registro de la escuela, deben esperar la <strong>aprobación de Fundación AmbLeMa</strong> para organizar el <strong>Taller Inicial</strong> de la herramienta educativa con todo el equipo docente.",
         schoolYear=schoolYear
     )
     coordinatorFillSchoolForm.save()
@@ -1131,7 +1147,7 @@ def create_initial_steps():
         hasText=True,
         isStandard=True,
         approvalType="1",
-        text="Asigna un padrino al proyecto",
+        text="El padrino puede ser una empresa, una institución pública o privada, un particular o una familia con un auténtico sentido de responsabilidad social, dispuestos a invertir de manera efectiva la razón social de su organización para que la Herramienta Educativa AmbLeMa pueda ser aplicada en una escuela.",
         schoolYear=schoolYear
     )
     coordinatorFindSponsor.save()
@@ -1144,7 +1160,7 @@ def create_initial_steps():
         isStandard=True,
         approvalType="3",
         hasText=True,
-        text="Presentación del coordinador al padrino",
+        text="Contacte al posible padrino y solicite una reunión para explicarle en qué consiste la <strong>Herramienta Socio Educativa AmbLeMa</strong> y cómo, a través de su razón social, puede contribuir a que sea aplicada en la escuela, con el propósito de impulsar una educación de calidad.<br><br>Para ofrecer una explicación detallada sobre AmbLeMa, puede consultar el <strong>documento adjunto</strong>, que contiene la presentación de <em>AmbLeMa</em> y el siguiente <strong>video</strong>, materiales que le permitirán comprender de manera precisa el método y su alcance.<br><br>Si conoces una empresa o institución que pueda apadrinar una escuela, indica a su representante que debe ingresar a la página web de AmbLeMa (<a href=\"https://www.amblema.org\" target=\"_blank\">www.amblema.org</a>), ir a la <strong>pestaña Inicio</strong>, desplazarse hasta el final y seleccionar la opción <strong>“¿Te gustaría ser Padrino de una escuela?”</strong> para llenar todos los datos solicitados. Este paso es indispensable para formalizar el proceso de apadrinamiento.",
         schoolYear=schoolYear
     )
     coordinatorFillSponsorForm.save()
@@ -1158,7 +1174,7 @@ def create_initial_steps():
         hasVideo=True,
         isStandard=True,
         approvalType="4",
-        text="Descripción de la planificación inicial",
+        text="El Taller Inicial va dirigido al personal docente y directivo de la institución. Planifica con la Fundación AmbLeMa el día, lugar y la logística necesaria para dictar el taller. Asegura la participación de todo el personal docente de la escuela.",
         video={"name": "some video", "url": "https://youtube.com"},
         schoolYear=schoolYear
     )
@@ -1171,11 +1187,11 @@ def create_initial_steps():
         sort=11,
         isStandard=True,
         hasText=True,
-        hasChecklist=True,
-        text="Taller inicial y acuerdo con la Fundación AmbLeMa",
-        checklist=[{"name": "Reunión con la escuela"},
-                   {"name": "Reunión con el padrino"}],
-        approvalType="2",
+        hasFile=False,
+        hasUpload=True,
+        hasChecklist=False,
+        text="El Acuerdo entre el Coordinador y la Fundación AmbLeMa formaliza la participación del Coordinador como voluntario y establece sus responsabilidades dentro de la escuela. Define los compromisos operativos y éticos necesarios para aplicar la Herramienta Educativa AmbLeMa. Este acuerdo se firma el día del Taller Inicial, momento en que el Coordinador confirma oficialmente su incorporación al programa. En tal sentido, se adjunta un modelo del acuerdo como referencia.",
+        approvalType="3",
         schoolYear=schoolYear
     )
     checklistInitialWorkshop.save()
@@ -1192,7 +1208,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="Descripción del método AmbLeMa para escuelas",
+        text="Si aún no está familiarizado con el método AmbLeMa, le invitamos a consultar el documento adjunto (dossier), donde encontrará respuestas claras a las preguntas fundamentales: <strong>¿Qué es AmbLeMa?, ¿en qué consiste? y ¿cuál es su propósito?</strong> Este material describe de manera precisa el método, su estructura y su alcance dentro de las escuelas, lo que le permitirá comprender cómo funciona la Herramienta Socio Educativa y el impacto que genera en la calidad educativa.",
         file={"name": "Metodo_AmbLeMa.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -1206,7 +1222,7 @@ def create_initial_steps():
         hasText=True,
         isStandard=True,
         approvalType="1",
-        text="Asigna un padrino al proyecto",
+        text="El padrino puede ser una empresa, una institución pública o privada, un particular o una familia con un auténtico sentido de responsabilidad social, dispuestos a invertir de manera efectiva la razón social de su organización para que la Herramienta Educativa AmbLeMa pueda ser aplicada en una escuela.",
         schoolYear=schoolYear
     )
     schoolFindSponsor.save()
@@ -1220,7 +1236,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="Presentación de la escuela al padrino",
+        text="Contacte al posible padrino y solicite una reunión para explicarle en qué consiste la <strong>Herramienta Socio Educativa AmbLeMa</strong> y cómo, a través de su razón social, puede contribuir a que sea aplicada en la escuela, con el propósito de impulsar una educación de calidad.<br><br>Para ofrecer una explicación detallada sobre AmbLeMa, puede consultar el <strong>documento adjunto</strong>, que contiene la presentación de <em>AmbLeMa</em> y el siguiente <strong>video</strong>, materiales que le permitirán comprender de manera precisa el método y su alcance.<br><br>Si conoces una empresa o institución que pueda apadrinar una escuela, indica a su representante que debe ingresar a la página web de AmbLeMa (<a href=\"https://www.amblema.org\" target=\"_blank\">www.amblema.org</a>), ir a la <strong>pestaña Inicio</strong>, desplazarse hasta el final y seleccionar la opción <strong>“¿Te gustaría ser Padrino de una escuela?”</strong> para llenar todos los datos solicitados. Este paso es indispensable para formalizar el proceso de apadrinamiento.",
         file={"name": "Presentacion_Padrino.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -1234,7 +1250,7 @@ def create_initial_steps():
         hasText=True,
         isStandard=True,
         approvalType="1",
-        text="Asigna un coordinador al proyecto",
+        text="El Coordinador AmbLeMa es una persona proactiva y con un alto sentido de responsabilidad, encargada de supervisar y evaluar en cada escuela la aplicación de la Herramienta Socio Educativa. Para desempeñarse este rol, debe cumplir con los requisitos establecidos y ser aprobado por la Fundación AmbLeMa.<br><br>Para conocer con mayor detalle el <strong>rol y las competencias</strong> que debe tener un <strong>Coordinador AmbLeMa</strong>, descarga el documento adjunto.<br><br>Si conoces a una persona que reúna el perfil de un Coordinador AmbLeMa, pídele que ingrese a la página web de AmbLeMa (<a href=\"https://www.amblema.org\" target=\"_blank\">www.amblema.org</a>), vaya a la <strong>pestaña Inicio</strong>, se desplace hasta el final y seleccione la opción <strong>“¿Te gustaría ser Coordinador AmbLeMa?”</strong>. Allí deberá llenar todos los datos solicitados.",
         schoolYear=schoolYear
     )
     schoolFindCoordinator.save()
@@ -1247,10 +1263,9 @@ def create_initial_steps():
         isStandard=True,
         approvalType="3",
         hasText=True,
-        hasFile=True,
+        hasFile=False,
         hasUpload=True,
-        text="Convenio entre escuela y padrino",
-        file={"name": "Convenio_Escuela_Padrino.pdf", "url": "https://urlserver.com/files/asd.pdf"},
+        text="Para formalizar la relación entre el <strong>Padrino y la Escuela</strong>, se procede a elaborar un <strong>convenio</strong> mediante el cual se establecen los compromisos de ambas partes y se notifica a la Fundación AmbLeMa del acuerdo alcanzado. Este documento, <strong>que será firmado el día del Taller Inicial</strong>, es indispensable para autorizar la aplicación de la Herramienta Socio Educativa en la institución. En tal sentido, se adjunta un modelo de convenio como referencia.",
         schoolYear=schoolYear
     )
     schoolAgreementSponsor.save()
@@ -1263,10 +1278,9 @@ def create_initial_steps():
         isStandard=True,
         approvalType="3",
         hasText=True,
-        hasFile=True,
+        hasFile=False,
         hasUpload=True,
-        text="Convenio entre escuela y fundación AmbLeMa",
-        file={"name": "Convenio_Escuela_Fundacion.pdf", "url": "https://urlserver.com/files/asd.pdf"},
+        text="Para formalizar la relación entre <strong>la Escuela y Fundación AmbLeMa</strong>, se procede a elaborar un <strong>convenio</strong> mediante el cual se establecen los compromisos de ambas partes, <strong>que será firmado el día del Taller Inicial</strong>, indispensable para autorizar la aplicación de la Herramienta Socio Educativa en la institución. En tal sentido, se adjunta un modelo de convenio como referencia.",
         schoolYear=schoolYear
     )
     schoolAgreementFoundation.save()

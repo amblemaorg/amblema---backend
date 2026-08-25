@@ -148,39 +148,94 @@ class EnvironmentalDiagnosticService():
         if evaluator.hasEvaluated:
             return {"message": "Los resultados para este evaluador ya han sido registrados.", "hasEvaluated": True}, 400
 
-        criteria_keys = [
-            'cleanlinessAndCareOfSpaces',
-            'wasteManagement',
-            'biodiversityConservation',
-            'waterUse',
-            'communityRelations'
-        ]
+        indicator_definitions = {
+            'cleanlinessAndCareOfSpaces': {
+                'subcriteria': ['1.1', '1.2', '1.3'],
+                'count': 3
+            },
+            'wasteManagement': {
+                'subcriteria': ['2.1', '2.2', '2.3'],
+                'count': 3
+            },
+            'biodiversityConservation': {
+                'subcriteria': ['3.1', '3.2', '3.3'],
+                'count': 3
+            },
+            'waterUse': {
+                'subcriteria': ['4.1', '4.2', '4.3'],
+                'count': 3
+            },
+            'communityRelations': {
+                'subcriteria': ['5.1', '5.2'],
+                'count': 2
+            }
+        }
 
         results_input = jsonData.get('results', {})
-        valid_values = []
         processed_results = {}
+        indicator_averages = []
 
-        for key in criteria_keys:
-            item = results_input.get(key, {'applies': False, 'value': None})
-            applies = bool(item.get('applies', False))
-            val = item.get('value')
+        for key, defs in indicator_definitions.items():
+            indicator_input = results_input.get(key, {})
+            subcriteria_data = {}
+            subtotal = 0.0
 
-            if applies and val is not None and val != '':
-                try:
-                    val_float = float(val)
-                    val_float = max(0.0, min(7.0, val_float))
-                    valid_values.append(val_float)
-                    processed_results[key] = {'applies': True, 'value': val_float}
-                except (ValueError, TypeError):
-                    processed_results[key] = {'applies': True, 'value': 0.0}
-                    valid_values.append(0.0)
+            if isinstance(indicator_input, dict) and 'subcriteria' in indicator_input:
+                sub_input = indicator_input.get('subcriteria', {})
+                for sub_key in defs['subcriteria']:
+                    sub_item = sub_input.get(sub_key, {})
+                    val = sub_item.get('value', 0) if isinstance(sub_item, dict) else sub_item
+                    try:
+                        val_float = max(1.0, min(7.0, float(val)))
+                    except (ValueError, TypeError):
+                        val_float = 0.0
+                    obs = sub_item.get('observation', '') if isinstance(sub_item, dict) else ''
+                    subcriteria_data[sub_key] = {
+                        'value': val_float,
+                        'observation': obs
+                    }
+                    subtotal += val_float
+                avg = round(subtotal / defs['count'], 2) if defs['count'] > 0 else 0.0
+                processed_results[key] = {
+                    'applies': True,
+                    'value': avg,
+                    'subtotal': round(subtotal, 2),
+                    'average': avg,
+                    'subcriteria': subcriteria_data
+                }
+                indicator_averages.append(avg)
+            elif isinstance(indicator_input, dict) and 'value' in indicator_input:
+                val = indicator_input.get('value')
+                applies = bool(indicator_input.get('applies', True))
+                if applies and val is not None and val != '':
+                    try:
+                        val_float = max(0.0, min(7.0, float(val)))
+                    except (ValueError, TypeError):
+                        val_float = 0.0
+                else:
+                    val_float = 0.0
+                processed_results[key] = {
+                    'applies': applies,
+                    'value': val_float,
+                    'subtotal': round(val_float * defs['count'], 2),
+                    'average': val_float,
+                    'subcriteria': {}
+                }
+                indicator_averages.append(val_float)
             else:
-                processed_results[key] = {'applies': False, 'value': None}
+                processed_results[key] = {
+                    'applies': False,
+                    'value': 0.0,
+                    'subtotal': 0.0,
+                    'average': 0.0,
+                    'subcriteria': {}
+                }
+                indicator_averages.append(0.0)
 
-        index_val = (sum(valid_values) / len(valid_values)) if valid_values else None
+        total_index = round(sum(indicator_averages), 2)
 
         evaluator.results = processed_results
-        evaluator.index = round(index_val, 2) if index_val is not None else None
+        evaluator.index = total_index
         evaluator.hasEvaluated = True
         evaluator.evaluatedAt = datetime.utcnow()
         evaluator.save()

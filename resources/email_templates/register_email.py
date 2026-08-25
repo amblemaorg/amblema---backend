@@ -35,9 +35,9 @@ def messageRegisterEmail(email, password):
                                                         <td style="padding:5px 5px 0px 5px">
                                                             <h3 style="margin:30px 0 20px 0;font-size:30px;color:#008096;font-weight:bold;">¡Bienvenido a AmbLeMa!</h3>
                                                             <p style="margin:0px 10px 15px 10px;color: #008096;font-weight:bold;line-height:22px;text-align:center;">
-                                                                Estamos emocionados de que hayas decidido formar parte de Fundación AmbLeMa.
-                                                                Inicia la experiencia de ser parte de AmbLeMa completando algunos pasos.
-                                                                Para ello ingresa a nuestra página con las siguientes credenciales:</p>
+                                                                Estamos emocionados de que hayas decidido formar parte de Fundación AmbLeMa.<br/>
+                                                                Para <strong>continuar tu proceso</strong>, ingresa al <a href="https://amblema.org/auth/login" style="color: #00809A;"><strong  style="color: #00809A">Sistema PECA</strong></a> y completa cada uno de los pasos necesarios para <strong>finalizar tu registro</strong>.<br/>
+                                                                Accede con las siguientes credenciales:</p>
                                                             <p style="margin:0 0 0 0;color: #008096;line-height:22px;font-size: 18px;font-weight:bold">Usuario: """+email+"""</p>
                                                             <p style="margin:0 0 0 0;color: #008096;line-height:22px;font-size: 18px;font-weight:bold">Contraseña: """+password+"""</p>
                                                         </td>
@@ -75,10 +75,10 @@ def messageRegisterEmail(email, password):
                                                                         <td align="center">
                                                                             <br>
                                                                             <p style="padding: 70px 85px 0px 85px;color: #00353A;font-weight:bold;line-height:22px">
-                                                                                Si quieres contactar con nuestro equipo, no dudes en hacerlo a través de amblemaorg@gmail.com
+                                                                                Si necesitas apoyo, puedes escribirnos a amblemaorg@gmail.com
                                                                             </p>
-                                                                            <p style="margin:20px 10px 0px 10px;color: #00353A;font-weight:bold;line-height:20px">Ten un excelente día</p>
-                                                                            <p style="margin:0px 10px 20px 10px;color: #00353A;font-weight:bold;line-height:20px">Fundación AmbLeMa</p> 
+                                                                            <p style="margin:20px 10px 0px 10px;color: #00353A;font-weight:bold;line-height:20px">Fundación AmbLeMa</p>
+                                                                            <p style="margin:0px 10px 20px 10px;color: #00353A;font-weight:bold;line-height:20px">Teléfono de contacto: 0414-1000456</p> 
                                                                             <br>
                                                                             <br>
                                                                             <br>

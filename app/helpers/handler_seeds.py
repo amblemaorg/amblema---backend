@@ -933,8 +933,8 @@ def create_initial_steps():
     if not schoolYear:
         return "An active school year is required"
 
-    # Soft-delete old step templates for the active school year to replace them with the new schema
-    Step.objects(schoolYear=schoolYear.id, isDeleted=False).update(isDeleted=True)
+    # Hard-delete old step templates for the active school year to avoid duplicates
+    Step.objects(schoolYear=schoolYear.id).delete()
 
     # ----------------------------------------------------
     # ROL PADRINO (Sponsor) - tag = "3"
@@ -1285,8 +1285,76 @@ def create_initial_steps():
     )
     schoolAgreementFoundation.save()
 
+    from app.models.project_model import StepControl, CheckElement, Approval, Project
+    from app.schemas.school_user_schema import SchoolUserSchema
+    from app.schemas.coordinator_user_schema import CoordinatorUserSchema
+    from app.schemas.sponsor_user_schema import SponsorUserSchema
 
-def create_standard_roles():
+    all_new_steps = Step.objects(schoolYear=schoolYear.id, isDeleted=False, status="1").order_by('tag', 'sort').all()
+    projects = Project.objects(schoolYear=schoolYear.id, isDeleted=False).all()
+    for project in projects:
+        new_step_controls = []
+        for step in all_new_steps:
+            stepCtrl = StepControl(
+                id=str(step.id),
+                name=step.name,
+                devName=step.devName,
+                tag=step.tag,
+                sort=step.sort,
+                approvalType=step.approvalType,
+                hasText=step.hasText,
+                hasFile=step.hasFile,
+                hasDate=step.hasDate,
+                hasVideo=step.hasVideo,
+                hasChecklist=step.hasChecklist,
+                hasUpload=step.hasUpload,
+                text=step.text,
+                file=step.file,
+                video=step.video,
+                createdAt=step.createdAt,
+                updatedAt=step.updatedAt
+            )
+            if step.hasChecklist:
+                for check in step.checklist:
+                    stepCtrl.checklist.append(
+                        CheckElement(name=check.name, id=check.id))
+            if project.school:
+                if step.devName in ("findSchool", "coordinatorFillSchoolForm", "sponsorFillSchoolForm"):
+                    stepCtrl.status = "3"
+                    stepCtrl.approvalHistory.append(
+                        Approval(
+                            id="",
+                            data=SchoolUserSchema().dump(project.school),
+                            status="2"
+                        )
+                    )
+            if project.sponsor:
+                if step.devName in ("findSponsor", "coordinatorFillSponsorForm", "schoolFillSponsorForm"):
+                    stepCtrl.status = "3"
+                    stepCtrl.approvalHistory.append(
+                        Approval(
+                            id="",
+                            data=SponsorUserSchema().dump(project.sponsor),
+                            status="2"
+                        )
+                    )
+            if project.coordinator:
+                if step.devName in ("findCoordinator", "sponsorFindCoordinator", "schoolFindCoordinator"):
+                    stepCtrl.status = "3"
+                    stepCtrl.approvalHistory.append(
+                        Approval(
+                            id="",
+                            data=CoordinatorUserSchema().dump(project.coordinator),
+                            status="2"
+                        )
+                    )
+            new_step_controls.append(stepCtrl)
+
+        project.stepsProgress.steps = new_step_controls
+        project.stepsProgress.updateProgress()
+        project.save()
+
+    return "ok"
 
     from app.models.role_model import Role, Permission, ActionHandler
     from app.models.entity_model import Entity

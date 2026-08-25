@@ -14,9 +14,13 @@ import json
 
 def send_email(body, plainTextBody, subject, to):
     """
-    Main email entry point. Defaults to Gmail API REST.
+    Main email entry point. Defaults to Gmail API REST, falls back to SMTP.
     """
-    return send_email_gmail(body, plainTextBody, subject, to)
+    res = send_email_gmail(body, plainTextBody, subject, to)
+    if res == True:
+        return True
+    current_app.logger.info("Gmail API unavailable or token invalid, trying SMTP fallback...")
+    return send_email_smtp(body, plainTextBody, subject, to)
 
 
 def send_email_gmail(body, plainTextBody, subject, to):
@@ -63,7 +67,6 @@ def send_email_gmail(body, plainTextBody, subject, to):
         # 2. Build the email message
         msg = MIMEMultipart("alternative")
         msg['Subject'] = Header(subject, 'utf-8')
-        # formataddr handles the "Name <email@domain.com>" format correctly
         msg['From'] = formataddr((from_name, from_email))
         msg['To'] = to
         
@@ -110,30 +113,42 @@ def send_email_gmail(body, plainTextBody, subject, to):
 
 def send_email_smtp(body, plainTextBody, subject, to):
     """
-    Original SMTP method (kept for future reference)
+    SMTP fallback method for sending email.
     """
     SMTP_USERNAME = current_app.config.get('SMTP_USERNAME')
     SMTP_PASSWORD = current_app.config.get('SMTP_PASSWORD')
     SMTP_FROM = current_app.config.get('SMTP_FROM')
-    SMTP_HOST = current_app.config.get('SMTP_HOST')
-    SMTP_PORT = current_app.config.get('SMTP_PORT')
-    
+    SMTP_HOST = current_app.config.get('SMTP_HOST') or 'smtp.gmail.com'
+    SMTP_PORT = int(current_app.config.get('SMTP_PORT') or 587)
+    from_name = current_app.config.get('GMAIL_FROM_NAME') or 'AmbLeMa'
+
+    if not SMTP_USERNAME or not SMTP_PASSWORD:
+        return {'msg': 'SMTP credenciales no configuradas'}, 400
+
     msg = MIMEMultipart("alternative")
     msg['Subject'] = Header(subject, 'utf-8')
-    msg['From'] = SMTP_FROM
+    msg['From'] = formataddr((from_name, SMTP_FROM))
     msg['To'] = to
-    
+
     partPlain = MIMEText(plainTextBody, "plain", "utf-8")
-    part = MIMEText(body, "html", "utf-8")
+    partHtml = MIMEText(body, "html", "utf-8")
     msg.attach(partPlain)
-    msg.attach(part)
-    
-    context = ssl.create_default_context()
-        
+    msg.attach(partHtml)
+
     try:
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.sendmail(SMTP_FROM, to, msg.as_string())
-            return True
+        if SMTP_PORT == 465:
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.sendmail(SMTP_FROM, [t.strip() for t in to.split(',')], msg.as_string())
+        else:
+            context = ssl.create_default_context()
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls(context=context)
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.sendmail(SMTP_FROM, [t.strip() for t in to.split(',')], msg.as_string())
+        current_app.logger.info("Email sent successfully to {0} via SMTP".format(to))
+        return True
     except Exception as e:
-        return {'msg': str(e), 'to': str(to.split())}, 400
+        current_app.logger.error("SMTP Exception: " + str(e))
+        return {'msg': str(e), 'to': str(to)}, 400

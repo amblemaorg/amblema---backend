@@ -49,19 +49,26 @@ class CoordinatorContact(Document):
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.id:
+            email = document.email.lower().strip() if document.email else ""
             user = User.objects(
-                    isDeleted=False, email=document.email).first()
+                isDeleted=False, email=email).first()
             if user:
                 raise ValidationError(
                     {"email": [{"status": "5",
-                                        "msg": "Duplicated email"}]}
+                                "msg": "Duplicated email"}]}
+                )
+            pendingRequest = CoordinatorContact.objects(
+                isDeleted=False, email=email, status="1").first()
+            if pendingRequest:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                "msg": "Duplicated pending request email"}]}
                 )
     @classmethod
     def post_save(cls, sender, document, **kwargs):
         if document.id:
             oldRequest = CoordinatorContact.objects.get(id=document.id)
             if document.status != oldRequest.status and document.status == '2':
-                project = Project()
                 coordinatorUser = CoordinatorUser.objects(
                     email=document.email).first()
                 if not coordinatorUser:
@@ -94,8 +101,6 @@ class CoordinatorContact(Document):
                     coordinatorUser.setHashPassword()
                     coordinatorUser.save()
                     coordinatorUser.sendRegistrationEmail(password)
-                project.coordinator = coordinatorUser
-                project.save()
 
 
 signals.pre_save_post_validation.connect(

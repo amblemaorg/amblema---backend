@@ -288,12 +288,7 @@ def getUserData(user):
     projects = []
 
     activeSchoolYear = SchoolYear.objects(
-        isDeleted=False, status="1").only('id', 'name').first()
-    if activeSchoolYear:
-        activeSchoolYear = {
-            "id": str(activeSchoolYear.id),
-            "name": activeSchoolYear.name
-        }
+        isDeleted=False, status="1").first()
 
     if user.userType == "2":
         projects = Project.objects(
@@ -306,6 +301,21 @@ def getUserData(user):
             isDeleted=False, status="1", school=user.id).exclude('stepsProgress',)
 
     for project in projects:
+        activePecas = []
+        if activeSchoolYear:
+            if project.phase == "2":
+                activePecas = [
+                    peca for peca in project.schoolYears
+                    if peca.schoolYear and (str(peca.schoolYear.id) == str(activeSchoolYear.id) or getattr(peca.schoolYear, 'status', None) == "1")
+                ]
+                if not activePecas:
+                    continue
+            elif project.phase == "1":
+                if project.schoolYear and str(project.schoolYear.id) != str(activeSchoolYear.id) and getattr(project.schoolYear, 'status', None) != "1":
+                    continue
+        else:
+            activePecas = project.schoolYears
+
         projectsJson.append(
             {
                 'id': str(project.id),
@@ -330,13 +340,16 @@ def getUserData(user):
                             "id": str(peca.schoolYear.id),
                             "name": peca.schoolYear.name
                         }
-                    } for peca in project.schoolYears
+                    } for peca in activePecas if peca.schoolYear
                 ]
             }
         )
     payload = userJson
     payload['projects'] = projectsJson
-    payload['activeSchoolYear'] = activeSchoolYear
+    payload['activeSchoolYear'] = {
+        "id": str(activeSchoolYear.id),
+        "name": activeSchoolYear.name
+    } if activeSchoolYear else None
     payload['permissions'] = permissions
 
     return {'data': payload}

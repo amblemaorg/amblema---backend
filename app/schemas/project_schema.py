@@ -99,6 +99,14 @@ class StepsProgressSchema(Schema):
     steps = fields.List(fields.Nested(StepControlSchema))
 
 
+class AgreementSignatureSchema(Schema):
+    role = fields.Str(required=True)
+    signerName = fields.Str(allow_none=True)
+    signerTitle = fields.Str(allow_none=True)
+    signatureData = fields.Str(allow_none=True)
+    signedAt = fields.DateTime(dump_only=True)
+
+
 class ProjectSchema(Schema):
     id = fields.Str(dump_only=True)
     code = fields.Function(lambda obj: str(obj.code).zfill(7))
@@ -107,6 +115,7 @@ class ProjectSchema(Schema):
     coordinator = MAReferenceField(document=CoordinatorUser, allow_none=True)
     schoolYears = fields.List(fields.Nested(ResumePecaSchema()))
     stepsProgress = fields.Nested(StepsProgressSchema, dump_only=True)
+    agreementSignatures = fields.List(fields.Nested(AgreementSignatureSchema()))
     phase = fields.Str(validate=OneOf(
         ('1', '2'),
         ('in_steps', 'in_peca')

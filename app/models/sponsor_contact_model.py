@@ -38,6 +38,8 @@ class SponsorContact(Document):
     contactEmail = fields.EmailField()
     contactPhone = fields.StringField()
     hasSchool = fields.BooleanField(required=True)
+    hasSchoolRegistered = fields.BooleanField(default=False)
+    school = fields.ReferenceField('SchoolUser', null=True)
     schoolName = fields.StringField()
     schoolCode = fields.StringField()
     schoolEmail = fields.EmailField()
@@ -77,14 +79,22 @@ class SponsorContact(Document):
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.id:
+            email = document.email.lower().strip() if document.email else ""
             user = User.objects(
-                    isDeleted=False, email=document.email).first()
+                isDeleted=False, email=email).first()
             if user:
                 raise ValidationError(
                     {"email": [{"status": "5",
-                                        "msg": "Duplicated email"}]}
+                                "msg": "Duplicated email"}]}
                 )
-            if document.hasSchool:
+            pendingRequest = SponsorContact.objects(
+                isDeleted=False, email=email, status="1").first()
+            if pendingRequest:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                "msg": "Duplicated pending request email"}]}
+                )
+            if document.hasSchool and not getattr(document, 'hasSchoolRegistered', False) and document.schoolCode:
                 school = SchoolUser.objects(
                     isDeleted=False, code=document.schoolCode).first()
                 if school:
@@ -92,13 +102,70 @@ class SponsorContact(Document):
                         {"schoolCode": [{"status": "5",
                                          "msg": "Duplicated school code"}]}
                     )
-                user = User.objects(
-                    isDeleted=False, email=document.schoolEmail).first()
-                if user:
-                    raise ValidationError(
-                        {"schoolEmail": [{"status": "5",
-                                          "msg": "Duplicated school email"}]}
-                    )
+                if document.schoolEmail:
+                    user = User.objects(
+                        isDeleted=False, email=document.schoolEmail).first()
+                    if user:
+                        raise ValidationError(
+                            {"schoolEmail": [{"status": "5",
+                                              "msg": "Duplicated school email"}]}
+                        )
+            if document.hasSchool and getattr(document, 'hasSchoolRegistered', False) and document.school:
+                sc = document.school
+                if not document.schoolName:
+                    document.schoolName = sc.name
+                if not document.schoolCode:
+                    document.schoolCode = sc.code
+                if not document.schoolEmail:
+                    document.schoolEmail = sc.email
+                if not document.schoolPhone:
+                    document.schoolPhone = sc.phone
+                if not document.schoolType:
+                    document.schoolType = sc.schoolType
+                if not document.schoolAddressState:
+                    document.schoolAddressState = sc.addressState
+                if not document.schoolAddressMunicipality:
+                    document.schoolAddressMunicipality = sc.addressMunicipality
+                if not document.schoolAddressCity:
+                    document.schoolAddressCity = sc.addressCity
+                if not document.schoolAddressZoneType:
+                    document.schoolAddressZoneType = sc.addressZoneType
+                if not document.schoolAddressZone:
+                    document.schoolAddressZone = sc.addressZone
+                if not document.schoolAddress:
+                    document.schoolAddress = sc.address
+                if not document.schoolCoordinate:
+                    document.schoolCoordinate = sc.coordinate
+                if not document.schoolPrincipalFirstName:
+                    document.schoolPrincipalFirstName = sc.principalFirstName
+                if not document.schoolPrincipalLastName:
+                    document.schoolPrincipalLastName = sc.principalLastName
+                if not document.schoolPrincipalEmail:
+                    document.schoolPrincipalEmail = sc.principalEmail
+                if not document.schoolPrincipalPhone:
+                    document.schoolPrincipalPhone = sc.principalPhone
+                if not document.schoolSubPrincipalFirstName:
+                    document.schoolSubPrincipalFirstName = sc.subPrincipalFirstName
+                if not document.schoolSubPrincipalLastName:
+                    document.schoolSubPrincipalLastName = sc.subPrincipalLastName
+                if not document.schoolSubPrincipalEmail:
+                    document.schoolSubPrincipalEmail = sc.subPrincipalEmail
+                if not document.schoolSubPrincipalPhone:
+                    document.schoolSubPrincipalPhone = sc.subPrincipalPhone
+                if not document.schoolNTeachers:
+                    document.schoolNTeachers = sc.nTeachers
+                if not document.schoolNAdministrativeStaff:
+                    document.schoolNAdministrativeStaff = sc.nAdministrativeStaff
+                if not document.schoolNLaborStaff:
+                    document.schoolNLaborStaff = sc.nLaborStaff
+                if not document.schoolNStudents:
+                    document.schoolNStudents = sc.nStudents
+                if not document.schoolNGrades:
+                    document.schoolNGrades = sc.nGrades
+                if not document.schoolNSections:
+                    document.schoolNSections = sc.nSections
+                if not document.schoolShift:
+                    document.schoolShift = sc.schoolShift
 
     @classmethod
     def post_save(cls, sender, document, **kwargs):
@@ -137,48 +204,52 @@ class SponsorContact(Document):
                 project.sponsor = sponsorUser
 
                 if document.hasSchool:
-                    schoolUser = SchoolUser.objects.filter((
-                        Q(email=document.schoolEmail) | Q(code=document.schoolCode)) & Q(isDeleted=False)).first()
-                    if not schoolUser:
-                        schoolUser = SchoolUser(
-                            name=document.schoolName,
-                            email=document.schoolEmail,
-                            userType='4',
-                            phone=document.schoolPhone,
-                            role=Role.objects(
-                                isDeleted=False, devName="school").first(),
-                            addressState=document.schoolAddressState,
-                            addressMunicipality=document.schoolAddressMunicipality,
-                            addressCity=document.schoolAddressCity,
-                            addressZoneType=document.schoolAddressZoneType,
-                            addressZone=document.schoolAddressZone,
-                            address=document.schoolAddress,
-                            coordinate=document.schoolCoordinate,
-                            status='1',
-                            code=document.schoolCode,
-                            schoolType=document.schoolType,
-                            principalFirstName=document.schoolPrincipalFirstName,
-                            principalLastName=document.schoolPrincipalLastName,
-                            principalEmail=document.schoolPrincipalEmail,
-                            principalPhone=document.schoolPrincipalPhone,
-                            subPrincipalFirstName=document.schoolSubPrincipalFirstName,
-                            subPrincipalLastName=document.schoolSubPrincipalLastName,
-                            subPrincipalEmail=document.schoolSubPrincipalEmail,
-                            subPrincipalPhone=document.schoolSubPrincipalPhone,
-                            nTeachers=document.schoolNTeachers,
-                            nAdministrativeStaff=document.schoolNAdministrativeStaff,
-                            nLaborStaff=document.schoolNLaborStaff,
-                            nStudents=document.schoolNStudents,
-                            nGrades=document.schoolNGrades,
-                            nSections=document.schoolNSections,
-                            schoolShift=document.schoolShift
-                        )
-                        password = schoolUser.generatePassword()
-                        schoolUser.password = password
-                        schoolUser.setHashPassword()
-                        schoolUser.save()
-                        schoolUser.sendRegistrationEmail(password)
-                    project.school = schoolUser
+                    if getattr(document, 'hasSchoolRegistered', False) and document.school:
+                        schoolUser = document.school
+                    else:
+                        schoolUser = SchoolUser.objects.filter((
+                            Q(email=document.schoolEmail) | Q(code=document.schoolCode)) & Q(isDeleted=False)).first() if (document.schoolEmail or document.schoolCode) else None
+                        if not schoolUser and (document.schoolEmail or document.schoolCode):
+                            schoolUser = SchoolUser(
+                                name=document.schoolName,
+                                email=document.schoolEmail,
+                                userType='4',
+                                phone=document.schoolPhone,
+                                role=Role.objects(
+                                    isDeleted=False, devName="school").first(),
+                                addressState=document.schoolAddressState,
+                                addressMunicipality=document.schoolAddressMunicipality,
+                                addressCity=document.schoolAddressCity,
+                                addressZoneType=document.schoolAddressZoneType,
+                                addressZone=document.schoolAddressZone,
+                                address=document.schoolAddress,
+                                coordinate=document.schoolCoordinate,
+                                status='1',
+                                code=document.schoolCode,
+                                schoolType=document.schoolType,
+                                principalFirstName=document.schoolPrincipalFirstName,
+                                principalLastName=document.schoolPrincipalLastName,
+                                principalEmail=document.schoolPrincipalEmail,
+                                principalPhone=document.schoolPrincipalPhone,
+                                subPrincipalFirstName=document.schoolSubPrincipalFirstName,
+                                subPrincipalLastName=document.schoolSubPrincipalLastName,
+                                subPrincipalEmail=document.schoolSubPrincipalEmail,
+                                subPrincipalPhone=document.schoolSubPrincipalPhone,
+                                nTeachers=document.schoolNTeachers,
+                                nAdministrativeStaff=document.schoolNAdministrativeStaff,
+                                nLaborStaff=document.schoolNLaborStaff,
+                                nStudents=document.schoolNStudents,
+                                nGrades=document.schoolNGrades,
+                                nSections=document.schoolNSections,
+                                schoolShift=document.schoolShift
+                            )
+                            password = schoolUser.generatePassword()
+                            schoolUser.password = password
+                            schoolUser.setHashPassword()
+                            schoolUser.save()
+                            schoolUser.sendRegistrationEmail(password)
+                    if schoolUser:
+                        project.school = schoolUser
                 project.save()
 
 

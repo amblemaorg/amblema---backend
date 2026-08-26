@@ -21,11 +21,26 @@ class ProjectHandlerService(GenericServices):
         """
         Return a record filterd by its id
         """
+        from app.schemas.school_user_schema import SchoolUserSchema
+        from app.schemas.sponsor_user_schema import SponsorUserSchema
+        from app.schemas.coordinator_user_schema import CoordinatorUserSchema
+
         schema = self.Schema(exclude=exclude, only=only)
         record = self.getOr404(recordId)
+        record.stepsProgress.updateProgress()
+        record.save()
         record.stepsProgress.steps = sorted(
             record.stepsProgress.steps, key=lambda x: (x['tag'], x['sort']))
-        return schema.dump(record), 200
+
+        data = schema.dump(record)
+        if record.school:
+            data['school'] = SchoolUserSchema().dump(record.school)
+        if record.sponsor:
+            data['sponsor'] = SponsorUserSchema().dump(record.sponsor)
+        if record.coordinator:
+            data['coordinator'] = CoordinatorUserSchema().dump(record.coordinator)
+
+        return data, 200
 
     def deleteRecord(self, recordId):
         """

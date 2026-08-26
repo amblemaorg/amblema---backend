@@ -14,7 +14,14 @@ from app.helpers.error_helpers import RegisterNotFound
 
 class StatisticsDiagnosticService():
 
-    def get(self, schoolYearId, schoolId, diagnosticsFilter=None):
+    def get(self, schoolYearId, schoolId, diagnosticsFilter=None, lapso=None):
+
+        targetLapse = None
+        if lapso:
+            try:
+                targetLapse = int(lapso)
+            except ValueError:
+                pass
 
         schoolYear = SchoolYear.objects(
             id=schoolYearId).only('pecaSetting').first()
@@ -113,6 +120,8 @@ class StatisticsDiagnosticService():
                     for student in section.students:
                         if not student.isDeleted:
                             for i in range(3):
+                                if targetLapse and (i+1) > targetLapse:
+                                    continue
                                 hasResult = False
                                 sectionLapse = sectionData['lapse{}'.format(
                                     i+1)]
@@ -167,6 +176,8 @@ class StatisticsDiagnosticService():
 
                     sectionSummaryAvailable = True
                     for i in range(3):
+                        if targetLapse and (i+1) > targetLapse:
+                            continue
                         # process data and lapse statistics
                         lapse = sectionData['lapse{}'.format(i+1)]
                         diagnocticsDateLapse = diagnosticsDates['lapse{}'.format(

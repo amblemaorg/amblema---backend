@@ -182,22 +182,27 @@ class EnvironmentalDiagnosticService():
 
             if isinstance(indicator_input, dict) and 'subcriteria' in indicator_input:
                 sub_input = indicator_input.get('subcriteria', {})
+                applied_count = 0
                 for sub_key in defs['subcriteria']:
                     sub_item = sub_input.get(sub_key, {})
                     val = sub_item.get('value', 0) if isinstance(sub_item, dict) else sub_item
                     try:
-                        val_float = max(1.0, min(7.0, float(val)))
+                        val_float = max(0.0, min(7.0, float(val)))
                     except (ValueError, TypeError):
                         val_float = 0.0
                     obs = sub_item.get('observation', '') if isinstance(sub_item, dict) else ''
+                    applies = val_float > 0
                     subcriteria_data[sub_key] = {
                         'value': val_float,
-                        'observation': obs
+                        'observation': obs,
+                        'applies': applies
                     }
-                    subtotal += val_float
-                avg = round(subtotal / defs['count'], 2) if defs['count'] > 0 else 0.0
+                    if applies:
+                        subtotal += val_float
+                        applied_count += 1
+                avg = round(subtotal / applied_count, 2) if applied_count > 0 else 0.0
                 processed_results[key] = {
-                    'applies': True,
+                    'applies': applied_count > 0,
                     'value': avg,
                     'subtotal': round(subtotal, 2),
                     'average': avg,

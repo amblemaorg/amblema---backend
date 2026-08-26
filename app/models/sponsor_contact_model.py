@@ -79,12 +79,20 @@ class SponsorContact(Document):
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.id:
+            email = document.email.lower().strip() if document.email else ""
             user = User.objects(
-                    isDeleted=False, email=document.email).first()
+                isDeleted=False, email=email).first()
             if user:
                 raise ValidationError(
                     {"email": [{"status": "5",
-                                        "msg": "Duplicated email"}]}
+                                "msg": "Duplicated email"}]}
+                )
+            pendingRequest = SponsorContact.objects(
+                isDeleted=False, email=email, status="1").first()
+            if pendingRequest:
+                raise ValidationError(
+                    {"email": [{"status": "5",
+                                "msg": "Duplicated pending request email"}]}
                 )
             if document.hasSchool and not getattr(document, 'hasSchoolRegistered', False) and document.schoolCode:
                 school = SchoolUser.objects(

@@ -51,12 +51,14 @@ class SponsorContactService(GenericServices):
                 record = schema.dump(record)
                 sponsor = SponsorUser.objects(
                     email=record['email'], isDeleted=False).first()
-                project = Project.objects(sponsor=sponsor.id).exclude(
-                    'stepsProgress').first()
-                projectData = ProjectSchema().dump(project)
-                sponsorData = SponsorUserSchema().dump(sponsor)
+                project = None
+                if sponsor:
+                    project = Project.objects(sponsor=sponsor.id).exclude(
+                        'stepsProgress').first()
+                projectData = ProjectSchema().dump(project) if project else {}
+                sponsorData = SponsorUserSchema().dump(sponsor) if sponsor else {}
                 schoolData = {}
-                if project.school:
+                if project and project.school:
                     schoolData = SchoolUserSchema().dump(project.school)
                 return {'record': record, 'project': projectData, 'school': schoolData, 'sponsor': sponsorData}, 200
             else:

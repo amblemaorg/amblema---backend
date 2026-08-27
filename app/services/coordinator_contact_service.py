@@ -50,9 +50,14 @@ class CoordinatorContactService(GenericServices):
                 record = schema.dump(record)
                 coordinator = CoordinatorUser.objects(
                     email=record['email'], isDeleted=False).first()
+                project = None
+                if coordinator:
+                    project = Project.objects(coordinator=coordinator.id).exclude(
+                        'stepsProgress').first()
+                projectData = ProjectSchema().dump(project) if project else {}
                 coordinatorData = CoordinatorUserSchema().dump(coordinator) if coordinator else {}
 
-                return {'record': record, 'project': {}, 'coordinator': coordinatorData}, 200
+                return {'record': record, 'project': projectData, 'coordinator': coordinatorData}, 200
             else:
                 return {'record': schema.dump(record), 'project': {}, 'coordinator': {}}, 200
         except ValidationError as err:

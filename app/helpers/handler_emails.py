@@ -19,6 +19,11 @@ def send_email(body, plainTextBody, subject, to):
     res = send_email_gmail(body, plainTextBody, subject, to)
     if res == True:
         return True
+
+    if current_app.config.get('DISABLE_SMTP_FALLBACK', False):
+        current_app.logger.error("Gmail API failed and SMTP fallback is disabled.")
+        return res
+
     current_app.logger.info("Gmail API unavailable or token invalid, trying SMTP fallback...")
     return send_email_smtp(body, plainTextBody, subject, to)
 
@@ -57,10 +62,10 @@ def send_email_gmail(body, plainTextBody, subject, to):
     }
     
     try:
-        r = requests.post(token_url, data=payload)
+        r = requests.post(token_url, data=payload, timeout=10)
         if r.status_code != 200:
             current_app.logger.error("Gmail API Token Error: " + str(r.text))
-            return {'msg': 'Error al refrescar el token de Gmail', 'error': r.text}, 400
+            return {'msg': 'Error al refrescar el token de Gmail (GMAIL_REFRESH_TOKEN inválido o expirado)', 'error': r.text}, 400
         
         access_token = r.json().get('access_token')
         
@@ -97,7 +102,7 @@ def send_email_gmail(body, plainTextBody, subject, to):
         }
         send_payload = {'raw': raw_message}
         
-        r_send = requests.post(send_url, headers=headers, json=send_payload)
+        r_send = requests.post(send_url, headers=headers, json=send_payload, timeout=15)
         
         if r_send.status_code == 200:
             current_app.logger.info("Email sent successfully to {0} via Gmail API".format(to))
@@ -138,12 +143,12 @@ def send_email_smtp(body, plainTextBody, subject, to):
     try:
         if SMTP_PORT == 465:
             context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context, timeout=5) as server:
                 server.login(SMTP_USERNAME, SMTP_PASSWORD)
                 server.sendmail(SMTP_FROM, [t.strip() for t in to.split(',')], msg.as_string())
         else:
             context = ssl.create_default_context()
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=5) as server:
                 server.starttls(context=context)
                 server.login(SMTP_USERNAME, SMTP_PASSWORD)
                 server.sendmail(SMTP_FROM, [t.strip() for t in to.split(',')], msg.as_string())

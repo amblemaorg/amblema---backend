@@ -102,6 +102,12 @@ class CoordinatorContact(Document):
                     coordinatorUser.save()
                     coordinatorUser.sendRegistrationEmail(password)
 
+                project = Project.objects(coordinator=coordinatorUser.id).first()
+                if not project:
+                    project = Project()
+                    project.coordinator = coordinatorUser
+                    project.save()
+
 
 signals.pre_save_post_validation.connect(
     CoordinatorContact.post_save, sender=CoordinatorContact)

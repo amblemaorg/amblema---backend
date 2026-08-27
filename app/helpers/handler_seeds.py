@@ -1018,7 +1018,9 @@ def create_initial_steps():
         hasText=True,
         hasFile=False,
         hasUpload=False,
-        text="El Taller Inicial va dirigido al personal docente y directivo de la institución. Planifica con la Fundación AmbLeMa el día, lugar y la logística (incluyendo los recursos económicos) necesaria para dictar el taller. Asegura la participación de todo el personal docente de la escuela.<br><br>Es conveniente que la persona seleccionada para cumplir el rol de coordinador AmbLeMa en la escuela liderice la planificación y desarrollo del Taller Inicial, con la debida orientación de Fundación AmbLeMa.",
+        hasVideo=True,
+        text="El Taller Inicial va dirigido al personal docente y directivo de la institución. Planifica con la Fundación AmbLeMa el día, lugar y la logística necesaria para dictar el taller. Asegura la participación de todo el personal docente de la escuela.",
+        video={"name": "Video AmbLeMa", "url": "https://www.youtube.com/watch?v=0c19cCw92FY"},
         schoolYear=schoolYear
     )
     sponsorWorkshopPlanning.save()
@@ -1065,7 +1067,7 @@ def create_initial_steps():
         approvalType="4",
         hasText=True,
         hasFile=True,
-        text="El Coordinador AmbLeMa es una persona proactiva y con un alto sentido de responsabilidad, encargada de supervisar y evaluar en cada escuela la aplicación de la Herramienta Socio Educativa. Para desempeñarse este rol, debe cumplir con los requisitos establecidos y ser aprobado por la Fundación AmbLeMa.<br><br>Para conocer con mayor detalle el <strong>rol y las competencias</strong> que debe tener un <strong>Coordinador AmbLeMa</strong>, descarga el documento adjunto.<br><br>Una vez revisado los documentos, cambia el estatus a: <strong>Completado</strong>.",
+        text="El Coordinador AmbLeMa es una persona proactiva y con un alto sentido de responsabilidad, encargada de supervisar y evaluar en cada escuela la aplicación de la Herramienta Socio Educativa. Para desempeñarse este rol, debe cumplir con los requisitos establecidos y ser aprobado por la Fundación AmbLeMa.<br><br>Para conocer con mayor detalle el <strong>rol y las competencias</strong> que debe tener un <strong>Coordinador AmbLeMa</strong>, descarga el documento adjunto.<br><br>.",
         file={"name": "Perfil_Coordinador.pdf", "url": "https://someurl.com/file.pdf"},
         schoolYear=schoolYear
     )
@@ -1173,9 +1175,9 @@ def create_initial_steps():
         hasText=True,
         hasVideo=True,
         isStandard=True,
-        approvalType="4",
+        approvalType="1",
         text="El Taller Inicial va dirigido al personal docente y directivo de la institución. Planifica con la Fundación AmbLeMa el día, lugar y la logística necesaria para dictar el taller. Asegura la participación de todo el personal docente de la escuela.",
-        video={"name": "some video", "url": "https://youtube.com"},
+        video={"name": "Video AmbLeMa", "url": "https://www.youtube.com/watch?v=0c19cCw92FY"},
         schoolYear=schoolYear
     )
     initialWorkshopPlanning.save()

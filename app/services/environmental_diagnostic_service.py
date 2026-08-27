@@ -25,6 +25,18 @@ class EnvironmentalDiagnosticService():
         if not name or not email or not phone:
             return {"message": "Nombre, correo y teléfono son obligatorios"}, 400
 
+        email = email.strip().lower()
+
+        existing = EnvironmentalDiagnosticEvaluator.objects(
+            pecaId=str(pecaId),
+            lapse=str(lapse),
+            email=email,
+            isDeleted=False
+        ).first()
+
+        if existing:
+            return {"message": "Ya existe un evaluador registrado con este correo electrónico para este lapso."}, 400
+
         token = uuid.uuid4().hex
 
         evaluator = EnvironmentalDiagnosticEvaluator(

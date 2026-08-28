@@ -74,14 +74,62 @@ class StatisticsService():
         periods = SchoolYear.objects(isDeleted=False).order_by('-createdAt')[:5]
 
         data = {
+            'environmentIndex': [],
             'wordsPerMinIndex': [],
             'multiplicationsPerMinIndex': [],
             'operationsPerMinIndex': [],
             'mathOlympics': [],
             'readingOlympics': []
         }
-        
+
+        from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
+        from app.models.peca_project_model import PecaProject
+
+        def get_ind_val(item):
+            if not item: return 0.0
+            if isinstance(item, dict):
+                if 'average' in item and item['average'] is not None:
+                    try: return float(item['average'])
+                    except (ValueError, TypeError): pass
+                if 'value' in item and item['value'] is not None:
+                    try: return float(item['value'])
+                    except (ValueError, TypeError): pass
+            elif isinstance(item, (int, float, str)):
+                try: return float(item)
+                except (ValueError, TypeError): pass
+            return 0.0
+
         for period in periods:
+            # Environmental Diagnostic aggregation for Home Page (optimized with field projections)
+            pecas = PecaProject.objects(schoolYear=str(period.id), isDeleted=False).only('id')
+            peca_ids = [str(p.id) for p in pecas]
+            if peca_ids:
+                evaluators = EnvironmentalDiagnosticEvaluator.objects(
+                    pecaId__in=peca_ids,
+                    hasEvaluated=True,
+                    isDeleted=False
+                ).only('lapse', 'index', 'results')
+
+                if evaluators:
+                    for lapse in [1, 2, 3]:
+                        lapse_evals = [e for e in evaluators if str(e.lapse) == str(lapse) and e.index is not None]
+                        if lapse_evals:
+                            avg_index = round(sum(e.index for e in lapse_evals) / len(lapse_evals), 2)
+                            indicators = {
+                                'cleanlinessAndCareOfSpaces': round(sum(get_ind_val(e.results.get('cleanlinessAndCareOfSpaces')) for e in lapse_evals) / len(lapse_evals), 2),
+                                'wasteManagement': round(sum(get_ind_val(e.results.get('wasteManagement')) for e in lapse_evals) / len(lapse_evals), 2),
+                                'biodiversityConservation': round(sum(get_ind_val(e.results.get('biodiversityConservation')) for e in lapse_evals) / len(lapse_evals), 2),
+                                'waterUse': round(sum(get_ind_val(e.results.get('waterUse')) for e in lapse_evals) / len(lapse_evals), 2),
+                                'communityRelations': round(sum(get_ind_val(e.results.get('communityRelations')) for e in lapse_evals) / len(lapse_evals), 2)
+                            }
+                            data['environmentIndex'].append({
+                                'createdAt': period.createdAt,
+                                'label': period.name,
+                                'serie': f'Lapso {lapse}',
+                                'value': avg_index,
+                                'indicators': indicators
+                            })
+
             for diag in ['wordsPerMinIndex', 'multiplicationsPerMinIndex', 'operationsPerMinIndex']:
                 hasInfo = False
                 for lapse in [1, 2, 3]:

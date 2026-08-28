@@ -416,6 +416,41 @@ class PecaProjectService():
                         'operationsPerMinCount': summary['lapse{}'.format(i)]['operationsPerMinCount']
                     }
                 )
+        from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
+
+        def get_ind_val(item):
+            if not item: return 0.0
+            if isinstance(item, dict):
+                if 'average' in item and item['average'] is not None:
+                    try: return float(item['average'])
+                    except (ValueError, TypeError): pass
+                if 'value' in item and item['value'] is not None:
+                    try: return float(item['value'])
+                    except (ValueError, TypeError): pass
+            elif isinstance(item, (int, float, str)):
+                try: return float(item)
+                except (ValueError, TypeError): pass
+            return 0.0
+
+        evaluators = EnvironmentalDiagnosticEvaluator.objects(
+            pecaId=str(peca.id),
+            hasEvaluated=True,
+            isDeleted=False
+        ).all()
+
+        for i in range(1, 4):
+            lapse_key = 'lapse{}'.format(i)
+            lapse_evals = [e for e in evaluators if str(e.lapse) == str(i)]
+            if lapse_evals:
+                avg1 = round(sum(get_ind_val(e.results.get('cleanlinessAndCareOfSpaces')) for e in lapse_evals) / len(lapse_evals), 2)
+                avg2 = round(sum(get_ind_val(e.results.get('wasteManagement')) for e in lapse_evals) / len(lapse_evals), 2)
+                avg3 = round(sum(get_ind_val(e.results.get('biodiversityConservation')) for e in lapse_evals) / len(lapse_evals), 2)
+                avg4 = round(sum(get_ind_val(e.results.get('waterUse')) for e in lapse_evals) / len(lapse_evals), 2)
+                avg5 = round(sum(get_ind_val(e.results.get('communityRelations')) for e in lapse_evals) / len(lapse_evals), 2)
+                data[lapse_key]['environmentalSummary'] = [avg1, avg2, avg3, avg4, avg5]
+            else:
+                data[lapse_key]['environmentalSummary'] = [0, 0, 0, 0, 0]
+
         for i in range(1, 4):
             lapse = peca['lapse{}'.format(i)]
             lapseData = data['lapse{}'.format(i)]

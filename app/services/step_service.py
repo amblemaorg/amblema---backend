@@ -58,6 +58,8 @@ class StepsService():
                     hasUpload=document.hasUpload,
                     text=document.text,
                     file=document.file,
+                    file2=document.file2,
+                    files=document.files,
                     video=document.video,
                     approvalType=document.approvalType,
                     sort=document.sort,
@@ -104,6 +106,8 @@ class StepsService():
                 or document.hasUpload != oldDocument.hasUpload
                 or document.text != oldDocument.text
                 or document.file != oldDocument.file
+                or document.file2 != oldDocument.file2
+                or document.files != oldDocument.files
                 or document.video != oldDocument.video
                 or document.checklist != oldDocument.checklist
                 or document.sort != oldDocument.sort
@@ -124,6 +128,8 @@ class StepsService():
                     set__stepsProgress__steps__S__name=document.name,
                     set__stepsProgress__steps__S__text=document.text,
                     set__stepsProgress__steps__S__file=document.file,
+                    set__stepsProgress__steps__S__file2=document.file2,
+                    set__stepsProgress__steps__S__files=document.files,
                     set__stepsProgress__steps__S__video=document.video,
                     set__stepsProgress__steps__S__sort=document.sort
                 )

@@ -14,15 +14,15 @@ with app.app_context():
     
     if peca.yearbook.approvalHistory:
         approval = peca.yearbook.approvalHistory[-1]
-        print(f"Approval ID: {approval.id}")
+        print("Approval ID: {}".format(approval.id))
         if 'sections' in approval.detail:
             sections = approval.detail['sections']
-            print(f"Number of sections in snapshot: {len(sections)}")
+            print("Number of sections in snapshot: {}".format(len(sections)))
             if sections:
                 first_section = sections[0]
-                print(f"Fields in section snapshot: {first_section.keys()}")
+                print("Fields in section snapshot: {}".format(first_section.keys()))
                 if 'students' in first_section:
-                    print(f"Number of students in first section: {len(first_section['students'])}")
+                    print("Number of students in first section: {}".format(len(first_section['students'])))
                 else:
                     print("No 'students' field in section snapshot.")
         else:

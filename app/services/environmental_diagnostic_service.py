@@ -54,11 +54,11 @@ class EnvironmentalDiagnosticService():
         base_url = web_origin if web_origin else os.getenv('WEB_URL', 'http://localhost:4200')
         # Ensure base_url doesn't end with a trailing slash
         base_url = base_url.rstrip('/')
-        link = f"{base_url}/evaluacion-ambiente/{token}"
+        link = "{}/evaluacion-ambiente/{}".format(base_url, token)
 
         school_name = peca.school.name if peca.school else "Escuela"
         subject = "Evaluación de Diagnóstico de Ambiente - Fundación Amblema"
-        body = f"""
+        body = """
         <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
             <h2 style="color: #81B03E;">Evaluación de Diagnóstico Ambiental</h2>
             <p>Estimado/a <strong>{name}</strong>,</p>
@@ -76,14 +76,14 @@ class EnvironmentalDiagnosticService():
             <p>Atentamente,</p>
             <p><strong>Fundación Amblema</strong></p>
         </div>
-        """
-        plainTextBody = f"Hola {name}, has sido registrado/a como evaluador/a para el diagnóstico ambiental de la escuela {school_name} (Lapso {lapse}). Ingresa al siguiente enlace para evaluar: {link}"
+        """.format(name=name, school_name=school_name, lapse=lapse, link=link)
+        plainTextBody = "Hola {}, has sido registrado/a como evaluador/a para el diagnóstico ambiental de la escuela {} (Lapso {}). Ingresa al siguiente enlace para evaluar: {}".format(name, school_name, lapse, link)
 
         try:
             send_email(body, plainTextBody, subject, email)
         except Exception as e:
             if hasattr(current_app, 'logger'):
-                current_app.logger.error(f"Error sending email to evaluator {email}: {str(e)}")
+                current_app.logger.error("Error sending email to evaluator {}: {}".format(email, str(e)))
 
         return {
             "id": str(evaluator.id),
@@ -109,7 +109,7 @@ class EnvironmentalDiagnosticService():
         evaluators = EnvironmentalDiagnosticEvaluator.objects(pecaId=str(pecaId), lapse=str(lapse), isDeleted=False)
         result_list = []
         for ev in evaluators:
-            link = f"{base_url}/evaluacion-ambiente/{ev.token}"
+            link = "{}/evaluacion-ambiente/{}".format(base_url, ev.token)
             result_list.append({
                 "id": str(ev.id),
                 "name": ev.name,

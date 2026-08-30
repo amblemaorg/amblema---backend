@@ -14,7 +14,7 @@ with app.app_context():
     
     pecas = PecaProject.objects(isDeleted=False)
     
-    print(f"Refreshing latest approved yearbook diagnostic summaries for {len(pecas)} projects...")
+    print("Refreshing latest approved yearbook diagnostic summaries for {} projects...".format(len(pecas)))
     
     project_count = 0
     updated_reqs = 0

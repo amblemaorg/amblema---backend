@@ -219,7 +219,7 @@ class SchoolPageContentService():
                             {
                                 'createdAt': peca.createdAt,
                                 'label': peca.schoolYearName,
-                                'serie': f'Lapso {lapse}',
+                                'serie': 'Lapso {}'.format(lapse),
                                 'value': avg_index,
                                 'indicators': indicators
                             }

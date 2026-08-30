@@ -1,4 +1,3 @@
-
 import os
 import sys
 
@@ -7,7 +6,7 @@ sys.path.append('/home')
 # Load .env
 env_file = '.env'
 if os.path.exists(env_file):
-    print(f"Loading {env_file}")
+    print("Loading {}".format(env_file))
     with open(env_file) as f:
         for line in f:
             if line.strip() and not line.startswith('#'):
@@ -26,14 +25,14 @@ try:
     from app import create_app
     from app.models.peca_project_model import PecaProject
 except ImportError as e:
-    print(f"Import Error: {e}")
+    print("Import Error: {}".format(e))
     sys.exit(1)
 
 try:
-    print(f"Creating app with config: {os.getenv('INSTANCE')}")
+    print("Creating app with config: {}".format(os.getenv('INSTANCE')))
     app = create_app(os.getenv('INSTANCE'))
 except Exception as e:
-    print(f"Failed to create app: {e}")
+    print("Failed to create app: {}".format(e))
     import traceback
     traceback.print_exc()
     sys.exit(1)
@@ -52,7 +51,7 @@ with app.app_context():
             modified = False
             
             for i in range(1, 4):
-                lapse_key = f'lapse{i}'
+                lapse_key = 'lapse{}'.format(i)
                 lapse = peca[lapse_key]
                 
                 # Check Math Olympics
@@ -80,16 +79,16 @@ with app.app_context():
                             students_updated_count += 1
 
             if modified:
-                print(f"  Saving updates for PecaProject {peca.id}...")
+                print("  Saving updates for PecaProject {}...".format(peca.id))
                 peca.save()
                 peca_updated_count += 1
 
-        print(f"\nMigration complete.")
-        print(f"Total PecaProjects checked: {peca_count}")
-        print(f"Total PecaProjects updated: {peca_updated_count}")
-        print(f"Total Students updated: {students_updated_count}")
+        print("\nMigration complete.")
+        print("Total PecaProjects checked: {}".format(peca_count))
+        print("Total PecaProjects updated: {}".format(peca_updated_count))
+        print("Total Students updated: {}".format(students_updated_count))
 
     except Exception as e:
-        print(f"Error during migration: {e}")
+        print("Error during migration: {}".format(e))
         import traceback
         traceback.print_exc()

@@ -125,7 +125,7 @@ class StatisticsService():
                             data['environmentIndex'].append({
                                 'createdAt': period.createdAt,
                                 'label': period.name,
-                                'serie': f'Lapso {lapse}',
+                                'serie': 'Lapso {}'.format(lapse),
                                 'value': avg_index,
                                 'indicators': indicators
                             })

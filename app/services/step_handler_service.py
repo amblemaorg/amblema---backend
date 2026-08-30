@@ -89,6 +89,14 @@ class StepHandlerService(GenericServices):
                                    "msg": "Duplicated record found: {}".format(record['name'])}]}
                     )
 
+                files_list = []
+                if record.file and getattr(record.file, 'url', None):
+                    files_list.append(record.file)
+                if record.file2 and getattr(record.file2, 'url', None):
+                    files_list.append(record.file2)
+                if files_list:
+                    record.files = files_list
+
                 record.save()
 
             return schema.dump(record), 200

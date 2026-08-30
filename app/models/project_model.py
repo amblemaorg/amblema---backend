@@ -31,6 +31,8 @@ class StepFields(EmbeddedDocument):
     hasUpload = fields.BooleanField(required=True, default=False)
     text = fields.StringField()
     file = fields.EmbeddedDocumentField(Link)
+    file2 = fields.EmbeddedDocumentField(Link)
+    files = fields.EmbeddedDocumentListField(Link)
     video = fields.EmbeddedDocumentField(Link)
     checklist = fields.EmbeddedDocumentListField(CheckElement)
     approvalType = fields.StringField(required=True, max_length=1)

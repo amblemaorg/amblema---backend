@@ -170,6 +170,10 @@ class YearbookService():
                             if "logicDiagnosticAnalysis" in jsonData[field]:
                                 if yearbook[field]["logicDiagnosticAnalysis"] != jsonData[field]["logicDiagnosticAnalysis"]:
                                     data_save[field]["logicDiagnosticAnalysis"] = jsonData[field]["logicDiagnosticAnalysis"]
+
+                            if "environmentalDiagnosticAnalysis" in jsonData[field]:
+                                if yearbook[field]["environmentalDiagnosticAnalysis"] != jsonData[field]["environmentalDiagnosticAnalysis"]:
+                                    data_save[field]["environmentalDiagnosticAnalysis"] = jsonData[field]["environmentalDiagnosticAnalysis"]
                             
                             if "diagnosticSummary" in jsonData[field]:
                                 data_save[field]["diagnosticSummary"] = jsonData[field]["diagnosticSummary"]

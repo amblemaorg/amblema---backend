@@ -38,6 +38,8 @@ class StepSchema(Schema):
     hasUpload = fields.Bool(required=True, default=False)
     text = fields.Str()
     file = fields.Nested(FileSchema)
+    file2 = fields.Nested(FileSchema, allow_none=True)
+    files = fields.List(fields.Nested(FileSchema), allow_none=True)
     video = fields.Nested(FileSchema)
     checklist = fields.List(
         fields.Nested(

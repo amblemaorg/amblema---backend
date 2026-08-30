@@ -100,6 +100,21 @@ class SponsorOptionsController(Resource):
 
 class SchoolOptionsController(Resource):
     def get(self):
-        schools = SchoolUser.objects(isDeleted=False, status="1").only('id', 'name')
+        from app.models.project_model import Project
+
+        projects = Project.objects(
+            isDeleted=False,
+            status="1",
+            phase__in=["1", "2"],
+            sponsor=None
+        ).no_dereference().only('school')
+
+        school_ids = [p.school.id for p in projects if getattr(p, 'school', None)]
+
+        schools = SchoolUser.objects(
+            isDeleted=False,
+            id__in=school_ids
+        ).only('id', 'name')
+
         records = [{"id": str(s.id), "name": s.name} for s in schools]
         return {"records": records}, 200

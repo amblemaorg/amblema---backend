@@ -29,6 +29,10 @@ class Step(Document):
     text = fields.StringField()
     file = fields.EmbeddedDocumentField(
         Link, is_file=True, null=True, default=None)
+    file2 = fields.EmbeddedDocumentField(
+        Link, is_file=True, null=True, default=None)
+    files = fields.EmbeddedDocumentListField(
+        Link, null=True, default=None)
     video = fields.EmbeddedDocumentField(Link, null=True, default=None)
     checklist = fields.EmbeddedDocumentListField(
         CheckTemplate, null=True, default=None)

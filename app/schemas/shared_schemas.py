@@ -51,9 +51,13 @@ class FileSchema(Schema):
 
     @pre_load
     def process_input(self, data, **kwargs):
+        if not data:
+            return None
         if isinstance(data, str):
+            if data in ("null", "None", "", "{}"):
+                return None
             data = json.loads(data)
-        if 'url' in data and str(data['url']).startswith(current_app.config.get('SERVER_URL')):
+        if isinstance(data, dict) and 'url' in data and data.get('url') and str(data['url']).startswith(current_app.config.get('SERVER_URL')):
             data['url'] = data['url'].replace(current_app.config.get('SERVER_URL'), '')
         return data
 

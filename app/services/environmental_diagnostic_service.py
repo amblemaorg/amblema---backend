@@ -13,7 +13,31 @@ from app.helpers.handler_emails import send_email
 
 class EnvironmentalDiagnosticService():
 
-    def register_evaluator(self, pecaId, lapse, jsonData, web_origin=None):
+    def _get_origin(self, web_origin=None, req=None):
+        if web_origin:
+            return web_origin.rstrip('/')
+        if req:
+            origin = req.headers.get('Origin')
+            if origin:
+                return origin.rstrip('/')
+            referer = req.headers.get('Referer')
+            if referer:
+                from urllib.parse import urlparse
+                parsed = urlparse(referer)
+                if parsed.scheme and parsed.netloc:
+                    return "{}://{}".format(parsed.scheme, parsed.netloc)
+            proto = req.headers.get('X-Forwarded-Proto', req.scheme)
+            host = req.headers.get('X-Forwarded-Host', req.host)
+            if host:
+                return "{}://{}".format(proto, host).rstrip('/')
+        env_url = os.getenv('WEB_URL')
+        if env_url:
+            return env_url.rstrip('/')
+        if req and hasattr(req, 'host_url'):
+            return req.host_url.rstrip('/')
+        return 'http://localhost:4200'
+
+    def register_evaluator(self, pecaId, lapse, jsonData, web_origin=None, req=None):
         peca = PecaProject.objects(id=pecaId, isDeleted=False).first()
         if not peca:
             raise RegisterNotFound(message="Peca project not found", status_code=404, payload={"pecaId": pecaId})
@@ -51,9 +75,7 @@ class EnvironmentalDiagnosticService():
         )
         evaluator.save()
 
-        base_url = web_origin if web_origin else os.getenv('WEB_URL', 'http://localhost:4200')
-        # Ensure base_url doesn't end with a trailing slash
-        base_url = base_url.rstrip('/')
+        base_url = self._get_origin(web_origin, req)
         link = "{}/evaluacion-ambiente/{}".format(base_url, token)
 
         school_name = peca.school.name if peca.school else "Escuela"
@@ -98,13 +120,12 @@ class EnvironmentalDiagnosticService():
             "createdAt": evaluator.createdAt.isoformat() if evaluator.createdAt else None
         }, 201
 
-    def get_evaluators(self, pecaId, lapse, web_origin=None):
+    def get_evaluators(self, pecaId, lapse, web_origin=None, req=None):
         peca = PecaProject.objects(id=pecaId, isDeleted=False).first()
         if not peca:
             raise RegisterNotFound(message="Peca project not found", status_code=404, payload={"pecaId": pecaId})
 
-        base_url = web_origin if web_origin else os.getenv('WEB_URL', 'http://localhost:4200')
-        base_url = base_url.rstrip('/')
+        base_url = self._get_origin(web_origin, req)
 
         evaluators = EnvironmentalDiagnosticEvaluator.objects(pecaId=str(pecaId), lapse=str(lapse), isDeleted=False)
         result_list = []

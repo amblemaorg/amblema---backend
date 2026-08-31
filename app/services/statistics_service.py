@@ -127,7 +127,8 @@ class StatisticsService():
                                 'label': period.name,
                                 'serie': 'Lapso {}'.format(lapse),
                                 'value': avg_index,
-                                'indicators': indicators
+                                'indicators': indicators,
+                                'evaluationsCount': len(lapse_evals)
                             })
 
             for diag in ['wordsPerMinIndex', 'multiplicationsPerMinIndex', 'operationsPerMinIndex']:

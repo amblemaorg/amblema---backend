@@ -15,12 +15,12 @@ class EnvironmentalDiagnosticEvaluatorController(Resource):
     def post(self, pecaId, lapse):
         jsonData = request.get_json()
         origin = request.headers.get('Origin')
-        return self.service.register_evaluator(pecaId, lapse, jsonData, web_origin=origin)
+        return self.service.register_evaluator(pecaId, lapse, jsonData, web_origin=origin, req=request)
 
     @jwt_required
     def get(self, pecaId, lapse):
         origin = request.headers.get('Origin')
-        return self.service.get_evaluators(pecaId, lapse, web_origin=origin)
+        return self.service.get_evaluators(pecaId, lapse, web_origin=origin, req=request)
 
 
 class EnvironmentalDiagnosticEvaluationController(Resource):

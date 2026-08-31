@@ -37,10 +37,10 @@ class StepSchema(Schema):
     hasChecklist = fields.Bool(required=True, default=False)
     hasUpload = fields.Bool(required=True, default=False)
     text = fields.Str()
-    file = fields.Nested(FileSchema)
+    file = fields.Nested(FileSchema, allow_none=True)
     file2 = fields.Nested(FileSchema, allow_none=True)
     files = fields.List(fields.Nested(FileSchema), allow_none=True)
-    video = fields.Nested(FileSchema)
+    video = fields.Nested(FileSchema, allow_none=True)
     checklist = fields.List(
         fields.Nested(
             CheckTemplateSchema()),
@@ -70,6 +70,10 @@ class StepSchema(Schema):
     def process_input(self, data, **kwargs):
         if "name" in data and isinstance(data["name"], str):
             data["name"] = data["name"].strip()
+        if "file" in data and (data["file"] in ("null", "None", "", "{}") or not data["file"]):
+            data["file"] = None
+        if "file2" in data and (data["file2"] in ("null", "None", "", "{}") or not data["file2"]):
+            data["file2"] = None
         if "checklist" in data and isinstance(data["checklist"], str):
             if not data["checklist"]:
                 data["checklist"] = None

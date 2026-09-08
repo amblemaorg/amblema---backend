@@ -20,6 +20,10 @@ def send_email(body, plainTextBody, subject, to):
     if res == True:
         return True
 
+    if isinstance(res, tuple) and isinstance(res[0], dict) and res[0].get('sent_attempted'):
+        current_app.logger.warning("Gmail API timed out during send; skipping SMTP fallback to avoid duplicate email delivery.")
+        return res
+
     if current_app.config.get('DISABLE_SMTP_FALLBACK', False):
         current_app.logger.error("Gmail API failed and SMTP fallback is disabled.")
         return res
@@ -111,6 +115,9 @@ def send_email_gmail(body, plainTextBody, subject, to):
             current_app.logger.error("Gmail API Send Error: " + str(r_send.text))
             return {'msg': 'Error al enviar el correo via Gmail API', 'error': r_send.text}, 400
             
+    except requests.exceptions.Timeout as e:
+        current_app.logger.error("Gmail API Send Timeout: " + str(e))
+        return {'msg': 'Gmail API Timeout', 'error': str(e), 'sent_attempted': True}, 400
     except Exception as e:
         current_app.logger.error("Gmail API Exception: " + str(e))
         return {'msg': str(e), 'to': str(to)}, 400

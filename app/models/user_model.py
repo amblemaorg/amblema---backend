@@ -40,6 +40,8 @@ class User(DynamicDocument):
     def clean(self):
         """Initialize the user"""
         self.updatedAt = datetime.utcnow()
+        if self.email:
+            self.email = self.email.lower().strip()
 
     def setHashPassword(self):
         """Set a hashed password"""

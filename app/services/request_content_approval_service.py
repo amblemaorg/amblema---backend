@@ -27,10 +27,9 @@ class RequestContentApprovalService(GenericServices):
         query = self.Model.objects(isDeleted=False)
         
         active_school_year = SchoolYear.objects(isDeleted=False, status="1").first()
-        if active_school_year:
+        if active_school_year and active_school_year.startDate:
             query = query.filter(
-                createdAt__gte=active_school_year.startDate,
-                createdAt__lte=active_school_year.endDate
+                createdAt__gte=active_school_year.startDate
             )
             
         if filters:
@@ -73,10 +72,9 @@ class RequestContentApprovalService(GenericServices):
         records_qs = self.Model.objects(isDeleted=False)
 
         active_school_year = SchoolYear.objects(isDeleted=False, status="1").first()
-        if active_school_year and active_school_year.startDate and active_school_year.endDate:
+        if active_school_year and active_school_year.startDate:
             start_date = datetime.datetime.combine(active_school_year.startDate, datetime.time.min)
-            end_date = datetime.datetime.combine(active_school_year.endDate, datetime.time.max)
-            records_qs = records_qs.filter(createdAt__gte=start_date, createdAt__lte=end_date)
+            records_qs = records_qs.filter(createdAt__gte=start_date)
 
         if filters:
             filterList = []

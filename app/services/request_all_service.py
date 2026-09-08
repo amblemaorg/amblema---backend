@@ -35,11 +35,9 @@ class RequestsAll():
             'status': "1"
         }
         
-        if active_school_year.startDate and active_school_year.endDate:
+        if active_school_year.startDate:
             start_date = datetime.datetime.combine(active_school_year.startDate, datetime.time.min)
-            end_date = datetime.datetime.combine(active_school_year.endDate, datetime.time.max)
             query_filters['createdAt__gte'] = start_date
-            query_filters['createdAt__lte'] = end_date
         
         # 1. Project Requests (ContactRequests) - notiType 1
         coordinatorReq = CoordinatorContact.objects(**query_filters)

@@ -10,4 +10,6 @@ class NotificationsPendingController(Resource):
 
     @jwt_required
     def get(self):
-        return self.service.get_pending_notifications()
+        res, code = self.service.get_pending_notifications()
+        return res, code, {'Cache-Control': 'no-cache, no-store, must-revalidate'}
+

@@ -28,22 +28,18 @@ class NotificationsService:
         active_school_year = SchoolYear.objects(isDeleted=False, status="1").first()
         
         start_date = None
-        end_date = None
-        if active_school_year and active_school_year.startDate and active_school_year.endDate:
+        if active_school_year and active_school_year.startDate:
             start_date = datetime.datetime.combine(active_school_year.startDate, datetime.time.min)
-            end_date = datetime.datetime.combine(active_school_year.endDate, datetime.time.max)
 
         notifications = []
 
         query_kwargs = {"isDeleted": False, "status": "1"}
-        if start_date and end_date:
+        if start_date:
             query_kwargs["createdAt__gte"] = start_date
-            query_kwargs["createdAt__lte"] = end_date
 
         approval_kwargs = {"isDeleted": False, "status": "1"}
-        if start_date and end_date:
+        if start_date:
             approval_kwargs["createdAt__gte"] = start_date
-            approval_kwargs["createdAt__lte"] = end_date
 
         # 1. Contact Requests (notiType=1)
         coord_contacts = CoordinatorContact.objects(**query_kwargs).only('id', 'firstName', 'lastName', 'createdAt')

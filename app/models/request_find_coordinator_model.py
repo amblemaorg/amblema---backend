@@ -43,12 +43,15 @@ class RequestFindCoordinator(Document):
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
+        if self.email:
+            self.email = self.email.lower().strip()
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.id:
+            email = document.email.lower().strip() if document.email else ""
             user = User.objects(
-                isDeleted=False, email=document.email).first()
+                isDeleted=False, email=email).first()
             if user:
                 raise ValidationError(
                     {"email": [{"status": "5",
@@ -66,12 +69,22 @@ class RequestFindCoordinator(Document):
             oldRequest = document.__class__.objects.get(id=document.id)
             # is approved?
             if document.status != oldRequest.status and document.status == '2':
+                # Atomic check-and-set: ensure only one thread/request transitions status from '1' to '2'
+                updated_count = RequestFindCoordinator.objects(
+                    id=document.id, status='1').update(set__status='2')
+                if updated_count == 0:
+                    current_app.logger.warning(
+                        "RequestFindCoordinator {0} already updated or not in pending status; skipping duplicate approval processing.".format(document.id)
+                    )
+                    return
+
+                email = document.email.lower().strip() if document.email else ""
                 coordinatorUser = CoordinatorUser.objects(
-                    email=document.email).first()
+                    email=email).first()
                 if not coordinatorUser:
                     coordinatorUser = CoordinatorUser(
                         name=document.firstName + ' ' + document.lastName,
-                        email=document.email,
+                        email=email,
                         userType='2',
                         phone=document.phone,
                         role=Role.objects(

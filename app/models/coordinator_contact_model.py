@@ -45,6 +45,8 @@ class CoordinatorContact(Document):
 
     def clean(self):
         self.updatedAt = datetime.utcnow()
+        if self.email:
+            self.email = self.email.lower().strip()
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
@@ -69,12 +71,22 @@ class CoordinatorContact(Document):
         if document.id:
             oldRequest = CoordinatorContact.objects.get(id=document.id)
             if document.status != oldRequest.status and document.status == '2':
+                # Atomic check-and-set: ensure only one thread/request transitions status from '1' to '2'
+                updated_count = CoordinatorContact.objects(
+                    id=document.id, status='1').update(set__status='2')
+                if updated_count == 0:
+                    current_app.logger.warning(
+                        "CoordinatorContact {0} already updated or not in pending status; skipping duplicate approval processing.".format(document.id)
+                    )
+                    return
+
+                email = document.email.lower().strip() if document.email else ""
                 coordinatorUser = CoordinatorUser.objects(
-                    email=document.email).first()
+                    email=email).first()
                 if not coordinatorUser:
                     coordinatorUser = CoordinatorUser(
                         name=document.firstName + ' ' + document.lastName,
-                        email=document.email,
+                        email=email,
                         userType='2',
                         phone=document.phone,
                         address = document.address,

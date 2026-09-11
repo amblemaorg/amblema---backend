@@ -8,6 +8,7 @@ from marshmallow import ValidationError
 
 from app.models.school_year_model import SchoolYear
 from app.models.peca_project_model import PecaProject
+from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
 
 from app.helpers.error_helpers import RegisterNotFound
 
@@ -42,12 +43,17 @@ class StatisticsDiagnosticService():
 
             # get diagnostic types parameters, if not, show all diagnostics
             diagnosticsSearch = []
+            hasEnvironmental = False
             if diagnosticsFilter:
                 for diag in diagnosticsFilter.split(','):
-                    if diag in diagnostics:
-                        diagnosticsSearch.append(diag)
+                    diag_clean = diag.strip()
+                    if diag_clean in diagnostics:
+                        diagnosticsSearch.append(diag_clean)
+                    if diag_clean in ['environmental', 'environment']:
+                        hasEnvironmental = True
             else:
                 diagnosticsSearch = ['math', 'logic', 'reading']
+                hasEnvironmental = True
 
             data = {}
             data['date'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ')
@@ -73,7 +79,8 @@ class StatisticsDiagnosticService():
                     'studentsMeta': 0
                 }
             
-            for section in peca.school.sections:
+            sections_list = peca.school.sections if diagnosticsSearch else []
+            for section in sections_list:
                 if int(section.grade) > 0 and not section.isDeleted:
 
                     # initialize section data
@@ -289,6 +296,155 @@ class StatisticsDiagnosticService():
                 data['sections'] = sorted(
                     data['sections'], key=lambda x: (x['grade'], x['name']))
                 data['yearSummary'] = yearSummary
+
+            # Environmental diagnostic data
+            environmentalData = {
+                'hasData': False,
+                'lapses': {
+                    '1': {'lapseName': '1er Lapso', 'evaluators': [], 'summary': None},
+                    '2': {'lapseName': '2do Lapso', 'evaluators': [], 'summary': None},
+                    '3': {'lapseName': '3er Lapso', 'evaluators': [], 'summary': None},
+                }
+            }
+
+            if hasEnvironmental:
+                indicator_definitions = [
+                    {
+                        'key': 'cleanlinessAndCareOfSpaces',
+                        'title': 'Limpieza y cuidado de los espacios',
+                        'subcriteria': ['1.1', '1.2', '1.3']
+                    },
+                    {
+                        'key': 'wasteManagement',
+                        'title': 'Gestión y aprovechamiento de los residuos',
+                        'subcriteria': ['2.1', '2.2', '2.3']
+                    },
+                    {
+                        'key': 'biodiversityConservation',
+                        'title': 'Conservación de la biodiversidad',
+                        'subcriteria': ['3.1', '3.2', '3.3']
+                    },
+                    {
+                        'key': 'waterUse',
+                        'title': 'Aprovechamiento del agua',
+                        'subcriteria': ['4.1', '4.2', '4.3']
+                    },
+                    {
+                        'key': 'communityRelations',
+                        'title': 'Relación con la comunidad',
+                        'subcriteria': ['5.1', '5.2']
+                    }
+                ]
+
+                eval_query = EnvironmentalDiagnosticEvaluator.objects(
+                    pecaId=str(peca.id),
+                    isDeleted=False,
+                    hasEvaluated=True
+                )
+                if targetLapse:
+                    eval_query = eval_query.filter(lapse=str(targetLapse))
+
+                all_evals = list(eval_query)
+
+                for lapse_key in ['1', '2', '3']:
+                    lapse_evals = [e for e in all_evals if e.lapse == lapse_key]
+                    evaluators_list = []
+
+                    for e in lapse_evals:
+                        eval_res = e.results or {}
+                        ind_data = {}
+                        eval_ind_avgs = []
+
+                        for ind_def in indicator_definitions:
+                            ikey = ind_def['key']
+                            isub = ind_def['subcriteria']
+                            ind_dict = eval_res.get(ikey, {})
+
+                            sub_vals = {}
+                            sub_dict = ind_dict.get('subcriteria', {}) if isinstance(ind_dict, dict) else {}
+
+                            applied_vals = []
+                            for sc in isub:
+                                sc_val = None
+                                if isinstance(sub_dict, dict) and sc in sub_dict:
+                                    sc_item = sub_dict[sc]
+                                    if isinstance(sc_item, dict):
+                                        val = sc_item.get('value')
+                                        applies = sc_item.get('applies', True)
+                                        if applies and val is not None and val != '':
+                                            try:
+                                                sc_val = float(val)
+                                                applied_vals.append(sc_val)
+                                            except (ValueError, TypeError):
+                                                sc_val = 0.0
+                                                applied_vals.append(0.0)
+                                        else:
+                                            sc_val = 0.0
+                                    else:
+                                        try:
+                                            sc_val = float(sc_item)
+                                            applied_vals.append(sc_val)
+                                        except (ValueError, TypeError):
+                                            sc_val = 0.0
+                                sub_vals[sc] = sc_val
+
+                            ind_avg = 0.0
+                            if isinstance(ind_dict, dict) and 'average' in ind_dict and ind_dict['average'] is not None:
+                                try:
+                                    ind_avg = float(ind_dict['average'])
+                                except (ValueError, TypeError):
+                                    ind_avg = 0.0
+                            elif isinstance(ind_dict, dict) and 'value' in ind_dict and ind_dict['value'] is not None:
+                                try:
+                                    ind_avg = float(ind_dict['value'])
+                                except (ValueError, TypeError):
+                                    ind_avg = 0.0
+                            elif applied_vals:
+                                ind_avg = sum(applied_vals) / len(applied_vals)
+
+                            ind_data[ikey] = {
+                                **sub_vals,
+                                'average': round(ind_avg, 2)
+                            }
+                            eval_ind_avgs.append(ind_avg)
+
+                        total_score = e.index if e.index is not None else sum(eval_ind_avgs)
+
+                        evaluators_list.append({
+                            'id': str(e.id),
+                            'name': e.name,
+                            'cleanlinessAndCareOfSpaces': ind_data['cleanlinessAndCareOfSpaces'],
+                            'wasteManagement': ind_data['wasteManagement'],
+                            'biodiversityConservation': ind_data['biodiversityConservation'],
+                            'waterUse': ind_data['waterUse'],
+                            'communityRelations': ind_data['communityRelations'],
+                            'totalIndex': round(total_score, 2)
+                        })
+
+                    if evaluators_list:
+                        environmentalData['hasData'] = True
+                        lapse_summary = {}
+
+                        for ind_def in indicator_definitions:
+                            ikey = ind_def['key']
+                            isub = ind_def['subcriteria']
+                            lapse_summary[ikey] = {}
+
+                            for sc in isub:
+                                valid_vals = [ev[ikey][sc] for ev in evaluators_list if ev[ikey].get(sc) is not None]
+                                avg_sc = sum(valid_vals) / len(valid_vals) if valid_vals else 0.0
+                                lapse_summary[ikey][sc] = round(avg_sc, 2)
+
+                            avg_ind = sum(ev[ikey]['average'] for ev in evaluators_list) / len(evaluators_list)
+                            lapse_summary[ikey]['average'] = round(avg_ind, 2)
+
+                        sum_total_index = sum(ev['totalIndex'] for ev in evaluators_list) / len(evaluators_list)
+                        lapse_summary['totalIndex'] = round(sum_total_index, 2)
+
+                        environmentalData['lapses'][lapse_key]['evaluators'] = evaluators_list
+                        environmentalData['lapses'][lapse_key]['summary'] = lapse_summary
+
+            data['environmental'] = environmentalData
             return data, 200
         else:
             raise RegisterNotFound(message="Record not found",

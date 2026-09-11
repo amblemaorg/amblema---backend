@@ -60,6 +60,8 @@ class StatisticsDiagnosticService():
             data['school'] = peca.school.name
             data['schoolYear'] = peca.schoolYear.fetch().name
             data['coordinator'] = peca.project.coordinator.name
+            data['targetLapse'] = targetLapse
+            data['lapso'] = targetLapse
             data['sections'] = []
             data['yearSummaryAvailable'] = False
             data['yearSummary'] = {}
@@ -342,11 +344,14 @@ class StatisticsDiagnosticService():
                     hasEvaluated=True
                 )
                 if targetLapse:
-                    eval_query = eval_query.filter(lapse=str(targetLapse))
+                    allowed_lapses = [str(k) for k in range(1, targetLapse + 1)]
+                    eval_query = eval_query.filter(lapse__in=allowed_lapses)
+                else:
+                    allowed_lapses = ['1', '2', '3']
 
                 all_evals = list(eval_query)
 
-                for lapse_key in ['1', '2', '3']:
+                for lapse_key in allowed_lapses:
                     lapse_evals = [e for e in all_evals if e.lapse == lapse_key]
                     evaluators_list = []
 

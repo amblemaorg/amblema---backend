@@ -286,3 +286,21 @@ class EnvironmentalDiagnosticService():
                 "results": evaluator.results
             }
         }, 200
+
+    def delete_evaluator(self, pecaId, lapse, evaluatorId):
+        peca = PecaProject.objects(id=pecaId, isDeleted=False).first()
+        if not peca:
+            raise RegisterNotFound(message="Peca project not found", status_code=404, payload={"pecaId": pecaId})
+
+        evaluator = EnvironmentalDiagnosticEvaluator.objects(
+            id=evaluatorId, pecaId=str(pecaId), lapse=str(lapse), isDeleted=False
+        ).first()
+        if not evaluator:
+            raise RegisterNotFound(message="Evaluator not found", status_code=404, payload={"evaluatorId": evaluatorId})
+
+        if evaluator.hasEvaluated:
+            return {"message": "No se puede eliminar un evaluador que ya ha realizado la evaluación."}, 400
+
+        evaluator.isDeleted = True
+        evaluator.save()
+        return {"message": "Evaluador eliminado exitosamente"}, 200

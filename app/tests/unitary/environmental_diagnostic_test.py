@@ -129,5 +129,36 @@ class EnvironmentalDiagnosticServiceUnitTest(unittest.TestCase):
         self.assertEqual(code, 400)
         self.assertIn("Ya existe un evaluador registrado con este correo electrónico", res["message"])
 
+    @patch('app.services.environmental_diagnostic_service.PecaProject')
+    @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticEvaluator')
+    def test_delete_evaluator_success(self, mock_evaluator_cls, mock_peca_cls):
+        mock_peca_cls.objects.return_value.first.return_value = MagicMock()
+        mock_evaluator = MagicMock()
+        mock_evaluator.hasEvaluated = False
+        mock_evaluator_cls.objects.return_value.first.return_value = mock_evaluator
+
+        from app.services.environmental_diagnostic_service import EnvironmentalDiagnosticService
+        service = EnvironmentalDiagnosticService()
+
+        res, code = service.delete_evaluator("peca_123", "1", "evaluator_1")
+        self.assertEqual(code, 200)
+        self.assertTrue(mock_evaluator.isDeleted)
+        mock_evaluator.save.assert_called_once()
+
+    @patch('app.services.environmental_diagnostic_service.PecaProject')
+    @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticEvaluator')
+    def test_delete_evaluator_already_evaluated(self, mock_evaluator_cls, mock_peca_cls):
+        mock_peca_cls.objects.return_value.first.return_value = MagicMock()
+        mock_evaluator = MagicMock()
+        mock_evaluator.hasEvaluated = True
+        mock_evaluator_cls.objects.return_value.first.return_value = mock_evaluator
+
+        from app.services.environmental_diagnostic_service import EnvironmentalDiagnosticService
+        service = EnvironmentalDiagnosticService()
+
+        res, code = service.delete_evaluator("peca_123", "1", "evaluator_1")
+        self.assertEqual(code, 400)
+        self.assertIn("No se puede eliminar un evaluador que ya ha realizado la evaluación", res["message"])
+
 if __name__ == '__main__':
     unittest.main()

@@ -149,6 +149,7 @@ from app.controllers.statistics_controller import (
 from app.controllers.diagnostic_controller import DiagnosticController, DiagnosticImportController
 from app.controllers.environmental_diagnostic_controller import (
     EnvironmentalDiagnosticEvaluatorController,
+    EnvironmentalDiagnosticEvaluatorHandlerController,
     EnvironmentalDiagnosticEvaluationController
 )
 from app.controllers.teacher_testimonial_controller import (
@@ -371,6 +372,8 @@ def create_app(config_instance):
                      '/diagnostic/load/<string:pecaId>')
     api.add_resource(EnvironmentalDiagnosticEvaluatorController,
                      '/pecaprojects/environmental-diagnostics/evaluators/<string:pecaId>/<string:lapse>')
+    api.add_resource(EnvironmentalDiagnosticEvaluatorHandlerController,
+                     '/pecaprojects/environmental-diagnostics/evaluators/<string:pecaId>/<string:lapse>/<string:evaluatorId>')
     api.add_resource(EnvironmentalDiagnosticEvaluationController,
                      '/environmental-diagnostics/evaluations/<string:token>')
     api.add_resource(PecaAmblecoinsController,

@@ -23,6 +23,15 @@ class EnvironmentalDiagnosticEvaluatorController(Resource):
         return self.service.get_evaluators(pecaId, lapse, web_origin=origin, req=request)
 
 
+class EnvironmentalDiagnosticEvaluatorHandlerController(Resource):
+
+    service = EnvironmentalDiagnosticService()
+
+    @jwt_required
+    def delete(self, pecaId, lapse, evaluatorId):
+        return self.service.delete_evaluator(pecaId, lapse, evaluatorId)
+
+
 class EnvironmentalDiagnosticEvaluationController(Resource):
 
     service = EnvironmentalDiagnosticService()

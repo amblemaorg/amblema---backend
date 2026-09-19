@@ -143,7 +143,7 @@ class Project(Document):
             for check in step.checklist:
                 if not check.checked:
                     return False
-        if (step.approvalType == "1" or step.approvalType == "4") and step.status != "3":
+        if (step.approvalType == "1" or step.approvalType == "4" or step.devName == "corrdinatorCompleteTrainingModules") and step.status != "3":
             return False
         return True
 
@@ -238,10 +238,32 @@ class Project(Document):
                     if myStep.date != step.date:
                         myStep.date = step.date
                         isUpdated = True
-                if myStep.approvalType == "1" or myStep.approvalType == '4':
+                if myStep.approvalType == "1" or myStep.approvalType == '4' or myStep.devName == "corrdinatorCompleteTrainingModules":
                     if myStep.status != step.status:
                         myStep.status = step.status
                         isUpdated = True
+                        if myStep.devName == "corrdinatorCompleteTrainingModules" and self.coordinator:
+                            if step.status == "3":
+                                from app.models.learning_module_model import LearningModule
+                                from app.models.coordinator_user_model import LearningMod
+                                modules = LearningModule.objects(isDeleted=False)
+                                for module in modules:
+                                    found = False
+                                    for my_module in self.coordinator.learning:
+                                        if my_module.moduleId == module.id:
+                                            my_module.status = "3"
+                                            found = True
+                                            break
+                                    if not found:
+                                        self.coordinator.learning.append(
+                                            LearningMod(moduleId=module.id, status="3", score=4)
+                                        )
+                                self.coordinator.instructed = True
+                                self.coordinator.save()
+                                self.coordinator.updateProjectsOnceInstructed()
+                            elif step.status == "1":
+                                self.coordinator.instructed = False
+                                self.coordinator.save()
                         if myStep.devName in reciprocalFields:
                             for recipStep in self.stepsProgress.steps:
                                 if recipStep.devName == reciprocalFields[myStep.devName]:
@@ -251,9 +273,9 @@ class Project(Document):
                     # step is approved?
                     if self.checkStepApproval(myStep):
                         myStep.approve()
-                        self.stepsProgress.updateProgress()
                         # is only waitng for amblema confimation?
                         self.checkWaitingAmblemaConfirmation()
+                    self.stepsProgress.updateProgress()
 
                     myStep.updatedAt = datetime.utcnow()
                     if self.checkConfirm():

@@ -54,6 +54,7 @@ from app.controllers.project_controller import (
     ProjectStepsController, ProjectPecaController
 )
 from app.controllers.project_signature_controller import ProjectSignatureController
+from app.controllers.project_modules_controller import ProjectModulesController
 from app.controllers.request_find_coordinator_controller import (
     ReqFindCoordController, ReqFindCoordHandlerController
 )
@@ -304,6 +305,9 @@ def create_app(config_instance):
     api.add_resource(ProjectController, '/projects')
     api.add_resource(ProjectHandlerController, '/projects/<string:id>')
     api.add_resource(ProjectSignatureController, '/projects/signature/<string:id>')
+    api.add_resource(ProjectModulesController,
+                     '/projects/<string:id>/learningmodules',
+                     '/projects/<string:id>/learningmodules/')
     api.add_resource(ProjectStepsController, '/projectsteps/<string:id>')
     api.add_resource(ProjectPecaController, '/projectpeca/<string:id>')
     api.add_resource(ReqFindCoordController, '/requestsfindcoordinator')

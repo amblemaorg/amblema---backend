@@ -152,6 +152,7 @@ class CoordinatorUser(User):
                 )
                 my_module.attempts.append(attempt)
                 self.save()
+                results["totalAttempts"] = len(my_module.attempts)
                 return results
         if not found:
             my_module = LearningMod(
@@ -175,6 +176,7 @@ class CoordinatorUser(User):
                 self.instructed = True
                 self.updateProjectsOnceInstructed()
             self.save()
+            results["totalAttempts"] = len(my_module.attempts)
             return results
 
     @classmethod

@@ -98,6 +98,7 @@ class StepsService():
             and document.status == "1"
             and (
                 document.name != oldDocument.name
+                or document.devName != oldDocument.devName
                 or document.hasText != oldDocument.hasText
                 or document.hasDate != oldDocument.hasDate
                 or document.hasFile != oldDocument.hasFile
@@ -126,6 +127,7 @@ class StepsService():
                     set__stepsProgress__steps__S__hasChecklist=document.hasChecklist,
                     set__stepsProgress__steps__S__hasUpload=document.hasUpload,
                     set__stepsProgress__steps__S__name=document.name,
+                    set__stepsProgress__steps__S__devName=document.devName,
                     set__stepsProgress__steps__S__text=document.text,
                     set__stepsProgress__steps__S__file=document.file,
                     set__stepsProgress__steps__S__file2=document.file2,

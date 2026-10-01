@@ -242,9 +242,12 @@ class StatisticsDiagnosticService():
                                         i+1)]['overGoalStudents'] = sectionData['lapse{}'.format(
                                             i+1)][diag]['overGoalStudents']
                                 # improvement percentage
-                                sectionSummary[diag]['improvementPercentage'] = ((sectionSummary[diag]['lapse3']['resultAverage'] -
-                                                                                  sectionSummary[diag]['lapse1']['resultAverage'])
-                                                                                 * 100/sectionSummary[diag]['lapse3']['resultAverage']) if sectionSummary[diag]['lapse3']['resultAverage'] > 0 else 0
+                                initial_index = sectionSummary[diag]['lapse1']['indexAverage']
+                                final_index = sectionSummary[diag]['lapse3']['indexAverage']
+                                sectionSummary[diag]['improvementPercentage'] = (
+                                    ((final_index - initial_index) * 100 / initial_index)
+                                    if initial_index > 0 else 0
+                                )
                                 sectionSummary[diag]['totalIndexAverage'] = (sectionSummary[diag]['lapse1']['indexAverage'] +
                                                                              sectionSummary[diag]['lapse2']['indexAverage'] +
                                                                              sectionSummary[diag]['lapse3']['indexAverage'])/3
@@ -260,12 +263,21 @@ class StatisticsDiagnosticService():
                         'sections': [],
                         'improvementPercentageAverage': 0
                     }
-                    improvementPercentageAcum = 0
+                    lapse1IndexTotalAcum = 0
+                    lapse1ParticipantsAcum = 0
+                    lapse3IndexTotalAcum = 0
+                    lapse3ParticipantsAcum = 0
                     resultAverageAcum = 0
 
                     for section in data['sections']:
+                        if diag in section['lapse1'] and section['lapse1'][diag]['available']:
+                            lapse1IndexTotalAcum += section['lapse1'][diag]['indexTotal']
+                            lapse1ParticipantsAcum += section['lapse1'][diag]['participants']
+                        if diag in section['lapse3'] and section['lapse3'][diag]['available']:
+                            lapse3IndexTotalAcum += section['lapse3'][diag]['indexTotal']
+                            lapse3ParticipantsAcum += section['lapse3'][diag]['participants']
+
                         if 'sectionSummaryAvailable' in section and section['sectionSummaryAvailable'] and diag in section['sectionSummary']:
-                            improvementPercentageAcum += section['sectionSummary'][diag]['improvementPercentage']
                             sectionSummary = {
                                 'grade': section['grade'],
                                 'name': section['name'],
@@ -288,8 +300,14 @@ class StatisticsDiagnosticService():
                             diagSummary['sections'].append(
                                 sectionSummary)
                     if diagSummary['sections']:
-                        diagSummary['improvementPercentageAverage'] = improvementPercentageAcum / \
-                            len(diagSummary['sections'])
+                        lapse1IndexAvg = round(lapse1IndexTotalAcum / lapse1ParticipantsAcum, 2) if lapse1ParticipantsAcum > 0 else 0
+                        lapse3IndexAvg = round(lapse3IndexTotalAcum / lapse3ParticipantsAcum, 2) if lapse3ParticipantsAcum > 0 else 0
+                        diagSummary['lapse1IndexAverage'] = lapse1IndexAvg
+                        diagSummary['lapse3IndexAverage'] = lapse3IndexAvg
+                        diagSummary['improvementPercentageAverage'] = (
+                            ((lapse3IndexAvg - lapse1IndexAvg) * 100 / lapse1IndexAvg)
+                            if lapse1IndexAvg > 0 else 0
+                        )
                         diagSummary['totalResultAverage'] = resultAverageAcum / \
                             len(diagSummary['sections'])
                         diagSummary['sections'] = sorted(

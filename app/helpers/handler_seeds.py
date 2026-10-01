@@ -1205,7 +1205,7 @@ def create_initial_steps():
 
     checklistInitialWorkshop = Step(
         name="Acuerdo entre Coordinador – Fundación AmbLeMa",
-        devName="coordinatorInitialWorkshop",
+        devName="coordinatorAgreementFundation",
         tag="2",
         sort=11,
         isStandard=True,

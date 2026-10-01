@@ -368,7 +368,7 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual(66.67,
                          round(result['yearSummary']
                                ['reading']['totalResultAverage'], 2))
-        self.assertEqual(15.54,
+        self.assertEqual(22.93,
                          round(result['yearSummary']
                                ['reading']['improvementPercentageAverage'], 2))
         self.assertEqual(1,

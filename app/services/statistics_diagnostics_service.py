@@ -242,8 +242,9 @@ class StatisticsDiagnosticService():
                                         i+1)]['overGoalStudents'] = sectionData['lapse{}'.format(
                                             i+1)][diag]['overGoalStudents']
                                 # improvement percentage
+                                final_lapse = targetLapse if targetLapse and targetLapse in [2, 3] else 3
                                 initial_index = sectionSummary[diag]['lapse1']['indexAverage']
-                                final_index = sectionSummary[diag]['lapse3']['indexAverage']
+                                final_index = sectionSummary[diag]['lapse{}'.format(final_lapse)]['indexAverage']
                                 sectionSummary[diag]['improvementPercentage'] = (
                                     ((final_index - initial_index) * 100 / initial_index)
                                     if initial_index > 0 else 0
@@ -316,16 +317,9 @@ class StatisticsDiagnosticService():
                             )
 
                         final_lapse = targetLapse if targetLapse and targetLapse in [2, 3] else 3
-                        initial_result = diagSummary['lapse1ResultAverage']
-                        final_result = diagSummary['lapse{}ResultAverage'.format(final_lapse)]
-                        diagSummary['improvementPercentageAverage'] = (
-                            round(((final_result - initial_result) * 100 / initial_result), 2)
-                            if initial_result > 0 else 0
-                        )
-
                         initial_index = diagSummary['lapse1IndexAverage']
                         final_index = diagSummary['lapse{}IndexAverage'.format(final_lapse)]
-                        diagSummary['improvementIndexPercentageAverage'] = (
+                        diagSummary['improvementPercentageAverage'] = (
                             round(((final_index - initial_index) * 100 / initial_index), 2)
                             if initial_index > 0 else 0
                         )

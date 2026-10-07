@@ -183,7 +183,6 @@ class StatisticsDiagnosticService():
                                 
                                     
 
-                    sectionSummaryAvailable = True
                     for i in range(3):
                         if targetLapse and (i+1) > targetLapse:
                             continue
@@ -203,56 +202,66 @@ class StatisticsDiagnosticService():
                                         diagnostic['participants']
 
                                     # set diagnostic date min and max
-                                    minDate = min(diagnocticsDateLapse[diag])
-                                    diagnostic['firstTestDate'] = minDate.strftime(
-                                        '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-                                    maxDate = max(diagnocticsDateLapse[diag])
-                                    diagnostic['lastTestDate'] = maxDate.strftime(
-                                        '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+                                    if diagnocticsDateLapse[diag]:
+                                        minDate = min(diagnocticsDateLapse[diag])
+                                        diagnostic['firstTestDate'] = minDate.strftime(
+                                            '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+                                        maxDate = max(diagnocticsDateLapse[diag])
+                                        diagnostic['lastTestDate'] = maxDate.strftime(
+                                            '%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
                                     lapse[diag] = diagnostic
                             sectionData['lapse{}'.format(i+1)] = lapse
-                        else:
-                            sectionSummaryAvailable = False
 
-                    if sectionSummaryAvailable:
-                        sectionSummary = {}
-                        for diag in diagnosticsSearch:
-                            available = False
+                    sectionSummary = {}
+                    for diag in diagnosticsSearch:
+                        available = False
+                        for i in range(3):
+                            if sectionData['lapse{}'.format(i+1)][diag]['available']:
+                                available = True
+                        if available:
+                            sectionSummary[diag] = {}
+                            data['yearSummaryAvailable'] = True
+                            sectionData['sectionSummaryAvailable'] = True
                             for i in range(3):
-                                if sectionData['lapse{}'.format(i+1)][diag]['available']:
-                                    available = True
-                            if available:
-                                sectionSummary[diag] = {}
-                                data['yearSummaryAvailable'] = True
-                                sectionData['sectionSummaryAvailable'] = True
-                                for i in range(3):
-                                    sectionSummary[diag]['lapse{}'.format(
-                                        i+1)] = {}
-                                    # resultAverage
-                                    sectionSummary[diag]['lapse{}'.format(
-                                        i+1)]['resultAverage'] = sectionData['lapse{}'.format(
-                                            i+1)][diag]['resultAverage']
-                                    # indexAverage
-                                    sectionSummary[diag]['lapse{}'.format(
-                                        i+1)]['indexAverage'] = sectionData['lapse{}'.format(
-                                            i+1)][diag]['indexAverage']
-                                    # overGoalStudents
-                                    sectionSummary[diag]['lapse{}'.format(
-                                        i+1)]['overGoalStudents'] = sectionData['lapse{}'.format(
-                                            i+1)][diag]['overGoalStudents']
-                                # improvement percentage
-                                final_lapse = targetLapse if targetLapse and targetLapse in [2, 3] else 3
-                                initial_index = sectionSummary[diag]['lapse1']['indexAverage']
-                                final_index = sectionSummary[diag]['lapse{}'.format(final_lapse)]['indexAverage']
-                                sectionSummary[diag]['improvementPercentage'] = (
-                                    ((final_index - initial_index) * 100 / initial_index)
-                                    if initial_index > 0 else 0
+                                sectionSummary[diag]['lapse{}'.format(i+1)] = {}
+                                is_lapse_avail = sectionData['lapse{}'.format(i+1)][diag]['available']
+                                sectionSummary[diag]['lapse{}'.format(i+1)]['resultAverage'] = (
+                                    sectionData['lapse{}'.format(i+1)][diag]['resultAverage']
+                                    if is_lapse_avail else None
                                 )
-                                sectionSummary[diag]['totalIndexAverage'] = (sectionSummary[diag]['lapse1']['indexAverage'] +
-                                                                             sectionSummary[diag]['lapse2']['indexAverage'] +
-                                                                             sectionSummary[diag]['lapse3']['indexAverage'])/3
+                                sectionSummary[diag]['lapse{}'.format(i+1)]['indexAverage'] = (
+                                    sectionData['lapse{}'.format(i+1)][diag]['indexAverage']
+                                    if is_lapse_avail else None
+                                )
+                                sectionSummary[diag]['lapse{}'.format(i+1)]['overGoalStudents'] = (
+                                    sectionData['lapse{}'.format(i+1)][diag]['overGoalStudents']
+                                    if is_lapse_avail else None
+                                )
 
+                            # improvement percentage
+                            final_lapse = targetLapse if targetLapse and targetLapse in [2, 3] else 3
+                            initial_index = sectionSummary[diag]['lapse1']['indexAverage']
+                            final_index = sectionSummary[diag]['lapse{}'.format(final_lapse)]['indexAverage']
+                            if final_index is None and final_lapse == 3:
+                                final_index = sectionSummary[diag]['lapse2']['indexAverage']
+                            if initial_index is None:
+                                initial_index = sectionSummary[diag]['lapse2']['indexAverage']
+
+                            sectionSummary[diag]['improvementPercentage'] = (
+                                round(((final_index - initial_index) * 100 / initial_index), 2)
+                                if initial_index and initial_index > 0 and final_index is not None else 0
+                            )
+                            valid_indices = [
+                                sectionSummary[diag]['lapse{}'.format(k)]['indexAverage']
+                                for k in range(1, 4)
+                                if sectionSummary[diag]['lapse{}'.format(k)]['indexAverage'] is not None
+                            ]
+                            sectionSummary[diag]['totalIndexAverage'] = (
+                                sum(valid_indices) / len(valid_indices)
+                            ) if valid_indices else 0
+
+                    if sectionData.get('sectionSummaryAvailable'):
                         sectionData['sectionSummary'] = sectionSummary
 
                     data['sections'].append(sectionData)
@@ -269,6 +278,7 @@ class StatisticsDiagnosticService():
                     lapseIndexTotalAcum = {1: 0, 2: 0, 3: 0}
                     lapseIndexParticipantsAcum = {1: 0, 2: 0, 3: 0}
                     resultAverageAcum = 0
+                    resultAverageCount = 0
 
                     for section in data['sections']:
                         for i in range(1, 4):
@@ -293,38 +303,50 @@ class StatisticsDiagnosticService():
                                 'lapse2': {},
                                 'lapse3': {}}
                             sectionResultAcum = 0
+                            sectionResultCount = 0
                             for i in range(1, 4):
-                                sectionSummary['lapse{}'.format(
-                                    i)]['resultAverage'] = section['sectionSummary'][diag]['lapse{}'.format(i)]['resultAverage']
-                                sectionResultAcum += section['sectionSummary'][diag]['lapse{}'.format(
-                                    i)]['resultAverage']
-                                sectionSummary['lapse{}'.format(
-                                    i)]['indexAverage'] = section['sectionSummary'][diag]['lapse{}'.format(i)]['indexAverage']
-                                sectionSummary['lapse{}'.format(
-                                    i)]['overGoalStudents'] = section['sectionSummary'][diag]['lapse{}'.format(i)]['overGoalStudents']
-                            resultAverageAcum += sectionResultAcum/3
+                                res_avg = section['sectionSummary'][diag]['lapse{}'.format(i)]['resultAverage']
+                                idx_avg = section['sectionSummary'][diag]['lapse{}'.format(i)]['indexAverage']
+                                over_goal = section['sectionSummary'][diag]['lapse{}'.format(i)]['overGoalStudents']
+                                sectionSummary['lapse{}'.format(i)]['resultAverage'] = res_avg
+                                sectionSummary['lapse{}'.format(i)]['indexAverage'] = idx_avg
+                                sectionSummary['lapse{}'.format(i)]['overGoalStudents'] = over_goal
+                                if res_avg is not None:
+                                    sectionResultAcum += res_avg
+                                    sectionResultCount += 1
+                            if sectionResultCount > 0:
+                                resultAverageAcum += sectionResultAcum / sectionResultCount
+                                resultAverageCount += 1
                             diagSummary['sections'].append(
                                 sectionSummary)
                     if diagSummary['sections']:
                         for i in range(1, 4):
                             diagSummary['lapse{}ResultAverage'.format(i)] = (
                                 round(lapseResultTotalAcum[i] / lapseParticipantsAcum[i], 2)
-                                if lapseParticipantsAcum[i] > 0 else 0
+                                if lapseParticipantsAcum[i] > 0 else None
                             )
                             diagSummary['lapse{}IndexAverage'.format(i)] = (
                                 round(lapseIndexTotalAcum[i] / lapseIndexParticipantsAcum[i], 2)
-                                if lapseIndexParticipantsAcum[i] > 0 else 0
+                                if lapseIndexParticipantsAcum[i] > 0 else None
                             )
+                            if lapseParticipantsAcum[i] == 0:
+                                data["totales"]['lapse{}'.format(i)][diag]['studentsMeta'] = None
 
                         final_lapse = targetLapse if targetLapse and targetLapse in [2, 3] else 3
                         initial_index = diagSummary['lapse1IndexAverage']
                         final_index = diagSummary['lapse{}IndexAverage'.format(final_lapse)]
+                        if final_index is None and final_lapse == 3:
+                            final_index = diagSummary['lapse2IndexAverage']
+                        if initial_index is None:
+                            initial_index = diagSummary['lapse2IndexAverage']
+
                         diagSummary['improvementPercentageAverage'] = (
                             round(((final_index - initial_index) * 100 / initial_index), 2)
-                            if initial_index > 0 else 0
+                            if initial_index and initial_index > 0 and final_index is not None else 0
                         )
-                        diagSummary['totalResultAverage'] = resultAverageAcum / \
-                            len(diagSummary['sections'])
+                        diagSummary['totalResultAverage'] = (
+                            resultAverageAcum / resultAverageCount
+                        ) if resultAverageCount > 0 else 0
                         diagSummary['sections'] = sorted(
                             diagSummary['sections'], key=lambda x: (x['grade'], x['name']))
                         yearSummary[diag] = diagSummary

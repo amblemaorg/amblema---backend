@@ -61,7 +61,9 @@ def is_same_student_record(s_fn, s_ln, s_bd, s_gen, s_card, t_fn, t_ln, t_bd, t_
 
     # 5. Same birthdate + high full name similarity
     if same_bd:
-        if difflib.SequenceMatcher(None, f"{n_s_fn} {n_s_ln}", f"{n_t_fn} {n_t_ln}").ratio() >= 0.8:
+        full_s = "{0} {1}".format(n_s_fn, n_s_ln)
+        full_t = "{0} {1}".format(n_t_fn, n_t_ln)
+        if difflib.SequenceMatcher(None, full_s, full_t).ratio() >= 0.8:
             return True
 
     return False

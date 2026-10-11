@@ -29,6 +29,7 @@ class AboutUsPage(EmbeddedDocument):
     environmentText = StringField(required=True)
     readingText = StringField(required=True)
     mathText = StringField(required=True)
+    aulaActivaText = StringField(default='')
     awards = EmbeddedDocumentListField(Award, required=True)
 
 
@@ -70,6 +71,8 @@ class AboutUsPageSchema(Schema):
     readingText = fields.Str(
         required=True, validate=(not_blank, Length(max=579)))
     mathText = fields.Str(required=True, validate=(not_blank, Length(max=579)))
+    aulaActivaText = fields.Str(
+        required=False, default='', validate=Length(max=579))
     awards = fields.List(fields.Nested(AwardSchema),
                          required=True, validate=not_blank)
 

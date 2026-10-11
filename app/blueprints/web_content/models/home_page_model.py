@@ -20,6 +20,7 @@ class HomePage(EmbeddedDocument):
     environmentText = StringField(required=True)
     readingText = StringField(required=True)
     mathText = StringField(required=True)
+    aulaActivaText = StringField(default='')
     testimonials = EmbeddedDocumentListField(Testimonial, required=True)
 
 
@@ -34,10 +35,12 @@ class HomePageSchema(Schema):
     aboutUsText = fields.Str(
         required=True, validate=(not_blank, Length(max=317)))
     environmentText = fields.Str(
-        required=True, validate=(not_blank, Length(max=313)))
+        required=True, validate=(not_blank, Length(max=500)))
     readingText = fields.Str(
-        required=True, validate=(not_blank, Length(max=313)))
-    mathText = fields.Str(required=True, validate=(not_blank, Length(max=313)))
+        required=True, validate=(not_blank, Length(max=500)))
+    mathText = fields.Str(required=True, validate=(not_blank, Length(max=500)))
+    aulaActivaText = fields.Str(
+        required=False, default='', validate=Length(max=500))
     testimonials = fields.List(fields.Nested(
         TestimonialSchema), required=True, validate=not_blank)
 

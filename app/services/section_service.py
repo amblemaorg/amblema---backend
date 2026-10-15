@@ -486,7 +486,10 @@ class SectionsImportExport():
 
                                             has_sec = False
                                             for sect in student_find.sections:
-                                                if str(sect.id) == str(section_peca.id) and getattr(sect, 'schoolYear', None) and str(sect.schoolYear.id) == str(peca.schoolYear.id):
+                                                sect_sy = getattr(sect, 'schoolYear', None)
+                                                sect_sy_id = getattr(sect_sy, 'id', sect_sy) if sect_sy else None
+                                                peca_sy_id = getattr(peca.schoolYear, 'id', peca.schoolYear) if getattr(peca, 'schoolYear', None) else None
+                                                if str(sect.id) == str(section_peca.id) and sect_sy_id and str(sect_sy_id) == str(peca_sy_id):
                                                     has_sec = True
                                                     break
                                             if not has_sec:

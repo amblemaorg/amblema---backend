@@ -92,6 +92,7 @@ class SectionClass(EmbeddedDocument):
     grade = fields.StringField(max_length=1)
     name = fields.StringField()
     schoolYear = fields.ReferenceField(SchoolYear)
+    isDeleted = fields.BooleanField(default=False)
     
     
 class StudentClass(EmbeddedDocument):

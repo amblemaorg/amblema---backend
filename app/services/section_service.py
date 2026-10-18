@@ -28,6 +28,70 @@ def normalize_student_text(text):
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
+def count_diacritics(text):
+    if not text:
+        return 0
+    return sum(1 for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) == "Mn")
+
+
+# Partículas que se mantienen en minúscula cuando no son la primera palabra
+# (ej. "María de los Ángeles", "Juan del Valle").
+NAME_PARTICLES = {"de", "del", "la", "las", "los", "y", "e", "da", "di", "van", "von"}
+
+
+def format_person_name(text):
+    """
+    Normaliza un nombre propio: colapsa espacios, pone en mayúscula la inicial de
+    cada palabra (también tras guion o apóstrofo) y el resto en minúscula.
+    Ej: "josé  GREGORIO de la cruz" -> "José Gregorio de la Cruz".
+    """
+    if not text:
+        return ""
+    text = re.sub(r"\s+", " ", text).strip()
+    words = []
+    for idx, word in enumerate(text.split(" ")):
+        lower = word.lower()
+        if idx > 0 and lower in NAME_PARTICLES:
+            words.append(lower)
+            continue
+        words.append(re.sub(
+            r"(^|[-'’])(\w)",
+            lambda m: m.group(1) + m.group(2).upper(),
+            lower,
+            flags=re.UNICODE
+        ))
+    return " ".join(words)
+
+
+def sync_accented_names(target, first_name, last_name):
+    """
+    Actualiza firstName/lastName de un estudiante existente con el valor importado cuando:
+      a) es el mismo nombre (comparación sin acentos/mayúsculas/espacios) pero difiere en
+         acentos o capitalización. Ej: 'jose perez' -> 'José Pérez'.
+      b) el importado completa al almacenado agregando nombres/apellidos al final.
+         Ej: 'José' -> 'José Gregorio', 'Pérez' -> 'Pérez Rodríguez'.
+    Nunca quita acentos ya guardados y no sobrescribe nombres distintos para no
+    corromper registros emparejados por cédula o por fecha de nacimiento + similitud.
+    """
+    if target is None:
+        return False
+    changed = False
+    for field, incoming in (("firstName", first_name), ("lastName", last_name)):
+        incoming = re.sub(r"\s+", " ", incoming or "").strip()
+        current = getattr(target, field, None) or ""
+        if not incoming or incoming == current:
+            continue
+        inc_tokens = normalize_student_text(incoming).split(" ")
+        cur_norm = normalize_student_text(current)
+        cur_tokens = cur_norm.split(" ") if cur_norm else []
+        same_name = inc_tokens == cur_tokens
+        extends_name = len(inc_tokens) > len(cur_tokens) and inc_tokens[:len(cur_tokens)] == cur_tokens
+        if (same_name or extends_name) and count_diacritics(incoming) >= count_diacritics(current):
+            setattr(target, field, incoming)
+            changed = True
+    return changed
+
+
 def is_same_student_record(s_fn, s_ln, s_bd, s_gen, s_card, t_fn, t_ln, t_bd, t_gen, t_card):
     # 1. Direct match by cardId if both are non-empty
     if s_card and t_card and str(s_card).strip() and str(t_card).strip():
@@ -311,6 +375,12 @@ class SectionsImportExport():
                                     section_list = {"name": section_peca.name, "grade": section_peca.grade, "id": str(section_peca.id), "students": []}
                                     for student in section_peca.students.filter(isDeleted=False):
                                         section_list["students"].append({"id":str(student.id), "firstName": student.firstName, "lastName": student.lastName, "cardId": student.cardId, "cardType": student.cardType, "birthdate": str(student.birthdate), "gender": student.gender})
+                                    section_list["students"].sort(
+                                        key=lambda s: (
+                                            normalize_student_text(s.get("lastName", "")),
+                                            normalize_student_text(s.get("firstName", ""))
+                                        )
+                                    )
                                     sections_export.append(section_list)
                             return {"status_code":201, "message": "Exito", "sections": sections_export},201
                         else:
@@ -401,6 +471,9 @@ class SectionsImportExport():
                                         if not (student.get("nombre") and student.get("apellido") and student.get("fecha_de_nacimiento") and student.get("genero")):
                                             continue
 
+                                        student["nombre"] = format_person_name(student["nombre"])
+                                        student["apellido"] = format_person_name(student["apellido"])
+
                                         gen = str(student["genero"]).strip().upper()
                                         student["genero"] = "1" if gen in ["F", "1", "FEMENINO"] else "2"
 
@@ -466,6 +539,8 @@ class SectionsImportExport():
                                             # Existing student in section
                                             if getattr(student_in_section, "isDeleted", False):
                                                 student_in_section.isDeleted = False
+                                            sync_accented_names(student_in_section, student["nombre"], student["apellido"])
+                                            sync_accented_names(student_find, student["nombre"], student["apellido"])
                                             if clean_doc:
                                                 student_in_section.cardId = clean_doc
                                                 student_in_section.cardType = student_format["cardType"]
@@ -475,6 +550,7 @@ class SectionsImportExport():
                                         elif student_find:
                                             # Existing student in school, add to section
                                             student_save.id = student_find.id
+                                            sync_accented_names(student_find, student["nombre"], student["apellido"])
                                             if clean_doc:
                                                 student_find.cardId = clean_doc
                                                 student_find.cardType = student_format["cardType"]

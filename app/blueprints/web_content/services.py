@@ -161,10 +161,15 @@ class SchoolPageContentService():
         currentPeriod = SchoolYear.objects(isDeleted=False, status="1").only("pecaSetting").first()
         code = id.split("_", 1)[0]
         school = SchoolUser.objects(code=code, isDeleted=False).first()
+        if not school:
+            return {'status': 0, 'message': 'School not found'}, 404
         nearbySchools = SchoolUser.objects(
             code__ne=code,
             isDeleted=False, coordinate__near=school.coordinate, project__schoolYears__0__exists=True, status="1").only('id','code' ,'slug', 'name', 'image', 'historicalReview')[:3]
-        pecasIds = [peca.pecaId for peca in school.project.schoolYears]
+        # school.project es una referencia embebida que puede quedar desfasada
+        # (p. ej. apuntando a un proyecto eliminado), así que los PECA se buscan por escuela
+        pecasIds = [peca.id for peca in PecaProject.objects(
+            project__school__id=str(school.id), isDeleted=False).only('id')]
         pecas = PecaProject.objects(
             id__in=pecasIds, isDeleted=False).only(
                 "school.diagnostics",
@@ -172,7 +177,7 @@ class SchoolPageContentService():
                 "schoolYearName",
                 "schedule"
             ).order_by('-createdAt').limit(5)
-        currentPeca = pecas[0]
+        currentPeca = pecas.first()
 
         diagnostics = {
             'environmentIndex': [],
@@ -367,7 +372,7 @@ class SchoolPageContentService():
         # but if we wanted to support it, we'd need to check where its images are stored.
         # Based on requirement "In case it doesn't have an image uploaded, don't show", 
         # we skip it if it's not in yearbook_activities.
-        for act in currentPeca.schedule:
+        for act in (currentPeca.schedule if currentPeca else []):
             if act.activityId in actsId:
                 nextActivities.append({
                     'name': actsId[act.activityId].name,

@@ -71,54 +71,65 @@ class CoordinatorContact(Document):
         if document.id:
             oldRequest = CoordinatorContact.objects.get(id=document.id)
             if document.status != oldRequest.status and document.status == '2':
-                # Atomic check-and-set: ensure only one thread/request transitions status from '1' to '2'
-                updated_count = CoordinatorContact.objects(
-                    id=document.id, status='1').update(set__status='2')
-                if updated_count == 0:
+                # Atomic check-and-set: only one concurrent request processes the approval
+                updated = CoordinatorContact.objects(
+                    id=document.id, status=oldRequest.status).update(set__status='2')
+                if not updated:
                     current_app.logger.warning(
-                        "CoordinatorContact {0} already updated or not in pending status; skipping duplicate approval processing.".format(document.id)
-                    )
+                        "CoordinatorContact {0} already approved; skipping duplicate approval processing.".format(document.id))
                     return
+                try:
+                    cls.approve(document)
+                except Exception:
+                    # Keep the previous status so the approval can be retried
+                    CoordinatorContact.objects(id=document.id).update(set__status=oldRequest.status)
+                    raise
 
-                email = document.email.lower().strip() if document.email else ""
-                coordinatorUser = CoordinatorUser.objects(
-                    email=email).first()
-                if not coordinatorUser:
-                    coordinatorUser = CoordinatorUser(
-                        name=document.firstName + ' ' + document.lastName,
-                        email=email,
-                        userType='2',
-                        phone=document.phone,
-                        address = document.address,
-                        role=Role.objects(
-                            isDeleted=False, devName="coordinator").first(),
-                        addressState=document.addressState,
-                        addressMunicipality=document.addressMunicipality,
-                        addressCity=document.addressCity,
-                        status='1',
-                        firstName=document.firstName,
-                        lastName=document.lastName,
-                        cardType=document.cardType,
-                        cardId=document.cardId,
-                        gender=document.gender,
-                        birthdate=document.birthdate,
-                        homePhone=document.homePhone,
-                        addressHome=document.addressHome,
-                        profession=document.profession,
-                        isReferred=document.isReferred,
-                        referredName=document.referredName
-                    )
-                    password = coordinatorUser.generatePassword()
-                    coordinatorUser.password = password
-                    coordinatorUser.setHashPassword()
-                    coordinatorUser.save()
-                    coordinatorUser.sendRegistrationEmail(password)
+    @classmethod
+    def approve(cls, document):
+        """
+        Creates the coordinator user and project of an approved request (or reuses existing ones).
+        """
+        email = document.email.lower().strip() if document.email else ""
+        coordinatorUser = CoordinatorUser.objects(
+            isDeleted=False, email=email).first()
+        if not coordinatorUser:
+            coordinatorUser = CoordinatorUser(
+                name=document.firstName + ' ' + document.lastName,
+                email=email,
+                userType='2',
+                phone=document.phone,
+                address = document.address,
+                role=Role.objects(
+                    isDeleted=False, devName="coordinator").first(),
+                addressState=document.addressState,
+                addressMunicipality=document.addressMunicipality,
+                addressCity=document.addressCity,
+                status='1',
+                firstName=document.firstName,
+                lastName=document.lastName,
+                cardType=document.cardType,
+                cardId=document.cardId,
+                gender=document.gender,
+                birthdate=document.birthdate,
+                homePhone=document.homePhone,
+                addressHome=document.addressHome,
+                profession=document.profession,
+                isReferred=document.isReferred,
+                referredName=document.referredName
+            )
+            password = coordinatorUser.generatePassword()
+            coordinatorUser.password = password
+            coordinatorUser.setHashPassword()
+            coordinatorUser.save()
+            coordinatorUser.sendRegistrationEmail(password)
 
-                project = Project.objects(coordinator=coordinatorUser.id).first()
-                if not project:
-                    project = Project()
-                    project.coordinator = coordinatorUser
-                    project.save()
+        project = Project.objects(
+            isDeleted=False, coordinator=coordinatorUser.id).first()
+        if not project:
+            project = Project()
+            project.coordinator = coordinatorUser
+            project.save()
 
 
 signals.pre_save_post_validation.connect(

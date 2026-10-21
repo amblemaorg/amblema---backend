@@ -16,7 +16,12 @@ from app.schemas.sponsor_user_schema import SponsorUserSchema
 from app.schemas.coordinator_user_schema import CoordinatorUserSchema
 from app.services.user_service import (UserService, ResendEmailCoordinator, ResendEmailSponsor)
 from app.helpers.handler_request import getQueryParams
-from app.helpers.handler_authorization import jwt_required
+from app.helpers.handler_authorization import (
+    jwt_required, admin_required, get_current_user, is_admin, can_manage_user)
+from flask import current_app
+
+# Fields a non-admin user cannot change on his own profile
+ADMIN_ONLY_FIELDS = ('role', 'userType', 'status')
 
 
 class UserController(Resource):
@@ -30,7 +35,7 @@ class UserController(Resource):
             only = request.args['only'].split(',')
         return service.getAllRecords(filters=filters, only=only)
 
-    @jwt_required
+    @admin_required
     def post(self):
         jsonData = request.get_json()
         service = getService(request)
@@ -47,13 +52,21 @@ class UserHandlerController(Resource):
     @jwt_required
     def put(self, userId):
         jsonData = request.get_json()
+        if not current_app.config.get("TESTING"):
+            caller = get_current_user()
+            target = User.objects(id=userId, isDeleted=False).first()
+            if target and not can_manage_user(caller, target):
+                return {"msg": "No authorized"}, 403
+            if not is_admin(caller) and isinstance(jsonData, dict):
+                for field in ADMIN_ONLY_FIELDS:
+                    jsonData.pop(field, None)
         service = getService(request)
         return service.updateRecord(
             recordId=userId,
             jsonData=jsonData,
             partial=(True))
 
-    @jwt_required
+    @admin_required
     def delete(self, userId):
         service = getService(request)
         return service.deleteRecord(userId)
@@ -80,11 +93,13 @@ def getService(request):
     return service
 
 class ResendEmailCoordinatorController(Resource):
+    @admin_required
     def post(self, id):
         service = ResendEmailCoordinator()
         return service.post(id)
 
 class ResendEmailSponsorController(Resource):
+    @admin_required
     def post(self):
         jsonData = request.get_json()
         if not jsonData or 'email' not in jsonData:

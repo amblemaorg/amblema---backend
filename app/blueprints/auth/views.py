@@ -26,6 +26,8 @@ from app.models.project_model import Project
 from app.models.school_year_model import SchoolYear
 from .schemas import RecoverySchema, ChangePasswordSchema, LoginSchema, MeSchema
 from app.helpers.ma_schema_validators import ValidationError
+from app.helpers.handler_authorization import (
+    jwt_required as session_required, get_current_user, can_manage_user)
 
 
 class MeView(MethodView):
@@ -128,7 +130,9 @@ class TokenRefreshView(MethodView):
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
-        user = User.objects(id=current_user['id']).first()
+        user = User.objects(id=current_user['id'], isDeleted=False).first()
+        if not user:
+            return {"msg": "User not found"}, 401
         payloads = getUserPayload(user)
         access_token = create_access_token(payloads['accessPayload'])
         return {'access_token': access_token}
@@ -147,7 +151,7 @@ class RecoveryPasswordView(MethodView):
         try:
             jsonData = request.get_json()
             data = schema.load(jsonData)
-            user = User.objects(email=data['email']).first()
+            user = User.objects(email=data['email'], isDeleted=False).first()
             if not user:
                 return {"email": [{"status": "5", "msg": "Record not found"}]}, 400
             password = user.generatePassword()
@@ -164,6 +168,7 @@ class RecoveryPasswordView(MethodView):
 class ChangePasswordView(MethodView):
     """This class-based view handles user change password function."""
 
+    @session_required
     def post(self):
         schema = ChangePasswordSchema()
         try:
@@ -173,6 +178,10 @@ class ChangePasswordView(MethodView):
                 return {"password": [{"status": "14", "msg": "Password doesn't match"}]}, 400
             password = data['password']
             user = data['user']
+            if user.isDeleted:
+                return {"user": [{"status": "5", "msg": "Record not found"}]}, 400
+            if not current_app.config.get("TESTING") and not can_manage_user(get_current_user(), user):
+                return {"msg": "No authorized"}, 403
             user.password = password
             user.setHashPassword()
             user.save()

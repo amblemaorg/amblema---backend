@@ -284,6 +284,48 @@ class ProjectService():
             document.coordinator.addProject(document)
         if document.school:
             document.school.addProject(document)
+        self.removeEmptyProjects(document)
+
+    def removeEmptyProjects(self, document):
+        """
+        A coordinator or sponsor approved on his own gets a project with only himself.
+        Once he joins a project with other members, that empty project is soft-deleted
+        so it does not remain as a duplicate. Projects with pending requests or a PECA
+        are kept, same as in a manual delete.
+        """
+        from app.models.project_model import Project
+        from app.models.request_content_approval_model import RequestContentApproval
+        from app.models.request_find_coordinator_model import RequestFindCoordinator
+        from app.models.request_find_sponsor_model import RequestFindSponsor
+        from app.models.request_find_school_model import RequestFindSchool
+        from app.models.peca_project_model import PecaProject
+
+        if document.isDeleted:
+            return
+        candidates = []
+        if document.coordinator and (document.school or document.sponsor):
+            candidates += [(p, document.coordinator) for p in Project.objects(
+                isDeleted=False, id__ne=document.id, phase="1",
+                coordinator=document.coordinator.id, school=None, sponsor=None)]
+        if document.sponsor and (document.school or document.coordinator):
+            candidates += [(p, document.sponsor) for p in Project.objects(
+                isDeleted=False, id__ne=document.id, phase="1",
+                sponsor=document.sponsor.id, school=None, coordinator=None)]
+
+        for project, owner in candidates:
+            projectId = str(project.id)
+            if (
+                RequestContentApproval.objects(isDeleted=False, project__id=projectId, status="1").first()
+                or RequestFindSchool.objects(isDeleted=False, project=project.id, status="1").first()
+                or RequestFindSponsor.objects(isDeleted=False, project=project.id, status="1").first()
+                or RequestFindCoordinator.objects(isDeleted=False, project=project.id, status="1").first()
+                or PecaProject.objects(isDeleted=False, project__id=projectId).first()
+            ):
+                continue
+            project.isDeleted = True
+            project.save()
+            # Use the in-memory owner so a later save of it does not restore the reference
+            owner.removeProject(project)
 
     def handlerProjectBeforeUpdate(self, document, oldDocument):
         from app.models.project_model import Approval, Project
@@ -487,3 +529,6 @@ class ProjectService():
                             currentPeca.save()
         if document.phase == "1":
             document.stepsProgress.updateProgress()
+        if (document.sponsor != oldDocument.sponsor
+                or document.coordinator != oldDocument.coordinator):
+            self.removeEmptyProjects(document)

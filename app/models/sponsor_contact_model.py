@@ -172,85 +172,135 @@ class SponsorContact(Document):
         if document.id:
             oldRequest = SponsorContact.objects.get(id=document.id)
             if document.status != oldRequest.status and document.status == '2':
-                project = Project()
-                sponsorUser = SponsorUser.objects(
-                    email=document.email).first()
-                if not sponsorUser:
-                    sponsorUser = SponsorUser(
-                        name=document.name,
-                        email=document.email,
-                        userType='3',
-                        role=Role.objects(
-                            isDeleted=False, devName="sponsor").first(),
-                        addressState=document.addressState,
-                        addressMunicipality=document.addressMunicipality,
-                        addressCity=document.addressCity,
-                        address=document.address,
-                        status='1',
-                        companyRif=document.rif,
-                        companyType=document.companyType,
-                        companyOtherType=document.companyOtherType,
-                        companyPhone=document.companyPhone,
-                        contactFirstName=document.contactFirstName,
-                        contactLastName=document.contactLastName,
-                        contactEmail=document.contactEmail,
-                        contactPhone=document.contactPhone
-                    )
-                    password = sponsorUser.generatePassword()
-                    sponsorUser.password = password
-                    sponsorUser.setHashPassword()
-                    sponsorUser.save()
-                    sponsorUser.sendRegistrationEmail(password)
-                project.sponsor = sponsorUser
+                # Atomic check-and-set: only one concurrent request processes the approval
+                updated = SponsorContact.objects(
+                    id=document.id, status=oldRequest.status).update(set__status='2')
+                if not updated:
+                    current_app.logger.warning(
+                        "SponsorContact {0} already approved; skipping duplicate approval processing.".format(document.id))
+                    return
+                try:
+                    cls.approve(document)
+                except Exception:
+                    # Keep the previous status so the approval can be retried
+                    SponsorContact.objects(id=document.id).update(set__status=oldRequest.status)
+                    raise
 
-                if document.hasSchool:
-                    if getattr(document, 'hasSchoolRegistered', False) and document.school:
-                        schoolUser = document.school
-                    else:
-                        schoolUser = SchoolUser.objects.filter((
-                            Q(email=document.schoolEmail) | Q(code=document.schoolCode)) & Q(isDeleted=False)).first() if (document.schoolEmail or document.schoolCode) else None
-                        if not schoolUser and (document.schoolEmail or document.schoolCode):
-                            schoolUser = SchoolUser(
-                                name=document.schoolName,
-                                email=document.schoolEmail,
-                                userType='4',
-                                phone=document.schoolPhone,
-                                role=Role.objects(
-                                    isDeleted=False, devName="school").first(),
-                                addressState=document.schoolAddressState,
-                                addressMunicipality=document.schoolAddressMunicipality,
-                                addressCity=document.schoolAddressCity,
-                                addressZoneType=document.schoolAddressZoneType,
-                                addressZone=document.schoolAddressZone,
-                                address=document.schoolAddress,
-                                coordinate=document.schoolCoordinate,
-                                status='1',
-                                code=document.schoolCode,
-                                schoolType=document.schoolType,
-                                principalFirstName=document.schoolPrincipalFirstName,
-                                principalLastName=document.schoolPrincipalLastName,
-                                principalEmail=document.schoolPrincipalEmail,
-                                principalPhone=document.schoolPrincipalPhone,
-                                subPrincipalFirstName=document.schoolSubPrincipalFirstName,
-                                subPrincipalLastName=document.schoolSubPrincipalLastName,
-                                subPrincipalEmail=document.schoolSubPrincipalEmail,
-                                subPrincipalPhone=document.schoolSubPrincipalPhone,
-                                nTeachers=document.schoolNTeachers,
-                                nAdministrativeStaff=document.schoolNAdministrativeStaff,
-                                nLaborStaff=document.schoolNLaborStaff,
-                                nStudents=document.schoolNStudents,
-                                nGrades=document.schoolNGrades,
-                                nSections=document.schoolNSections,
-                                schoolShift=document.schoolShift
-                            )
-                            password = schoolUser.generatePassword()
-                            schoolUser.password = password
-                            schoolUser.setHashPassword()
-                            schoolUser.save()
-                            schoolUser.sendRegistrationEmail(password)
-                    if schoolUser:
-                        project.school = schoolUser
+    @classmethod
+    def approve(cls, document):
+        """
+        Creates the users and project of an approved request (or reuses existing ones).
+        """
+        # Resolve the school's existing project before creating any user,
+        # so a rejected approval does not leave orphan users behind.
+        project = None
+        if document.hasSchool:
+            if getattr(document, 'hasSchoolRegistered', False) and document.school:
+                existingSchool = document.school
+            elif document.schoolEmail or document.schoolCode:
+                existingSchool = SchoolUser.objects.filter((
+                    Q(email=document.schoolEmail) | Q(code=document.schoolCode)) & Q(isDeleted=False)).first()
+            else:
+                existingSchool = None
+            if existingSchool:
+                project = Project.objects(
+                    isDeleted=False, school=existingSchool.id).first()
+                if (project and project.sponsor
+                        and project.sponsor.email != document.email.lower().strip()):
+                    raise ValidationError(
+                        {"school": [{"status": "5",
+                                     "msg": "School project already has a sponsor"}]}
+                    )
+        if not project:
+            project = Project()
+        sponsorUser = SponsorUser.objects(
+            isDeleted=False, email=document.email.lower().strip()).first()
+        if not sponsorUser:
+            sponsorUser = SponsorUser(
+                name=document.name,
+                email=document.email,
+                userType='3',
+                role=Role.objects(
+                    isDeleted=False, devName="sponsor").first(),
+                addressState=document.addressState,
+                addressMunicipality=document.addressMunicipality,
+                addressCity=document.addressCity,
+                address=document.address,
+                status='1',
+                companyRif=document.rif,
+                companyType=document.companyType,
+                companyOtherType=document.companyOtherType,
+                companyPhone=document.companyPhone,
+                contactFirstName=document.contactFirstName,
+                contactLastName=document.contactLastName,
+                contactEmail=document.contactEmail,
+                contactPhone=document.contactPhone
+            )
+            password = sponsorUser.generatePassword()
+            sponsorUser.password = password
+            sponsorUser.setHashPassword()
+            sponsorUser.save()
+            sponsorUser.sendRegistrationEmail(password)
+        if project.id:
+            # School already has a project: attach the sponsor to it
+            if project.sponsor != sponsorUser:
+                project.sponsor = sponsorUser
                 project.save()
+            return
+        project.sponsor = sponsorUser
+
+        if document.hasSchool:
+            if getattr(document, 'hasSchoolRegistered', False) and document.school:
+                schoolUser = document.school
+            else:
+                schoolUser = SchoolUser.objects.filter((
+                    Q(email=document.schoolEmail) | Q(code=document.schoolCode)) & Q(isDeleted=False)).first() if (document.schoolEmail or document.schoolCode) else None
+                if not schoolUser and (document.schoolEmail or document.schoolCode):
+                    schoolUser = SchoolUser(
+                        name=document.schoolName,
+                        email=document.schoolEmail,
+                        userType='4',
+                        phone=document.schoolPhone,
+                        role=Role.objects(
+                            isDeleted=False, devName="school").first(),
+                        addressState=document.schoolAddressState,
+                        addressMunicipality=document.schoolAddressMunicipality,
+                        addressCity=document.schoolAddressCity,
+                        addressZoneType=document.schoolAddressZoneType,
+                        addressZone=document.schoolAddressZone,
+                        address=document.schoolAddress,
+                        coordinate=document.schoolCoordinate,
+                        status='1',
+                        code=document.schoolCode,
+                        schoolType=document.schoolType,
+                        principalFirstName=document.schoolPrincipalFirstName,
+                        principalLastName=document.schoolPrincipalLastName,
+                        principalEmail=document.schoolPrincipalEmail,
+                        principalPhone=document.schoolPrincipalPhone,
+                        subPrincipalFirstName=document.schoolSubPrincipalFirstName,
+                        subPrincipalLastName=document.schoolSubPrincipalLastName,
+                        subPrincipalEmail=document.schoolSubPrincipalEmail,
+                        subPrincipalPhone=document.schoolSubPrincipalPhone,
+                        nTeachers=document.schoolNTeachers,
+                        nAdministrativeStaff=document.schoolNAdministrativeStaff,
+                        nLaborStaff=document.schoolNLaborStaff,
+                        nStudents=document.schoolNStudents,
+                        nGrades=document.schoolNGrades,
+                        nSections=document.schoolNSections,
+                        schoolShift=document.schoolShift
+                    )
+                    password = schoolUser.generatePassword()
+                    schoolUser.password = password
+                    schoolUser.setHashPassword()
+                    schoolUser.save()
+                    schoolUser.sendRegistrationEmail(password)
+            if schoolUser:
+                project.school = schoolUser
+        if not project.school and Project.objects(
+                isDeleted=False, sponsor=sponsorUser.id, school=None).first():
+            # Re-approval of a sponsor without school: keep his existing project
+            return
+        project.save()
 
 
 signals.pre_save_post_validation.connect(

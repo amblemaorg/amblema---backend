@@ -131,6 +131,18 @@ class Lapse(EmbeddedDocument):
     activities = fields.EmbeddedDocumentListField(Activity)
     
 
+class YearbookOrderItem(EmbeddedDocument):
+    # key: diagnostico (diagnosticReading, ...) o id de actividad tal como sale en yearbook.lapseN.activities
+    key = fields.StringField(required=True)
+    order = fields.IntField(default=0)
+
+
+class YearbookOrder(EmbeddedDocument):
+    lapse1 = fields.EmbeddedDocumentListField(YearbookOrderItem)
+    lapse2 = fields.EmbeddedDocumentListField(YearbookOrderItem)
+    lapse3 = fields.EmbeddedDocumentListField(YearbookOrderItem)
+
+
 class PecaSetting(EmbeddedDocument):
     lapse1 = fields.EmbeddedDocumentField(Lapse)
     lapse2 = fields.EmbeddedDocumentField(Lapse)
@@ -139,3 +151,5 @@ class PecaSetting(EmbeddedDocument):
         EnvironmentalProject)
     goalSetting = fields.EmbeddedDocumentField(GoalSetting)
     monitoringActivities = fields.EmbeddedDocumentField(MonitoringActivity)
+    # Orden del contenido de lapsos en el AmbLeMario; independiente del order del menu PECA
+    yearbookOrder = fields.EmbeddedDocumentField(YearbookOrder)

@@ -17,7 +17,7 @@ from app.models.project_model import Project
 from app.schemas.project_schema import ProjectSchema
 from app.helpers.error_helpers import RegisterNotFound
 from app.services.generic_service import GenericServices
-from app.models.peca_setting_model import EnvironmentalProject
+from app.models.peca_setting_model import EnvironmentalProject, PecaSetting
 from app.models.school_user_model import SchoolUser
 from app.models.sponsor_user_model import SponsorUser
 from app.models.coordinator_user_model import CoordinatorUser
@@ -60,10 +60,14 @@ class SchoolYearService(GenericServices):
                     }, 400
                 date = datetime.datetime.now()
                 newYearEnds = date.year + 1 if date.month > 8 else date.year
-                pecasettings = oldSchoolYear.pecaSetting
+                # Copia independiente: modificar el objeto del anio viejo hacia que oldSchoolYear.save()
+                # borrara sus actividades y su proyecto ambiental (historico de PECA y AmbLeMario)
+                pecasettings = PecaSetting._from_son(oldSchoolYear.pecaSetting.to_mongo())
                 pecasettings.lapse1.activities = []
                 pecasettings.lapse2.activities = []
                 pecasettings.lapse3.activities = []
+                # El orden del AmbLeMario referencia actividades del anio viejo; el nuevo arranca por defecto
+                pecasettings.yearbookOrder = None
 
                 newSchoolYear = SchoolYear(
                     name="{} - {}".format(date.year, date.year+1),

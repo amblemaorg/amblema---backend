@@ -144,8 +144,15 @@ def update_yearbook_data_in_approval(peca):
     sync_embedded = False
     found_approved = False
     
-    approvals = YearbookApproval.objects(pecaId=str(peca.id)).order_by('-createdAt')
-    
+    # Only the pending ones and the most recent approved one are updated: load
+    # just those (each one carries a full copy of the sections and students)
+    approvals = list(YearbookApproval.objects(
+        pecaId=str(peca.id), approval__status="1").order_by('-createdAt'))
+    last_approved = YearbookApproval.objects(
+        pecaId=str(peca.id), approval__status="2").order_by('-createdAt').first()
+    if last_approved:
+        approvals.append(last_approved)
+
     for yearbook_approval in approvals:
         approval = yearbook_approval.approval
         is_pending = approval.status == "1"

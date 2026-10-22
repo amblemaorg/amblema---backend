@@ -103,8 +103,9 @@ class SchoolYear(Document):
                 "operationsPerMinIndexSum": 0
             }
 
+        # Only the school summary is read (loading "school" brought every student)
         pecas = PecaProject.objects(schoolYear=self.pk, isDeleted=False).only(
-            "school", "lapse1", "lapse2", "lapse3")
+            "school.diagnostics")
 
         for peca in pecas:
             for lapse in range(1, 4):

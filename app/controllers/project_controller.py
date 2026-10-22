@@ -63,11 +63,28 @@ class ProjectController(Resource):
                 page_size=int(per_page)
             )
 
-        return self.service.getAllRecords(
-            filters=filters,
-            exclude=(
-                "stepsProgress",
-            ))
+        return self._getAllProjects(filters)
+
+    def _getAllProjects(self, filters):
+        """
+        Same output as service.getAllRecords, but avoids loading stepsProgress
+        and dereferencing school/sponsor/coordinator one by one (full user
+        documents): the referenced users are bulk-loaded with only their name.
+        """
+        import operator
+        from functools import reduce
+        from mongoengine import Q
+        from app.helpers.reference_prefetch import prefetchReferences
+
+        query = Project.objects(isDeleted=False)
+        if filters:
+            query = query.filter(
+                reduce(operator.and_, [Q(**{f['field']: f['value']}) for f in filters]))
+        projects = list(query.exclude('stepsProgress'))
+
+        schema = ProjectSchema(exclude=("stepsProgress",))
+        prefetchReferences(projects, schema)
+        return {"records": schema.dump(projects, many=True)}, 200
 
     @jwt_required
     def post(self):

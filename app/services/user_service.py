@@ -18,6 +18,11 @@ from app.models.coordinator_user_model import CoordinatorUser
 
 class UserService(GenericServices):
 
+    # User lists: skip embedded data the schemas don't expose (e.g. SchoolUser
+    # students/teachers) and bulk-load role/address references
+    excludeUndeclaredFields = True
+    bulkLoadReferences = True
+
     handlerMessages = HandlerMessages()
 
     def saveRecord(self, jsonData):

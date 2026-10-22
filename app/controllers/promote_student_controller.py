@@ -11,25 +11,35 @@ from app.helpers.handler_authorization import jwt_required
 
 class PromoteStudentController(Resource):
     service = PromoteStudentService()
+
+    @jwt_required
     def get(self,school_code, id_section):
         return self.service.getList(school_code=school_code, id_section=id_section)
 
 class SectionsPromoteStudentController(Resource):
     service = SectionsPromoteStudentService()
+
+    @jwt_required
     def get(self,school_code):
         return self.service.getSections(school_code=school_code)
 
 class PromoteStudentsController(Resource):
     service = PromoteStudentService()
+
+    @jwt_required
     def post(self, school_code):
         jsonData = request.get_json()
         return self.service.promoteStudents(school_code=school_code, data=jsonData)
 
 class ChangeSectionStudentsController(Resource):
     service = ChangeSectionStudentsService()
+
+    @jwt_required
     def post(self, pecaId):
         jsonData = request.get_json()
         return self.service.changeSection(data=jsonData, pecaID=pecaId)
+
+    @jwt_required
     def put(self, pecaId):
         jsonData = request.get_json()
         return self.service.deleteStudentForSection(data=jsonData, pecaId=pecaId)

@@ -185,8 +185,13 @@ class PecaProjectService():
                 project.id) if amblemaConfirmation and amblemaConfirmation.status == "3" else False
             data['monitoringActivities'] = MonitoringActivitySchema().dump(
                 schoolYear.pecaSetting.monitoringActivities)
+            # Only what this method and getYearbookData read: the master
+            # students list (SchoolUser.students) is heavy and not used here,
+            # PECA students come from peca.school.sections
             school = SchoolUser.objects(
-                id=peca.project.school.id).first()
+                id=peca.project.school.id).only(
+                    'teachers', 'slider', 'teachersTestimonials',
+                    'historicalReview', 'image', 'name', 'yearbook').first()
             data['school']['teachers'] = TeacherSchema().dump(
                 school.teachers.filter(isDeleted=False), many=True)
             data['school']['slider'] = ImageStatusSchema().dump(
@@ -209,7 +214,15 @@ class PecaProjectService():
             # Fetch the last approval from the new YearbookApproval collection
             last_approval = YearbookApproval.objects(pecaId=str(peca.id)).order_by('-createdAt').first()
             if last_approval:
-                data["yearbook"]["approvalHistory"] = [ApprovalSchema().dump(last_approval.approval)]
+                lastApprovalData = ApprovalSchema().dump(last_approval.approval)
+                # The request snapshot repeats every section with its students;
+                # the PECA only reads id/image from these sections (students are
+                # already in school.sections). Stored request is not modified.
+                detail = lastApprovalData.get('detail') or {}
+                for section in detail.get('sections') or []:
+                    if isinstance(section, dict):
+                        section.pop('students', None)
+                data["yearbook"]["approvalHistory"] = [lastApprovalData]
             else:
                  data["yearbook"]["approvalHistory"] = []
 

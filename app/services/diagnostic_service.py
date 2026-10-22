@@ -139,6 +139,26 @@ class DiagnosticService():
                                    status_code=404,
                                    payload={"pecaId": pecaId, "sectionId": sectionId, "studentId": studentId})
 
+    def _changedDiagnosticPaths(self, peca, lapse, changed_students, affected_sections):
+        """
+        $set paths for the imported diagnostics: each changed student's lapse,
+        the summary of the affected sections and the school summary. Positions
+        are resolved by identity on the loaded document.
+        """
+        updates = {}
+        lapseKey = 'lapse{}'.format(lapse)
+        sectionPos = {id(section): i for i, section in enumerate(peca.school.sections)}
+        for section, student in changed_students:
+            i = sectionPos[id(section)]
+            j = next(pos for pos, st in enumerate(section.students) if st is student)
+            updates['school.sections.{}.students.{}.{}'.format(i, j, lapseKey)] = \
+                student[lapseKey].to_mongo()
+        for i, section in enumerate(peca.school.sections):
+            if section.id in affected_sections:
+                updates['school.sections.{}.diagnostics'.format(i)] = section.diagnostics.to_mongo()
+        updates['school.diagnostics'] = peca.school.diagnostics.to_mongo()
+        return updates
+
     def importData(self, lapse, pecaId, students, diagnosticType):
         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
 
@@ -147,6 +167,8 @@ class DiagnosticService():
             id=pecaId).only('school', 'schoolYear').first()
         
         affected_sections = set()
+        # (section, student) whose diagnostic changed, to write only those paths
+        changed_students = []
 
         if peca:
             for student_f in students:
@@ -198,7 +220,8 @@ class DiagnosticService():
                                 if diagnostic.operationsPerMin != None and not diagnostic.logicDate:
                                     diagnostic.logicDate = datetime.utcnow()
                             diagnostic.calculateIndex(setting)
-                
+                            changed_students.append((section, student))
+
                         except ValidationError as err:
                             return err.normalized_messages(), 400
 
@@ -208,9 +231,20 @@ class DiagnosticService():
 
             peca.school.refreshDiagnosticsSummary()
             update_yearbook_data_in_approval(peca)
-            peca.save()
-            schoolYear = peca.schoolYear.fetch()
+
+            # peca.save() / schoolYear.save() diff the whole document (every section
+            # and student) to find the changes, which takes minutes on big schools:
+            # write only the changed diagnostics and summaries instead
+            now = datetime.utcnow()
+            updates = self._changedDiagnosticPaths(peca, lapse, changed_students, affected_sections)
+            if not current_app.config.get("TESTING"):
+                updates['updatedAt'] = now
+            PecaProject._get_collection().update_one({'_id': peca.id}, {'$set': updates})
+
+            schoolYear = SchoolYear.objects(id=peca.schoolYear.id).only('diagnostics').first()
             schoolYear.refreshDiagnosticsSummary()
-            schoolYear.save()
+            SchoolYear._get_collection().update_one(
+                {'_id': schoolYear.id},
+                {'$set': {'diagnostics': schoolYear.diagnostics.to_mongo(), 'updatedAt': now}})
 
             return {"error": "false", "message": "Resutados guardados exitosamente"},201

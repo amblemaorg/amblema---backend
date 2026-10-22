@@ -397,6 +397,8 @@ class ProjectService():
                             for approval in yearbook_approvals:
                                 if approval.approval.detail['sponsor']['name'] != "":
                                     approval.approval.detail['sponsor']['name'] = projectReference.sponsor["name"]
+                                    approval.approval.detail['sponsor']['content'] = ''
+                                    approval.approval.detail['sponsor']['image'] = ''
                                     approval.save()
                             currentPeca.save()
 
@@ -451,6 +453,8 @@ class ProjectService():
                             for approval in yearbook_approvals:
                                 if approval.approval.detail['school']['name'] != "":
                                     approval.approval.detail['school']['name'] = projectReference.school["name"]
+                                    approval.approval.detail['school']['content'] = ''
+                                    approval.approval.detail['school']['image'] = ''
                                     approval.save()
                             
                             currentPeca.save()
@@ -524,6 +528,8 @@ class ProjectService():
                             for approval in yearbook_approvals:
                                 if approval.approval.detail['coordinator']['name'] != "":
                                     approval.approval.detail['coordinator']['name'] = projectReference.coordinator["name"]
+                                    approval.approval.detail['coordinator']['content'] = ''
+                                    approval.approval.detail['coordinator']['image'] = ''
                                     approval.save()
                             
                             currentPeca.save()

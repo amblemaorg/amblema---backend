@@ -13,6 +13,9 @@ from app.schemas import fields
 
 
 class UserSchema(Schema):
+    # Connector words kept lowercase when title-casing names (e.g. "Fidel y Jose")
+    NAME_CONNECTORS = ()
+
     id = fields.Str(dump_only=True)
     email = fields.Str(required=True, validate=(validate_email))
     name = fields.Str(dump_only=True)
@@ -47,12 +50,19 @@ class UserSchema(Schema):
         if 'email' in data and isinstance(data["email"], str):
             data["email"] = str(data["email"]).lower()
         if 'firstName' in data and isinstance(data["firstName"], str):
-            data["firstName"] = str(data["firstName"]).title()
+            data["firstName"] = self.title_name(data["firstName"])
         if 'lastName' in data and isinstance(data["lastName"], str):
-            data["lastName"] = str(data["lastName"]).title()
+            data["lastName"] = self.title_name(data["lastName"])
         if 'address' in data and isinstance(data["address"], str):
             data["address"] = str(data["address"]).title()
         return data
+
+    def title_name(self, value):
+        words = str(value).title().split(' ')
+        return ' '.join(
+            word.lower() if i > 0 and word.lower() in self.NAME_CONNECTORS
+            else word
+            for i, word in enumerate(words))
 
     @validates_schema
     def validate_cardId_length(self, data, **kwargs):

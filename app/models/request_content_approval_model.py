@@ -222,7 +222,15 @@ class RequestContentApproval(Document):
                             partial=True)
                         data = schema.load(document.detail)
                         for field in schema.dump(data).keys():
-                            if field != 'sections':
+                            if field in ('lapse1', 'lapse2', 'lapse3'):
+                                # The request only carries the analyses that changed; merge them
+                                # instead of replacing the lapse, or the rest are reset to ''
+                                lapseDetail = document.detail.get(field) or {}
+                                for key in ('readingDiagnosticAnalysis', 'mathDiagnosticAnalysis',
+                                            'logicDiagnosticAnalysis', 'environmentalDiagnosticAnalysis'):
+                                    if key in lapseDetail:
+                                        peca.yearbook[field][key] = lapseDetail[key]
+                            elif field != 'sections':
                                 peca.yearbook[field] = data[field]
                         if "sections" in data:
                             for section in data['sections']:
@@ -271,9 +279,9 @@ class RequestContentApproval(Document):
                                     peca['lapse{}'.format(
                                         lapse)].olympics.yearbook = yearActivity
                                     found = True
-                                elif activity['id'] == 'specialActivity':
+                                elif activity['id'] == 'readingolympics':
                                     peca['lapse{}'.format(
-                                        lapse)].specialActivity.yearbook = yearActivity
+                                        lapse)].readingOlympics.yearbook = yearActivity
                                     found = True
                                 elif activity['id'] == 'specialActivity':
                                     peca['lapse{}'.format(

@@ -162,6 +162,18 @@ class SectionsPromoteStudentService():
             return {'status': 0, 'message': str(e)}, 400        
 
 class ChangeSectionStudentsService():
+    def _updateSchoolYearStudents(self, schoolYear, fallback):
+        # Suma los nStudents ya persistidos de cada PECA del año, sin cargar ni guardar cada documento
+        if not schoolYear:
+            return
+        pipeline = [
+            {"$match": {"schoolYear": schoolYear.id, "isDeleted": False}},
+            {"$group": {"_id": None, "total": {"$sum": "$school.nStudents"}}}
+        ]
+        agg_res = list(PecaProject._get_collection().aggregate(pipeline))
+        schoolYear.nStudents = agg_res[0]["total"] if agg_res else fallback
+        schoolYear.save()
+
     def changeSection(self, data, pecaID):
         try:
             peca = PecaProject.objects(
@@ -174,9 +186,12 @@ class ChangeSectionStudentsService():
                 if section:
                     section_new = peca.school.sections.filter(id=data["section_new"]).first()
                     if section_new:
+                        school_students = {str(s.id): s for s in school.students}
                         for student in data["students"]:
                             st = section.students.filter(
                         isDeleted=False, id=student["id"]).first()
+                            if not st:
+                                continue
                             st.isDeleted = True
                             student_save = Student()
                             student_save.id = student["id"]
@@ -193,7 +208,7 @@ class ChangeSectionStudentsService():
 
                             section_new.students.append(student_save)
 
-                            student_school = school.students.filter(id=ObjectId(student["id"])).first()
+                            student_school = school_students.get(str(student["id"]))
                             if student_school:
                                 sections_currents = []
                                 for sect in student_school.sections:
@@ -218,27 +233,11 @@ class ChangeSectionStudentsService():
                         peca.save()
                         school.nStudents = nStudents
                         school.save()
-            
-                        
+
                         schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
-                        pecas = PecaProject.objects(
-                            schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
-                        
-                        nStudents = 0
-                        
-                        for peca in pecas:
-                            schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
-                            peca.school.nStudents = 0
-                            for section in peca.school.sections.filter(isDeleted=False):
-                                peca.school.nStudents += len(section.students.filter(isDeleted=False))
-                            schoolUser.nStudents = peca.school.nStudents
-                            peca.save()
-                            schoolUser.save()
-                            nStudents += peca.school.nStudents
-                        schoolYear.nStudents = nStudents
-                        schoolYear.save()
-        
-                        return {"status": 201, "msg": "Estudiantes cambiados con éxito"},201    
+                        self._updateSchoolYearStudents(schoolYear, nStudents)
+
+                        return {"status": 201, "msg": "Estudiantes cambiados con éxito"},201
                     else:
                         return {"status": 400, "msg": "No se encontro la sección nueva"},200
                 
@@ -262,16 +261,22 @@ class ChangeSectionStudentsService():
                 school = SchoolUser.objects(code=school_code, isDeleted=False).first()
                 section = peca.school.sections.filter(id=data["section"]).first()
                 if section:
+                    school_students = {str(s.id): s for s in school.students}
                     for student in data["students"]:
                         st = section.students.filter(
                     isDeleted=False, id=student["id"]).first()
+                        if not st:
+                            continue
                         st.isDeleted = True
-                        
-                        student_school = school.students.filter(id=ObjectId(student["id"])).first()
+
+                        student_school = school_students.get(str(student["id"]))
                         if student_school:
                             sections_currents = []
                             for sect in student_school.sections:
-                                if sect.id !=  section.id and sect.schoolYear.id != schoolYear.id:
+                                # _data evita desreferenciar SchoolYear (1 query por sección)
+                                sect_year = sect._data.get('schoolYear')
+                                sect_year_id = getattr(sect_year, 'id', sect_year)
+                                if sect.id !=  section.id and sect_year_id != schoolYear.id:
                                     sections_currents.append(sect)
                                 
                             student_school.sections = sections_currents
@@ -284,25 +289,9 @@ class ChangeSectionStudentsService():
                             
                     peca.save()
                     school.save()
-        
-                    schoolYear = SchoolYear.objects(isDeleted=False, status="1").first()
-                    pecas = PecaProject.objects(
-                        schoolYear=schoolYear.id, isDeleted=False).only('school', 'project')
-                    
-                    nStudents = 0
-                    
-                    for peca in pecas:
-                        schoolUser = SchoolUser.objects(isDeleted=False, id=peca.project.school.id).first()
-                        peca.school.nStudents = 0
-                        for section in peca.school.sections.filter(isDeleted=False):
-                            peca.school.nStudents += len(section.students.filter(isDeleted=False))
-                        schoolUser.nStudents = peca.school.nStudents
-                        peca.save()
-                        schoolUser.save()
-                        nStudents += peca.school.nStudents
-                    schoolYear.nStudents = nStudents
-                    schoolYear.save()
-    
+
+                    self._updateSchoolYearStudents(schoolYear, nStudents)
+
                     return {"status": 201, "msg": "Estudiantes eliminados con éxito"},201    
                 else:
                     return {"status": 400, "msg": "No se encontro la sección"},200

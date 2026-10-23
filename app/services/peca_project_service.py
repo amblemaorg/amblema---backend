@@ -187,8 +187,18 @@ class PecaProjectService():
                 schoolYear.pecaSetting.monitoringActivities)
             school = SchoolUser.objects(
                 id=peca.project.school.id).first()
+            teachers = list(school.teachers.filter(isDeleted=False))
+            # En años escolares no activos se incluyen los docentes eliminados que
+            # siguen asignados a secciones de este PECA, para conservar el histórico
+            if schoolYear.status != "1":
+                linkedIds = set(
+                    str(section.teacher.id) for section in peca.school.sections
+                    if section.teacher and section.teacher.id)
+                teachers += [
+                    teacher for teacher in school.teachers.filter(isDeleted=True)
+                    if str(teacher.id) in linkedIds]
             data['school']['teachers'] = TeacherSchema().dump(
-                school.teachers.filter(isDeleted=False), many=True)
+                teachers, many=True)
             data['school']['slider'] = ImageStatusSchema().dump(
                 school.slider, many=True)
             data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(

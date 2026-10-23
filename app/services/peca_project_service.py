@@ -187,8 +187,18 @@ class PecaProjectService():
                 schoolYear.pecaSetting.monitoringActivities)
             school = SchoolUser.objects(
                 id=peca.project.school.id).first()
+            teachers = list(school.teachers.filter(isDeleted=False))
+            # En años escolares no activos se incluyen los docentes eliminados que
+            # siguen asignados a secciones de este PECA, para conservar el histórico
+            if schoolYear.status != "1":
+                linkedIds = set(
+                    str(section.teacher.id) for section in peca.school.sections
+                    if section.teacher and section.teacher.id)
+                teachers += [
+                    teacher for teacher in school.teachers.filter(isDeleted=True)
+                    if str(teacher.id) in linkedIds]
             data['school']['teachers'] = TeacherSchema().dump(
-                school.teachers.filter(isDeleted=False), many=True)
+                teachers, many=True)
             data['school']['slider'] = ImageStatusSchema().dump(
                 school.slider, many=True)
             data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(
@@ -245,7 +255,9 @@ class PecaProjectService():
             pecaSettingLapse = schoolYear.pecaSetting['lapse{}'.format(i)]
 
             if pecaSettingLapse.initialWorkshop.status == "1":
-                peca['lapse{}'.format(i)].initialWorkshop = InitialWorkshopPeca()
+                peca['lapse{}'.format(i)].initialWorkshop = InitialWorkshopPeca(
+                    order=pecaSettingLapse.initialWorkshop.order
+                )
             else:
                 peca['lapse{}'.format(i)].initialWorkshop = None
 
@@ -254,7 +266,8 @@ class PecaProjectService():
                     teachersMeetingFile=pecaSettingLapse.ambleCoins.teachersMeetingFile,
                     teachersMeetingDescription=pecaSettingLapse.ambleCoins.teachersMeetingDescription,
                     piggyBankDescription=pecaSettingLapse.ambleCoins.piggyBankDescription,
-                    piggyBankSlider=pecaSettingLapse.ambleCoins.piggyBankSlider
+                    piggyBankSlider=pecaSettingLapse.ambleCoins.piggyBankSlider,
+                    order=pecaSettingLapse.ambleCoins.order
                 )
             else:
                 peca['lapse{}'.format(i)].ambleCoins = None
@@ -263,7 +276,8 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].lapsePlanning = LapsePlanningPeca(
                     proposalFundationFile=pecaSettingLapse.lapsePlanning.proposalFundationFile,
                     proposalFundationDescription=pecaSettingLapse.lapsePlanning.proposalFundationDescription,
-                    meetingDescription=pecaSettingLapse.lapsePlanning.meetingDescription
+                    meetingDescription=pecaSettingLapse.lapsePlanning.meetingDescription,
+                    order=pecaSettingLapse.lapsePlanning.order
                 )
             else:
                 peca['lapse{}'.format(i)].lapsePlanning = None
@@ -272,7 +286,8 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].olympics = Olympics(
                     file = pecaSettingLapse.mathOlympic.file,
                     description = pecaSettingLapse.mathOlympic.description,
-                    date = pecaSettingLapse.mathOlympic.date
+                    date = pecaSettingLapse.mathOlympic.date,
+                    order = pecaSettingLapse.mathOlympic.order
                 )
                 if pecaSettingLapse.mathOlympic.date:
                     peca.scheduleActivity(
@@ -289,7 +304,8 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].readingOlympics = Olympics(
                     file = pecaSettingLapse.readingOlympics.file,
                     description = pecaSettingLapse.readingOlympics.description,
-                    date = pecaSettingLapse.readingOlympics.date
+                    date = pecaSettingLapse.readingOlympics.date,
+                    order = pecaSettingLapse.readingOlympics.order
                 )
                 if pecaSettingLapse.readingOlympics.date:
                     peca.scheduleActivity(
@@ -307,13 +323,16 @@ class PecaProjectService():
                     step1Description=pecaSettingLapse.annualPreparation.step1Description,
                     step2Description=pecaSettingLapse.annualPreparation.step2Description,
                     step3Description=pecaSettingLapse.annualPreparation.step3Description,
-                    step4Description=pecaSettingLapse.annualPreparation.step4Description
+                    step4Description=pecaSettingLapse.annualPreparation.step4Description,
+                    order=pecaSettingLapse.annualPreparation.order
                 )
             else:
                 peca['lapse{}'.format(i)].annualPreparation = None
 
             if pecaSettingLapse.annualConvention.status == "1":
-                annualConvention = AnnualConventionPeca()
+                annualConvention = AnnualConventionPeca(
+                    order=pecaSettingLapse.annualConvention.order
+                )
                 for element in pecaSettingLapse.annualConvention.checklist:
                     annualConvention.checklist.append(
                         CheckElement(
@@ -326,7 +345,9 @@ class PecaProjectService():
                 peca['lapse{}'.format(i)].annualConvention = None
 
             if pecaSettingLapse.specialLapseActivity.status == "1":
-                specialActivity = SpecialActivityPeca()
+                specialActivity = SpecialActivityPeca(
+                    order=pecaSettingLapse.specialLapseActivity.order
+                )
                 peca['lapse{}'.format(i)].specialActivity = specialActivity
             else:
                 peca['lapse{}'.format(i)].specialActivity = None
@@ -350,7 +371,8 @@ class PecaProjectService():
                             isStandard=activity.isStandard,
                             status=activity.status,
                             createdAt=activity.createdAt,
-                            updatedAt=activity.updatedAt
+                            updatedAt=activity.updatedAt,
+                            order=activity.order
                         )
                     if activity.hasChecklist:
                         for check in activity.checklist:

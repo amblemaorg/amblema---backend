@@ -391,79 +391,130 @@ class SectionsImportExport():
                             section_peca = peca.school.sections.filter(isDeleted=False, id=jsonData["section"]).first()
                             if section_peca:
                                 if len(jsonData["students"]) > 0:
+                                    # Emparejamiento estricto (sin similitud difusa de nombres: confundía
+                                    # hermanos/gemelos con mismo apellido y fecha de nacimiento):
+                                    #   1. Misma cédula -> mismo estudiante; nombre, fecha y género se toman
+                                    #      del Excel salvo que el nombre pertenezca a otro estudiante.
+                                    #   2. Mismo nombre + apellido + fecha de nacimiento + género -> mismo
+                                    #      estudiante aunque la cédula difiera (corrección de cédula).
+                                    #   3. Mismo nombre + apellido sin cédulas contradictorias -> mismo
+                                    #      estudiante (corrección de fecha de nacimiento/género).
+                                    #   Cualquier otro caso -> estudiante nuevo.
+                                    # Un estudiante ya emparejado por una fila previa del mismo Excel solo
+                                    # puede volver a emparejarse con una fila de igual nombre (fila repetida);
+                                    # así una cédula repetida por error entre gemelos no sobrescribe al primero.
+                                    claimed_ids = set()
+
+                                    def claim(s):
+                                        if s is not None and s.id:
+                                            claimed_ids.add(str(s.id))
+
+                                    def is_blocked(s, key):
+                                        return bool(s.id) and str(s.id) in claimed_ids and name_key(s.firstName, s.lastName) != key
+
+                                    def name_key(first_name, last_name):
+                                        fn = normalize_student_text(first_name).replace(" ", "")
+                                        ln = normalize_student_text(last_name).replace(" ", "")
+                                        return (fn, ln) if fn and ln else None
+
+                                    def bd_key(birthdate):
+                                        return (birthdate.year, birthdate.month, birthdate.day) if birthdate else None
+
+                                    def register_in_index(s, by_card, by_name, overwrite_card=True):
+                                        c = str(s.cardId or "").strip()
+                                        if c and (overwrite_card or c not in by_card):
+                                            by_card[c] = s
+                                        k = name_key(s.firstName, s.lastName)
+                                        if k:
+                                            by_name.setdefault(k, []).append(s)
+
+                                    def reindex_card(s, old_card, new_card, by_card):
+                                        if old_card and by_card.get(old_card) is s:
+                                            del by_card[old_card]
+                                        if new_card:
+                                            by_card[new_card] = s
+
+                                    def reindex_name(s, old_key, new_key, by_name):
+                                        if old_key in by_name:
+                                            by_name[old_key] = [c for c in by_name[old_key] if c is not s]
+                                        if new_key:
+                                            by_name.setdefault(new_key, []).append(s)
+
+                                    def find_in_index(card_id, key, bd_tuple, gender, by_card, by_name):
+                                        if card_id and card_id in by_card and not is_blocked(by_card[card_id], key):
+                                            return by_card[card_id]
+                                        candidates = [c for c in (by_name.get(key, []) if key else []) if not is_blocked(c, key)]
+                                        for cand in candidates:
+                                            if bd_key(cand.birthdate) == bd_tuple and cand.gender == gender:
+                                                return cand
+                                        for cand in candidates:
+                                            cand_card = str(cand.cardId or "").strip()
+                                            if not (card_id and cand_card and cand_card != card_id):
+                                                return cand
+                                        return None
+
+                                    def name_taken_by_other(key, student_id, card_id):
+                                        # El nombre pertenece a otro estudiante si está activo en esta sección
+                                        # o, en la escuela, tiene otra cédula. Registros de escuela sin cédula
+                                        # (duplicados de años previos) no bloquean.
+                                        for c in sec_by_name.get(key, []):
+                                            if str(c.id) != str(student_id) and not getattr(c, "isDeleted", False):
+                                                return True
+                                        for c in school_by_name.get(key, []):
+                                            other_card = str(c.cardId or "").strip()
+                                            if (str(c.id) != str(student_id) and not getattr(c, "isDeleted", False)
+                                                    and other_card and other_card != card_id):
+                                                return True
+                                        return False
+
+                                    def can_rename(target, key, card_id):
+                                        # Con la misma cédula, el nombre del Excel prevalece salvo que pertenezca
+                                        # a otro estudiante (gemelos o cédula repetida por error).
+                                        if target is None or not key or name_key(target.firstName, target.lastName) == key:
+                                            return False
+                                        return not name_taken_by_other(key, target.id, card_id)
+
+                                    def apply_corrections(target, key, first_name, last_name, rename,
+                                                          card_id, card_type, birthdate, gender, by_card, by_name):
+                                        # Cédula: se actualiza siempre que venga en el Excel.
+                                        # Nombre: solo si can_rename() lo autorizó.
+                                        # Fecha/género: solo si el nombre coincide, para no pisar datos de otro
+                                        # estudiante cuando una cédula mal tipeada choca con la de un hermano.
+                                        if target is None:
+                                            return
+                                        old_card = str(target.cardId or "").strip()
+                                        if card_id and card_id != old_card:
+                                            target.cardId = card_id
+                                            target.cardType = card_type
+                                            reindex_card(target, old_card, card_id, by_card)
+                                        elif card_id:
+                                            target.cardType = card_type
+                                        if rename:
+                                            old_key = name_key(target.firstName, target.lastName)
+                                            target.firstName = first_name
+                                            target.lastName = last_name
+                                            reindex_name(target, old_key, key, by_name)
+                                        if name_key(target.firstName, target.lastName) == key:
+                                            if birthdate:
+                                                target.birthdate = birthdate
+                                            if gender:
+                                                target.gender = gender
+
                                     # 1. Pre-index section students
                                     sec_by_card = {}
-                                    sec_by_norm = {}
-                                    sec_by_clean = {}
-                                    sec_by_bd_ln = {}
-
+                                    sec_by_name = {}
                                     for s in section_peca.students:
-                                        c = str(s.cardId or "").strip()
-                                        if c:
-                                            sec_by_card[c] = s
-                                        fn = normalize_student_text(s.firstName)
-                                        ln = normalize_student_text(s.lastName)
-                                        if fn and ln:
-                                            sec_by_norm[(fn, ln)] = s
-                                            sec_by_clean[(fn.replace(" ", ""), ln.replace(" ", ""))] = s
-                                        if s.birthdate and ln:
-                                            bd = (s.birthdate.year, s.birthdate.month, s.birthdate.day)
-                                            sec_by_bd_ln.setdefault((bd, ln), []).append((fn, s))
+                                        register_in_index(s, sec_by_card, sec_by_name)
 
                                     # 2. Pre-index school students
                                     school_by_id = {}
                                     school_by_card = {}
-                                    school_by_norm = {}
-                                    school_by_clean = {}
-                                    school_by_bd_ln = {}
-
+                                    school_by_name = {}
                                     for s in school.students:
                                         school_by_id[str(s.id)] = s
                                         if getattr(s, "isDeleted", False):
                                             continue
-                                        c = str(s.cardId or "").strip()
-                                        if c and c not in school_by_card:
-                                            school_by_card[c] = s
-                                        fn = normalize_student_text(s.firstName)
-                                        ln = normalize_student_text(s.lastName)
-                                        if fn and ln:
-                                            if (fn, ln) not in school_by_norm:
-                                                school_by_norm[(fn, ln)] = s
-                                            clean_key = (fn.replace(" ", ""), ln.replace(" ", ""))
-                                            if clean_key not in school_by_clean:
-                                                school_by_clean[clean_key] = s
-                                        if s.birthdate and ln:
-                                            bd = (s.birthdate.year, s.birthdate.month, s.birthdate.day)
-                                            school_by_bd_ln.setdefault((bd, ln), []).append((fn, s))
-
-                                    def find_in_index(card_id, norm_fn, norm_ln, bd_tuple, by_card, by_norm, by_clean, by_bd_ln):
-                                        if card_id and card_id in by_card:
-                                            return by_card[card_id]
-                                        if norm_fn and norm_ln:
-                                            if (norm_fn, norm_ln) in by_norm:
-                                                return by_norm[(norm_fn, norm_ln)]
-                                            clean_k = (norm_fn.replace(" ", ""), norm_ln.replace(" ", ""))
-                                            if clean_k in by_clean:
-                                                return by_clean[clean_k]
-                                        if bd_tuple and norm_ln and (bd_tuple, norm_ln) in by_bd_ln:
-                                            candidates = by_bd_ln[(bd_tuple, norm_ln)]
-                                            for cand_fn, cand_s in candidates:
-                                                if difflib.SequenceMatcher(None, norm_fn, cand_fn).ratio() >= 0.65:
-                                                    return cand_s
-                                        return None
-
-                                    def register_in_index(s, by_card, by_norm, by_clean, by_bd_ln):
-                                        c = str(s.cardId or "").strip()
-                                        if c:
-                                            by_card[c] = s
-                                        fn = normalize_student_text(s.firstName)
-                                        ln = normalize_student_text(s.lastName)
-                                        if fn and ln:
-                                            by_norm[(fn, ln)] = s
-                                            by_clean[(fn.replace(" ", ""), ln.replace(" ", ""))] = s
-                                        if s.birthdate and ln:
-                                            bd = (s.birthdate.year, s.birthdate.month, s.birthdate.day)
-                                            by_bd_ln.setdefault((bd, ln), []).append((fn, s))
+                                        register_in_index(s, school_by_card, school_by_name, overwrite_card=False)
 
                                     schema = StudentSchema()
 
@@ -499,14 +550,13 @@ class SectionsImportExport():
                                         if parsed_date:
                                             student["fecha_de_nacimiento"] = parsed_date.strftime("%Y-%m-%d") + "T00:00:00.000Z"
 
-                                        norm_fn = normalize_student_text(student["nombre"])
-                                        norm_ln = normalize_student_text(student["apellido"])
-                                        bd_tuple = (parsed_date.year, parsed_date.month, parsed_date.day) if parsed_date else None
+                                        key = name_key(student["nombre"], student["apellido"])
+                                        bd_tuple = bd_key(parsed_date)
 
                                         # Check section
                                         student_in_section = find_in_index(
-                                            clean_doc, norm_fn, norm_ln, bd_tuple,
-                                            sec_by_card, sec_by_norm, sec_by_clean, sec_by_bd_ln
+                                            clean_doc, key, bd_tuple, student["genero"],
+                                            sec_by_card, sec_by_name
                                         )
 
                                         # Check school
@@ -515,8 +565,8 @@ class SectionsImportExport():
                                             student_find = school_by_id.get(str(student_in_section.id))
                                         if not student_find:
                                             student_find = find_in_index(
-                                                clean_doc, norm_fn, norm_ln, bd_tuple,
-                                                school_by_card, school_by_norm, school_by_clean, school_by_bd_ln
+                                                clean_doc, key, bd_tuple, student["genero"],
+                                                school_by_card, school_by_name
                                             )
 
                                         student_format = {
@@ -541,24 +591,29 @@ class SectionsImportExport():
                                                 student_in_section.isDeleted = False
                                             sync_accented_names(student_in_section, student["nombre"], student["apellido"])
                                             sync_accented_names(student_find, student["nombre"], student["apellido"])
-                                            if clean_doc:
-                                                student_in_section.cardId = clean_doc
-                                                student_in_section.cardType = student_format["cardType"]
-                                                if student_find:
-                                                    student_find.cardId = clean_doc
-                                                    student_find.cardType = student_format["cardType"]
+                                            rename = can_rename(student_in_section, key, clean_doc)
+                                            apply_corrections(student_in_section, key, student["nombre"], student["apellido"], rename,
+                                                              clean_doc, student_format["cardType"],
+                                                              data["birthdate"], student["genero"], sec_by_card, sec_by_name)
+                                            apply_corrections(student_find, key, student["nombre"], student["apellido"], rename,
+                                                              clean_doc, student_format["cardType"],
+                                                              data["birthdate"], student["genero"], school_by_card, school_by_name)
+                                            claim(student_in_section)
                                         elif student_find:
                                             # Existing student in school, add to section
-                                            student_save.id = student_find.id
                                             sync_accented_names(student_find, student["nombre"], student["apellido"])
-                                            if clean_doc:
-                                                student_find.cardId = clean_doc
-                                                student_find.cardType = student_format["cardType"]
-                                                student_save.cardId = clean_doc
-                                                student_save.cardType = student_format["cardType"]
+                                            rename = can_rename(student_find, key, clean_doc)
+                                            apply_corrections(student_find, key, student["nombre"], student["apellido"], rename,
+                                                              clean_doc, student_format["cardType"],
+                                                              data["birthdate"], student["genero"], school_by_card, school_by_name)
+                                            # La copia en la sección refleja el registro de escuela ya corregido.
+                                            student_save.id = student_find.id
+                                            for field in ("firstName", "lastName", "cardId", "cardType", "birthdate", "gender"):
+                                                student_save[field] = getattr(student_find, field)
 
                                             section_peca.students.append(student_save)
-                                            register_in_index(student_save, sec_by_card, sec_by_norm, sec_by_clean, sec_by_bd_ln)
+                                            register_in_index(student_save, sec_by_card, sec_by_name)
+                                            claim(student_save)
 
                                             has_sec = False
                                             for sect in student_find.sections:
@@ -587,7 +642,7 @@ class SectionsImportExport():
                                                 schoolYear=peca.schoolYear.id
                                             )
                                             section_peca.students.append(student_save)
-                                            register_in_index(student_save, sec_by_card, sec_by_norm, sec_by_clean, sec_by_bd_ln)
+                                            register_in_index(student_save, sec_by_card, sec_by_name)
 
                                             student_class = StudentClass(
                                                 id=student_save.id,
@@ -602,7 +657,8 @@ class SectionsImportExport():
                                             )
                                             school.students.append(student_class)
                                             school_by_id[str(student_class.id)] = student_class
-                                            register_in_index(student_class, school_by_card, school_by_norm, school_by_clean, school_by_bd_ln)
+                                            register_in_index(student_class, school_by_card, school_by_name)
+                                            claim(student_save)
 
                                     # Single batch persistence for peca and school
                                     nStudents = sum(len(s.students.filter(isDeleted=False)) for s in peca.school.sections.filter(isDeleted=False))

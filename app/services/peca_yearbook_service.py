@@ -27,6 +27,23 @@ class YearbookService():
 
     filesPath = 'yearbook'
 
+    @staticmethod
+    def normalize_image(image):
+        # Same prefix serialize_links adds; hasattr keeps py2.7 unicode working
+        server_url = current_app.config.get('SERVER_URL') or ''
+        if server_url and hasattr(image, 'startswith') and image.startswith(server_url):
+            return image[len(server_url):]
+        return image
+
+    def activity_changed(self, current, activity):
+        """Compares description and the images themselves (not only the count),
+        so replacing a photo or clearing the description is detected
+        """
+        current_images = [self.normalize_image(img) for img in (current.images or [])]
+        new_images = [self.normalize_image(img) for img in (activity.get("images") or [])]
+        return (current.description or '') != (activity.get("description") or '') \
+            or current_images != new_images
+
     def save(self, pecaId, userId, jsonData):
 
         peca = PecaProject.objects(
@@ -182,38 +199,38 @@ class YearbookService():
                             for activity in jsonData[field]['activities']:
                                 found = False
                                 if activity['id'] == 'initialWorkshop':
-                                    if peca[field].initialWorkshop.yearbook.description != activity["description"] or len(peca[field].initialWorkshop.yearbook.images) != len(activity["images"]):
+                                    if self.activity_changed(peca[field].initialWorkshop.yearbook, activity):
                                         data_save[field]["activities"].append(activity)
                                         found = True
                                 elif activity['id'] == 'ambleCoins':
-                                    if peca[field].ambleCoins.yearbook.description != activity["description"] or len(peca[field].ambleCoins.yearbook.images) != len(activity["images"]):
+                                    if self.activity_changed(peca[field].ambleCoins.yearbook, activity):
                                         data_save[field]["activities"].append(activity)
                                         found = True
                                 elif activity['id'] == 'lapsePlanning':
-                                    if peca[field].lapsePlanning.yearbook.description != activity["description"] or len(peca[field].lapsePlanning.yearbook.images) != len(activity["images"]):
+                                    if self.activity_changed(peca[field].lapsePlanning.yearbook, activity):
                                         data_save[field]["activities"].append(activity)
                                         found = True
                                 elif activity['id'] == 'annualConvention':
-                                    if peca[field].annualConvention.yearbook.description != activity["description"] or len(peca[field].annualConvention.yearbook.images) != len(activity["images"]):
+                                    if self.activity_changed(peca[field].annualConvention.yearbook, activity):
                                         data_save[field]["activities"].append(activity)
                                         found = True
                                 elif activity['id'] == 'olympics':
-                                    if peca[field].olympics.yearbook.description != activity["description"] or len(peca[field].olympics.yearbook.images) != len(activity["images"]):
+                                    if self.activity_changed(peca[field].olympics.yearbook, activity):
                                         data_save[field]["activities"].append(activity)
                                         found = True
                                 elif activity['id'] == 'readingolympics':
-                                    if peca[field].readingOlympics.yearbook.description != activity["description"] or len(peca[field].readingOlympics.yearbook.images) != len(activity["images"]):
+                                    if self.activity_changed(peca[field].readingOlympics.yearbook, activity):
                                         data_save[field]["activities"].append(activity)
                                         found = True
                                 elif activity['id'] == 'specialActivity':
-                                    if peca[field].specialActivity.yearbook.description != activity["description"] or len(peca[field].specialActivity.yearbook.images) != len(activity["images"]):
+                                    if self.activity_changed(peca[field].specialActivity.yearbook, activity):
                                         data_save[field]["activities"].append(activity)
                                         found = True
                                 
                                 if not found:
                                     for pecaAct in peca[field].activities:
                                         if activity['id'] == pecaAct.id:
-                                            if pecaAct.yearbook.description != activity["description"] or len(pecaAct.yearbook.images) != len(activity["images"]):
+                                            if self.activity_changed(pecaAct.yearbook, activity):
                                                 data_save[field]["activities"].append(activity)
                             
                         elif yearbook[field] != jsonData[field]:

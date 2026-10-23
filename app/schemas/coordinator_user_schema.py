@@ -6,7 +6,7 @@ from marshmallow import Schema, validate, EXCLUDE, post_load
 from app.schemas.user_schema import UserSchema
 from app.schemas.shared_schemas import ProjectReferenceSchema
 from app.helpers.ma_schema_validators import (
-    not_blank, only_letters, only_numbers, OneOf, validate_image)
+    not_blank, letters_and_slash, only_numbers, OneOf, validate_image)
 from app.helpers.ma_schema_fields import MAReferenceField, MAImageField
 from app.schemas import fields
 from app.models.coordinator_user_model import Answer, Attempt, LearningMod, CoordinatorUser
@@ -44,12 +44,14 @@ class LearningModSchema(Schema):
 
 
 class CoordinatorUserSchema(UserSchema):
+    NAME_CONNECTORS = ('y',)
+
     firstName = fields.Str(
         required=True,
-        validate=(not_blank, only_letters))
+        validate=(not_blank, letters_and_slash))
     lastName = fields.Str(
         required=True,
-        validate=(not_blank, only_letters))
+        validate=(not_blank, letters_and_slash))
     cardType = fields.Str(
         required=True,
         validate=(

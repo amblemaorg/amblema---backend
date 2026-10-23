@@ -23,6 +23,14 @@ def only_letters(data):
             {"status": "7", "msg": "Field accept only letters"})
 
 
+def letters_and_slash(data):
+    """Custom marshmallow validator for letters and "/" (two people in one name field)
+    """
+    if data and not re.match("^[a-zA-ZñÑáéíóúÁÉÍÓÚ /]*$", data):
+        raise ValidationError(
+            {"status": "7", "msg": "Field accept only letters and /"})
+
+
 def only_numbers(data):
     """Custom marshmallow validator for only numbers
     """

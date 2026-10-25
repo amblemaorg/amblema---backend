@@ -127,8 +127,11 @@ class StatisticsUserService():
                                 i)].annualPreparation
                             for teacher in annualPreparation.teachers:
                                 annualPreparationTeachers[teacher.id] = teacher.annualPreparationStatus
+                # select_related: the teachers' state, municipality, specialty and
+                # work position are dereferenced in bulk (one query per collection)
+                # instead of four queries per school
                 schools = SchoolUser.objects(
-                    isDeleted=False, status="1", id__in=schoolsIds.keys()).only('name','teachers', 'id')
+                    isDeleted=False, status="1", id__in=schoolsIds.keys()).only('name','teachers', 'id').select_related(max_depth=1)
                 for school in schools:
                     for teacher in school.teachers.filter(isDeleted=False):
                         available = True

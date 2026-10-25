@@ -21,34 +21,29 @@ class ReqContentApprovalController(Resource):
 
     @jwt_required
     def get(self):
-        filters = getQueryParams(request)
-        if not filters:
-            filters = []
-        filters.extend(get_school_year_date_filters())
-        
-        only = None
-        
-        # Handling pagination params
-        page = request.args.get('page')
-        per_page = request.args.get('per_page')
-        
-        if 'only' in request.args:
-            only = request.args['only'].split(',')
-        
         page = request.args.get('page')
         per_page = request.args.get('per_page')
 
         if page and per_page:
-            new_filters = []
-            for f in filters:
-                if f['field'] == 'page' or f['field'] == 'per_page':
-                    continue
-                new_filters.append(f)
+            try:
+                page = max(int(page), 1)
+                per_page = min(max(int(per_page), 1), 100)
+            except ValueError:
+                return {"message": "page and per_page must be integers"}, 400
             return self.service.getPaginatedData(
-                filters=new_filters,
-                page=int(page),
-                page_size=int(per_page)
+                args=request.args,
+                page=page,
+                page_size=per_page
             )
+
+        filters = getQueryParams(request)
+        if not filters:
+            filters = []
+        filters.extend(get_school_year_date_filters())
+
+        only = None
+        if 'only' in request.args:
+            only = request.args['only'].split(',')
 
         return self.service.getAllRecords(
             filters=filters, only=only)

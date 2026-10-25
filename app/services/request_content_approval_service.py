@@ -11,7 +11,9 @@ import datetime
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.document_metadata import getUniqueFields
 from app.services.generic_service import GenericServices
-from app.models.school_year_model import SchoolYear
+from app.models.user_model import User
+from app.helpers.reference_prefetch import _refId
+from app.helpers.school_year_filter import get_school_year_date_filters
 
 
 class RequestContentApprovalService(GenericServices):
@@ -24,14 +26,9 @@ class RequestContentApprovalService(GenericServices):
         recordsJson = []
         import math
         
+        # The active school year filter (createdAt__gte) comes from the controller
         query = self.Model.objects(isDeleted=False)
-        
-        active_school_year = SchoolYear.objects(isDeleted=False, status="1").first()
-        if active_school_year and active_school_year.startDate:
-            query = query.filter(
-                createdAt__gte=active_school_year.startDate
-            )
-            
+
         if filters:
             filterList = []
             for f in filters:
@@ -65,32 +62,69 @@ class RequestContentApprovalService(GenericServices):
         
         return {"records": recordsJson}, 200
 
-    def getPaginatedData(self, filters=None, page=1, page_size=10):
+    # Table filters accepted by getPaginatedData: query param -> lookup
+    PAGINATED_FILTERS = {
+        'code': 'code__icontains',
+        'project': 'project__code__icontains',
+        'status': 'status',
+        'type': 'type',
+    }
+    # Table sort columns accepted by getPaginatedData: query param -> db field
+    PAGINATED_SORTS = {
+        'code': 'code',
+        'project': 'project.code',
+        'type': 'type',
+        'status': 'status',
+        'updatedAt': 'updatedAt',
+    }
+    NUMERIC_STRING_SORTS = ('code', 'project.code')
+
+    def getPaginatedData(self, args, page=1, page_size=10):
         """
-        get paginated and optimized records for table
+        get paginated and optimized records for table.
+        Only whitelisted filters/sorts from args are applied.
         """
         records_qs = self.Model.objects(isDeleted=False)
 
-        active_school_year = SchoolYear.objects(isDeleted=False, status="1").first()
-        if active_school_year and active_school_year.startDate:
-            start_date = datetime.datetime.combine(active_school_year.startDate, datetime.time.min)
-            records_qs = records_qs.filter(createdAt__gte=start_date)
+        for f in get_school_year_date_filters():
+            records_qs = records_qs.filter(**{f['field']: f['value']})
 
-        if filters:
-            filterList = []
-            for f in filters:
-                filterList.append(Q(**{f['field']: f['value']}))
-            records_qs = records_qs.filter(reduce(operator.and_, filterList))
+        for param, lookup in self.PAGINATED_FILTERS.items():
+            value = args.get(param)
+            if value:
+                records_qs = records_qs.filter(**{lookup: value})
 
-        # Order by status (1 = pending comes first), then by updatedAt desc
-        records_qs = records_qs.order_by("status", "-updatedAt")
+        userConditions = {}
+        if args.get('user'):
+            userConditions['name__icontains'] = args.get('user')
+        if args.get('typeUser'):
+            userConditions['userType'] = args.get('typeUser')
+        if userConditions:
+            userIds = list(User.objects(**userConditions).scalar('id'))
+            records_qs = records_qs.filter(user__in=userIds)
+
+        sortField = self.PAGINATED_SORTS.get(args.get('_sort'))
+        if sortField:
+            direction = '-' if args.get('_order', '').upper() == 'DESC' else '+'
+            records_qs = records_qs.order_by(direction + sortField, '-updatedAt')
+            if sortField in self.NUMERIC_STRING_SORTS:
+                # Codes are stored as strings: compare them as numbers ("9" < "10")
+                records_qs = records_qs.collation({'locale': 'en', 'numericOrdering': True})
+        else:
+            # Order by status (1 = pending comes first), then by updatedAt desc
+            records_qs = records_qs.order_by("status", "-updatedAt")
 
         import math
         total = records_qs.count()
-        items = records_qs.skip((page - 1) * page_size).limit(page_size).only(
-            'id', 'code', 'project', 'type', 'user', 'status', 'updatedAt', 'createdAt'
-        ).all()
+        items = list(records_qs.skip((page - 1) * page_size).limit(page_size).only(
+            'id', 'code', 'project.id', 'project.code', 'type', 'user', 'status',
+            'updatedAt', 'createdAt'
+        ).no_dereference())
         pages = int(math.ceil(total / float(page_size))) if page_size else 0
+
+        # Load all the page users in one query instead of one per record
+        userIds = set(filter(None, [_refId(r._data.get('user')) for r in items]))
+        users = User.objects.only('name', 'userType').in_bulk(list(userIds)) if userIds else {}
 
         recordsJson = []
         for record in items:
@@ -107,12 +141,13 @@ class RequestContentApprovalService(GenericServices):
                     "id": str(record.project.id),
                     "code": record.project.code
                 }
-            if record.user:
+            user = users.get(_refId(record._data.get('user')))
+            if user:
                 data["user"] = {
-                    "id": str(record.user.id),
-                    "name": record.user.name
+                    "id": str(user.id),
+                    "name": user.name
                 }
-                data["typeUser"] = record.user.userType
+                data["typeUser"] = user.userType
             recordsJson.append(data)
 
         return {

@@ -17,7 +17,17 @@ from app.schemas.sponsor_user_schema import SponsorUserSchema
 from app.schemas.teacher_schema import TeacherSchema
 from app.models.peca_project_model import PecaProject
 from app.models.school_year_model import SchoolYear
+from app.helpers.reference_prefetch import prefetchReferences
 from flask import current_app
+
+# Columns of the backoffice school report (table, Excel and PDF). The full
+# school document also carries every student, teacher and image: loading it
+# took seconds and most of the response was unused
+SCHOOL_REPORT_FIELDS = (
+    'id', 'name', 'code', 'email', 'phone', 'addressState', 'addressMunicipality',
+    'addressCity', 'address', 'addressZoneType', 'addressZone', 'nGrades',
+    'nSections', 'nAdministrativeStaff', 'nLaborStaff', 'nTeachers', 'nStudents',
+    'status')
 
 
 class StatisticsUserService():
@@ -41,7 +51,7 @@ class StatisticsUserService():
             },
             '2': {
                 'model': SchoolUser,
-                'schema': SchoolUserSchema(exclude=['project', 'role'])
+                'schema': SchoolUserSchema(only=SCHOOL_REPORT_FIELDS)
             },
             '3': {
                 'model': SchoolYear,
@@ -64,6 +74,12 @@ class StatisticsUserService():
                 else:
                     records = usersType[userType]['model'].objects(
                         isDeleted=False)
+
+                if userType == '2':
+                    # project: sponsor and coordinator names, added below
+                    records = list(records.only(*(SCHOOL_REPORT_FIELDS + ('project',))))
+                    # State and municipality names in one query each, not one per school
+                    prefetchReferences(records, usersType[userType]['schema'])
             # is teacher
             else:
                 records = []

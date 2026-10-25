@@ -18,6 +18,11 @@ from app.models.coordinator_user_model import CoordinatorUser
 
 class UserService(GenericServices):
 
+    # User lists: skip embedded data the schemas don't expose (e.g. SchoolUser
+    # students/teachers) and bulk-load role/address references
+    excludeUndeclaredFields = True
+    bulkLoadReferences = True
+
     handlerMessages = HandlerMessages()
 
     def saveRecord(self, jsonData):
@@ -308,11 +313,20 @@ class ResendEmailCoordinator():
             if not user:
                 return {'status': 0, 'message': "user not found"}, 400
 
+            previousPassword = user.password
             password = user.generatePassword()
             user.password = password
             user.setHashPassword()
             user.save()
-            user.sendRegistrationEmail(password)
+            result = user.sendRegistrationEmail(password)
+
+            if result is not True:
+                details = result[0] if isinstance(result, tuple) and isinstance(result[0], dict) else {}
+                # On a Gmail timeout the email may have been delivered: the new password is kept
+                if not details.get('sent_attempted'):
+                    user.password = previousPassword
+                    user.save()
+                    return {'status': 0, 'message': "Email could not be sent, password unchanged"}, 400
 
             return {"message": "Email Resend successfully"}, 200
         except Exception as e:

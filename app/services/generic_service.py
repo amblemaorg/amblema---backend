@@ -13,9 +13,18 @@ from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.document_metadata import (
     getUniqueFields, getFileFields)
 from app.helpers.handler_files import validate_files, upload_files
+from app.helpers.reference_prefetch import prefetchReferences
 
 
 class GenericServices():
+    # Opt-in optimizations for getAllRecords (see UserService):
+    # - excludeUndeclaredFields: don't load from Mongo the model fields the
+    #   schema doesn't declare. Only safe if the schema's Function/Method
+    #   fields read declared attributes exclusively.
+    # - bulkLoadReferences: bulk-load MAReferenceField references.
+    excludeUndeclaredFields = False
+    bulkLoadReferences = False
+
     def __init__(self, Model, Schema):
         self.Model = Model
         self.Schema = Schema
@@ -35,11 +44,44 @@ class GenericServices():
             for f in filters:
                 filterList.append(Q(**{f['field']: f['value']}))
             records = self.Model.objects(isDeleted=False).filter(
-                reduce(operator.and_, filterList)).all()
+                reduce(operator.and_, filterList))
         else:
-            records = self.Model.objects(isDeleted=False).all()
+            records = self.Model.objects(isDeleted=False)
+
+        # Load only the requested fields from Mongo (documents like SchoolUser
+        # can weigh hundreds of KB). Only when every field maps 1:1 to a model
+        # field; computed schema fields may need other attributes.
+        if only and self._canProjectQuery(schema, only):
+            records = records.only(*only)
+        elif self.excludeUndeclaredFields:
+            undeclared = self._undeclaredFields(schema)
+            if undeclared:
+                records = records.exclude(*undeclared)
+
+        records = list(records.all())
+        if self.bulkLoadReferences:
+            prefetchReferences(records, schema)
 
         return {"records": schema.dump(records, many=True)}, 200
+
+    def _undeclaredFields(self, schema):
+        # declared_fields ignores only/exclude: computed fields stay covered
+        declared = set(f.attribute or name for name, f in schema.declared_fields.items())
+        return [name for name in getattr(self.Model, '_fields', {})
+                if name != 'id' and name not in declared]
+
+    def _canProjectQuery(self, schema, only):
+        from marshmallow import fields as ma_fields
+        modelFields = getattr(self.Model, '_fields', {})
+        for name in only:
+            field = schema.fields.get(name)
+            if name not in modelFields or field is None:
+                return False
+            if isinstance(field, (ma_fields.Function, ma_fields.Method)):
+                return False
+            if field.attribute and field.attribute != name:
+                return False
+        return True
 
     def getPaginatedRecords(self, filters=None, only=None, exclude=(), order_by='+createdAt', page=0, page_size=4):
         # THIS METHOD ASSUMES THAT MODEL IS A SUBCLASS OF DOCUMENT FROM FLASK_MONGOENGINE

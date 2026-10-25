@@ -74,13 +74,17 @@ class User(DynamicDocument):
         Send email when a user is registered
         Params:
             password: str (user password)
+        Returns True when sent, or the send_email error tuple
         """
-        if not current_app.config.get("TESTING"):
-            current_app.logger.info(send_email(
-                messageRegisterEmail(self.email, password),
-                messageRegisterEmailPlainText(self.email, password),
-                'Amblema - Registro de usuario',
-                self.email))
+        if current_app.config.get("TESTING"):
+            return True
+        result = send_email(
+            messageRegisterEmail(self.email, password),
+            messageRegisterEmailPlainText(self.email, password),
+            'Amblema - Registro de usuario',
+            self.email)
+        current_app.logger.info(result)
+        return result
 
     def sendChangePasswordEmail(self, password):
         """

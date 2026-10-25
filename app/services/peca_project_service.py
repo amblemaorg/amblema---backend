@@ -313,7 +313,8 @@ class PecaProjectService():
             else:
                 peca['lapse{}'.format(i)].olympics = None
 
-            if pecaSettingLapse.readingOlympics.status == "1":
+            # Años escolares creados antes de las olimpíadas de lectura no tienen readingOlympics
+            if pecaSettingLapse.readingOlympics and pecaSettingLapse.readingOlympics.status == "1":
                 peca['lapse{}'.format(i)].readingOlympics = Olympics(
                     file = pecaSettingLapse.readingOlympics.file,
                     description = pecaSettingLapse.readingOlympics.description,

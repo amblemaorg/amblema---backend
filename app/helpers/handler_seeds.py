@@ -1394,6 +1394,9 @@ def create_initial_steps():
 
     return "ok"
 
+
+def create_standard_roles():
+
     from app.models.role_model import Role, Permission, ActionHandler
     from app.models.entity_model import Entity
 

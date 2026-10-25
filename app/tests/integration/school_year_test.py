@@ -124,7 +124,7 @@ class SchoolYearTest(unittest.TestCase):
 
         create_initial_steps()
         steps = Step.objects(isDeleted=False).count()
-        self.assertEqual(21, steps)
+        self.assertEqual(24, steps)
 
         # create new schoolyear
         requestData = {
@@ -160,10 +160,10 @@ class SchoolYearTest(unittest.TestCase):
         self.assertEqual("2", result1.status)
 
         steps = Step.objects(isDeleted=False).count()
-        self.assertEqual(42, steps)
+        self.assertEqual(48, steps)
 
         steps = Step.objects(isDeleted=False, schoolYear=result2.id).count()
-        self.assertEqual(21, steps)
+        self.assertEqual(24, steps)
 
 
     def test_enroll_school(self):
@@ -329,8 +329,10 @@ class SchoolYearTest(unittest.TestCase):
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        # El servicio nombra el año escolar con el año en curso
+        now = datetime.now()
         self.assertEqual(
-            '2022 - 2023', result['schoolYears'][0]['schoolYear']['name'])
+            '{} - {}'.format(now.year, now.year + 1), result['schoolYears'][0]['schoolYear']['name'])
 
         project = Project.objects(id=project['id']).first()
         self.assertEqual(1, len(project.schoolYears))

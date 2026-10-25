@@ -19,7 +19,7 @@ from resources.email_templates.changed_password_email import changedPasswordEmai
 class User(DynamicDocument):
     objects = QuerySetManager()
     name = fields.StringField()
-    email = fields.EmailField(required=True)
+    email = fields.EmailField(required=True, unique_c=True)
     password = fields.StringField(required=True)
     userType = fields.StringField(required=True)
     role = fields.ReferenceField('Role', required=True)

@@ -55,17 +55,20 @@ class SchoolYear(Document):
         self.updatedAt = datetime.utcnow()
 
     def initFirstPecaSetting(self):
-        lapse = Lapse(
-            initialWorkshop=InitialWorshop(),
-            lapsePlanning=LapsePlanning(),
-            ambleCoins=AmbleCoins(),
-            annualConvention=AnnualConvention(),
-            annualPreparation=AnnualPreparation(),
-            mathOlympic=MathOlympic(),
-            readingOlympics=ReadingOlympics(),
-            specialLapseActivity=SpecialLapseActivity(),
-            activities=[]
-        )
+        # Una instancia por lapso: compartir el mismo Lapse hacia que un cambio en un
+        # lapso (antes de guardar) se aplicara a los tres
+        def newLapse():
+            return Lapse(
+                initialWorkshop=InitialWorshop(),
+                lapsePlanning=LapsePlanning(),
+                ambleCoins=AmbleCoins(),
+                annualConvention=AnnualConvention(),
+                annualPreparation=AnnualPreparation(),
+                mathOlympic=MathOlympic(),
+                readingOlympics=ReadingOlympics(),
+                specialLapseActivity=SpecialLapseActivity(),
+                activities=[]
+            )
 
         goalSetting = GoalSetting()
         for i in range(6):
@@ -76,9 +79,9 @@ class SchoolYear(Document):
             )
 
         pecaSetting = PecaSetting(
-            lapse1=lapse,
-            lapse2=lapse,
-            lapse3=lapse,
+            lapse1=newLapse(),
+            lapse2=newLapse(),
+            lapse3=newLapse(),
             goalSetting=goalSetting,
             environmentalProject=None,
             monitoringActivities=MonitoringActivity()

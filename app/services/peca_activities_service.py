@@ -167,13 +167,15 @@ class ActivitiesPecaService():
                         if activity.approvalType == "2":
                             data.pop('status', None)
                         if activity.hasChecklist:
+                            # Si la peticion no trae checklist (p. ej. solo status) se usa el guardado
+                            checklist = data["checklist"] if "checklist" in data else activity.checklist
                             percent = 0
-                            for act in data["checklist"]:
+                            for act in checklist:
                                 if act["checked"]:
                                     percent = percent + 1
                             if percent > 0:
                                 percent = (
-                                    percent/len(data["checklist"]))*100
+                                    percent/len(checklist))*100
                             data["percent"] = percent
                             
                         for field in data.keys():

@@ -21,6 +21,11 @@ from app.helpers.handler_seeds import create_standard_roles
 from app.models.peca_olympics_model import Student, Section
 
 
+
+def only(data, *keys):
+    """Solo las claves de la etapa regional; el reporte ademas trae participantes y etapa nacional."""
+    return {key: data[key] for key in keys}
+
 class PecaOlympicsTest(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
@@ -253,6 +258,7 @@ class PecaOlympicsTest(unittest.TestCase):
                 id=str(self.pecaProject.school.sections[0].students[0].id),
                 name=self.pecaProject.school.sections[0].students[0].firstName,
                 status="2",
+                statusRegional="1",  # participo en la regional: cuenta como clasificado y para medallas
                 result="1"
             )
         )
@@ -279,6 +285,7 @@ class PecaOlympicsTest(unittest.TestCase):
                 id=str(self.pecaProject.school.sections[0].students[2].id),
                 name=self.pecaProject.school.sections[0].students[2].firstName,
                 status="2",
+                statusRegional="1",  # participo en la regional: cuenta como clasificado y para medallas
                 result="3"
             )
         )
@@ -394,6 +401,7 @@ class PecaOlympicsTest(unittest.TestCase):
                 id=str(self.pecaProject2.school.sections[0].students[0].id),
                 name=self.pecaProject2.school.sections[0].students[0].firstName,
                 status="2",
+                statusRegional="1",  # participo en la regional: cuenta como clasificado y para medallas
                 result="1"
             )
         )
@@ -407,6 +415,7 @@ class PecaOlympicsTest(unittest.TestCase):
                 id=str(self.pecaProject2.school.sections[1].students[0].id),
                 name=self.pecaProject2.school.sections[1].students[0].firstName,
                 status="2",
+                statusRegional="1",  # participo en la regional: cuenta como clasificado y para medallas
                 result="1"
             )
         )
@@ -453,7 +462,8 @@ class PecaOlympicsTest(unittest.TestCase):
                 'medalsSilver': 0,
                 'medalsBronze': 1
             },
-            result['allPeriods'][0]['schools'][0]['grades'][0]['sections'][0])
+            only(result['allPeriods'][0]['schools'][0]['grades'][0]['sections'][0], 'name', 'inscribed',
+                 'classified', 'medalsGold', 'medalsSilver', 'medalsBronze'))
         self.assertEqual(
             {
                 'name': 'A',
@@ -463,7 +473,8 @@ class PecaOlympicsTest(unittest.TestCase):
                 'medalsSilver': 0,
                 'medalsBronze': 0
             },
-            result['allPeriods'][1]['schools'][0]['grades'][0]['sections'][0]
+            only(result['allPeriods'][1]['schools'][0]['grades'][0]['sections'][0], 'name', 'inscribed',
+                 'classified', 'medalsGold', 'medalsSilver', 'medalsBronze')
         )
         self.assertEqual(
             {
@@ -475,7 +486,8 @@ class PecaOlympicsTest(unittest.TestCase):
                 'totalBronzeMedals': 1,
 
             },
-            result['allPeriods'][0]['schools'][0]['total']
+            only(result['allPeriods'][0]['schools'][0]['total'], 'totalEnrolled', 'totalClassified',
+                 'totalGoldMedals', 'totalSilverMedals', 'totalBronzeMedals')
         )
         self.assertEqual(
             {
@@ -487,7 +499,8 @@ class PecaOlympicsTest(unittest.TestCase):
                 'studentsBronzeMedal': 1
 
             },
-            result['finalScore']
+            only(result['finalScore'], 'enrolledStudents', 'classifiedStudents', 'studentsGoldMedal',
+                 'studentsSilverMedal', 'studentsBronzeMedal')
         )
 
     def tearDown(self):

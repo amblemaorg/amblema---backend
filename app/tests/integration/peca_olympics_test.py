@@ -279,6 +279,7 @@ class PecaOlympicsTest(unittest.TestCase):
 
         # add student result in olympics
         requestData = {
+            "statusRegional": "1",  # participó en la regional: el resultado solo aplica así
             "result": "1"  # gold medal
         }
         res = self.client().put(

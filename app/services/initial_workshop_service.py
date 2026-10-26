@@ -40,12 +40,13 @@ class InicialWorkshopService():
                     uploadedfiles = upload_files(validFiles, folder)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
-                data.status = jsonData["status"]
-                data.devName = jsonData["devName"]
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
                 initialWorkshop = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].initialWorkshop
+                # El formulario de contenido del backoffice no envía status ni devName: se conservan
+                data.status = jsonData.get("status", initialWorkshop.status)
+                data.devName = jsonData.get("devName", initialWorkshop.devName)
                 for field in schema.dump(data).keys():
                     initialWorkshop[field] = data[field]
                 try:

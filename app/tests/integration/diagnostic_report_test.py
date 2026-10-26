@@ -358,7 +358,8 @@ class SchoolPecaTest(unittest.TestCase):
                          [0]['enrollment'])
         self.assertEqual(50, result['sections']
                          [0]['lapse1']['reading']['overGoalAverage'])
-        self.assertEqual(0, result['sections']
+        # Igualar la meta cuenta como alcanzarla (>=): la seccion B tiene 70 y 70 con meta 70
+        self.assertEqual(100, result['sections']
                          [1]['lapse1']['reading']['overGoalAverage'])
         self.assertEqual(round((100/70)/2, 2),
                          round(result['sections']
@@ -369,7 +370,8 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual(66.67,
                          round(result['yearSummary']
                                ['reading']['totalResultAverage'], 2))
-        self.assertEqual(22.93,
+        # Mejora sobre los promedios de indice ya redondeados a 2 decimales (0.86 -> 1.05)
+        self.assertEqual(22.09,
                          round(result['yearSummary']
                                ['reading']['improvementPercentageAverage'], 2))
         self.assertEqual(1,

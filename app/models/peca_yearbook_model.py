@@ -25,14 +25,14 @@ class GroupPhoto(EmbeddedDocument):
 
 class Yearbook(EmbeddedDocument):
     meta = {'strict': False}
-    historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
-    sponsor = fields.EmbeddedDocumentField(Entity, default=Entity())
-    school = fields.EmbeddedDocumentField(Entity, default=Entity())
-    coordinator = fields.EmbeddedDocumentField(Entity, default=Entity())
-    groupPhoto = fields.EmbeddedDocumentField(GroupPhoto, default=GroupPhoto())
-    lapse1 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
-    lapse2 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
-    lapse3 = fields.EmbeddedDocumentField(Lapse, default=Lapse())
+    historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity)
+    sponsor = fields.EmbeddedDocumentField(Entity, default=Entity)
+    school = fields.EmbeddedDocumentField(Entity, default=Entity)
+    coordinator = fields.EmbeddedDocumentField(Entity, default=Entity)
+    groupPhoto = fields.EmbeddedDocumentField(GroupPhoto, default=GroupPhoto)
+    lapse1 = fields.EmbeddedDocumentField(Lapse, default=Lapse)
+    lapse2 = fields.EmbeddedDocumentField(Lapse, default=Lapse)
+    lapse3 = fields.EmbeddedDocumentField(Lapse, default=Lapse)
     isInApproval = fields.BooleanField(default=False)
 
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

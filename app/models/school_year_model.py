@@ -34,9 +34,9 @@ class SchoolYear(Document):
     status = fields.StringField(required=True, default="1")
     pecaSetting = fields.EmbeddedDocumentField(PecaSetting)
     diagnostics = fields.EmbeddedDocumentField(
-        Diagnostics, default=Diagnostics())
+        Diagnostics, default=Diagnostics)
     olympicsSummary = fields.EmbeddedDocumentField(
-        OlympicsSummary, default=OlympicsSummary())
+        OlympicsSummary, default=OlympicsSummary)
     nStudents = fields.IntField(default=0)
     nSchools = fields.IntField(default=0)
     nTeachers = fields.IntField(default=0)

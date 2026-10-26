@@ -32,5 +32,5 @@ class SpecialActivityPeca(EmbeddedDocument):
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     yearbook = fields.EmbeddedDocumentField(
-        ActivityYearbook, default=ActivityYearbook())
+        ActivityYearbook, default=ActivityYearbook)
     order = fields.IntField(default=100)

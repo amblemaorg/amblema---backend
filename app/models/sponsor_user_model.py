@@ -25,7 +25,7 @@ class SponsorUser(User):
     webSite = fields.StringField()
     projects = fields.EmbeddedDocumentListField(ProjectReference)
     phase = fields.StringField(max_length=1, default="1")
-    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
+    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity)
 
     def findProject(self, projectId):
         project = self.projects.filter(id=projectId).first()

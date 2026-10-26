@@ -43,7 +43,7 @@ class PecaProject(Document):
     lapse2 = fields.EmbeddedDocumentField(Lapse)
     lapse3 = fields.EmbeddedDocumentField(Lapse)
     schedule = fields.EmbeddedDocumentListField(ScheduleActivity)
-    yearbook = fields.EmbeddedDocumentField(Yearbook, default=Yearbook())
+    yearbook = fields.EmbeddedDocumentField(Yearbook, default=Yearbook)
     environmentalProject = fields.EmbeddedDocumentField(
         EnvironmentalProjectPeca)
     isDeleted = fields.BooleanField(default=False)

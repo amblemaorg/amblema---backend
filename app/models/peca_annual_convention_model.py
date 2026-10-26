@@ -12,5 +12,5 @@ from app.models.peca_activity_yearbook_model import ActivityYearbook
 class AnnualConventionPeca(EmbeddedDocument):
     checklist = fields.EmbeddedDocumentListField(CheckElement)
     yearbook = fields.EmbeddedDocumentField(
-        ActivityYearbook, default=ActivityYearbook())
+        ActivityYearbook, default=ActivityYearbook)
     order = fields.IntField(default=100)

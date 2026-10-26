@@ -13,4 +13,4 @@ class ActivityYearbook(EmbeddedDocument):
     name = fields.StringField()
     description = fields.StringField(null=True)
     images = fields.ListField(fields.StringField())
-    printOption = fields.EmbeddedDocumentField(PrintOption, default=PrintOption())
+    printOption = fields.EmbeddedDocumentField(PrintOption, default=PrintOption)

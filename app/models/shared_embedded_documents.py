@@ -88,13 +88,13 @@ class DiagnosticSummary(EmbeddedDocument):
 
 class Diagnostics(EmbeddedDocument):
     lapse1 = fields.EmbeddedDocumentField(
-        DiagnosticSummary, default=DiagnosticSummary())
+        DiagnosticSummary, default=DiagnosticSummary)
     lapse2 = fields.EmbeddedDocumentField(
-        DiagnosticSummary, default=DiagnosticSummary())
+        DiagnosticSummary, default=DiagnosticSummary)
     lapse3 = fields.EmbeddedDocumentField(
-        DiagnosticSummary, default=DiagnosticSummary())
+        DiagnosticSummary, default=DiagnosticSummary)
     summary = fields.EmbeddedDocumentField(
-        DiagnosticSummary, default=DiagnosticSummary())
+        DiagnosticSummary, default=DiagnosticSummary)
 
 
 class OlympicsSummary(EmbeddedDocument):

@@ -52,7 +52,7 @@ class CoordinatorUser(User):
     instructed = fields.BooleanField(required=True, default=False)
     curriculum = fields.EmbeddedDocumentField(Link)
     phase = fields.StringField(max_length=1, default="1")
-    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
+    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity)
 
     def clean(self):
         self.name = self.firstName + ' ' + self.lastName

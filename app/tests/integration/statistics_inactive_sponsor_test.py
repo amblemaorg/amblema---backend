@@ -81,6 +81,9 @@ class StatisticsInactiveSponsorTest(unittest.TestCase):
 
         # create sponsor 1
         self.sponsor1 = SponsorUser(
+            # Fecha fija (antes dependía del día de ejecución): un padrino solo cuenta como
+            # inactivo en los trimestres que terminan después de su alta, aquí solo T4 2021-2022
+            createdAt=datetime(2022, 6, 15),
             name="Sponsor1",
             companyRif="111111111",
             companyType="2",
@@ -100,6 +103,9 @@ class StatisticsInactiveSponsorTest(unittest.TestCase):
 
         # create sponsor 2
         self.sponsor2 = SponsorUser(
+            # Fecha fija (antes dependía del día de ejecución): un padrino solo cuenta como
+            # inactivo en los trimestres que terminan después de su alta, aquí solo T4 2021-2022
+            createdAt=datetime(2022, 6, 15),
             name="Sponsor2",
             companyRif="222222222",
             companyType="2",
@@ -119,6 +125,9 @@ class StatisticsInactiveSponsorTest(unittest.TestCase):
 
         # create sponsor 3
         self.sponsor3 = SponsorUser(
+            # Fecha fija (antes dependía del día de ejecución): un padrino solo cuenta como
+            # inactivo en los trimestres que terminan después de su alta, aquí solo T4 2021-2022
+            createdAt=datetime(2022, 6, 15),
             name="Sponsor3",
             companyRif="333333333",
             companyType="2",

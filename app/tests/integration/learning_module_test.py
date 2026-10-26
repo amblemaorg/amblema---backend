@@ -96,8 +96,9 @@ class LearningModuleTest(unittest.TestCase):
 
     def test_change_priority(self):
         learningModule2 = LearningModule(
-            name="module for test",
-            title="module for test",
+            # name es unico (indice name_1)
+            name="module for test2",
+            title="module for test2",
             description="module description test",
             secondaryTitle="secondaryTitle",
             secondaryDescription="secondaryDescription",

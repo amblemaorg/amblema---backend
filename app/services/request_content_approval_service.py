@@ -3,6 +3,7 @@
 
 from functools import reduce
 import operator
+import re
 
 from marshmallow import ValidationError
 from mongoengine import Q
@@ -63,8 +64,8 @@ class RequestContentApprovalService(GenericServices):
         return {"records": recordsJson}, 200
 
     # Table filters accepted by getPaginatedData: query param -> lookup
+    # 'code' se filtra aparte: en un SequenceField MongoEngine convierte icontains en igualdad
     PAGINATED_FILTERS = {
-        'code': 'code__icontains',
         'project': 'project__code__icontains',
         'status': 'status',
         'type': 'type',
@@ -93,6 +94,9 @@ class RequestContentApprovalService(GenericServices):
             value = args.get(param)
             if value:
                 records_qs = records_qs.filter(**{lookup: value})
+        if args.get('code'):
+            records_qs = records_qs.filter(__raw__={
+                'code': {'$regex': re.escape(args.get('code')), '$options': 'i'}})
 
         userConditions = {}
         if args.get('user'):

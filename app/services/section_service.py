@@ -401,12 +401,12 @@ class SectionsImportExport():
 
                                     return {"status_code": 201, "message": "Estudiantes importados con éxito", "moved": moved}, 201                
                                 else:
-                                    return {"status_code":400, "message": "No se ha recibido data para importar"},201
+                                    return {"status_code":400, "message": "No se ha recibido data para importar"},400
                             else:
-                                return {"status_code":404, "message": "Debe enviar una sección válida a importar"},201
+                                return {"status_code":404, "message": "Debe enviar una sección válida a importar"},404
 
                         else:
-                            return {"status_code":404, "message": "Debe enviar una sección a importar"},201
+                            return {"status_code":404, "message": "Debe enviar una sección a importar"},404
 
                     if jsonData["action"] == "import_multiple":
                         # Cada estudiante trae el id de su sección; se agrupan por sección y se

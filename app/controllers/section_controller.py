@@ -37,6 +37,8 @@ class SectionHandlerController(Resource):
 
 class SectionsImportExportController(Resource):
     service = SectionsImportExport()
+
+    @jwt_required
     def post(self, pecaId):
         jsonData = request.get_json()
         return self.service.loadSections(pecaId=pecaId,jsonData=jsonData)

@@ -209,13 +209,19 @@ class PecaProjectService():
             data['school']['teachersTestimonials'] = TeacherTestimonialSchema().dump(
                 school.teachersTestimonials
             )
+            # status "2" en la actividad del PECA significa tanto "desactivada en la configuracion"
+            # como "pendiente de aprobacion": se filtra por la configuracion del ano escolar para
+            # ocultar las desactivadas sin ocultar las que esperan aprobacion.
             for i in range(1,4):
-                activities = []
-                for activity in data["lapse{}".format(i)]["activities"]:
-                    if activity["status"] == "1" or activity["status"] == "3":
-                        activities.append(activity)
-                activities = sorted(activities, key=lambda d: d['order']) 
-                data["lapse{}".format(i)]["activities"] = activities
+                settingLapse = schoolYear.pecaSetting['lapse{}'.format(i)] if schoolYear.pecaSetting else None
+                activeIds = set(
+                    str(act.id) for act in (settingLapse.activities if settingLapse else [])
+                    if act.status == "1" and not act.isDeleted)
+                activities = [
+                    activity for activity in data["lapse{}".format(i)]["activities"]
+                    if activity["id"] in activeIds or activity["status"] in ("1", "3")]
+                data["lapse{}".format(i)]["activities"] = sorted(
+                    activities, key=lambda d: d['order'])
 
             sponsor = SponsorUser.objects.get(id=peca.project.sponsor.id)
             coordinator = CoordinatorUser.objects.get(
@@ -313,7 +319,8 @@ class PecaProjectService():
             else:
                 peca['lapse{}'.format(i)].olympics = None
 
-            if pecaSettingLapse.readingOlympics.status == "1":
+            # Años escolares creados antes de las olimpíadas de lectura no tienen readingOlympics
+            if pecaSettingLapse.readingOlympics and pecaSettingLapse.readingOlympics.status == "1":
                 peca['lapse{}'.format(i)].readingOlympics = Olympics(
                     file = pecaSettingLapse.readingOlympics.file,
                     description = pecaSettingLapse.readingOlympics.description,

@@ -2,6 +2,7 @@
 
 
 import unittest
+from app.tests.base import drop_testing_database
 import json
 from datetime import datetime
 import io
@@ -278,6 +279,7 @@ class PecaOlympicsTest(unittest.TestCase):
 
         # add student result in olympics
         requestData = {
+            "statusRegional": "1",  # participó en la regional: el resultado solo aplica así
             "result": "1"  # gold medal
         }
         res = self.client().put(
@@ -314,4 +316,4 @@ class PecaOlympicsTest(unittest.TestCase):
 
     def tearDown(self):
         """teardown all initialized variables."""
-        self.db.connection.drop_database('amblema_testing')
+        drop_testing_database(self.db)

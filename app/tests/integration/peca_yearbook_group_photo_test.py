@@ -1,5 +1,8 @@
 
 import unittest
+from app.models.request_content_approval_model import RequestContentApproval
+from app.models.yearbook_approval_model import YearbookApproval
+from app.tests.base import drop_testing_database
 import json
 from datetime import datetime
 import io
@@ -189,24 +192,25 @@ class PecaYearbookGroupPhotoTest(unittest.TestCase):
         
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(str(self.coordinator.id),
-                         result['approvalHistory'][0]['user']['id'])
+        # El historial de aprobación vive en la colección YearbookApproval
+        requestId = result['requestId']
+        approval = YearbookApproval.objects(pecaId=str(self.pecaProject.id)).first()
+        self.assertEqual(str(approval.approval.user.id), str(self.coordinator.id))
         
         # Verify groupedSectionsContent enrichment for Backoffice
         # Checks for SORTING and RENAMING
-        # Expected: Preescolar - A (Grade 0), then 2do Grado - B (Grade 2)
-        content_list = result['approvalHistory'][0]['detail']['groupPhoto']['groupedSectionsContent']
+        # Expected: Preescolar Sección A (Grade 0), then 2do Grado Sección B (Grade 2)
+        content_list = RequestContentApproval.objects(id=requestId).first().detail['groupPhoto']['groupedSectionsContent']
         self.assertEqual(len(content_list), 2)
-        self.assertEqual(content_list[0], "Preescolar - A")
-        self.assertEqual(content_list[1], "2do Grado - B")
+        self.assertEqual(content_list[0], "Preescolar Sección A")
+        self.assertEqual(content_list[1], "2do Grado Sección B")
         
         # Approve request
         requestData = {
             "status": "2"
         }
         res = self.client().put(
-            '/requestscontentapproval/{}'.format(
-                result['approvalHistory'][0]['id']),
+            '/requestscontentapproval/{}'.format(requestId),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -227,4 +231,4 @@ class PecaYearbookGroupPhotoTest(unittest.TestCase):
 
     def tearDown(self):
         """teardown all initialized variables."""
-        self.db.connection.drop_database('amblema_testing')
+        drop_testing_database(self.db)

@@ -2,6 +2,7 @@
 
 
 import unittest
+from app.tests.base import drop_testing_database
 import json
 import io
 from datetime import datetime
@@ -839,4 +840,4 @@ class PecaSettings(unittest.TestCase):
 
     def tearDown(self):
         """teardown all initialized variables."""
-        self.db.connection.drop_database('amblema_testing')
+        drop_testing_database(self.db)

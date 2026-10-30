@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # /instance/config.py
 
 import os
@@ -32,6 +33,9 @@ class Config(object):
 
 class TestingConfig(Config):
     """Configurations for Testing, with a separate test database."""
+    # La base debe terminar en este sufijo: create_app y los tearDown lo verifican
+    # antes de escribir o borrar, para no tocar nunca amblema / amblema_qa.
+    TESTING_DB_SUFFIX = '_testing'
     TESTING = True
     DEBUG = True
     ENV = 'development'
@@ -75,3 +79,23 @@ app_config = {
     'support': SupportConfig,
     'production': ProductionConfig,
 }
+
+
+def testing_database_name(host):
+    """Nombre de la base de una URL mongodb:// (sin credenciales ni opciones)."""
+    if not host:
+        return None
+    path = host.split('://', 1)[-1].split('/', 1)
+    if len(path) < 2:
+        return None
+    return path[1].split('?', 1)[0] or None
+
+
+def assert_testing_database(host):
+    """Falla si la configuración de pruebas no apunta a una base *_testing."""
+    name = testing_database_name(host)
+    if not name or not name.endswith(TestingConfig.TESTING_DB_SUFFIX):
+        raise RuntimeError(
+            "TESTING_DB_URL debe apuntar a una base que termine en '{}' (actual: {})".format(
+                TestingConfig.TESTING_DB_SUFFIX, name))
+    return name

@@ -257,7 +257,9 @@ class RequestContentApproval(Document):
                             coordinator.save()
 
                         for lapse in [1, 2, 3]:
-                            for activity in document.detail['lapse{}'.format(lapse)]['activities']:
+                            # La solicitud solo trae los campos modificados: puede faltar el lapso o sus actividades
+                            lapseDetail = document.detail.get('lapse{}'.format(lapse)) or {}
+                            for activity in lapseDetail.get('activities', []):
                                 found = False
                                 yearActivity = ActivityYearbookSchema().load(activity)
                                 if activity['id'] == 'initialWorkshop':

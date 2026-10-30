@@ -19,6 +19,7 @@ from app.models.peca_setting_model import (
     AnnualPreparation,
     EnvironmentalProject,
     MathOlympic,
+    ReadingOlympics,
     SpecialLapseActivity)
 
 from app.models.goal_setting_model import GoalSetting, GradeSetting
@@ -33,9 +34,9 @@ class SchoolYear(Document):
     status = fields.StringField(required=True, default="1")
     pecaSetting = fields.EmbeddedDocumentField(PecaSetting)
     diagnostics = fields.EmbeddedDocumentField(
-        Diagnostics, default=Diagnostics())
+        Diagnostics, default=Diagnostics)
     olympicsSummary = fields.EmbeddedDocumentField(
-        OlympicsSummary, default=OlympicsSummary())
+        OlympicsSummary, default=OlympicsSummary)
     nStudents = fields.IntField(default=0)
     nSchools = fields.IntField(default=0)
     nTeachers = fields.IntField(default=0)
@@ -54,16 +55,20 @@ class SchoolYear(Document):
         self.updatedAt = datetime.utcnow()
 
     def initFirstPecaSetting(self):
-        lapse = Lapse(
-            initialWorkshop=InitialWorshop(),
-            lapsePlanning=LapsePlanning(),
-            ambleCoins=AmbleCoins(),
-            annualConvention=AnnualConvention(),
-            annualPreparation=AnnualPreparation(),
-            mathOlympic=MathOlympic(),
-            specialLapseActivity=SpecialLapseActivity(),
-            activities=[]
-        )
+        # Una instancia por lapso: compartir el mismo Lapse hacia que un cambio en un
+        # lapso (antes de guardar) se aplicara a los tres
+        def newLapse():
+            return Lapse(
+                initialWorkshop=InitialWorshop(),
+                lapsePlanning=LapsePlanning(),
+                ambleCoins=AmbleCoins(),
+                annualConvention=AnnualConvention(),
+                annualPreparation=AnnualPreparation(),
+                mathOlympic=MathOlympic(),
+                readingOlympics=ReadingOlympics(),
+                specialLapseActivity=SpecialLapseActivity(),
+                activities=[]
+            )
 
         goalSetting = GoalSetting()
         for i in range(6):
@@ -74,9 +79,9 @@ class SchoolYear(Document):
             )
 
         pecaSetting = PecaSetting(
-            lapse1=lapse,
-            lapse2=lapse,
-            lapse3=lapse,
+            lapse1=newLapse(),
+            lapse2=newLapse(),
+            lapse3=newLapse(),
             goalSetting=goalSetting,
             environmentalProject=None,
             monitoringActivities=MonitoringActivity()

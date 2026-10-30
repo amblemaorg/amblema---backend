@@ -9,7 +9,7 @@ from flask_jwt_extended import JWTManager
 from flask_compress import Compress
 
 from app.helpers.error_helpers import CustomApi
-from instance.config import app_config
+from instance.config import app_config, assert_testing_database
 from app.helpers.error_helpers import (
     RegisterNotFound, handleNotFound, CSTM_Exception)
 from app.controllers.state_controller import (
@@ -188,6 +188,9 @@ def create_app(config_instance):
 
     app = Flask(__name__)
     app.config.from_object(app_config[config_instance])
+    if app.config.get("TESTING"):
+        # Nunca correr pruebas contra una base que no sea de pruebas
+        assert_testing_database(app.config["MONGODB_SETTINGS"].get("host"))
     db.init_app(app)
     CORS(app)
     jwt = JWTManager(app)

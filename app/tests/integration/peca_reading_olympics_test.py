@@ -2,6 +2,7 @@
 
 
 import unittest
+from app.tests.base import drop_testing_database
 import json
 from datetime import datetime
 import io
@@ -214,20 +215,20 @@ class PecaReadingOlympicsTest(unittest.TestCase):
 
     def test_reading_olympics_peca(self):
 
-        # enable olympics for lapse1
+        # enable reading olympics for lapse1
         requestData = dict(
             file=(io.BytesIO(b'hi everyone'),
                   'olympicsFile.pdf'),
             description="Some description"
         )
         res = self.client().put(
-            '/pecasetting/activities/matholympic/1',
+            '/pecasetting/activities/readingolympics/1',
             data=requestData,
             content_type='multipart/form-data')
         self.assertEqual(res.status_code, 200)
 
         requestData = {
-            "id": 'mathOlympic',
+            "id": 'readingolympics',
             "lapse": "1",
             "isStandard": True,
             "status": "1"
@@ -255,7 +256,7 @@ class PecaReadingOlympicsTest(unittest.TestCase):
             "result": None  # without result
         }
         res = self.client().post(
-            '/pecaprojects/olympics/{}/{}?olympicsType=reading'.format(self.pecaProject.id, 1),
+            '/pecaprojects/olympics/{}/{}?type=reading'.format(self.pecaProject.id, 1),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -266,7 +267,7 @@ class PecaReadingOlympicsTest(unittest.TestCase):
             "result": None  # without result
         }
         res = self.client().put(
-            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
+            '/pecaprojects/olympics/{}/{}/{}?type=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),
@@ -279,10 +280,11 @@ class PecaReadingOlympicsTest(unittest.TestCase):
 
         # add student result in reading olympics
         requestData = {
+            "statusRegional": "1",  # participó en la regional: el resultado solo aplica así
             "result": "1"  # gold medal
         }
         res = self.client().put(
-            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
+            '/pecaprojects/olympics/{}/{}/{}?type=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),
@@ -296,7 +298,7 @@ class PecaReadingOlympicsTest(unittest.TestCase):
 
        # delete student from reading olympics
         res = self.client().delete(
-            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
+            '/pecaprojects/olympics/{}/{}/{}?type=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),
@@ -305,7 +307,7 @@ class PecaReadingOlympicsTest(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
 
         res = self.client().delete(
-            '/pecaprojects/olympics/{}/{}/{}?olympicsType=reading'.format(
+            '/pecaprojects/olympics/{}/{}/{}?type=reading'.format(
                 self.pecaProject.id,
                 1,
                 self.pecaProject.school.sections[0].students[0].id),
@@ -315,4 +317,4 @@ class PecaReadingOlympicsTest(unittest.TestCase):
 
     def tearDown(self):
         """teardown all initialized variables."""
-        self.db.connection.drop_database('amblema_testing')
+        drop_testing_database(self.db)

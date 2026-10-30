@@ -46,7 +46,10 @@ class OlympicsService():
                 paso = False
                 schema = StudentSchema()
 
-                if not peca['lapse{}'.format(lapse)].olympics:
+                # Igual que updateStudent y deleteStudent: se valida la olimpiada del tipo pedido
+                lapseOlympics = peca['lapse{}'.format(lapse)].readingOlympics if olympicsType == 'reading' \
+                    else peca['lapse{}'.format(lapse)].olympics
+                if not lapseOlympics:
                     raise RegisterNotFound(message="Record not found",
                                            status_code=404,
                                            payload={"olympics lapse: ": lapse})

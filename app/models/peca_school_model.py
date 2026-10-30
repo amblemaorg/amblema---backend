@@ -37,9 +37,9 @@ class School(EmbeddedDocument):
     sections = fields.EmbeddedDocumentListField(Section)
     slider = fields.EmbeddedDocumentListField(ImageStatus)
     activitiesSlider = fields.EmbeddedDocumentField(
-        ActivitiesSlider, default=ActivitiesSlider())
+        ActivitiesSlider, default=ActivitiesSlider)
     diagnostics = fields.EmbeddedDocumentField(
-        Diagnostics, default=Diagnostics())
+        Diagnostics, default=Diagnostics)
     isInApproval = fields.BooleanField(default=False)
     approvalHistory = fields.EmbeddedDocumentListField(Approval)
 

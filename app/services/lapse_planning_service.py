@@ -41,14 +41,15 @@ class LapsePlanningService():
                     uploadedfiles = upload_files(validFiles, self.filesPath)
                     jsonData.update(uploadedfiles)
                 data = schema.load(jsonData)
-                data.status = jsonData["status"]
-                data.devName = jsonData["devName"]
                 
                 if not schoolYear.pecaSetting:
                     schoolYear.initFirstPecaSetting()
 
                 lapsePlanning = schoolYear.pecaSetting['lapse{}'.format(
                     lapse)].lapsePlanning
+                # El formulario de contenido del backoffice no envía status ni devName: se conservan
+                data.status = jsonData.get("status", lapsePlanning.status)
+                data.devName = jsonData.get("devName", lapsePlanning.devName)
 
                 for field in schema.dump(data).keys():
                     lapsePlanning[field] = data[field]

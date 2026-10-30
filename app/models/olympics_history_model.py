@@ -14,8 +14,8 @@ class OlympicsHistoryData(EmbeddedDocument):
     nationalBronze = fields.IntField(default=0)
 
 class OlympicsHistory(Document):
-    mathOlympics = fields.EmbeddedDocumentField(OlympicsHistoryData, default=OlympicsHistoryData())
-    readingOlympics = fields.EmbeddedDocumentField(OlympicsHistoryData, default=OlympicsHistoryData())
+    mathOlympics = fields.EmbeddedDocumentField(OlympicsHistoryData, default=OlympicsHistoryData)
+    readingOlympics = fields.EmbeddedDocumentField(OlympicsHistoryData, default=OlympicsHistoryData)
     isDeleted = fields.BooleanField(default=False)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)
     

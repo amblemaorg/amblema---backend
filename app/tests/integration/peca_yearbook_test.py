@@ -2,6 +2,9 @@
 
 
 import unittest
+from app.models.request_content_approval_model import RequestContentApproval
+from app.models.yearbook_approval_model import YearbookApproval
+from app.tests.base import drop_testing_database
 import json
 from datetime import datetime
 import io
@@ -397,11 +400,14 @@ class PecaYearbookTest(unittest.TestCase):
                 "grade": "1",
                 "name": "A",
                 "multiplicationsPerMin": 15,
+                "multiplicationsPerMinCount": 2,
                 "multiplicationsPerMinIndex": 0.75,
                 "operationsPerMin": 25,
-                "operationsPerMinIndex": 0.835,
+                "operationsPerMinCount": 2,
+                "operationsPerMinIndex": 0.83,
                 "wordsPerMin": 35,
-                "wordsPerMinIndex": 0.875
+                "wordsPerMinCount": 2,
+                "wordsPerMinIndex": 0.88
             }])
         self.assertEqual(
             result['yearbook']['lapse1']['activities'],
@@ -410,20 +416,22 @@ class PecaYearbookTest(unittest.TestCase):
                     "id": "lapsePlanning",
                     "name": "Planificación de lapso",
                     "description": None,
-                    "images": []
+                    "images": [],
+                    "order": 100
                 },
                 {
                     "id": "annualConvention",
                     "name": "Convención anual",
                     "description": None,
-                    "images": []
+                    "images": [],
+                    "order": 100
                 },
                 {
                     "id": "olympics",
                     "name": "Olimpíada Recreativas de Matemática",
                     "description": None,
-                    "images": [
-                    ]
+                    "images": [],
+                    "order": 100
                 }
             ]
         )
@@ -433,12 +441,16 @@ class PecaYearbookTest(unittest.TestCase):
                 {
                     "grade": "1",
                     "name": "A",
-                    "multiplicationsPerMin": 0,
-                    "multiplicationsPerMinIndex": 0,
-                    "operationsPerMin": 0,
-                    "operationsPerMinIndex": 0,
-                    "wordsPerMin": 0,
-                    "wordsPerMinIndex": 0
+                    # Sin diagnósticos en el lapso: promedios nulos y contadores en cero
+                    "multiplicationsPerMin": None,
+                    "multiplicationsPerMinCount": 0,
+                    "multiplicationsPerMinIndex": None,
+                    "operationsPerMin": None,
+                    "operationsPerMinCount": 0,
+                    "operationsPerMinIndex": None,
+                    "wordsPerMin": None,
+                    "wordsPerMinCount": 0,
+                    "wordsPerMinIndex": None
                 }
             ])
         self.assertEqual(
@@ -448,7 +460,8 @@ class PecaYearbookTest(unittest.TestCase):
                     "id": "ambleCoins",
                     "name": "AmbLeMonedas",
                     "description": None,
-                    "images": []
+                    "images": [],
+                    "order": 100
                 }
             ]
         )
@@ -458,12 +471,16 @@ class PecaYearbookTest(unittest.TestCase):
                 {
                     "grade": "1",
                     "name": "A",
-                    "multiplicationsPerMin": 0,
-                    "multiplicationsPerMinIndex": 0.0,
-                    "operationsPerMin": 0,
-                    "operationsPerMinIndex": 0.0,
-                    "wordsPerMin": 0,
-                    "wordsPerMinIndex": 0.0
+                    # Sin diagnósticos en el lapso: promedios nulos y contadores en cero
+                    "multiplicationsPerMin": None,
+                    "multiplicationsPerMinCount": 0,
+                    "multiplicationsPerMinIndex": None,
+                    "operationsPerMin": None,
+                    "operationsPerMinCount": 0,
+                    "operationsPerMinIndex": None,
+                    "wordsPerMin": None,
+                    "wordsPerMinCount": 0,
+                    "wordsPerMinIndex": None
                 }
             ])
         self.assertEqual(
@@ -473,7 +490,8 @@ class PecaYearbookTest(unittest.TestCase):
                     "id": customActivity['id'],
                     "name": "some name",
                     "description": None,
-                    "images": []
+                    "images": [],
+                    "order": 100
                 }
             ]
         )
@@ -557,8 +575,13 @@ class PecaYearbookTest(unittest.TestCase):
         
         self.assertEqual(res.status_code, 200)
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
-        self.assertEqual(str(self.coordinator.id),
-                         result['approvalHistory'][0]['user']['id'])
+        # El historial de aprobación vive en la colección YearbookApproval
+        requestId = result['requestId']
+        approval = YearbookApproval.objects(pecaId=str(self.pecaProject.id)).first()
+        self.assertEqual(approval.approval.id, requestId)
+        self.assertEqual(str(approval.approval.user.id), str(self.coordinator.id))
+        request = RequestContentApproval.objects(id=requestId).first()
+        self.assertEqual(str(request.user.id), str(self.coordinator.id))
 
         # send with pending approval
         res = self.client().post(
@@ -569,42 +592,38 @@ class PecaYearbookTest(unittest.TestCase):
         self.assertEqual(res.status_code, 400)
 
         # check yearbook on approval history peca
-        res = self.client().get(
-            '/pecaprojects/{}'.format(self.pecaProject.id)
-        )
-        self.assertEqual(res.status_code, 200)
-        result = json.loads(res.data.decode('utf8').replace("'", '"'))
+        history = YearbookApproval.objects(pecaId=str(self.pecaProject.id)).first().approval.detail
+        requestDetail = RequestContentApproval.objects(id=requestId).first().detail
         self.assertEqual(
             "historical review content",
-            result['yearbook']['approvalHistory'][0]['detail']['historicalReview']['content'])
+            history['historicalReview']['content'])
         self.assertEqual(
             "sponsor content",
-            result['yearbook']['approvalHistory'][0]['detail']['sponsor']['content'])
+            history['sponsor']['content'])
         self.assertEqual(
             "coordinator content",
-            result['yearbook']['approvalHistory'][0]['detail']['coordinator']['content'])
+            history['coordinator']['content'])
         self.assertEqual(
             "school content",
-            result['yearbook']['approvalHistory'][0]['detail']['school']['content'])
+            history['school']['content'])
         self.assertEqual(
             'some description',
-            result['yearbook']['approvalHistory'][0]['detail']['lapse1']['activities'][0]['description'])
+            history['lapse1']['activities'][0]['description'])
         self.assertEqual(
-            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['readingDiagnosticAnalysis'])
+            'some resume', history['lapse1']['readingDiagnosticAnalysis'])
         self.assertEqual(
-            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['mathDiagnosticAnalysis'])
+            'some resume', history['lapse1']['mathDiagnosticAnalysis'])
         self.assertEqual(
-            'some resume', result['yearbook']['approvalHistory'][0]['detail']['lapse1']['logicDiagnosticAnalysis'])
+            'some resume', history['lapse1']['logicDiagnosticAnalysis'])
         self.assertEqual(
-            'A', result['yearbook']['approvalHistory'][0]['detail']['sections'][0]['name'])
+            'A', requestDetail['sections'][0]['name'])
 
         # approve request
         requestData = {
             "status": "2"
         }
         res = self.client().put(
-            '/requestscontentapproval/{}'.format(
-                result['yearbook']['approvalHistory'][0]['id']),
+            '/requestscontentapproval/{}'.format(requestId),
             data=json.dumps(requestData),
             content_type='application/json')
         self.assertEqual(res.status_code, 200)
@@ -641,4 +660,4 @@ class PecaYearbookTest(unittest.TestCase):
 
     def tearDown(self):
         """teardown all initialized variables."""
-        self.db.connection.drop_database('amblema_testing')
+        drop_testing_database(self.db)

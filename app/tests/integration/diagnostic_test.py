@@ -2,6 +2,7 @@
 
 
 import unittest
+from app.tests.base import drop_testing_database
 import json
 from datetime import datetime
 
@@ -238,23 +239,24 @@ class DiagnosticTest(unittest.TestCase):
         result = json.loads(res.data.decode('utf8').replace("'", '"'))
         self.assertEqual(70,
                          result['student']['wordsPerMin'])
-        self.assertEqual('1.00',
+        # El índice se expresa en porcentaje respecto a la meta del grado
+        self.assertEqual('100.00',
                          result['student']['wordsPerMinIndex'])
         self.pecaProject.reload()
         self.assertEqual(
             70, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMin)
         self.assertEqual(
-            1, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMinIndex)
+            100, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMinIndex)
         self.assertEqual(
-            0, self.pecaProject.school.sections[0].diagnostics.lapse1.operationsPerMinIndex)
+            None, self.pecaProject.school.sections[0].diagnostics.lapse1.operationsPerMinIndex)  # sin datos de ese diagnóstico
 
         self.schoolYear.reload()
         self.assertEqual(
-            1, self.schoolYear.diagnostics.lapse1.wordsPerMinIndex)
+            100, self.schoolYear.diagnostics.lapse1.wordsPerMinIndex)
         self.assertEqual(
-            0, self.schoolYear.diagnostics.lapse1.operationsPerMinIndex)
+            None, self.schoolYear.diagnostics.lapse1.operationsPerMinIndex)
         self.assertEqual(
-            0, self.schoolYear.diagnostics.lapse1.multiplicationsPerMinIndex)
+            None, self.schoolYear.diagnostics.lapse1.multiplicationsPerMinIndex)
 
         # delete
         res = self.client().delete(
@@ -271,12 +273,13 @@ class DiagnosticTest(unittest.TestCase):
         self.assertEqual(
             None, self.pecaProject.school.sections[0].students[0].lapse1.wordsPerMinIndex)
         self.schoolYear.reload()
+        # Sin diagnósticos cargados el resumen del año queda en None (no en 0)
         self.assertEqual(
-            0, self.schoolYear.diagnostics.lapse1.wordsPerMinIndex)
+            None, self.schoolYear.diagnostics.lapse1.wordsPerMinIndex)
         self.assertEqual(
-            0, self.schoolYear.diagnostics.lapse1.operationsPerMinIndex)
+            None, self.schoolYear.diagnostics.lapse1.operationsPerMinIndex)
         self.assertEqual(
-            0, self.schoolYear.diagnostics.lapse1.multiplicationsPerMinIndex)
+            None, self.schoolYear.diagnostics.lapse1.multiplicationsPerMinIndex)
 
     def test_math_diagnostics(self):
 
@@ -300,23 +303,23 @@ class DiagnosticTest(unittest.TestCase):
 
         self.assertEqual(15,
                          result['student']['operationsPerMin'])
-        self.assertEqual('0.50',
+        self.assertEqual('50.00',
                          result['student']['operationsPerMinIndex'])
 
         self.assertEqual(80,
                          result['student']['multiplicationsPerMin'])
-        self.assertEqual('2.00',
+        self.assertEqual('200.00',
                          result['student']['multiplicationsPerMinIndex'])
         self.pecaProject = PecaProject.objects.get(id=self.pecaProject.id)
 
         self.assertEqual(
             15, self.pecaProject.school.sections[0].students[1].lapse1.operationsPerMin)
         self.assertEqual(
-            0.5, self.pecaProject.school.sections[0].students[1].lapse1.operationsPerMinIndex)
+            50, self.pecaProject.school.sections[0].students[1].lapse1.operationsPerMinIndex)
         self.assertEqual(
             80, self.pecaProject.school.sections[0].students[1].lapse1.multiplicationsPerMin)
         self.assertEqual(
-            2, self.pecaProject.school.sections[0].students[1].lapse1.multiplicationsPerMinIndex)
+            200, self.pecaProject.school.sections[0].students[1].lapse1.multiplicationsPerMinIndex)
 
         # delete
         res = self.client().delete(
@@ -341,7 +344,7 @@ class DiagnosticTest(unittest.TestCase):
 
     def tearDown(self):
         """teardown all initialized variables."""
-        self.db.connection.drop_database('amblema_testing')
+        drop_testing_database(self.db)
 
 
 if __name__ == "__main__":

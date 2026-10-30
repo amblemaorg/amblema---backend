@@ -23,7 +23,7 @@ class Section(EmbeddedDocument):
     grade = fields.StringField(max_length=1)
     name = fields.StringField()
     diagnostics = fields.EmbeddedDocumentField(
-        Diagnostics, default=Diagnostics())
+        Diagnostics, default=Diagnostics)
     goals = fields.EmbeddedDocumentField(GradeSetting)
     image = fields.StringField(null=True)
     isDeleted = fields.BooleanField(default=False)

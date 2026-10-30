@@ -1,5 +1,7 @@
 # app/models/peca_student_model.py
 
+# Python 2.7 (prod): sin esto, int / int trunca y calculateIndex da 0 bajo la meta
+from __future__ import division
 
 from datetime import datetime
 from bson import ObjectId

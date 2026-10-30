@@ -63,13 +63,13 @@ class SchoolUser(User):
     activitiesSlider = fields.ListField(fields.StringField())
     phase = fields.StringField(max_length=1, default="1")
     teachersTestimonials = fields.EmbeddedDocumentField(
-        TeacherTestimonial, default=TeacherTestimonial())
-    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity())
-    historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity())
+        TeacherTestimonial, default=TeacherTestimonial)
+    yearbook = fields.EmbeddedDocumentField(Entity, default=Entity)
+    historicalReview = fields.EmbeddedDocumentField(Entity, default=Entity)
     olympicsSummary = fields.EmbeddedDocumentField(
-        OlympicsSummary, default=OlympicsSummary())
+        OlympicsSummary, default=OlympicsSummary)
     olympicsReadingSummary = fields.EmbeddedDocumentField(
-        OlympicsSummary, default=OlympicsSummary())
+        OlympicsSummary, default=OlympicsSummary)
 
     def addProject(self, project):
         self.project = project.getReference()

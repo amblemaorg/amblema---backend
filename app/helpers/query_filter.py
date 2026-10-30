@@ -24,7 +24,8 @@ class MongoQueryFilter(QueryFilter) :
 
     def assignOperatorToFilters(self, filters, operator) :
         if self.is_not_defined_operator(operator) :
-            Exception('InvalidQueryOperatorError')
+            # Antes se creaba la excepcion sin lanzarla y el operador invalido pasaba
+            raise ValueError('InvalidQueryOperatorError: {}'.format(operator))
 
         newFilters = []
         for f in filters :

@@ -2,6 +2,7 @@
 
 
 import unittest
+from app.tests.base import drop_testing_database
 import json
 from datetime import datetime
 import io
@@ -419,7 +420,8 @@ class WebContentSchoolTest(unittest.TestCase):
         requestData = {
             "section": section['id'],
             "student": student['id'],
-            "status": "2",  # classified
+            "status": "3",  # clasificado (status "2" es solo participante)
+            "statusRegional": "1",  # participo en la regional: el resultado solo aplica asi
             "result": "1"  # gold medal
         }
         res = self.client().post(
@@ -570,7 +572,8 @@ class WebContentSchoolTest(unittest.TestCase):
         self.assertEqual(1, school['nStudents'])
 
         self.assertEqual('2020 - 2021', school['diagnostics']['wordsPerMinIndex'][0]['label'])
-        self.assertEqual(1, school['diagnostics']['wordsPerMinIndex'][0]['value'])
+        # El indice se expresa en porcentaje respecto a la meta
+        self.assertEqual(100, school['diagnostics']['wordsPerMinIndex'][0]['value'])
         self.assertEqual('Lapso 1', school['diagnostics']['wordsPerMinIndex'][0]['serie'])
         self.assertEqual([], school['diagnostics']['multiplicationsPerMinIndex'])
         self.assertEqual([], school['diagnostics']['operationsPerMinIndex'])
@@ -581,13 +584,14 @@ class WebContentSchoolTest(unittest.TestCase):
         self.assertEqual(0, school['olympicsSummary']['medalsSilver'])
         self.assertEqual(0, school['olympicsSummary']['medalsBronze'])
 
-        self.assertEqual(5, len(school['activities']))
+        # Solo se muestran actividades con imagenes en el ultimo AmbLeMario aprobado (aqui no hay)
+        self.assertEqual(0, len(school['activities']))
 
-        self.assertEqual(2, len(school['nextActivities']))
+        self.assertEqual(0, len(school['nextActivities']))
 
         self.assertEqual(2, len(school['nearbySchools']))
         self.assertEqual('School 3', school['nearbySchools'][0]['name'])
 
     def tearDown(self):
         """teardown all initialized variables."""
-        self.db.connection.drop_database('amblema_testing')
+        drop_testing_database(self.db)

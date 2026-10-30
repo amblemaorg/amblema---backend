@@ -136,6 +136,32 @@ class SectionImportTest(unittest.TestCase):
         self.assertEqual(len(school.students), 1)
         self.assertEqual(str(school.students[0].sections[0].id), str(self.section1A.id))
 
+    def test_import_single_errors_use_http_status(self):
+        cases = [
+            ({"action": "import", "students": [self.student("Ana", "Perez", "1")]}, 404),
+            ({"action": "import", "section": str(self.sectionDeleted.id),
+              "students": [self.student("Ana", "Perez", "1")]}, 404),
+            ({"action": "import", "section": str(self.section1A.id), "students": []}, 400),
+        ]
+        for body, status in cases:
+            res = self.post(body)
+            self.assertEqual(res.status_code, status)
+            payload = json.loads(res.data.decode())
+            self.assertEqual(payload["status_code"], status)
+            self.assertTrue(payload["message"])
+
+    def test_import_invalid_field_reports_field_errors(self):
+        # Forma que interpreta getImportErrorMessage en el front: { campo: [{ status, msg }] }
+        student = self.student("Ana", "Perez", "30111222")
+        student["fecha_de_nacimiento"] = "no-es-fecha"
+        res = self.post({
+            "action": "import",
+            "section": str(self.section1A.id),
+            "students": [student]
+        })
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("birthdate", json.loads(res.data.decode()))
+
     def test_import_multiple_sections(self):
         res = self.post({
             "action": "import_multiple",

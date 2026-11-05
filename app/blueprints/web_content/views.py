@@ -1,7 +1,10 @@
 # /app/blueprints/web_content/views.py
 
+import mimetypes
 import os
-from flask import request, send_file
+import posixpath
+
+from flask import request
 from flask_restful import Resource
 from flask.views import MethodView
 from flask import send_from_directory
@@ -115,17 +118,30 @@ class PostHandlerView(MethodView):
         return self.service.deleteRecord(id)
 
 
+def _image_mimetype(filename):
+    """MIME de la imagen según su extensión, sin el punto (antes: 'image/.jpeg')."""
+    guessed = mimetypes.guess_type(filename)[0]
+    if guessed:
+        return guessed
+    extension = os.path.splitext(filename)[1].lstrip('.').lower()
+    return 'image/' + extension if extension else 'application/octet-stream'
+
+
 class ImagesView(MethodView):
     def get(self, folder, imageId):
-        filename = path_images+'/'+folder+'/'+imageId
-        extension = os.path.splitext(filename)[1]
-        return send_file(filename, mimetype='image/'+extension)
+        # send_from_directory valida con safe_join que la ruta no salga de
+        # path_images (rechaza '..' y rutas absolutas con 404). Antes se
+        # concatenaba `folder` (<path:...>) y permitía leer cualquier archivo.
+        relative_path = posixpath.join(folder, imageId)
+        return send_from_directory(path_images, relative_path,
+                                   mimetype=_image_mimetype(imageId))
 
 
 class FileView(MethodView):
     def get(self, folder, filename):
-        files_path2 = files_path + '/' + folder + '/'
-        return send_from_directory(files_path2, filename)
+        # El directorio base es fijo; `folder` va dentro de la ruta validada.
+        relative_path = posixpath.join(folder, filename)
+        return send_from_directory(files_path, relative_path)
 
 
 webContentView = WebContentView.as_view('webContentView')

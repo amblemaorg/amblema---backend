@@ -14,6 +14,10 @@ from app.blueprints.web_content.models.templates_model import (
     Background, BackgroundSchema)
 
 
+# Maximo de fotos de la galeria "Aula Activa AmbLeMa" (pagina Nosotros)
+AULA_ACTIVA_GALLERY_MAX = 10
+
+
 class Award(EmbeddedDocument):
     title = StringField(required=True)
     image = StringField(required=True)
@@ -30,6 +34,7 @@ class AboutUsPage(EmbeddedDocument):
     readingText = StringField(required=True)
     mathText = StringField(required=True)
     aulaActivaText = StringField(default='')
+    aulaActivaGallery = EmbeddedDocumentListField(Background, default=list)
     awards = EmbeddedDocumentListField(Award, required=True)
 
 
@@ -73,6 +78,9 @@ class AboutUsPageSchema(Schema):
     mathText = fields.Str(required=True, validate=(not_blank, Length(max=579)))
     aulaActivaText = fields.Str(
         required=False, default='', validate=Length(max=579))
+    aulaActivaGallery = fields.List(
+        fields.Nested(BackgroundSchema), required=False,
+        validate=Length(max=AULA_ACTIVA_GALLERY_MAX))
     awards = fields.List(fields.Nested(AwardSchema),
                          required=True, validate=not_blank)
 

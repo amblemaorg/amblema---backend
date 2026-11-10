@@ -213,9 +213,10 @@ class TeacherCoevaluationTest(unittest.TestCase):
         coevaluation = self.coevaluation()
         self.assertEqual(coevaluation.status, "completed")
         self.assertIsNone(coevaluation.tokenHash)
-        self.assertEqual(coevaluation.averages, [3.5] * 15)
-        self.assertEqual(coevaluation.totalScore, 52.5)
-        self.assertEqual(coevaluation.percentage, 70.0)
+        # Promedio por ítem = parte entera de (3 + 4) / 2 = 3
+        self.assertEqual(coevaluation.averages, [3] * 15)
+        self.assertEqual(coevaluation.totalScore, 45)
+        self.assertEqual(coevaluation.percentage, 60.0)
         self.assertEqual(coevaluation.level, "commitment")
 
         # Token de un solo uso
@@ -227,7 +228,7 @@ class TeacherCoevaluationTest(unittest.TestCase):
         detail = json.loads(self.client().get(self.url()).data)
         self.assertEqual(detail["levelLabel"], u"Docente HQS con Compromiso")
         self.assertEqual(detail["items"][0], {"number": 1, "teacher": 3,
-                                              "coordinator": 4, "average": 3.5})
+                                              "coordinator": 4, "average": 3})
         self.assertFalse(detail["canSendLink"])
 
         # No se puede reenviar después de que el docente guardó
@@ -334,7 +335,7 @@ class TeacherCoevaluationTest(unittest.TestCase):
     # ------------------------------------------------------------- reporte
 
     def test_report_by_school_and_by_level(self):
-        self.complete(self.teacher, 5, 4)  # 67.5 pts, 90 % -> excelencia
+        self.complete(self.teacher, 5, 4)  # (5 + 4) // 2 = 4 -> 60 pts, 80 % -> excelencia
         self.post(self.url(self.teacher2, "/coordinator"), scores_payload(2))  # pendiente docente
 
         res = self.client().get('/statistics/coevaluationsreport/{}'.format(self.schoolYear.id))
@@ -346,14 +347,14 @@ class TeacherCoevaluationTest(unittest.TestCase):
         # Activos: Luisa, Marta y Rosa (sin correo); Pedro inactivo queda fuera.
         self.assertEqual(school["nTeachers"], 3)
         self.assertEqual(school["nCompleted"], 1)
-        self.assertEqual(school["index"], 90.0)
+        self.assertEqual(school["index"], 80.0)
         self.assertEqual(school["indexLevel"], "excellence")
         self.assertEqual(school["statusCounts"]["completed"], 1)
         self.assertEqual(school["statusCounts"]["pending_teacher"], 1)
         self.assertEqual(school["statusCounts"]["not_started"], 1)
         self.assertEqual(school["levelCounts"]["excellence"], 1)
         self.assertEqual(school["teachers"][0]["firstName"], "Luisa")
-        self.assertEqual(school["teachers"][0]["items"][0]["average"], 4.5)
+        self.assertEqual(school["teachers"][0]["items"][0]["average"], 4)
 
         levels = dict((lvl["code"], lvl) for lvl in data["byLevel"])
         self.assertEqual([lvl["code"] for lvl in data["byLevel"]],

@@ -140,13 +140,15 @@ def get_level_label(code):
 def compute_results(teacherScores, coordinatorScores):
     """
     Promedio por ítem, total (sobre 75), porcentaje y nivel.
-    Devuelve None si falta alguno de los dos lados.
+    El promedio de cada ítem es la parte entera de (docente + coordinador) / 2,
+    por lo que el total también es entero. Devuelve None si falta algún lado.
     """
     if not teacherScores or not coordinatorScores:
         return None
     if len(teacherScores) != N_ITEMS or len(coordinatorScores) != N_ITEMS:
         return None
-    averages = [(t + c) / 2 for t, c in zip(teacherScores, coordinatorScores)]
+    # Puntajes enteros y no negativos: // equivale a truncar (p. ej. (4 + 3) // 2 = 3).
+    averages = [int(t + c) // 2 for t, c in zip(teacherScores, coordinatorScores)]
     total = sum(averages)
     percentage = round(total * 100 / MAX_TOTAL, 2)
     level = get_level(total)

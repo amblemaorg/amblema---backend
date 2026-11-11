@@ -3,7 +3,7 @@
 """Lectura del compendio original para proponer las fichas (GES-03 5.5).
 
 API-08: abre el PDF, recorre las páginas e informa el avance.
-API-09 completa la detección de encabezados y los cortes propuestos.
+API-09: lee el encabezado de cada página y propone los cortes (header_detection).
 Requiere PyMuPDF (Python 3); el import es perezoso para no romper el arranque sin él.
 """
 
@@ -11,7 +11,11 @@ import os
 
 from flask import current_app
 
-from app.models.vademecum import UploadPage
+from app.models.vademecum import UploadCut, UploadPage
+from app.services.vademecum.header_detection import detect_header, propose_cuts
+
+# El encabezado está arriba: solo se leen las líneas que empiezan en este tercio superior
+HEADER_REGION = 0.3
 
 
 class ProcessingError(Exception):
@@ -51,15 +55,35 @@ def open_pdf(path):
     return document
 
 
+def top_lines(page):
+    """Líneas de texto del tercio superior, de arriba abajo y de izquierda a derecha."""
+    limit = page.rect.y0 + page.rect.height * HEADER_REGION
+    lines = []
+    for block in page.get_text("dict").get("blocks", []):
+        for line in block.get("lines", []):
+            x0, y0 = line["bbox"][0], line["bbox"][1]
+            text = u"".join(span.get("text", u"") for span in line.get("spans", []))
+            if y0 <= limit and text.strip():
+                lines.append((round(y0), x0, text))
+    return [text for _, _, text in sorted(lines)]
+
+
 def process(upload, progress):
     """Devuelve pageCount, pages y proposedCuts; `progress(0..99)` informa el avance."""
+    headerName = upload.sheetType.headerName
     document = open_pdf(original_path(upload))
     try:
         total = document.page_count
-        pages = []
+        detected = []
         for index in range(total):
-            pages.append(UploadPage(index=index))
+            header = detect_header(top_lines(document.load_page(index)), headerName)
+            header["index"] = index
+            detected.append(header)
             progress(int(99 * (index + 1) / total))
-        return {"pageCount": total, "pages": pages, "proposedCuts": []}
     finally:
         document.close()
+    pages = [UploadPage(index=h["index"], headerText=h["headerText"], number=h["number"],
+                        isContinuation=h["isContinuation"], title=h["title"])
+             for h in detected]
+    cuts = [UploadCut(**cut) for cut in propose_cuts(detected)]
+    return {"pageCount": total, "pages": pages, "proposedCuts": cuts}

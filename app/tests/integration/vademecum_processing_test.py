@@ -28,6 +28,19 @@ def make_pdf(pages=3):
     return data
 
 
+def make_compendium(headers):
+    """PDF con el tipo en una línea y "<N>[A]. <Título>" en la siguiente (como las muestras)."""
+    document = fitz.open()
+    for header in headers:
+        page = document.new_page()
+        page.insert_text((72, 60), u"Hora TAL")
+        page.insert_text((72, 80), header)
+        page.insert_text((72, 400), u"Cuerpo de la ficha")
+    data = document.tobytes()
+    document.close()
+    return data
+
+
 @unittest.skipUnless(fitz, "PyMuPDF no está instalado")
 class VademecumProcessingTest(VademecumUploadBase):
 
@@ -58,6 +71,17 @@ class VademecumProcessingTest(VademecumUploadBase):
         self.assertIsNotNone(body["processedAt"])
         upload = self.upload_doc(body["id"])
         self.assertIsNone(upload.processingId)
+
+    def test_headers_are_detected_and_cuts_proposed(self):
+        pdf = make_compendium([u"41. Identifica la Palabra", u"41A. Identifica la Palabra",
+                               u"42.Entrevistas", u"Sin encabezado"])
+        body = self.detail(self.upload(content=pdf).get_json()["id"])
+        self.assertEqual([(p["number"], p["isContinuation"]) for p in body["pages"]],
+                         [(41, False), (41, True), (42, False), (None, False)])
+        self.assertEqual(body["pages"][1]["headerText"], u"Hora TAL 41A. Identifica la Palabra")
+        self.assertEqual([(c["pages"], c["number"], c["title"]) for c in body["proposedCuts"]],
+                         [([0, 1], 41, u"Identifica la Palabra"), ([2], 42, u"Entrevistas"),
+                          ([3], None, None)])
 
     def test_damaged_pdf_ends_in_error_with_a_clear_message(self):
         res = self.upload(content=b"%PDF-1.4 esto no es un pdf de verdad")

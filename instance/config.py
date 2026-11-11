@@ -34,6 +34,8 @@ class Config(object):
     VADEMECUM_JWT_SECRET_KEY = os.getenv('VADEMECUM_JWT_SECRET_KEY')
     VADEMECUM_WEB_URL = os.getenv('VADEMECUM_WEB_URL', 'https://vademecum.amblema.org')
     RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
+    # Volumen persistente de PDF e imágenes de fichas (nunca dentro de /resources, que es público)
+    VADEMECUM_STORAGE_PATH = os.getenv('VADEMECUM_STORAGE_PATH')
 
 
 class TestingConfig(Config):

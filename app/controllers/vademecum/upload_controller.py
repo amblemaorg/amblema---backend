@@ -2,7 +2,7 @@
 # app/controllers/vademecum/upload_controller.py
 """Cargas de compendios del backoffice: /vademecum/admin/uploads (API-07)."""
 
-from flask import g, request
+from flask import g, request, send_file
 from flask_restful import Resource
 
 from app.helpers.vademecum_auth import vademecum_admin_required
@@ -51,3 +51,19 @@ class AdminUploadReprocessController(Resource):
         if not upload:
             return not_found()
         return service.reprocess(upload)
+
+
+class AdminUploadPageThumbnailController(Resource):
+    @vademecum_admin_required
+    def get(self, uploadId, index):
+        """Miniatura de una página para revisar cortes (API-10); se pide como blob con token."""
+        service = UploadService()
+        upload = service.get(uploadId)
+        path = service.page_thumbnail(upload, index) if upload else None
+        if not path:
+            return not_found()
+        response = send_file(path, mimetype="image/webp", cache_timeout=0)
+        # Imagen de administrador: el navegador puede guardarla, los proxies no
+        response.headers["Cache-Control"] = "private, max-age=300"
+        return response
+

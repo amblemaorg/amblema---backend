@@ -10,6 +10,8 @@ from app.services.vademecum.catalog_service import not_found
 from app.services.vademecum.download_service import download_filename, pdf_path
 from app.services.vademecum.sheet_admin_service import (
     SheetAdminService, SiteContentAdminService)
+from app.services.vademecum.upload_service import (
+    MULTIPART_OVERHEAD_BYTES, max_upload_bytes, too_large)
 from app.services.vademecum.taxonomy_admin_service import (
     AreaAdminService, SheetTypeAdminService)
 
@@ -129,6 +131,14 @@ class AdminSheetFileController(Resource):
                              attachment_filename=download_filename(sheet), cache_timeout=0)
         response.headers["Cache-Control"] = "private, no-store"
         return response
+
+    @vademecum_admin_required
+    def put(self, sheetId):
+        """Reemplaza el PDF de la ficha (API-10)."""
+        if (request.content_length or 0) > max_upload_bytes() + MULTIPART_OVERHEAD_BYTES:
+            return too_large()
+        return _with_sheet(sheetId, lambda s, sheet: s.replace_file(
+            sheet, request.files.get("file")))
 
 
 class AdminSiteContentListController(Resource):

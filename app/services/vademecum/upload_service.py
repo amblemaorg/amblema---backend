@@ -147,6 +147,17 @@ class UploadService(object):
         processing_service.mark_stale()
         return VademecumUpload.objects(id=uploadId, isDeleted=False).first()
 
+    def page_thumbnail(self, upload, index):
+        """Ruta absoluta de la miniatura de una página de la carga, o None."""
+        root = storage_root()
+        page = next((p for p in upload.pages if p.index == index), None)
+        if not root or not page or not page.thumbnailPath:
+            return None
+        path = os.path.realpath(os.path.join(root, page.thumbnailPath))
+        if not path.startswith(root + os.sep) or not os.path.isfile(path):
+            return None
+        return path
+
     # --- Acciones ---
 
     def create(self, fileStorage, form, admin):

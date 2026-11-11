@@ -6,8 +6,11 @@ Las fichas nunca se borran de verdad: el borrado es lógico y las descargas regi
 conservan. Despublicar deja de entregar la ficha, incluso como redescarga.
 """
 
+import logging
 import math
+import os
 import re
+import uuid
 from datetime import datetime
 
 from marshmallow import ValidationError
@@ -23,6 +26,10 @@ from app.schemas.vademecum.admin_schema import (
 from app.services.vademecum.catalog_service import (
     DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, CatalogService, invalid, isoformat, object_id)
 from app.services.vademecum.taxonomy_admin_service import _model_errors
+from app.services.vademecum.upload_service import (
+    InvalidPdf, error, max_upload_bytes, save_pdf_stream, storage_root, too_large)
+
+logger = logging.getLogger(__name__)
 
 DUPLICATED_SHEET = ({"number": [{"status": "112",
                                  "msg": "Duplicated sheet for type, series and number"}]}, 409)
@@ -141,6 +148,40 @@ class SheetAdminService(object):
         except ModelValidationError as exc:
             return _model_errors(exc)
         return self.to_dict(sheet), 200
+
+    def replace_file(self, sheet, fileStorage):
+        """Reemplaza el PDF y regenera miniatura, vista previa y texto (API-10).
+
+        Una ficha son pocas páginas: se genera en la misma petición. Responde 202 como dice el
+        contrato; la ficha que devuelve ya tiene los archivos nuevos.
+        """
+        from app.services.vademecum import sheet_media
+        from app.services.vademecum.compendium_processor import ProcessingError, open_pdf
+        if fileStorage is None or not fileStorage.filename:
+            return error("file", "2", "Missing data for required field.")
+        root = storage_root()
+        if not root:
+            logger.error("Vademecum: VADEMECUM_STORAGE_PATH is not configured")
+            return error("general", "0", "Storage is not configured", 500)
+        incoming = os.path.join(root, "sheets", "upload-{}.pdf".format(uuid.uuid4().hex))
+        os.makedirs(os.path.dirname(incoming), exist_ok=True)
+        try:
+            try:
+                save_pdf_stream(fileStorage.stream, incoming, max_upload_bytes())
+                open_pdf(incoming).close()  # dañado, sin páginas o con contraseña
+            except (InvalidPdf, ProcessingError):
+                return too_large()
+            sheetFile, searchText = sheet_media.build_sheet_files(incoming, sheet.id)
+        finally:
+            try:
+                os.remove(incoming)
+            except OSError:
+                pass
+        sheet.file = sheetFile
+        sheet.searchText = searchText
+        sheet.fileReplacedAt = datetime.utcnow()
+        body, status = self._save(sheet)
+        return body, (202 if status == 200 else status)
 
     def delete(self, sheet):
         sheet.isDeleted = True

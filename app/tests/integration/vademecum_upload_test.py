@@ -28,8 +28,10 @@ class VademecumUploadBase(unittest.TestCase):
         from app import db
         self.db = db
         from app.helpers.handler_seeds import create_standard_roles
-        from app.helpers.vademecum_seeds import ensure_vademecum_indexes, seed_vademecum
+        from app.helpers.vademecum_seeds import (
+            ensure_vademecum_indexes, ensure_vademecum_permission, seed_vademecum)
         create_standard_roles()
+        ensure_vademecum_permission()
         ensure_vademecum_indexes()
         seed_vademecum()
         self.client = self.app.test_client()

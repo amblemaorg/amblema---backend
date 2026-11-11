@@ -132,5 +132,12 @@ def create_vademecum_seeds():
     print('Vademecum seeds created: {}'.format(seed_vademecum()))
 
 
+@manager.command
+def ensure_vademecum_permission():
+    """BO-01: entidad "Vademécum" y su acción, activa en superadmin y admin (idempotente)."""
+    from app.helpers.vademecum_seeds import ensure_vademecum_permission as ensure
+    print('Vademecum permission: {}'.format(ensure()))
+
+
 if __name__ == "__main__":
     manager.run()

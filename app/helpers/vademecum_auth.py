@@ -71,21 +71,24 @@ def vademecum_teacher_optional(fn):
 
 
 def vademecum_admin_required(fn):
-    """Token del backoffice con rol admin o superadmin; deja el usuario en g.vademecum_admin.
+    """Token del backoffice con el permiso `vademecum_admin` (BO-01) en su rol activo.
 
-    Como admin_required, pero no se salta en TESTING (el módulo guarda quién hizo cada acción)
-    y nunca acepta un token de docente (otro secreto).
+    Deja el usuario en g.vademecum_admin. No se salta en TESTING (el módulo guarda quién hizo
+    cada acción) y nunca acepta un token de docente (otro secreto). El permiso se lee del rol
+    en la BD, no del token: quitarlo en "Roles" corta el acceso sin esperar a que el token
+    venza.
     """
     @wraps(fn)
     def wrapper(*args, **kwargs):
         from flask_jwt_extended.view_decorators import verify_jwt_in_request
-        from app.helpers.handler_authorization import get_current_user, is_admin
+        from app.helpers.handler_authorization import get_current_user
+        from app.helpers.vademecum_seeds import PERMISSION_ACTION
         verify_jwt_in_request()
         try:
             user = get_current_user()
         except AttributeError:  # identidad que no es la de un usuario del backoffice
             user = None
-        if not is_admin(user):
+        if not user or not user.role or PERMISSION_ACTION not in user.get_permissions():
             return {"msg": "No authorized"}, 403
         g.vademecum_admin = user
         return fn(*args, **kwargs)

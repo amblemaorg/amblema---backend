@@ -69,3 +69,52 @@ def seed_vademecum():
         created["siteContent"] += 1
 
     return created
+
+
+# --- Permiso del backoffice (BO-01) ---
+
+PERMISSION_ENTITY = u"Vademécum"
+PERMISSION_ENTITY_DEV_NAME = "vademecum"
+PERMISSION_ACTION = "vademecum_admin"
+PERMISSION_ACTION_LABEL = u"Administrar Vademécum"
+# Roles que reciben el permiso al crearlo; AmbLeMa puede darlo a otros desde "Roles"
+PERMISSION_DEFAULT_ROLES = ("superadmin", "admin")
+
+
+def ensure_vademecum_permission():
+    """Crea la entidad "Vademécum" con su acción y la activa en superadmin y admin.
+
+    Idempotente: sirve para instalaciones nuevas y como script para los roles de producción.
+    - Todo rol sin la entidad la recibe (así aparece en "Roles" para darla a otros); activa
+      solo en los roles por defecto.
+    - Un rol que ya la tiene no se toca: se respeta lo que AmbLeMa haya decidido.
+    No se confía en Entity.post_save para propagarla: escribe los roles en la colección
+    `entities` (bug previo) y no llega a `roles`.
+    Devuelve {"entityCreated": bool, "rolesAdded": [devName...], "rolesGranted": [...]}.
+    """
+    from app.models.entity_model import Action, Entity
+    from app.models.role_model import ActionHandler, Permission, Role
+
+    entity = Entity.objects(devName=PERMISSION_ENTITY_DEV_NAME, isDeleted=False).first()
+    created = entity is None
+    if created:
+        entity = Entity(name=PERMISSION_ENTITY, devName=PERMISSION_ENTITY_DEV_NAME,
+                        actions=[Action(name=PERMISSION_ACTION, label=PERMISSION_ACTION_LABEL,
+                                        sort=1)])
+        entity.save()
+
+    added, granted = [], []
+    for role in Role.objects(isDeleted=False):
+        if role.permissions.filter(entityId=str(entity.id)).first() is not None:
+            continue
+        allowed = role.devName in PERMISSION_DEFAULT_ROLES
+        role.permissions.append(Permission(
+            entityId=str(entity.id), entityName=entity.name,
+            actions=[ActionHandler(name=PERMISSION_ACTION, label=PERMISSION_ACTION_LABEL,
+                                   sort=1, allowed=allowed)]))
+        role.save()
+        added.append(role.devName or str(role.id))
+        if allowed:
+            granted.append(role.devName)
+    return {"entityCreated": created, "rolesAdded": sorted(added),
+            "rolesGranted": sorted(granted)}

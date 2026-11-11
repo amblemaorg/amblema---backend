@@ -44,6 +44,10 @@ class VademecumUpload(Document):
     sheets = fields.ListField(fields.ReferenceField("VademecumSheet"), default=list)
     createdBy = fields.ReferenceField("User", required=True)
     processedAt = fields.DateTimeField(null=True)
+    # Procesamiento en segundo plano (API-08): quién lo tiene y su último latido.
+    # Un latido viejo en un estado ocupado = proceso interrumpido
+    processingId = fields.StringField(null=True)
+    heartbeatAt = fields.DateTimeField(null=True)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

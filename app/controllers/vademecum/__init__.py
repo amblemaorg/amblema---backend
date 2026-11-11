@@ -45,8 +45,10 @@ def register_vademecum_resources(api):
                      *_routes("/vademecum/sheets/<string:sheetId>/download"))
 
     from app.controllers.vademecum.upload_controller import (
-        AdminUploadListController, AdminUploadController)
+        AdminUploadListController, AdminUploadController, AdminUploadReprocessController)
 
     api.add_resource(AdminUploadListController, *_routes("/vademecum/admin/uploads"))
     api.add_resource(AdminUploadController,
                      *_routes("/vademecum/admin/uploads/<string:uploadId>"))
+    api.add_resource(AdminUploadReprocessController,
+                     *_routes("/vademecum/admin/uploads/<string:uploadId>/reprocess"))

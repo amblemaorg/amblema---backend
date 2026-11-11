@@ -41,3 +41,13 @@ class AdminUploadController(Resource):
         if not upload:
             return not_found()
         return service.delete(upload)
+
+
+class AdminUploadReprocessController(Resource):
+    @vademecum_admin_required
+    def post(self, uploadId):
+        service = UploadService()
+        upload = service.get(uploadId)
+        if not upload:
+            return not_found()
+        return service.reprocess(upload)

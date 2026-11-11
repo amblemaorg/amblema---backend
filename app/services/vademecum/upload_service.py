@@ -12,11 +12,13 @@ import math
 import os
 import shutil
 import uuid
+from datetime import datetime
 
 from flask import current_app
 
 from app.models.vademecum import VademecumSheet, VademecumSheetType, VademecumUpload
 from app.models.vademecum.constants import UPLOAD_STATUSES
+from app.services.vademecum import processing_service
 from app.services.vademecum.catalog_service import (
     DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, invalid, isoformat, not_found, object_id, series_dict)
 
@@ -27,6 +29,7 @@ DEFAULT_MAX_UPLOAD_MB = 100
 PDF_SIGNATURE = b"%PDF-"
 PDF_HEADER_WINDOW = 1024
 CHUNK_SIZE = 1024 * 1024
+# `uploaded` se puede borrar: el hilo que la tome no escribe sobre una carga borrada
 BUSY_STATUSES = ("processing", "generating")
 MAX_FILENAME_LENGTH = 255
 # Margen para los campos y separadores del multipart sobre el tamaño del PDF
@@ -141,6 +144,7 @@ class UploadService(object):
         uploadId = object_id(uploadId)
         if not uploadId:
             return None
+        processing_service.mark_stale()
         return VademecumUpload.objects(id=uploadId, isDeleted=False).first()
 
     # --- Acciones ---
@@ -171,7 +175,8 @@ class UploadService(object):
 
         upload = VademecumUpload(originalFileName=clean_filename(fileStorage.filename),
                                  originalSizeBytes=size, sheetType=sheetType,
-                                 seriesId=seriesId, createdBy=admin, status="uploaded")
+                                 seriesId=seriesId, createdBy=admin, status="uploaded",
+                                 heartbeatAt=datetime.utcnow())
         try:
             upload.save()
             target = upload_dir(root, upload.id)
@@ -185,6 +190,17 @@ class UploadService(object):
                 upload.delete()
                 shutil.rmtree(upload_dir(root, upload.id), ignore_errors=True)
             raise
+        processing_service.start(upload)
+        upload.reload()
+        return self.summary(upload), 202
+
+    def reprocess(self, upload):
+        """Vuelve a leer el original conservado (API-08); 409 si está ocupada o generada."""
+        processing_service.mark_stale()
+        if not processing_service.queue_again(upload):
+            return error("general", "114", "Upload status does not allow this action", 409)
+        processing_service.start(upload)
+        upload.reload()
         return self.summary(upload), 202
 
     def _sheet_type_and_series(self, form):
@@ -220,6 +236,7 @@ class UploadService(object):
             return invalid("page")
         if page < 1 or not 1 <= pageSize <= MAX_PAGE_SIZE:
             return invalid("pageSize" if page >= 1 else "page")
+        processing_service.mark_stale()
         uploads = VademecumUpload.objects(**query).exclude(
             "pages", "proposedCuts", "confirmedCuts").order_by("-createdAt")
         total = uploads.count()

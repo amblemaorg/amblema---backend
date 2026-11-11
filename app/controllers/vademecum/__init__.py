@@ -52,3 +52,28 @@ def register_vademecum_resources(api):
                      *_routes("/vademecum/admin/uploads/<string:uploadId>"))
     api.add_resource(AdminUploadReprocessController,
                      *_routes("/vademecum/admin/uploads/<string:uploadId>/reprocess"))
+
+    from app.controllers.vademecum.admin_controller import (
+        AdminSheetTypeListController, AdminSheetTypeController, AdminAreaListController,
+        AdminAreaController, AdminSheetListController, AdminSheetPublishManyController,
+        AdminSheetController, AdminSheetPublishController, AdminSheetUnpublishController,
+        AdminSheetFileController, AdminSiteContentListController, AdminSiteContentController)
+
+    admin = "/vademecum/admin"
+    api.add_resource(AdminSheetTypeListController, *_routes(admin + "/sheet-types"))
+    api.add_resource(AdminSheetTypeController,
+                     *_routes(admin + "/sheet-types/<string:sheetTypeId>"))
+    api.add_resource(AdminAreaListController, *_routes(admin + "/areas"))
+    api.add_resource(AdminAreaController, *_routes(admin + "/areas/<string:areaId>"))
+    api.add_resource(AdminSheetListController, *_routes(admin + "/sheets"))
+    # /sheets/publish va antes de /sheets/<sheetId> para no tomar "publish" como id
+    api.add_resource(AdminSheetPublishManyController, *_routes(admin + "/sheets/publish"))
+    api.add_resource(AdminSheetController, *_routes(admin + "/sheets/<string:sheetId>"))
+    api.add_resource(AdminSheetPublishController,
+                     *_routes(admin + "/sheets/<string:sheetId>/publish"))
+    api.add_resource(AdminSheetUnpublishController,
+                     *_routes(admin + "/sheets/<string:sheetId>/unpublish"))
+    api.add_resource(AdminSheetFileController, admin + "/sheets/<string:sheetId>/file")
+    api.add_resource(AdminSiteContentListController, *_routes(admin + "/site-content"))
+    api.add_resource(AdminSiteContentController,
+                     *_routes(admin + "/site-content/<string:key>"))

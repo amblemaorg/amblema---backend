@@ -9,10 +9,10 @@ from datetime import datetime
 
 from bson import ObjectId
 
-from app.tests.integration.vademecum_upload_test import VademecumUploadBase
+from app.tests.integration.vademecum_base import VademecumAdminTestBase
 
 
-class VademecumAdminBase(VademecumUploadBase):
+class VademecumAdminBase(VademecumAdminTestBase):
 
     def call(self, method, path, data=None, headers=None):
         return self.client.open("/vademecum/admin" + path, method=method,

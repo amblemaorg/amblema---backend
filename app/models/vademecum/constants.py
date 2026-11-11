@@ -18,7 +18,6 @@ GRADE_LABELS = {
 # "1" activo, "2" inactivo (convención del backend)
 ACTIVE_STATUSES = ("1", "2")
 SHEET_STATUSES = ("draft", "published", "unpublished")
-UPLOAD_STATUSES = ("uploaded", "processing", "review", "generating", "done", "error")
 # "pending" = sin verificar ni contraseña; "1" activa; "2" bloqueada por AmbLeMa
 ACCOUNT_STATUSES = ("pending", "1", "2")
 REQUEST_STATUSES = ("pending", "approved", "rejected")

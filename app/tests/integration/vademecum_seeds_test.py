@@ -31,8 +31,8 @@ class VademecumSeedsTest(unittest.TestCase):
     def test_ensure_indexes_covers_all_models(self):
         from app.helpers.vademecum_seeds import ensure_vademecum_indexes
         from app.models.vademecum import VADEMECUM_MODELS
-        self.assertEqual(len(VADEMECUM_MODELS), 11)
-        self.assertEqual(ensure_vademecum_indexes(), 11)
+        self.assertEqual(len(VADEMECUM_MODELS), 10)
+        self.assertEqual(ensure_vademecum_indexes(), 10)
 
     def test_seed_creates_catalog_once(self):
         from app.helpers.vademecum_seeds import seed_vademecum

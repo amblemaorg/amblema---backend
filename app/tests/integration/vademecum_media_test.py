@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # app/tests/integration/vademecum_media_test.py
-"""Compresión, miniaturas WebP y texto de las fichas (API-10)."""
+"""Compresión, miniaturas WebP y texto de las fichas (API-10) y su reemplazo."""
 
 import io
 import os
@@ -9,8 +9,35 @@ import unittest
 
 from PIL import Image, ImageFilter, ImageStat
 
-from app.tests.integration.vademecum_processing_test import fitz, make_compendium, make_pdf
-from app.tests.integration.vademecum_upload_test import VademecumUploadBase
+
+try:
+    import fitz  # PyMuPDF
+except ImportError:  # pragma: no cover - imagen sin PyMuPDF
+    fitz = None
+from app.tests.integration.vademecum_base import VademecumAdminTestBase
+
+
+def make_pdf(pages=3):
+    document = fitz.open()
+    for index in range(pages):
+        page = document.new_page()
+        page.insert_text((72, 72), u"Hora TAL {}. Página de prueba".format(index + 1))
+    data = document.tobytes()
+    document.close()
+    return data
+
+
+def make_compendium(headers):
+    """PDF con el tipo en una línea y "<N>[A]. <Título>" en la siguiente."""
+    document = fitz.open()
+    for header in headers:
+        page = document.new_page()
+        page.insert_text((72, 60), u"Hora TAL")
+        page.insert_text((72, 80), header)
+        page.insert_text((72, 400), u"Cuerpo de la ficha")
+    data = document.tobytes()
+    document.close()
+    return data
 
 
 def write(path, data):
@@ -50,7 +77,7 @@ def make_block_pdf():
 
 
 @unittest.skipUnless(fitz, "PyMuPDF no está instalado")
-class VademecumSheetMediaTest(VademecumUploadBase):
+class VademecumSheetMediaTest(VademecumAdminTestBase):
 
     def setUp(self):
         super(VademecumSheetMediaTest, self).setUp()
@@ -130,48 +157,7 @@ class VademecumSheetMediaTest(VademecumUploadBase):
 
 
 @unittest.skipUnless(fitz, "PyMuPDF no está instalado")
-class VademecumPageThumbnailTest(VademecumUploadBase):
-
-    def setUp(self):
-        super(VademecumPageThumbnailTest, self).setUp()
-        self.app.config["VADEMECUM_PROCESSING_MODE"] = "inline"
-
-    def thumbnail(self, uploadId, index, headers=None):
-        return self.client.get(
-            "/vademecum/admin/uploads/{}/pages/{}/thumbnail.webp".format(uploadId, index),
-            headers=self.adminHeaders if headers is None else headers)
-
-    def test_processing_saves_one_thumbnail_per_page(self):
-        from app.services.vademecum.sheet_media import PAGE_THUMBNAIL_WIDTH
-        uploadId = self.upload(content=make_pdf(3)).get_json()["id"]
-        body = self.client.get("/vademecum/admin/uploads/{}".format(uploadId),
-                               headers=self.adminHeaders).get_json()
-        self.assertEqual([p["thumbnailUrl"] for p in body["pages"]], [
-            "/vademecum/admin/uploads/{}/pages/{}/thumbnail.webp".format(uploadId, i)
-            for i in range(3)])
-
-        res = self.thumbnail(uploadId, 2)
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.mimetype, "image/webp")
-        self.assertIn("private", res.headers["Cache-Control"])
-        image = Image.open(io.BytesIO(res.data))
-        self.assertEqual((image.format, image.width), ("WEBP", PAGE_THUMBNAIL_WIDTH))
-        res.close()
-
-    def test_thumbnail_not_found(self):
-        uploadId = self.upload(content=make_pdf(1)).get_json()["id"]
-        self.assertEqual(self.thumbnail(uploadId, 5).status_code, 404)
-        self.assertEqual(self.thumbnail("5f0000000000000000000000", 0).status_code, 404)
-
-    def test_thumbnail_requires_admin(self):
-        uploadId = self.upload(content=make_pdf(1)).get_json()["id"]
-        self.assertIn(self.thumbnail(uploadId, 0, headers={}).status_code, (401, 403))
-        coordinator = self.create_user("coord@test.com", "10000002", "coordinator")
-        self.assertEqual(self.thumbnail(uploadId, 0, self.headers(coordinator)).status_code, 403)
-
-
-@unittest.skipUnless(fitz, "PyMuPDF no está instalado")
-class VademecumReplaceSheetFileTest(VademecumUploadBase):
+class VademecumReplaceSheetFileTest(VademecumAdminTestBase):
 
     def setUp(self):
         super(VademecumReplaceSheetFileTest, self).setUp()
@@ -197,8 +183,7 @@ class VademecumReplaceSheetFileTest(VademecumUploadBase):
                      self.sheet.file.previewPath):
             self.assertTrue(os.path.isfile(os.path.join(self.storage, path)), path)
         # Sin el PDF recibido suelto en el almacenamiento
-        self.assertEqual(sorted(os.listdir(os.path.join(self.storage, "sheets"))),
-                         [str(self.sheet.id)])
+        self.assertEqual(os.listdir(os.path.join(self.storage, "incoming")), [])
 
         pdf = self.client.get("/vademecum/admin/sheets/{}/file".format(self.sheet.id),
                               headers=self.adminHeaders)
@@ -214,7 +199,8 @@ class VademecumReplaceSheetFileTest(VademecumUploadBase):
         self.assertEqual(res.get_json()["file"][0]["status"], "115")
         self.sheet.reload()
         self.assertIsNone(self.sheet.file)
-        self.assertEqual(os.listdir(os.path.join(self.storage, "sheets")), [])
+        self.assertEqual(os.listdir(os.path.join(self.storage, "incoming")), [])
+        self.assertFalse(os.path.exists(os.path.join(self.storage, "sheets")))
 
     def test_missing_file(self):
         res = self.replace(None)

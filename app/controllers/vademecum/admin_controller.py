@@ -10,8 +10,7 @@ from app.services.vademecum.catalog_service import not_found
 from app.services.vademecum.download_service import download_filename, pdf_path
 from app.services.vademecum.sheet_admin_service import (
     SheetAdminService, SiteContentAdminService)
-from app.services.vademecum.upload_service import (
-    MULTIPART_OVERHEAD_BYTES, max_upload_bytes, too_large)
+from app.services.vademecum.pdf_upload import body_too_large, too_large
 from app.services.vademecum.taxonomy_admin_service import (
     AreaAdminService, SheetTypeAdminService)
 
@@ -77,6 +76,13 @@ class AdminSheetListController(Resource):
     def get(self):
         return SheetAdminService().list(request.args)
 
+    @vademecum_admin_required
+    def post(self):
+        """Crea una ficha con su PDF ya separado en el backoffice (API-11 rehecho)."""
+        if body_too_large(request):
+            return too_large()
+        return SheetAdminService().create(request.files.get("file"), request.form)
+
 
 class AdminSheetPublishManyController(Resource):
     @vademecum_admin_required
@@ -135,7 +141,7 @@ class AdminSheetFileController(Resource):
     @vademecum_admin_required
     def put(self, sheetId):
         """Reemplaza el PDF de la ficha (API-10)."""
-        if (request.content_length or 0) > max_upload_bytes() + MULTIPART_OVERHEAD_BYTES:
+        if body_too_large(request):
             return too_large()
         return _with_sheet(sheetId, lambda s, sheet: s.replace_file(
             sheet, request.files.get("file")))

@@ -34,8 +34,6 @@ class VademecumSheet(Document):
     description = fields.StringField(null=True)
     areas = fields.ListField(fields.ReferenceField("VademecumArea"), default=list)
     grades = fields.ListField(fields.StringField(choices=GRADES), default=list)
-    upload = fields.ReferenceField("VademecumUpload", null=True)
-    sourcePages = fields.ListField(fields.IntField(min_value=0), default=list)
     file = fields.EmbeddedDocumentField(SheetFile, null=True)
     searchText = fields.StringField(null=True)
     status = fields.StringField(choices=SHEET_STATUSES, default="draft")

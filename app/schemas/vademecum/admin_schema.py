@@ -73,13 +73,12 @@ class SheetIdsSchema(StrictSchema):
     sheetIds = fields.List(fields.Str(), required=True, validate=Length(min=1, max=200))
 
 
-class CutInputSchema(StrictSchema):
-    """Un corte de la carga (API-11). Número y título vacíos se toman de la primera página."""
-    pages = fields.List(fields.Int(validate=Range(min=0)), required=True)
-    number = fields.Int(load_default=None, allow_none=True, validate=Range(min=1, max=999))
-    title = fields.Str(load_default=None, allow_none=True, validate=Length(max=150))
-    excluded = fields.Bool(load_default=False)
-
-
-class CutsInputSchema(StrictSchema):
-    cuts = fields.List(fields.Nested(CutInputSchema), required=True)
+class SheetCreateSchema(StrictSchema):
+    """Datos de una ficha nueva subida desde el backoffice (API-11 rehecho)."""
+    number = fields.Int(required=True, validate=Range(min=1, max=999))
+    title = fields.Str(required=True, validate=(not_blank, Length(max=150)))
+    sheetTypeId = fields.Str(required=True, validate=not_blank)
+    seriesId = fields.Str(load_default=None, allow_none=True)
+    description = fields.Str(load_default=None, allow_none=True, validate=Length(max=2000))
+    grades = fields.List(fields.Str(validate=GRADE), load_default=list)
+    areaIds = fields.List(fields.Str(), load_default=list)

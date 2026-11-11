@@ -41,10 +41,8 @@ class Config(object):
         'VADEMECUM_STORAGE_PATH',
         os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                      'storage', 'vademecum'))
-    # Tamaño máximo de un compendio PDF subido desde el backoffice
+    # Tamaño máximo del PDF de una ficha subido desde el backoffice
     VADEMECUM_MAX_UPLOAD_MB = os.getenv('VADEMECUM_MAX_UPLOAD_MB', '100')
-    # Procesamiento de compendios: thread (en segundo plano), inline u off (pruebas)
-    VADEMECUM_PROCESSING_MODE = os.getenv('VADEMECUM_PROCESSING_MODE', 'thread')
     # Compresión de fichas con Ghostscript: binario (por defecto `gs` del PATH), ajuste
     # (/ebook; /printer si la impresión real lo pide) y tiempo máximo por ficha en segundos
     VADEMECUM_GHOSTSCRIPT = os.getenv('VADEMECUM_GHOSTSCRIPT')
@@ -66,8 +64,6 @@ class TestingConfig(Config):
     VADEMECUM_JWT_SECRET_KEY = 'vademecum-testing-secret'
     VADEMECUM_WEB_URL = 'https://vademecum.test'
     RECAPTCHA_SECRET_KEY = None
-    # Las pruebas lanzan el procesamiento a mano (inline) cuando lo necesitan
-    VADEMECUM_PROCESSING_MODE = 'off'
     # Cada prueba usa su carpeta temporal; nunca el almacenamiento del proyecto
     VADEMECUM_STORAGE_PATH = None
 

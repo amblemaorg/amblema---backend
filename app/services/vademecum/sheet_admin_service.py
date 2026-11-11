@@ -6,11 +6,10 @@ Las fichas nunca se borran de verdad: el borrado es lógico y las descargas regi
 conservan. Despublicar deja de entregar la ficha, incluso como redescarga.
 """
 
+import json
 import logging
 import math
-import os
 import re
-import uuid
 from datetime import datetime
 
 from marshmallow import ValidationError
@@ -22,12 +21,11 @@ from app.models.vademecum import (
     VademecumArea, VademecumSheet, VademecumSheetType, VademecumSiteContent)
 from app.models.vademecum.constants import SHEET_STATUSES
 from app.schemas.vademecum.admin_schema import (
-    SheetIdsSchema, SheetInputSchema, SiteContentInputSchema)
+    SheetCreateSchema, SheetIdsSchema, SheetInputSchema, SiteContentInputSchema)
 from app.services.vademecum.catalog_service import (
     DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, CatalogService, invalid, isoformat, object_id)
 from app.services.vademecum.taxonomy_admin_service import _model_errors
-from app.services.vademecum.upload_service import (
-    InvalidPdf, error, max_upload_bytes, save_pdf_stream, storage_root, too_large)
+from app.services.vademecum.pdf_upload import ReceivedPdf
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +51,6 @@ class SheetAdminService(object):
             "sizeBytes": sheet.file.sizeBytes if sheet.file else None,
             "fileReplacedAt": isoformat(sheet.fileReplacedAt),
             "status": sheet.status,
-            "uploadId": str(sheet.upload.id) if sheet.upload else None,
-            "sourcePages": list(sheet.sourcePages),
             "downloadCount": sheet.downloadCount,
             "fileStatus": "ready" if sheet.file else None,
             "createdAt": isoformat(sheet.createdAt),
@@ -69,8 +65,7 @@ class SheetAdminService(object):
             if status not in SHEET_STATUSES:
                 return invalid("status")
             query["status"] = status
-        for param, field in (("sheetTypeId", "sheetType"), ("seriesId", "seriesId"),
-                             ("uploadId", "upload")):
+        for param, field in (("sheetTypeId", "sheetType"), ("seriesId", "seriesId")):
             value = args.get(param)
             if value:
                 query[field] = object_id(value)
@@ -106,7 +101,18 @@ class SheetAdminService(object):
             data = SheetInputSchema().load(jsonData or {})
         except ValidationError as err:
             return err.messages, 400
+        failure = self._apply(sheet, data)
+        if failure:
+            return failure
+        if sheet.status == "published":
+            # Una ficha publicada no puede quedar sin lo que exige la publicación
+            errors = sheet.publish_errors()
+            if errors:
+                return errors, 400
+        return self._save(sheet)
 
+    def _apply(self, sheet, data):
+        """Pasa los datos validados a la ficha; devuelve un error o None."""
         if "sheetTypeId" in data:
             typeId = object_id(data["sheetTypeId"])
             sheetType = typeId and VademecumSheetType.objects(id=typeId, isDeleted=False).first()
@@ -132,13 +138,62 @@ class SheetAdminService(object):
         for field in ("number", "title", "description", "grades"):
             if field in data:
                 setattr(sheet, field, data[field])
+        return None
 
-        if sheet.status == "published":
-            # Una ficha publicada no puede quedar sin lo que exige la publicación
-            errors = sheet.publish_errors()
+    def create(self, fileStorage, form):
+        """Crea una ficha con el PDF que el backoffice separó del compendio (API-11 rehecho).
+
+        Multipart: `file` (PDF de la ficha) y `data` (JSON con número, título, tipo, serie,
+        áreas, grados y descripción). `publish=true` la publica al crearla; si faltan datos
+        para publicar responde 113 sin crear nada. Se comprime y se generan miniatura, vista
+        previa y texto en la misma petición (una ficha son pocas páginas). 201 con la ficha.
+        """
+        from app.services.vademecum import sheet_media
+        try:
+            raw = json.loads(form.get("data") or "{}")
+        except ValueError:
+            return invalid("data", "Invalid JSON")
+        try:
+            data = SheetCreateSchema().load(raw if isinstance(raw, dict) else {})
+        except ValidationError as err:
+            return err.messages, 400
+        publish = (form.get("publish") or "").lower() == "true"
+
+        sheet = VademecumSheet()
+        failure = self._apply(sheet, data)
+        if failure:
+            return failure
+        try:
+            sheet.validate()  # tipo y serie coherentes antes de recibir el archivo
+        except ModelValidationError as exc:
+            return _model_errors(exc)
+        if publish:
+            errors = {field: value for field, value in sheet.publish_errors().items()
+                      if field != "file"}
             if errors:
                 return errors, 400
-        return self._save(sheet)
+        if VademecumSheet.objects(__raw__={
+                "sheetType": sheet.sheetType.id, "seriesId": sheet.seriesId,
+                "number": sheet.number, "isDeleted": False}).first():
+            return DUPLICATED_SHEET
+
+        with ReceivedPdf(fileStorage) as received:
+            if received.failure:
+                return received.failure
+            body, status = self._save(sheet)
+            if status != 200:
+                return body, status
+            try:
+                sheet.file, sheet.searchText = sheet_media.build_sheet_files(
+                    received.path, sheet.id)
+            except Exception:
+                sheet.delete()  # recién creada y sin archivos: no queda a medias
+                raise
+        if publish:
+            sheet.status = "published"
+            sheet.publishedAt = datetime.utcnow()
+        sheet.save()
+        return self.to_dict(sheet), 201
 
     def _save(self, sheet):
         try:
@@ -156,27 +211,10 @@ class SheetAdminService(object):
         contrato; la ficha que devuelve ya tiene los archivos nuevos.
         """
         from app.services.vademecum import sheet_media
-        from app.services.vademecum.compendium_processor import ProcessingError, open_pdf
-        if fileStorage is None or not fileStorage.filename:
-            return error("file", "2", "Missing data for required field.")
-        root = storage_root()
-        if not root:
-            logger.error("Vademecum: VADEMECUM_STORAGE_PATH is not configured")
-            return error("general", "0", "Storage is not configured", 500)
-        incoming = os.path.join(root, "sheets", "upload-{}.pdf".format(uuid.uuid4().hex))
-        os.makedirs(os.path.dirname(incoming), exist_ok=True)
-        try:
-            try:
-                save_pdf_stream(fileStorage.stream, incoming, max_upload_bytes())
-                open_pdf(incoming).close()  # dañado, sin páginas o con contraseña
-            except (InvalidPdf, ProcessingError):
-                return too_large()
-            sheetFile, searchText = sheet_media.build_sheet_files(incoming, sheet.id)
-        finally:
-            try:
-                os.remove(incoming)
-            except OSError:
-                pass
+        with ReceivedPdf(fileStorage) as received:
+            if received.failure:
+                return received.failure
+            sheetFile, searchText = sheet_media.build_sheet_files(received.path, sheet.id)
         sheet.file = sheetFile
         sheet.searchText = searchText
         sheet.fileReplacedAt = datetime.utcnow()

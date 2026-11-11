@@ -8,14 +8,14 @@ from datetime import datetime
 from unittest import mock
 
 from app.tests.fixtures import create_school_year, enroll_vademecum_teacher
-from app.tests.integration.vademecum_upload_test import VademecumUploadBase
+from app.tests.integration.vademecum_base import VademecumAdminTestBase
 
 SEND_VERIFICATION = "app.services.vademecum.account_service.send_email"
 SEND_NOTICE = "app.services.vademecum.access_request_service.send_email"
 EMAIL = "luis.gomez@gmail.com"
 
 
-class VademecumAccessRequestTest(VademecumUploadBase):
+class VademecumAccessRequestTest(VademecumAdminTestBase):
 
     def setUp(self):
         super(VademecumAccessRequestTest, self).setUp()

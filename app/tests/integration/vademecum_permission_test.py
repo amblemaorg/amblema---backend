@@ -4,7 +4,7 @@
 
 import unittest
 
-from app.tests.integration.vademecum_upload_test import VademecumUploadBase
+from app.tests.integration.vademecum_base import VademecumAdminTestBase
 
 
 def allowed_in(role, action="vademecum_admin"):
@@ -15,7 +15,7 @@ def allowed_in(role, action="vademecum_admin"):
     return None  # el rol no tiene la entidad
 
 
-class VademecumPermissionSeedTest(VademecumUploadBase):
+class VademecumPermissionSeedTest(VademecumAdminTestBase):
     """La base ya corrió create_standard_roles y ensure_vademecum_permission."""
 
     def roles(self):
@@ -66,7 +66,7 @@ class VademecumPermissionSeedTest(VademecumUploadBase):
         self.assertNotIn("vademecum_admin", coordinator.get_permissions())
 
 
-class VademecumPermissionApiTest(VademecumUploadBase):
+class VademecumPermissionApiTest(VademecumAdminTestBase):
 
     def set_allowed(self, devName, allowed):
         from app.models.role_model import Role
@@ -76,7 +76,7 @@ class VademecumPermissionApiTest(VademecumUploadBase):
         role.save()
 
     def list_uploads(self, headers):
-        return self.client.get("/vademecum/admin/uploads", headers=headers)
+        return self.client.get("/vademecum/admin/sheets", headers=headers)
 
     def test_admin_role_without_the_permission_is_rejected(self):
         self.assertEqual(self.list_uploads(self.adminHeaders).status_code, 200)

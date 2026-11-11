@@ -7,7 +7,8 @@
   fotos también se reduzcan. Si Ghostscript no está, falla o el resultado no es más liviano, se conserva el
   PDF sin comprimir: la ficha se genera igual.
 - Miniatura nítida (catálogo) y vista previa difuminada (detalle, no sirve para imprimir),
-  ambas de la primera página. Miniaturas de páginas del compendio para revisar los cortes.
+  ambas de la primera página. Las miniaturas para revisar el compendio las hace el
+  backoffice en el navegador (API-11 rehecho): el compendio no llega al servidor.
 - Texto de todas las páginas para la búsqueda (`searchText`, índice de texto).
 
 Requiere PyMuPDF (Python 3) y Pillow con WebP; los imports de PyMuPDF son perezosos.
@@ -33,8 +34,6 @@ THUMBNAIL_QUALITY = 82
 PREVIEW_WIDTH = 900
 PREVIEW_BLUR_RADIUS = 6      # se lee la composición, no el contenido
 PREVIEW_QUALITY = 60
-PAGE_THUMBNAIL_WIDTH = 240   # revisión de cortes en el backoffice
-PAGE_THUMBNAIL_QUALITY = 70
 MAX_SEARCH_TEXT = 20000
 DEFAULT_GHOSTSCRIPT_TIMEOUT = 300
 DEFAULT_GHOSTSCRIPT_PRESET = "/ebook"
@@ -100,10 +99,6 @@ def save_webp(image, target, quality):
     temporary = target + ".tmp"
     image.save(temporary, "WEBP", quality=quality, method=6)
     os.replace(temporary, target)
-
-
-def render_page_thumbnail(page, target):
-    save_webp(page_image(page, PAGE_THUMBNAIL_WIDTH), target, PAGE_THUMBNAIL_QUALITY)
 
 
 def render_thumbnail(page, target):

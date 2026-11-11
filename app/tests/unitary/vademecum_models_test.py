@@ -116,13 +116,6 @@ class VademecumSheetModelsTest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             self._sheet(sheetType=self._ingenio(), number=1).validate()
 
-    def test_upload_requires_file_type_and_author(self):
-        from app.models.vademecum import VademecumUpload
-        with self.assertRaises(ValidationError) as ctx:
-            VademecumUpload().validate()
-        for field in ("originalFileName", "originalSizeBytes", "sheetType", "createdBy"):
-            self.assertIn(field, ctx.exception.errors)
-
     def test_sheet_rejects_unknown_status_and_grade(self):
         with self.assertRaises(ValidationError):
             self._sheet(status="draft2").validate()
@@ -144,13 +137,6 @@ class VademecumSheetModelsTest(unittest.TestCase):
         sheet = self._sheet()
         self.assertEqual(sheet.status, "draft")
         self.assertEqual((sheet.downloadCount, sheet.ratingCount, sheet.ratingSum), (0, 0, 0))
-
-    def test_upload_defaults(self):
-        from app.models.vademecum import VademecumUpload
-        upload = VademecumUpload()
-        self.assertEqual(upload.status, "uploaded")
-        self.assertEqual(upload.progress, 0)
-        self.assertEqual(upload.pages, [])
 
     def test_sheet_indexes(self):
         from app.models.vademecum import VademecumSheet

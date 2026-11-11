@@ -56,6 +56,11 @@ class VademecumDownload(Document):
             ("schoolYear.id", "createdAt"),
             ("sheet.id", "isRedownload"),
             ("account.id", "sheet.id"),
+            # Solo una descarga que cuenta por (cuenta, ficha, año): evita contar dos veces
+            # si llegan dos descargas simultáneas
+            {"fields": ["account.id", "sheet.id", "schoolYear.id"], "unique": True,
+             "partialFilterExpression": {"isRedownload": False},
+             "name": "vademecum_downloads_first_per_year"},
             ("school.id", "schoolYear.id"),
             ("school.stateId", "schoolYear.id"),
             ("origin", "schoolYear.id"),

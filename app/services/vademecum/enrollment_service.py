@@ -56,9 +56,11 @@ def _sorted_grades(grades):
 class Enrollment(object):
     """Resultado: año vigente y escuelas con sus grados. `schools` vacío = sin matrícula."""
 
-    def __init__(self, schoolYear=None, schools=None):
+    def __init__(self, schoolYear=None, schools=None, teacherIds=None):
         self.schoolYear = schoolYear
         self.schools = schools or []
+        # schoolId -> Teacher.id del docente en esa escuela (no se expone en /me)
+        self.teacherIds = teacherIds or {}
 
     @property
     def is_enrolled(self):
@@ -142,12 +144,15 @@ class EnrollmentService(object):
                     grades.append(section["grade"])
 
         schools = []
+        teacherIds = {}
         for schoolId, grades in gradesBySchool.items():
+            # Si el email se repite en la escuela, se toma un id estable (el menor)
+            teacherIds[schoolId] = sorted(teacherIdsBySchool[schoolId])[0]
             info = schoolInfo[schoolId]
             schools.append({"id": schoolId, "name": info.get("name"), "code": info.get("code"),
                             "grades": _sorted_grades(grades)})
         schools.sort(key=lambda s: (s["name"] or "").lower())
-        return Enrollment(schoolYear, schools)
+        return Enrollment(schoolYear, schools, teacherIds)
 
     def is_enrolled(self, email, schoolYear=None):
         return self.resolve(email, schoolYear).is_enrolled

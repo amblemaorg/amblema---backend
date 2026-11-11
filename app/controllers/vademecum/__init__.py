@@ -38,3 +38,8 @@ def register_vademecum_resources(api):
     api.add_resource(SheetThumbnailController,
                      "/vademecum/sheets/<string:sheetId>/thumbnail.webp")
     api.add_resource(SheetPreviewController, "/vademecum/sheets/<string:sheetId>/preview.webp")
+
+    from app.controllers.vademecum.download_controller import SheetDownloadController
+
+    api.add_resource(SheetDownloadController,
+                     *_routes("/vademecum/sheets/<string:sheetId>/download"))

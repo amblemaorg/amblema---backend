@@ -9,6 +9,7 @@ previa de baja resolución que genera API-10.
 
 import calendar
 import math
+import re
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -66,6 +67,24 @@ def image_url(sheet, kind):
     version = sheet.fileReplacedAt or sheet.publishedAt
     suffix = "?v={}".format(calendar.timegm(version.utctimetuple())) if version else ""
     return "/vademecum/sheets/{}/{}.webp{}".format(sheet.id, kind, suffix)
+
+
+# Código de ficha escrito por el docente: "IM56", "IM56-3", "HT-41", "ht41". Prefijo de 2 a 4
+# letras y al menos una cifra (una palabra sola sigue yendo a la búsqueda de texto)
+CODE_QUERY = re.compile(r"^(?P<prefix>[A-Za-z]{2,4})(?P<rest>-?\d[\d-]{0,7})$")
+
+
+def code_query(q):
+    """Filtro Mongo por código si `q` parece un código de ficha; None si es texto."""
+    match = CODE_QUERY.match(q.replace(" ", ""))
+    if not match:
+        return None
+    prefix, rest = match.group("prefix").upper(), match.group("rest")
+    patterns = ["^" + re.escape(prefix + rest)]
+    if "-" not in rest:
+        # "HT41" también es "HT-41" (tipo sin serie): el guion es opcional al buscar
+        patterns.append("^" + re.escape(prefix + "-" + rest))
+    return {"$or": [{"code": {"$regex": pattern, "$options": "i"}} for pattern in patterns]}
 
 
 class CatalogService(object):
@@ -158,9 +177,14 @@ class CatalogService(object):
             return invalid("pageSize" if page >= 1 else "page")
 
         sheets = VademecumSheet.objects(**query).only(*SUMMARY_FIELDS)
-        if q:
+        byCode = code_query(q) if q else None
+        if byCode:
+            sheets = sheets.filter(__raw__=byCode)
+        elif q:
             sheets = sheets.search_text(q, language="spanish")
-        if sort == "relevance":
+        if sort == "relevance" and byCode:
+            sheets = sheets.order_by("sheetType", "seriesId", "number")  # IM56-2 antes que IM56-10
+        elif sort == "relevance":
             sheets = sheets.order_by("$text_score")
         else:
             sheets = sheets.order_by(*SORTS[sort])

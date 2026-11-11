@@ -148,6 +148,24 @@ class VademecumCatalogTest(unittest.TestCase):
         self.assertEqual(sorted(self.codes(self.get("/vademecum/sheets", q="oculto"))),
                          ["HT-1", "HT-2", "HT-3"])
 
+    def test_search_by_code(self):
+        series = self.ingenio.active_series()[0]
+        for n in (1, 2, 10):
+            self.sheet(self.ingenio, n, seriesId=series.id)
+        self.sheet(self.hora, 41, title=u"Identifica la palabra")
+        self.sheet(self.hora, 4, title=u"Rimas", status="draft")  # no publicada: no aparece
+        prefix = "IM{}".format(series.code)
+        # Prefijo de serie: todas, en orden de número (2 antes que 10) con relevancia
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", q=prefix, sort="relevance")),
+                         ["{}-1".format(prefix), "{}-2".format(prefix), "{}-10".format(prefix)])
+        # Código exacto, sin mayúsculas y con o sin guion
+        self.assertEqual(sorted(self.codes(self.get("/vademecum/sheets", q=prefix.lower() + "-1"))),
+                         ["{}-1".format(prefix), "{}-10".format(prefix)])
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", q="ht41")), ["HT-41"])
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", q="HT-4")), ["HT-41"])
+        # Una palabra sigue siendo búsqueda de texto
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", q="palabra")), ["HT-41"])
+
     def test_pagination(self):
         for n in range(1, 6):
             self.sheet(self.hora, n, days=n)

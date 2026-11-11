@@ -36,6 +36,8 @@ class Config(object):
     RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
     # Volumen persistente de PDF e imágenes de fichas (nunca dentro de /resources, que es público)
     VADEMECUM_STORAGE_PATH = os.getenv('VADEMECUM_STORAGE_PATH')
+    # Tamaño máximo de un compendio PDF subido desde el backoffice
+    VADEMECUM_MAX_UPLOAD_MB = os.getenv('VADEMECUM_MAX_UPLOAD_MB', '100')
 
 
 class TestingConfig(Config):

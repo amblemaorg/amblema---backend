@@ -40,9 +40,20 @@ def _timestamp(value):
     return calendar.timegm(value.utctimetuple())
 
 
+def password_version(account):
+    """Marca exacta (ms) del último cambio de contraseña; va en el claim `pv` del token.
+
+    No se compara con `iat` (segundos enteros): un token emitido en el mismo segundo que el
+    cambio seguiría valiendo.
+    """
+    changed = account.passwordChangedAt
+    return int(_timestamp(changed) * 1000 + changed.microsecond // 1000) if changed else 0
+
+
 def _issue(account, kind, lifetime):
     now = datetime.utcnow()
     payload = {"sub": str(account.id), "type": TOKEN_TYPE, "kind": kind,
+               "pv": password_version(account),
                "iat": _timestamp(now), "exp": _timestamp(now + lifetime)}
     token = jwt.encode(payload, _secret(), algorithm=ALGORITHM)
     return token.decode("utf-8") if isinstance(token, bytes) else token
@@ -68,10 +79,8 @@ def decode_token(token, kind):
 
 
 def issued_before_password_change(payload, account):
-    """True si el token es anterior al último cambio de contraseña (queda invalidado)."""
-    if not account.passwordChangedAt:
-        return False
-    return int(payload.get("iat", 0)) < _timestamp(account.passwordChangedAt)
+    """True si el token se emitió con otra contraseña (queda invalidado)."""
+    return payload.get("pv") != password_version(account)
 
 
 def new_email_token(lifetime):

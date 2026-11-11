@@ -6,6 +6,7 @@ from flask import g, request, send_file
 from flask_restful import Resource
 
 from app.helpers.vademecum_auth import vademecum_admin_required
+from app.services.vademecum import generation_service
 from app.services.vademecum.catalog_service import not_found
 from app.services.vademecum.upload_service import (
     MULTIPART_OVERHEAD_BYTES, UploadService, max_upload_bytes, too_large)
@@ -67,3 +68,25 @@ class AdminUploadPageThumbnailController(Resource):
         response.headers["Cache-Control"] = "private, max-age=300"
         return response
 
+
+class AdminUploadCutsController(Resource):
+    @vademecum_admin_required
+    def put(self, uploadId):
+        """Guarda los cortes confirmados (API-11)."""
+        service = UploadService()
+        upload = service.get(uploadId)
+        if not upload:
+            return not_found()
+        return generation_service.save_cuts(upload, request.get_json(silent=True),
+                                            service.detail)
+
+
+class AdminUploadGenerateController(Resource):
+    @vademecum_admin_required
+    def post(self, uploadId):
+        """Genera las fichas en `draft` en segundo plano (API-11)."""
+        service = UploadService()
+        upload = service.get(uploadId)
+        if not upload:
+            return not_found()
+        return generation_service.generate(upload, service.summary)

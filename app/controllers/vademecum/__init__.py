@@ -46,13 +46,18 @@ def register_vademecum_resources(api):
 
     from app.controllers.vademecum.upload_controller import (
         AdminUploadListController, AdminUploadController, AdminUploadReprocessController,
-        AdminUploadPageThumbnailController)
+        AdminUploadPageThumbnailController, AdminUploadCutsController,
+        AdminUploadGenerateController)
 
     api.add_resource(AdminUploadListController, *_routes("/vademecum/admin/uploads"))
     api.add_resource(AdminUploadController,
                      *_routes("/vademecum/admin/uploads/<string:uploadId>"))
     api.add_resource(AdminUploadReprocessController,
                      *_routes("/vademecum/admin/uploads/<string:uploadId>/reprocess"))
+    api.add_resource(AdminUploadCutsController,
+                     *_routes("/vademecum/admin/uploads/<string:uploadId>/cuts"))
+    api.add_resource(AdminUploadGenerateController,
+                     *_routes("/vademecum/admin/uploads/<string:uploadId>/generate"))
     api.add_resource(AdminUploadPageThumbnailController,
                      "/vademecum/admin/uploads/<string:uploadId>/pages/<int:index>/thumbnail.webp")
 

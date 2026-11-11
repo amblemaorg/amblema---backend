@@ -43,16 +43,21 @@ def processing_mode():
     return current_app.config.get("VADEMECUM_PROCESSING_MODE") or "thread"
 
 
-def start(upload):
-    """Lanza el procesamiento de una carga en `uploaded` según el modo configurado."""
+def start(upload, target=None):
+    """Lanza el procesamiento de una carga según el modo configurado.
+
+    `target(app, uploadId)` es el trabajo; por defecto leer el compendio (`run`). La
+    generación de fichas (API-11) usa el mismo arranque con su propio trabajo.
+    """
+    target = target or run
     mode = processing_mode()
     if mode == "off":
         return
     app = current_app._get_current_object()
     if mode == "inline":
-        run(app, upload.id)
+        target(app, upload.id)
         return
-    worker = threading.Thread(target=run, args=(app, upload.id),
+    worker = threading.Thread(target=target, args=(app, upload.id),
                               name="vademecum-upload-{}".format(upload.id))
     worker.daemon = True  # no impide apagar la API; lo cortado se detecta por el latido
     worker.start()
@@ -87,16 +92,16 @@ def claim(uploadId):
     return (upload, processingId) if upload else (None, None)
 
 
-def _owned(upload, processingId):
-    return VademecumUpload.objects(id=upload.id, status="processing",
+def _owned(upload, processingId, status="processing"):
+    return VademecumUpload.objects(id=upload.id, status=status,
                                    processingId=processingId, isDeleted=False)
 
 
-def report_progress(upload, processingId, progress):
+def report_progress(upload, processingId, progress, status="processing"):
     """Guarda el avance (0–99) y renueva el latido; LostClaim si la carga ya no es suya."""
     now = datetime.utcnow()
     progress = max(0, min(99, int(progress)))
-    if not _owned(upload, processingId).update_one(
+    if not _owned(upload, processingId, status).update_one(
             set__progress=progress, set__heartbeatAt=now, set__updatedAt=now):
         raise LostClaim()
 
@@ -111,9 +116,9 @@ def finish(upload, processingId, result):
         set__heartbeatAt=now, set__updatedAt=now))
 
 
-def fail(upload, processingId, message):
+def fail(upload, processingId, message, status="processing"):
     now = datetime.utcnow()
-    return bool(_owned(upload, processingId).update_one(
+    return bool(_owned(upload, processingId, status).update_one(
         set__status="error", set__errorMessage=message[:MAX_ERROR_LENGTH],
         set__processingId=None, set__heartbeatAt=now, set__updatedAt=now))
 

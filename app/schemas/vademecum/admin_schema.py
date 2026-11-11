@@ -71,3 +71,15 @@ class SiteContentInputSchema(StrictSchema):
 
 class SheetIdsSchema(StrictSchema):
     sheetIds = fields.List(fields.Str(), required=True, validate=Length(min=1, max=200))
+
+
+class CutInputSchema(StrictSchema):
+    """Un corte de la carga (API-11). Número y título vacíos se toman de la primera página."""
+    pages = fields.List(fields.Int(validate=Range(min=0)), required=True)
+    number = fields.Int(load_default=None, allow_none=True, validate=Range(min=1, max=999))
+    title = fields.Str(load_default=None, allow_none=True, validate=Length(max=150))
+    excluded = fields.Bool(load_default=False)
+
+
+class CutsInputSchema(StrictSchema):
+    cuts = fields.List(fields.Nested(CutInputSchema), required=True)

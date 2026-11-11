@@ -35,8 +35,11 @@ SITE_CONTENT_KEYS = ("home", "about", "access_request")
 
 def ensure_vademecum_indexes():
     """Creates the indexes declared in each Vademécum model; returns how many models."""
+    from app.services.vademecum.enrollment_service import ensure_teacher_email_index
     for model in VADEMECUM_MODELS:
         model.ensure_indexes()
+    # Índice sobre la colección users existente (aditivo): búsqueda de matrícula por email
+    ensure_teacher_email_index()
     return len(VADEMECUM_MODELS)
 
 

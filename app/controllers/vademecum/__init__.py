@@ -77,3 +77,18 @@ def register_vademecum_resources(api):
     api.add_resource(AdminSiteContentListController, *_routes(admin + "/site-content"))
     api.add_resource(AdminSiteContentController,
                      *_routes(admin + "/site-content/<string:key>"))
+
+    from app.controllers.vademecum.access_controller import (
+        AccessRequestController, AdminAccessRequestListController,
+        AdminAccessRequestApproveController, AdminAccessRequestRejectController,
+        AdminAuthorizationListController, AdminAuthorizationRevokeController)
+
+    api.add_resource(AccessRequestController, *_routes("/vademecum/access-requests"))
+    api.add_resource(AdminAccessRequestListController, *_routes(admin + "/access-requests"))
+    api.add_resource(AdminAccessRequestApproveController,
+                     *_routes(admin + "/access-requests/<string:requestId>/approve"))
+    api.add_resource(AdminAccessRequestRejectController,
+                     *_routes(admin + "/access-requests/<string:requestId>/reject"))
+    api.add_resource(AdminAuthorizationListController, *_routes(admin + "/authorizations"))
+    api.add_resource(AdminAuthorizationRevokeController,
+                     *_routes(admin + "/authorizations/<string:authorizationId>/revoke"))

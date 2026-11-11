@@ -34,8 +34,13 @@ class Config(object):
     VADEMECUM_JWT_SECRET_KEY = os.getenv('VADEMECUM_JWT_SECRET_KEY')
     VADEMECUM_WEB_URL = os.getenv('VADEMECUM_WEB_URL', 'https://vademecum.amblema.org')
     RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
-    # Volumen persistente de PDF e imágenes de fichas (nunca dentro de /resources, que es público)
-    VADEMECUM_STORAGE_PATH = os.getenv('VADEMECUM_STORAGE_PATH')
+    # Volumen persistente de PDF e imágenes de fichas. Nunca dentro de /resources: se sirve
+    # público y las fichas se saltarían la regla de acceso. Por defecto, storage/vademecum
+    # del proyecto (fuera de git); en producción, el volumen de INF-01 por variable.
+    VADEMECUM_STORAGE_PATH = os.getenv(
+        'VADEMECUM_STORAGE_PATH',
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                     'storage', 'vademecum'))
     # Tamaño máximo de un compendio PDF subido desde el backoffice
     VADEMECUM_MAX_UPLOAD_MB = os.getenv('VADEMECUM_MAX_UPLOAD_MB', '100')
     # Procesamiento de compendios: thread (en segundo plano), inline u off (pruebas)
@@ -63,6 +68,8 @@ class TestingConfig(Config):
     RECAPTCHA_SECRET_KEY = None
     # Las pruebas lanzan el procesamiento a mano (inline) cuando lo necesitan
     VADEMECUM_PROCESSING_MODE = 'off'
+    # Cada prueba usa su carpeta temporal; nunca el almacenamiento del proyecto
+    VADEMECUM_STORAGE_PATH = None
 
 
 class DevelopmentConfig(Config):

@@ -71,3 +71,31 @@ def seed_base():
     """Roles estándar y pasos iniciales, necesarios para crear proyectos."""
     create_standard_roles()
     create_initial_steps()
+
+
+def enroll_vademecum_teacher(schoolYear, email, grades=(), schoolName="Escuela Uno"):
+    """Escuela activa con PECA del año y un docente vigente con secciones en esos grados.
+
+    Se inserta con la forma real de la BD (sin los servicios de PECA). Devuelve el id de la
+    escuela como texto.
+    """
+    from bson import ObjectId
+    from app.models.user_model import User
+    from app.models.peca_project_model import PecaProject
+    teacherId = ObjectId()
+    schoolId = User._get_collection().insert_one({
+        "_cls": "User.SchoolUser", "name": schoolName, "code": "OD1",
+        "email": "{}@escuela.test".format(teacherId), "status": "1", "isDeleted": False,
+        "teachers": [{"id": teacherId, "firstName": "Ana", "lastName": "Docente",
+                      "email": email, "status": "1", "isDeleted": False}],
+    }).inserted_id
+    PecaProject._get_collection().insert_one({
+        "schoolYear": schoolYear.id,
+        "project": {"id": str(ObjectId()), "school": {"id": str(schoolId), "name": schoolName}},
+        "school": {"name": schoolName, "sections": [
+            {"id": ObjectId(), "grade": g, "name": "A", "isDeleted": False,
+             "teacher": {"id": str(teacherId), "firstName": "Ana", "lastName": "Docente"}}
+            for g in grades]},
+        "isDeleted": False,
+    })
+    return str(schoolId)

@@ -29,6 +29,11 @@ class Config(object):
     GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN')
     GMAIL_FROM = os.getenv('GMAIL_FROM')
     GMAIL_FROM_NAME = os.getenv('GMAIL_FROM_NAME')
+    # Vademécum: secreto propio para los tokens de docente (distinto de JWT_SECRET_KEY),
+    # URL de la web docente para los enlaces de los correos y reCAPTCHA (opcional).
+    VADEMECUM_JWT_SECRET_KEY = os.getenv('VADEMECUM_JWT_SECRET_KEY')
+    VADEMECUM_WEB_URL = os.getenv('VADEMECUM_WEB_URL', 'https://vademecum.amblema.org')
+    RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
 
 
 class TestingConfig(Config):
@@ -42,6 +47,9 @@ class TestingConfig(Config):
     MONGODB_SETTINGS = {
         'host': os.getenv('TESTING_DB_URL')
     }
+    VADEMECUM_JWT_SECRET_KEY = 'vademecum-testing-secret'
+    VADEMECUM_WEB_URL = 'https://vademecum.test'
+    RECAPTCHA_SECRET_KEY = None
 
 
 class DevelopmentConfig(Config):

@@ -479,4 +479,7 @@ def create_app(config_instance):
     api.add_resource(ResendEmailSponsorController, '/resend/email/sponsor')
     api.add_resource(CronUpdateActivityOrderCtrl, '/cron/update/activity/order')
     api.add_resource(TestEmailController, '/test-email')
+
+    from app.controllers.vademecum import register_vademecum_resources
+    register_vademecum_resources(api)
     return app

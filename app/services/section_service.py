@@ -30,6 +30,39 @@ def normalize_student_text(text):
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
+def _import_text(value):
+    """Texto unicode sin acentos (Python 2 y 3); valores del Excel pueden llegar como número."""
+    if value is None:
+        return u""
+    text = unicodedata.normalize("NFD", u"{}".format(value))
+    return u"".join(c for c in text if unicodedata.category(c) != "Mn").strip()
+
+
+# Mismas reglas que normalizeImportGrade/normalizeImportSection del front (form-block)
+GRADE_WORDS = ["primer", "segund", "tercer", "cuart", "quint", "sext"]
+
+
+def normalize_import_grade(value):
+    """Acepta 1, 1er grado, Primero, Preescolar...; devuelve el id de grado ("0".."6") o None."""
+    text = _import_text(value).lower()
+    if not text:
+        return None
+    if "preescolar" in text or "pre-escolar" in text:
+        return "0"
+    digit = re.search(r"\d+", text)
+    if digit:
+        return str(int(digit.group(0)))
+    for idx, word in enumerate(GRADE_WORDS):
+        if text.startswith(word):
+            return str(idx + 1)
+    return None
+
+
+def normalize_import_section(value):
+    """Sección A, seccion a y A son la misma sección."""
+    return re.sub(r"^SECCION\s*", "", _import_text(value).upper()).strip()
+
+
 def count_diacritics(text):
     if not text:
         return 0
@@ -394,6 +427,11 @@ class SectionsImportExport():
                             section_peca = peca.school.sections.filter(isDeleted=False, id=jsonData["section"]).first()
                             if section_peca:
                                 if len(jsonData["students"]) > 0:
+                                    errors = self._validateStudentsSection(section_peca, jsonData["students"])
+                                    if errors:
+                                        return {"status_code": 400,
+                                                "message": "Hay estudiantes de otro grado o sección; use Importar múltiple",
+                                                "errors": errors}, 400
                                     placed = dict(
                                         (student_id, str(section_peca.id)) for student_id in
                                         self._importStudentsIntoSection(peca, school, section_peca, jsonData["students"]))
@@ -450,6 +488,23 @@ class SectionsImportExport():
             raise RegisterNotFound(message="Record not found",
                                    status_code=404,
                                    payload={"recordId": pecaId})
+
+    def _validateStudentsSection(self, section_peca, students):
+        """Importar (una sección): cada fila debe indicar el grado y la sección destino."""
+        expected_section = normalize_import_section(section_peca.name)
+        errors = []
+        for idx, student in enumerate(students):
+            student = student if isinstance(student, dict) else {}
+            row = student.get("fila") or idx + 1
+            grade = student.get("grado")
+            section = student.get("seccion")
+            if not grade or not section:
+                errors.append(u"Fila {}: falta el grado o la sección".format(row))
+            elif (normalize_import_grade(grade) != section_peca.grade or
+                  normalize_import_section(section) != expected_section):
+                errors.append(u"Fila {}: indica \"{}\" sección \"{}\", que no corresponde a la sección seleccionada".format(
+                    row, grade, section))
+        return errors
 
     def _importStudentsIntoSection(self, peca, school, section_peca, students):
         """Empareja/agrega en memoria los estudiantes del Excel a una sección; no persiste."""

@@ -29,6 +29,25 @@ class Config(object):
     GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN')
     GMAIL_FROM = os.getenv('GMAIL_FROM')
     GMAIL_FROM_NAME = os.getenv('GMAIL_FROM_NAME')
+    # Vademécum: secreto propio para los tokens de docente (distinto de JWT_SECRET_KEY),
+    # URL de la web docente para los enlaces de los correos y reCAPTCHA (opcional).
+    VADEMECUM_JWT_SECRET_KEY = os.getenv('VADEMECUM_JWT_SECRET_KEY')
+    VADEMECUM_WEB_URL = os.getenv('VADEMECUM_WEB_URL', 'https://vademecum.amblema.org')
+    RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
+    # Volumen persistente de PDF e imágenes de fichas. Nunca dentro de /resources: se sirve
+    # público y las fichas se saltarían la regla de acceso. Por defecto, storage/vademecum
+    # del proyecto (fuera de git); en producción, el volumen de INF-01 por variable.
+    VADEMECUM_STORAGE_PATH = os.getenv(
+        'VADEMECUM_STORAGE_PATH',
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                     'storage', 'vademecum'))
+    # Tamaño máximo del PDF de una ficha subido desde el backoffice
+    VADEMECUM_MAX_UPLOAD_MB = os.getenv('VADEMECUM_MAX_UPLOAD_MB', '100')
+    # Compresión de fichas con Ghostscript: binario (por defecto `gs` del PATH), ajuste
+    # (/ebook; /printer si la impresión real lo pide) y tiempo máximo por ficha en segundos
+    VADEMECUM_GHOSTSCRIPT = os.getenv('VADEMECUM_GHOSTSCRIPT')
+    VADEMECUM_GHOSTSCRIPT_PRESET = os.getenv('VADEMECUM_GHOSTSCRIPT_PRESET', '/ebook')
+    VADEMECUM_GHOSTSCRIPT_TIMEOUT = os.getenv('VADEMECUM_GHOSTSCRIPT_TIMEOUT', '300')
 
 
 class TestingConfig(Config):
@@ -42,6 +61,11 @@ class TestingConfig(Config):
     MONGODB_SETTINGS = {
         'host': os.getenv('TESTING_DB_URL')
     }
+    VADEMECUM_JWT_SECRET_KEY = 'vademecum-testing-secret'
+    VADEMECUM_WEB_URL = 'https://vademecum.test'
+    RECAPTCHA_SECRET_KEY = None
+    # Cada prueba usa su carpeta temporal; nunca el almacenamiento del proyecto
+    VADEMECUM_STORAGE_PATH = None
 
 
 class DevelopmentConfig(Config):

@@ -120,5 +120,24 @@ def create_peca_setting():
             schoolYear.save()
 
 
+@manager.command
+def ensure_vademecum_indexes():
+    from app.helpers.vademecum_seeds import ensure_vademecum_indexes as ensure
+    print('Vademecum: indexes ensured for {} models'.format(ensure()))
+
+
+@manager.command
+def create_vademecum_seeds():
+    from app.helpers.vademecum_seeds import seed_vademecum
+    print('Vademecum seeds created: {}'.format(seed_vademecum()))
+
+
+@manager.command
+def ensure_vademecum_permission():
+    """BO-01: entidad "Vademécum" y su acción, activa en superadmin y admin (idempotente)."""
+    from app.helpers.vademecum_seeds import ensure_vademecum_permission as ensure
+    print('Vademecum permission: {}'.format(ensure()))
+
+
 if __name__ == "__main__":
     manager.run()

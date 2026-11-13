@@ -192,7 +192,8 @@ def create_app(config_instance):
         # Nunca correr pruebas contra una base que no sea de pruebas
         assert_testing_database(app.config["MONGODB_SETTINGS"].get("host"))
     db.init_app(app)
-    CORS(app)
+    # Aditivo: la web de Vademécum lee estos encabezados de la descarga (GES-03 7)
+    CORS(app, expose_headers=["X-Vademecum-Download-Id", "X-Vademecum-Redownload"])
     jwt = JWTManager(app)
     compress.init_app(app)
 
@@ -479,4 +480,7 @@ def create_app(config_instance):
     api.add_resource(ResendEmailSponsorController, '/resend/email/sponsor')
     api.add_resource(CronUpdateActivityOrderCtrl, '/cron/update/activity/order')
     api.add_resource(TestEmailController, '/test-email')
+
+    from app.controllers.vademecum import register_vademecum_resources
+    register_vademecum_resources(api)
     return app

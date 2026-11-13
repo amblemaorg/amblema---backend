@@ -26,3 +26,5 @@ resources/images/schools/
 .coverage
 htmlcov/
 .env
+# Vademécum: PDF e imágenes de fichas (local; en producción es un volumen)
+storage/

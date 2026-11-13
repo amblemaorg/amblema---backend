@@ -24,6 +24,7 @@ MarkupSafe==2.0.1
 marshmallow==3.14.1
 mongoengine==0.24.1
 Pillow==8.4.0
+PyMuPDF==1.19.4; python_version >= "3.6"  # Vademécum (lectura de compendios); en prod requiere Python 3 (EXT-01)
 pycparser==2.21
 PyJWT==1.7.1 #BREAKING BRANCH
 pymongo==4.1.1

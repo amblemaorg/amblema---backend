@@ -99,7 +99,8 @@ class SectionImportTest(unittest.TestCase):
             data=json.dumps(body),
             content_type='application/json')
 
-    def student(self, name, lastName, cardId, section=None, row=None):
+    def student(self, name, lastName, cardId, section=None, row=None, grade="1", sectionName="A"):
+        # Por defecto la fila indica 1er grado sección A (self.section1A)
         data = {
             "nombre": name,
             "apellido": lastName,
@@ -107,6 +108,8 @@ class SectionImportTest(unittest.TestCase):
             "documento_de_identidad": cardId,
             "fecha_de_nacimiento": "15-03-2015",
             "genero": "F",
+            "grado": grade,
+            "seccion": sectionName,
         }
         if section is not None:
             data["section"] = section
@@ -149,6 +152,46 @@ class SectionImportTest(unittest.TestCase):
             payload = json.loads(res.data.decode())
             self.assertEqual(payload["status_code"], status)
             self.assertTrue(payload["message"])
+
+    def test_import_single_accepts_grade_and_section_variants(self):
+        res = self.post({
+            "action": "import",
+            "section": str(self.section2B.id),
+            "students": [
+                self.student("Ana", "Perez", "30111222", grade="2do grado", sectionName=u"Sección b"),
+                self.student("Luis", "Rojas", "30111223", grade=u"Segundo", sectionName="B"),
+                self.student("Eva", "Diaz", "30111224", grade=2, sectionName=" b "),
+            ]
+        })
+        self.assertEqual(res.status_code, 201)
+        peca = PecaProject.objects.get(id=self.pecaProject.id)
+        self.assertEqual(len(self.activeStudents(peca, self.section2B.id)), 3)
+
+    def test_import_single_rejects_other_grade_or_section(self):
+        res = self.post({
+            "action": "import",
+            "section": str(self.section1A.id),
+            "students": [
+                self.student("Ana", "Perez", "30111222", row=2),
+                self.student("Luis", "Rojas", "30111223", row=3, grade="2", sectionName="A"),
+                self.student("Eva", "Diaz", "30111224", row=4, grade="1", sectionName="B"),
+                self.student("Leo", "Mora", "30111225", row=5, grade="", sectionName="A"),
+                self.student("Ivan", "Sosa", "30111226", grade="1", sectionName=""),
+            ]
+        })
+        self.assertEqual(res.status_code, 400)
+        payload = json.loads(res.data.decode())
+        self.assertEqual(payload["status_code"], 400)
+        self.assertEqual(len(payload["errors"]), 4)
+        self.assertTrue(payload["errors"][0].startswith("Fila 3:"))
+        self.assertTrue(payload["errors"][1].startswith("Fila 4:"))
+        self.assertIn("falta el grado", payload["errors"][2])
+        # Sin "fila" se usa la posición en la lista
+        self.assertTrue(payload["errors"][3].startswith("Fila 5:"))
+
+        # Todo o nada: no se importa ni la fila válida
+        peca = PecaProject.objects.get(id=self.pecaProject.id)
+        self.assertEqual(len(self.activeStudents(peca, self.section1A.id)), 0)
 
     def test_import_invalid_field_reports_field_errors(self):
         # Forma que interpreta getImportErrorMessage en el front: { campo: [{ status, msg }] }
@@ -354,7 +397,7 @@ class SectionImportTest(unittest.TestCase):
         res = self.post({
             "action": "import",
             "section": str(self.section2B.id),
-            "students": [self.student("Ana", "Perez", "30111222")]
+            "students": [self.student("Ana", "Perez", "30111222", grade="2", sectionName="B")]
         })
         self.assertEqual(json.loads(res.data.decode())["moved"], 1)
         peca = PecaProject.objects.get(id=self.pecaProject.id)

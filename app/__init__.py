@@ -164,6 +164,7 @@ from app.controllers.teacher_coevaluation_controller import (
     TeacherCoevaluationPublicController,
     TeacherCoevaluationReportController
 )
+from app.controllers.hqs_award_controller import HqsAwardReportController
 from app.controllers.olympics_history_controller import OlympicsHistoryController
 from app.controllers.peca_special_lapse_activity_controller import (
     PecaSpecialActivityController
@@ -440,6 +441,8 @@ def create_app(config_instance):
                      '/statistics/pinsreport/<string:schoolYearId>')
     api.add_resource(TeacherCoevaluationReportController,
                      '/statistics/coevaluationsreport/<string:schoolYearId>')
+    api.add_resource(HqsAwardReportController,
+                     '/statistics/hqsawardsreport/<string:schoolYearId>')
     api.add_resource(TeacherCoevaluationListController,
                      '/pecaprojects/coevaluations/<string:pecaId>')
     api.add_resource(TeacherCoevaluationController,

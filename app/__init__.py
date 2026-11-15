@@ -108,6 +108,10 @@ from app.controllers.peca_project_controller import (
     PecaProjectHandlerController
 )
 from app.controllers.peca_project_print_controller import PecaProjectHandlerPrintOptionsController
+from app.controllers.yearbook_download_controller import (
+    YearbookDownloadListController,
+    YearbookDownloadController
+)
 from app.controllers.peca_school_controller import SchoolController
 from app.controllers.peca_activities_slider_controller import ActivitiesSliderController
 from app.controllers.peca_amblecoins_controller import (
@@ -368,6 +372,8 @@ def create_app(config_instance):
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(PecaProjectHandlerPrintOptionsController, '/pecaprojects/<string:id>/printoptions')
+    api.add_resource(YearbookDownloadListController, '/pecaprojects/yearbook-download')
+    api.add_resource(YearbookDownloadController, '/pecaprojects/<string:id>/yearbook-download')
     api.add_resource(ReqContentApprovalController,
                      '/requestscontentapproval')
     api.add_resource(ReqContentApprovalHandlerController,

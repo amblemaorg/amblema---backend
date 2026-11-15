@@ -126,3 +126,6 @@ class CoevaluationScoresSchemaTest(unittest.TestCase):
     def test_rejects_missing_scores_key(self):
         with self.assertRaises(ValidationError):
             CoevaluationScoresSchema().load({})
+
+    def test_get_level_below_minimum_falls_back_to_last_level(self):
+        self.assertEqual(get_level(-1)["code"], "beginning")

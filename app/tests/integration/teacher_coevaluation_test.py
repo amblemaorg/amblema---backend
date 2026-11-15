@@ -5,6 +5,7 @@ import json
 import re
 import unittest
 from datetime import datetime
+from types import SimpleNamespace
 
 try:
     from unittest import mock
@@ -12,6 +13,7 @@ except ImportError:  # Python 2.7
     import mock
 
 from flask_jwt_extended import create_access_token
+from mongoengine.errors import NotUniqueError
 
 from app import create_app
 from app.tests.base import drop_testing_database
@@ -28,8 +30,11 @@ from app.models.project_model import Project
 from app.models.role_model import Role
 from app.models.teacher_model import Teacher
 from app.models.teacher_coevaluation_model import TeacherCoevaluation
+from app.services.teacher_coevaluation_service import TeacherCoevaluationService
 
 SEND_EMAIL = 'app.services.teacher_coevaluation_service.send_email'
+UPDATE_ONE = 'mongoengine.queryset.base.BaseQuerySet.update_one'
+NO_ID = '5f0000000000000000000000'
 
 
 def scores_payload(value):
@@ -427,3 +432,94 @@ class TeacherCoevaluationTest(unittest.TestCase):
         actions = [a for p in roleDoc.permissions for a in p.actions
                    if a.name == "teacher_coevaluation"]
         return bool(actions) and all(a.allowed for a in actions)
+
+    # ------------------------------------------- ramas de error y concurrencia
+
+    def pecaWithoutSchool(self, schoolYear=None):
+        peca = PecaProject(
+            schoolYear=schoolYear or self.schoolYear,
+            schoolYearName=(schoolYear or self.schoolYear).name,
+            project={"id": str(self.project.id), "code": "1"},
+            school={"name": "x", "code": "y", "sections": []})
+        peca.save()
+        return peca
+
+    def test_school_or_teacher_not_found_when_peca_has_no_school(self):
+        peca = self.pecaWithoutSchool()
+        url = '/pecaprojects/coevaluations/{}/{}'.format(peca.id, self.teacher.id)
+        res = self.client().get(url)
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(json.loads(res.data)["message"], "Teacher not found")
+
+    def test_statuses_peca_not_found_and_denied(self):
+        res = self.client().get('/pecaprojects/coevaluations/' + NO_ID)
+        self.assertEqual(res.status_code, 404)
+        res = self.client().get('/pecaprojects/coevaluations/{}'.format(self.peca.id),
+                                headers=self.headers(self.school))
+        self.assertEqual(res.status_code, 403)
+
+    def test_coordinator_and_send_not_found_and_denied(self):
+        bad = '/pecaprojects/coevaluations/{}/{}'.format(self.peca.id, NO_ID)
+        self.assertEqual(self.post(bad + "/coordinator", scores_payload(3)).status_code, 404)
+        self.assertEqual(self.post(bad + "/send").status_code, 404)
+        other = self.headers(self.school)
+        self.assertEqual(self.post(self.url(suffix="/send"), headers=other).status_code, 403)
+
+    def test_check_access_caller_without_role(self):
+        service = TeacherCoevaluationService()
+        body, status = service.check_access(SimpleNamespace(role=None), self.peca)
+        self.assertEqual(status, 403)
+        # En TESTING sin token (caller None) no se valida
+        self.assertIsNone(service.check_access(None, self.peca))
+
+    def test_refresh_snapshot_does_not_change_completed(self):
+        self.complete(self.teacher, 3, 3)
+        coevaluation = self.coevaluation()
+        service = TeacherCoevaluationService()
+        school = self.school
+        teacher = self.school.teachers.filter(id=self.teacher.id).first()
+        teacher.firstName = "Otro"
+        service._refresh_snapshot(coevaluation, self.peca, school, teacher)
+        self.assertEqual(coevaluation.teacher.firstName, "Luisa")
+
+    def test_get_or_create_handles_parallel_creation(self):
+        service = TeacherCoevaluationService()
+        existing = TeacherCoevaluation(pecaId=str(self.peca.id), teacherId=str(self.teacher.id))
+        teacher = self.school.teachers.filter(id=self.teacher.id).first()
+        with mock.patch.object(TeacherCoevaluation, 'objects') as objects, \
+                mock.patch.object(TeacherCoevaluation, 'save', side_effect=NotUniqueError()):
+            objects.return_value.first.side_effect = [None, existing]
+            result = service._get_or_create(self.peca, self.school, teacher)
+        self.assertEqual(result, existing)
+
+    def test_coordinator_lost_atomic_update_returns_409(self):
+        with mock.patch(UPDATE_ONE, return_value=0):
+            res = self.post(self.url(suffix="/coordinator"), scores_payload(4))
+        self.assertEqual(res.status_code, 409)
+
+    def test_public_lost_atomic_update_returns_404(self):
+        _, token, _ = self.send()
+        with mock.patch(UPDATE_ONE, return_value=0):
+            res = self.post('/coevaluations/public/' + token, scores_payload(3))
+        self.assertEqual(res.status_code, 404)
+
+    def test_email_exception_returns_502(self):
+        with mock.patch(SEND_EMAIL, side_effect=Exception("smtp caido")):
+            res = self.post(self.url(suffix="/send"))
+        self.assertEqual(res.status_code, 502)
+        self.assertEqual(self.coevaluation().emailSentCount, 0)
+
+    def test_public_token_too_long_is_invalid(self):
+        self.assertEqual(self.client().get('/coevaluations/public/' + "a" * 129).status_code, 404)
+
+    def test_report_unknown_school_year_returns_404(self):
+        res = self.client().get('/statistics/coevaluationsreport/' + NO_ID)
+        self.assertEqual(res.status_code, 404)
+
+    def test_report_skips_pecas_without_school_and_without_rows(self):
+        self.pecaWithoutSchool()
+        self.schoolYear.status = "2"  # año pasado: sin coevaluaciones no hay filas
+        self.schoolYear.save()
+        data = json.loads(self.client().get(
+            '/statistics/coevaluationsreport/{}'.format(self.schoolYear.id)).data)
+        self.assertEqual(data["bySchool"], [])

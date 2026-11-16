@@ -15,6 +15,7 @@ Reglas:
 
 import math
 import re
+from datetime import datetime
 
 from app.models.school_year_model import SchoolYear
 from app.models.vademecum import VademecumDownload, VademecumSheetType, VademecumTeacherAccount
@@ -26,6 +27,9 @@ from app.services.vademecum.enrollment_service import EnrollmentService
 DEFAULT_TOP = 10
 MAX_TOP = 50
 EXTERNAL_SCHOOL_NAME = "Externos"
+# Tope de filas de la exportación: más allá se pide al usuario acotar los filtros
+MAX_EXPORT_ROWS = 5000
+ORIGIN_LABELS = {"enrollment": u"Matrícula", "external": u"Externo"}
 
 
 def _year_ref(schoolYear):
@@ -217,24 +221,9 @@ class IndicatorService(object):
             return failure
         if not schoolYear:
             return _empty_page(pageSize), 200
-        match, failure = self._match(schoolYear, args, ("schoolId", "stateId", "origin"))
+        pipeline, failure = self._teachers_pipeline(schoolYear, args)
         if failure:
             return failure
-        q = (args.get("q") or "").strip()
-        if len(q) > MAX_QUERY_LENGTH:
-            return invalid("q")
-
-        pipeline = [{"$match": match}, {"$sort": {"createdAt": -1}},
-                    {"$group": {"_id": "$account.id", "account": {"$first": "$account"},
-                                "origin": {"$first": "$origin"},
-                                "schools": {"$addToSet": "$school"},
-                                "downloads": {"$sum": 1},
-                                "lastDownloadAt": {"$max": "$createdAt"}}}]
-        if q:
-            pattern = {"$regex": re.escape(q), "$options": "i"}
-            pipeline.append({"$match": {"$or": [{"account.email": pattern},
-                                                {"account.firstName": pattern},
-                                                {"account.lastName": pattern}]}})
         pipeline.append({"$facet": {
             "total": [{"$count": "n"}],
             "records": [{"$sort": {"downloads": -1, "account.email": 1}},
@@ -251,6 +240,75 @@ class IndicatorService(object):
                             "lastDownloadAt": isoformat(row["lastDownloadAt"])})
         return {"records": records,
                 "pagination": _pagination(page, pageSize, _count(result["total"]))}, 200
+
+    def _teachers_pipeline(self, schoolYear, args):
+        """(pipeline, error): una fila por docente, con filtros y búsqueda `q` ya aplicados.
+        Lo comparten el listado y la exportación."""
+        match, failure = self._match(
+            schoolYear, args, ("schoolId", "stateId", "sheetTypeId", "origin"))
+        if failure:
+            return None, failure
+        q = (args.get("q") or "").strip()
+        if len(q) > MAX_QUERY_LENGTH:
+            return None, invalid("q")
+
+        pipeline = [{"$match": match}, {"$sort": {"createdAt": -1}},
+                    {"$group": {"_id": "$account.id", "account": {"$first": "$account"},
+                                "origin": {"$first": "$origin"},
+                                "schools": {"$addToSet": "$school"},
+                                "downloads": {"$sum": 1},
+                                "lastDownloadAt": {"$max": "$createdAt"}}}]
+        if q:
+            pattern = {"$regex": re.escape(q), "$options": "i"}
+            pipeline.append({"$match": {"$or": [{"account.email": pattern},
+                                                {"account.firstName": pattern},
+                                                {"account.lastName": pattern}]}})
+        return pipeline, None
+
+    # --- GET /vademecum/admin/indicators/teachers/export ---
+
+    def export_teachers(self, args):
+        schoolYear, failure = self._school_year(args)
+        if failure:
+            return failure
+        filters = {name: args.get(name) or None
+                   for name in ("schoolId", "stateId", "sheetTypeId", "origin", "q")}
+        data = {"schoolYear": _year_ref(schoolYear), "generatedAt": isoformat(datetime.utcnow()),
+                "filters": filters, "total": 0, "records": []}
+        if not schoolYear:
+            return data, 200
+        pipeline, failure = self._teachers_pipeline(schoolYear, args)
+        if failure:
+            return failure
+        # Se pide una fila de más solo para saber si se pasó del tope
+        pipeline.append({"$limit": MAX_EXPORT_ROWS + 1})
+        rows = list(VademecumDownload.objects.aggregate(pipeline))
+        if len(rows) > MAX_EXPORT_ROWS:
+            return invalid("general", "Too many rows, narrow the filters")
+
+        records = [self._export_record(row) for row in rows]
+        records.sort(key=lambda r: (-r["downloads"], (r["lastName"] or u"").lower(),
+                                    (r["firstName"] or u"").lower()))
+        data["total"] = len(records)
+        data["records"] = records
+        return data, 200
+
+    @staticmethod
+    def _export_record(row):
+        """Fila plana (solo texto y números) lista para xlsx y pdfmake."""
+        account = row["account"]
+        # Una escuela por id aunque su nombre haya cambiado entre descargas
+        schools = {s["id"]: s for s in row["schools"] if s}.values()
+
+        def joined(key):
+            return u", ".join(sorted({s.get(key) for s in schools if s.get(key)}))
+
+        return {"firstName": account.get("firstName"), "lastName": account.get("lastName"),
+                "email": account.get("email"), "origin": row["origin"],
+                "originLabel": ORIGIN_LABELS.get(row["origin"], row["origin"]),
+                "schools": joined("name"), "schoolCodes": joined("code"),
+                "states": joined("stateName"), "downloads": row["downloads"],
+                "lastDownloadAt": isoformat(row["lastDownloadAt"])}
 
     # --- GET /vademecum/admin/indicators/teachers/{accountId}/downloads ---
 

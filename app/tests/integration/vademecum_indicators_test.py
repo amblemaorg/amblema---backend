@@ -3,6 +3,7 @@
 """Indicadores de uso para el backoffice (API-17)."""
 
 import unittest
+from unittest import mock
 from datetime import datetime, timedelta
 
 from bson import ObjectId
@@ -173,6 +174,76 @@ class VademecumIndicatorsTest(VademecumAdminTestBase):
     def test_teacher_downloads_not_found(self):
         self.assert_error(self.get("/teachers/%s/downloads" % ObjectId()), 404, "general", "5")
         self.assert_error(self.get("/teachers/x/downloads"), 404, "general", "5")
+
+    # --- Exportación ---
+
+    def test_teachers_filter_by_sheet_type(self):
+        data = self.ok("/teachers?sheetTypeId=" + str(self.ingenio.id))
+        self.assertEqual(sorted((r["account"]["email"], r["downloads"]) for r in data["records"]),
+                         [("ana@test.com", 1), ("maria@test.com", 1)])
+
+    def test_export_flat_columns_and_order(self):
+        # José también descarga en la escuela A: dos escuelas, sin repetir y ordenadas
+        self.download(self.jose, self.ht2, self.schoolA)
+        data = self.ok("/teachers/export")
+        self.assertEqual(data["schoolYear"], {"id": str(self.year.id), "name": "2026 - 2027"})
+        self.assertTrue(data["generatedAt"].endswith("Z"))
+        self.assertEqual(data["filters"], {"schoolId": None, "stateId": None,
+                                           "sheetTypeId": None, "origin": None, "q": None})
+        self.assertEqual(data["total"], 3)
+        self.assertEqual([r["email"] for r in data["records"]],
+                         ["maria@test.com", "ana@test.com", "jose@test.com"])  # empate: apellido
+        maria, jose = data["records"][0], data["records"][2]
+        self.assertEqual((maria["firstName"], maria["lastName"], maria["origin"],
+                          maria["originLabel"]), (u"María", u"Pérez", "enrollment", u"Matrícula"))
+        self.assertEqual((maria["schools"], maria["schoolCodes"], maria["states"],
+                          maria["downloads"]), ("Escuela A", "OD1", "Lara", 3))
+        self.assertTrue(maria["lastDownloadAt"].endswith("Z"))
+        self.assertEqual((jose["schools"], jose["schoolCodes"], jose["states"], jose["downloads"]),
+                         ("Escuela A, Escuela B", "OD1, OD2", "Lara, Zulia", 2))
+
+    def test_export_external_has_label_and_empty_schools(self):
+        data = self.ok("/teachers/export?origin=external")
+        self.assertEqual(data["filters"]["origin"], "external")
+        self.assertEqual(data["total"], 1)
+        ana = data["records"][0]
+        self.assertEqual((ana["originLabel"], ana["schools"], ana["schoolCodes"], ana["states"]),
+                         ("Externo", "", "", ""))
+
+    def test_export_filters_by_sheet_type_and_ignores_redownloads(self):
+        data = self.ok("/teachers/export?sheetTypeId=" + str(self.ingenio.id))
+        self.assertEqual(sorted(r["email"] for r in data["records"]),
+                         ["ana@test.com", "maria@test.com"])
+        self.assertEqual(data["filters"]["sheetTypeId"], str(self.ingenio.id))
+        # María tiene 4 descargas con la redescarga: el export cuenta 3
+        maria = [r for r in self.ok("/teachers/export")["records"]
+                 if r["email"] == "maria@test.com"][0]
+        self.assertEqual(maria["downloads"], 3)
+        self.assertEqual(self.ok("/teachers/export?q=ROJAS")["total"], 1)
+
+    def test_export_invalid_filters(self):
+        for query, field in (("?origin=otro", "origin"), ("?schoolId=x", "schoolId"),
+                             ("?sheetTypeId=x", "sheetTypeId"), ("?schoolYearId=x", "schoolYearId"),
+                             ("?q=" + "a" * 101, "q")):
+            self.assert_error(self.get("/teachers/export" + query), 400, field, "1")
+
+    def test_export_too_many_rows(self):
+        with mock.patch("app.services.vademecum.indicator_service.MAX_EXPORT_ROWS", 1):
+            self.assert_error(self.get("/teachers/export"), 400, "general", "1")
+            self.assertEqual(self.ok("/teachers/export?origin=external")["total"], 1)
+
+    def test_export_without_current_year_returns_empty(self):
+        from app.models.school_year_model import SchoolYear
+        SchoolYear.objects(id=self.year.id).update(set__status="2")
+        data = self.ok("/teachers/export")
+        self.assertIsNone(data["schoolYear"])
+        self.assertEqual((data["total"], data["records"]), (0, []))
+
+    def test_export_requires_vademecum_admin(self):
+        self.assertIn(self.get("/teachers/export", headers={}).status_code, (401, 422))
+        coordinator = self.create_user("coord@test.com", "10000002", "coordinator")
+        self.assertEqual(self.get("/teachers/export",
+                                  headers=self.headers(coordinator)).status_code, 403)
 
 
 if __name__ == "__main__":

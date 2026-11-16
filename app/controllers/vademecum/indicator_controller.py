@@ -21,6 +21,12 @@ class AdminIndicatorTeachersController(Resource):
         return IndicatorService().teachers(request.args)
 
 
+class AdminIndicatorTeachersExportController(Resource):
+    @vademecum_admin_required
+    def get(self):
+        return IndicatorService().export_teachers(request.args)
+
+
 class AdminIndicatorTeacherDownloadsController(Resource):
     @vademecum_admin_required
     def get(self, accountId):

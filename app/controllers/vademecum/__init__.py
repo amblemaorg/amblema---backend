@@ -83,3 +83,12 @@ def register_vademecum_resources(api):
     api.add_resource(AdminAuthorizationListController, *_routes(admin + "/authorizations"))
     api.add_resource(AdminAuthorizationRevokeController,
                      *_routes(admin + "/authorizations/<string:authorizationId>/revoke"))
+
+    from app.controllers.vademecum.indicator_controller import (
+        AdminIndicatorsController, AdminIndicatorTeachersController,
+        AdminIndicatorTeacherDownloadsController)
+
+    api.add_resource(AdminIndicatorsController, *_routes(admin + "/indicators"))
+    api.add_resource(AdminIndicatorTeachersController, *_routes(admin + "/indicators/teachers"))
+    api.add_resource(AdminIndicatorTeacherDownloadsController,
+                     *_routes(admin + "/indicators/teachers/<string:accountId>/downloads"))

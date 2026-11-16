@@ -94,3 +94,16 @@ def register_vademecum_resources(api):
                      *_routes(admin + "/indicators/teachers/export"))
     api.add_resource(AdminIndicatorTeacherDownloadsController,
                      *_routes(admin + "/indicators/teachers/<string:accountId>/downloads"))
+
+    from app.controllers.vademecum.rating_controller import (
+        MyRatingController, SheetCommentsController, AdminRatingListController,
+        AdminRatingApproveController, AdminRatingHideController)
+
+    api.add_resource(MyRatingController, *_routes("/vademecum/me/ratings/<string:sheetId>"))
+    api.add_resource(SheetCommentsController,
+                     *_routes("/vademecum/sheets/<string:sheetId>/comments"))
+    api.add_resource(AdminRatingListController, *_routes(admin + "/ratings"))
+    api.add_resource(AdminRatingApproveController,
+                     *_routes(admin + "/ratings/<string:ratingId>/approve"))
+    api.add_resource(AdminRatingHideController,
+                     *_routes(admin + "/ratings/<string:ratingId>/hide"))

@@ -17,6 +17,11 @@ class CatalogOptionsController(Resource):
         return CatalogService().catalog_options()
 
 
+class SiteContentController(Resource):
+    def get(self):
+        return CatalogService().site_content()
+
+
 class SheetListController(Resource):
     def get(self):
         return CatalogService().list_sheets(request.args)

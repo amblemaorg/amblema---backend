@@ -29,10 +29,11 @@ def register_vademecum_resources(api):
     api.add_resource(MePasswordController, *_routes("/vademecum/me/password"))
 
     from app.controllers.vademecum.catalog_controller import (
-        CatalogOptionsController, SheetListController, SheetDetailController,
-        SheetThumbnailController, SheetPreviewController)
+        CatalogOptionsController, SiteContentController, SheetListController,
+        SheetDetailController, SheetThumbnailController, SheetPreviewController)
 
     api.add_resource(CatalogOptionsController, *_routes("/vademecum/catalog-options"))
+    api.add_resource(SiteContentController, *_routes("/vademecum/site-content"))
     api.add_resource(SheetListController, *_routes("/vademecum/sheets"))
     api.add_resource(SheetDetailController, *_routes("/vademecum/sheets/<string:sheetId>"))
     api.add_resource(SheetThumbnailController,
@@ -94,6 +95,13 @@ def register_vademecum_resources(api):
                      *_routes(admin + "/indicators/teachers/export"))
     api.add_resource(AdminIndicatorTeacherDownloadsController,
                      *_routes(admin + "/indicators/teachers/<string:accountId>/downloads"))
+
+    from app.controllers.vademecum.library_controller import (
+        MyDownloadsController, MyFavoritesController, MyFavoriteController)
+
+    api.add_resource(MyDownloadsController, *_routes("/vademecum/me/downloads"))
+    api.add_resource(MyFavoritesController, *_routes("/vademecum/me/favorites"))
+    api.add_resource(MyFavoriteController, *_routes("/vademecum/me/favorites/<string:sheetId>"))
 
     from app.controllers.vademecum.rating_controller import (
         MyRatingController, SheetCommentsController, AdminRatingListController,

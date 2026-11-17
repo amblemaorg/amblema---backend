@@ -15,7 +15,7 @@ from bson import ObjectId
 from bson.errors import InvalidId
 
 from app.models.vademecum import (
-    VademecumArea, VademecumRating, VademecumSheet, VademecumSheetType)
+    VademecumArea, VademecumRating, VademecumSheet, VademecumSheetType, VademecumSiteContent)
 from app.models.vademecum.constants import GRADE_LABELS, GRADES
 
 SORTS = {
@@ -135,6 +135,12 @@ class CatalogService(object):
                  for a in VademecumArea.objects(isDeleted=False, status="1").order_by("sort")]
         grades = [{"value": g, "label": GRADE_LABELS[g]} for g in GRADES]
         return {"sheetTypes": sheetTypes, "areas": areas, "grades": grades}, 200
+
+    def site_content(self):
+        """Textos editables de las secciones del sitio, por clave (el HTML ya viene saneado)."""
+        return {"records": [
+            {"key": c.key, "title": c.title, "body": c.body, "updatedAt": isoformat(c.updatedAt)}
+            for c in VademecumSiteContent.objects.order_by("key")]}, 200
 
     def list_sheets(self, args):
         query = {"status": "published", "isDeleted": False}

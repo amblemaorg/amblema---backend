@@ -29,10 +29,11 @@ def register_vademecum_resources(api):
     api.add_resource(MePasswordController, *_routes("/vademecum/me/password"))
 
     from app.controllers.vademecum.catalog_controller import (
-        CatalogOptionsController, SiteContentController, SheetListController,
+        CatalogOptionsController, SiteContentController, HomeController, SheetListController,
         SheetDetailController, SheetThumbnailController, SheetPreviewController)
 
     api.add_resource(CatalogOptionsController, *_routes("/vademecum/catalog-options"))
+    api.add_resource(HomeController, *_routes("/vademecum/home"))
     api.add_resource(SiteContentController, *_routes("/vademecum/site-content"))
     api.add_resource(SheetListController, *_routes("/vademecum/sheets"))
     api.add_resource(SheetDetailController, *_routes("/vademecum/sheets/<string:sheetId>"))

@@ -23,6 +23,7 @@ SORTS = {
     "number": ("sheetType", "seriesId", "number"),
     "popular": ("-downloadCount", "-publishedAt"),
 }
+HOME_SIZE = 8
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 MAX_QUERY_LENGTH = 100
@@ -142,7 +143,51 @@ class CatalogService(object):
             {"key": c.key, "title": c.title, "body": c.body, "updatedAt": isoformat(c.updatedAt)}
             for c in VademecumSiteContent.objects.order_by("key")]}, 200
 
-    def list_sheets(self, args):
+    def teacher_grades(self, account):
+        """Grados del docente en el año vigente, según su matrícula; [] si no hay sesión o matrícula."""
+        if not account:
+            return []
+        from app.services.vademecum.enrollment_service import EnrollmentService
+        return EnrollmentService().resolve(account.email).grades
+
+    def _prioritized_page(self, sheets, order, grades, skip, limit):
+        """(fichas de la página, total): primero las de `grades` y las de todos los grados.
+
+        Es prioridad, no restricción: después de esas siguen las demás, cada grupo con el orden
+        pedido. La página se arma sobre los dos grupos como si fueran una sola lista.
+        """
+        wanted = list(set(grades) | {"all"})
+        first = sheets.filter(grades__in=wanted).order_by(*order)
+        rest = sheets.filter(grades__nin=wanted).order_by(*order)
+        nFirst = first.count()
+        records = list(first.skip(skip).limit(limit)) if skip < nFirst else []
+        missing = limit - len(records)
+        if missing > 0:
+            records += list(rest.skip(max(0, skip - nFirst)).limit(missing))
+        return records, nFirst + rest.count()
+
+    def home(self, account=None):
+        """Los 8 lanzamientos más recientes y las 8 fichas más descargadas (sin redescargas).
+
+        `downloadCount` solo suma la primera descarga por cuenta, ficha y año. Con matrícula,
+        cada lista muestra primero las fichas de los grados del docente.
+        """
+        base = VademecumSheet.objects(status="published", isDeleted=False).only(*SUMMARY_FIELDS)
+        grades = self.teacher_grades(account)
+
+        def eight(sheets, order):
+            if grades:
+                return self._prioritized_page(sheets, order, grades, 0, HOME_SIZE)[0]
+            return list(sheets.order_by(*order).limit(HOME_SIZE))
+
+        types, areas = self._types_and_areas()
+        return {
+            "newReleases": [self.summary(s, types, areas) for s in eight(base, SORTS["newest"])],
+            "featured": [self.summary(s, types, areas)
+                         for s in eight(base.filter(downloadCount__gt=0), SORTS["popular"])],
+        }, 200
+
+    def list_sheets(self, args, account=None):
         query = {"status": "published", "isDeleted": False}
 
         sheetTypeId = args.get("sheetTypeId")
@@ -183,19 +228,27 @@ class CatalogService(object):
             return invalid("pageSize" if page >= 1 else "page")
 
         sheets = VademecumSheet.objects(**query).only(*SUMMARY_FIELDS)
-        byCode = code_query(q) if q else None
-        if byCode:
-            sheets = sheets.filter(__raw__=byCode)
-        elif q:
-            sheets = sheets.search_text(q, language="spanish")
-        if sort == "relevance" and byCode:
-            sheets = sheets.order_by("sheetType", "seriesId", "number")  # IM56-2 antes que IM56-10
-        elif sort == "relevance":
-            sheets = sheets.order_by("$text_score")
+        # CON-03: un docente con matrícula ve primero las fichas de sus grados, sin ocultar el
+        # resto. Solo si no filtró por grado ni buscó texto (en ese caso manda su criterio).
+        teacherGrades = [] if grades or q else self.teacher_grades(account)
+        if teacherGrades:
+            skip = (page - 1) * pageSize
+            records, total = self._prioritized_page(
+                sheets, SORTS[sort], teacherGrades, skip, pageSize)
         else:
-            sheets = sheets.order_by(*SORTS[sort])
-        total = sheets.count()
-        records = sheets.skip((page - 1) * pageSize).limit(pageSize)
+            byCode = code_query(q) if q else None
+            if byCode:
+                sheets = sheets.filter(__raw__=byCode)
+            elif q:
+                sheets = sheets.search_text(q, language="spanish")
+            if sort == "relevance" and byCode:
+                sheets = sheets.order_by("sheetType", "seriesId", "number")  # IM56-2 antes que IM56-10
+            elif sort == "relevance":
+                sheets = sheets.order_by("$text_score")
+            else:
+                sheets = sheets.order_by(*SORTS[sort])
+            total = sheets.count()
+            records = sheets.skip((page - 1) * pageSize).limit(pageSize)
         types, areas = self._types_and_areas()
         return {
             "records": [self.summary(s, types, areas) for s in records],

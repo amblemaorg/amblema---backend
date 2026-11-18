@@ -159,7 +159,8 @@ class TeacherCoevaluationService():
         return scores_to_list(data), None
 
     def _web_url(self, origin=None):
-        url = os.getenv('WEB_URL') or origin or 'http://localhost:4200'
+        url = (os.getenv('WEB_URL') or origin
+               or current_app.config.get('WEB_URL') or 'http://localhost:2005')
         return url.rstrip('/')
 
     # ------------------------------------------------------------- serializers
@@ -343,36 +344,154 @@ class TeacherCoevaluationService():
     def _send_email(self, coevaluation, email, link):
         teacherName = u"{} {}".format(
             coevaluation.teacher.firstName or "", coevaluation.teacher.lastName or "").strip()
-        coordinatorName = coevaluation.coordinator.name if coevaluation.coordinator else ""
+        coordinatorName = (
+            coevaluation.coordinator.name
+            if coevaluation.coordinator and coevaluation.coordinator.name else u"Por asignar")
+        schoolLabel = u"{}{}".format(
+            coevaluation.schoolName or "",
+            u" ({})".format(coevaluation.schoolCode) if coevaluation.schoolCode else u"")
+        sectionsLabel = coevaluation.sections or u"Sin sección asignada"
+        schoolYearLabel = coevaluation.schoolYearName or u""
         subject = u"Coevaluación Docente AmbLeMa HQS - {}".format(coevaluation.schoolName or "")
-        body = u"""
-        <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-            <h2 style="color: #81B03E;">Coevaluación Docente AmbLeMa HQS</h2>
-            <p>Estimado/a <strong>{teacher}</strong>,</p>
-            <p>Lo/la invitamos a completar su parte de la coevaluación docente del año escolar
-            <strong>{schoolYear}</strong> en la escuela <strong>{school}</strong>, junto a su
-            coordinador/a AmbLeMa <strong>{coordinator}</strong>.</p>
-            <p style="margin: 25px 0;">
-                <a href="{link}" style="background-color: #81B03E; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
-                    Realizar coevaluación
-                </a>
-            </p>
-            <p>O copie y pegue la siguiente dirección en su navegador:</p>
-            <p><a href="{link}">{link}</a></p>
-            <p style="color: #666; font-size: 0.9em;"><em>Este enlace es personal y de un solo uso.
-            Una vez enviada la coevaluación no se podrá modificar. Si recibe un nuevo correo,
-            use solo el enlace más reciente.</em></p>
-            <br>
-            <p>Atentamente,</p>
-            <p><strong>Fundación AmbLeMa</strong></p>
-        </div>
-        """.format(teacher=teacherName, schoolYear=coevaluation.schoolYearName or "",
-                   school=coevaluation.schoolName or "", coordinator=coordinatorName or "",
-                   link=link)
+        body = u"""<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coevaluación Docente AmbLeMa HQS</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f7f6; font-family: 'Montserrat', 'Segoe UI', Arial, Helvetica, sans-serif; color: #1c3135; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f7f6; padding: 28px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #ffffff; border: 1px solid #d7e2e4; border-radius: 12px; overflow: hidden;">
+          <!-- Encabezado azul PECA con filete inferior verde AmbLeMa -->
+          <tr>
+            <td style="background-color: #00809a; border-bottom: 4px solid #81b03e; padding: 26px 32px;">
+              <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #cce7ed;">
+                Fundación AmbLeMa · Instrumento HQS
+              </p>
+              <h1 style="margin: 0; font-size: 22px; line-height: 1.3; font-weight: 700; color: #ffffff;">
+                Coevaluación Docente AmbLeMa HQS
+              </h1>
+              <p style="margin: 8px 0 0 0; font-size: 13px; color: #e2f2f5;">
+                Año escolar <strong>{schoolYear}</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Contenido principal -->
+          <tr>
+            <td style="padding: 30px 32px 24px 32px;">
+              <p style="margin: 0 0 14px 0; font-size: 16px; line-height: 1.5; color: #00353a;">
+                Estimado/a <strong>{teacher}</strong>,
+              </p>
+              <p style="margin: 0 0 22px 0; font-size: 14px; line-height: 1.65; color: #364f54;">
+                Lo/la invitamos a completar su parte de la <strong>Coevaluación Docente AmbLeMa HQS</strong>.
+                Este instrumento consta de <strong>15 prácticas pedagógicas</strong> valoradas en una escala de
+                <strong>0 a 5</strong>; su coordinador/a AmbLeMa realizará la misma valoración para luego
+                conversar juntos sobre los resultados.
+              </p>
+
+              <!-- Tarjeta de datos del docente y la escuela -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f7f6; border: 1px solid #d7e2e4; border-left: 4px solid #00809a; border-radius: 8px; margin: 0 0 26px 0;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding: 4px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #5b7278; width: 38%; vertical-align: top;">
+                          Escuela
+                        </td>
+                        <td style="padding: 4px 0; font-size: 14px; font-weight: 600; color: #00353a; vertical-align: top;">
+                          {school}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #5b7278; vertical-align: top;">
+                          Grado / Sección
+                        </td>
+                        <td style="padding: 4px 0; font-size: 14px; color: #1c3135; vertical-align: top;">
+                          {sections}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #5b7278; vertical-align: top;">
+                          Año escolar
+                        </td>
+                        <td style="padding: 4px 0; font-size: 14px; color: #1c3135; vertical-align: top;">
+                          {schoolYear}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #5b7278; vertical-align: top;">
+                          Coordinador/a
+                        </td>
+                        <td style="padding: 4px 0; font-size: 14px; color: #1c3135; vertical-align: top;">
+                          {coordinator}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Botón principal -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 26px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="{link}" target="_blank" rel="noopener noreferrer" style="background-color: #81b03e; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 8px; display: inline-block; border: 1px solid #6f9a33;">
+                      Realizar coevaluación
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Indicaciones importantes -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f9fbfa; border: 1px solid #d7e2e4; border-radius: 8px; margin: 0 0 22px 0;">
+                <tr>
+                  <td style="padding: 14px 18px; font-size: 13px; line-height: 1.55; color: #4a6268;">
+                    <strong style="color: #00353a; display: block; margin-bottom: 4px;">Importante antes de comenzar:</strong>
+                    • Este enlace es <strong>personal y de un solo uso</strong>.<br>
+                    • Una vez enviada la coevaluación, las respuestas quedan registradas y no se podrán modificar.<br>
+                    • Si recibe un nuevo correo, utilice únicamente el <strong>enlace más reciente</strong>.
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Enlace directo alternativo -->
+              <p style="margin: 0 0 6px 0; font-size: 12px; color: #5b7278;">
+                Si el botón no abre directamente, copie y pegue este enlace en su navegador:
+              </p>
+              <p style="margin: 0; font-size: 12px; line-height: 1.5; word-break: break-all;">
+                <a href="{link}" target="_blank" rel="noopener noreferrer" style="color: #00809a; text-decoration: underline;">{link}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Pie -->
+          <tr>
+            <td style="background-color: #f4f7f6; border-top: 1px solid #d7e2e4; padding: 18px 32px;">
+              <p style="margin: 0 0 2px 0; font-size: 13px; font-weight: 700; color: #00353a;">
+                Fundación AmbLeMa
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #5b7278;">
+                Mensaje enviado automáticamente desde la plataforma AmbLeMa.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>""".format(teacher=teacherName, schoolYear=schoolYearLabel,
+                  school=schoolLabel, sections=sectionsLabel,
+                  coordinator=coordinatorName, link=link)
         plainTextBody = (
             u"Hola {}, complete su parte de la coevaluación docente AmbLeMa HQS ({}, {}). "
+            u"Grado / Sección: {}. Coordinador/a: {}. "
             u"Enlace personal y de un solo uso: {}").format(
-                teacherName, coevaluation.schoolName or "", coevaluation.schoolYearName or "", link)
+                teacherName, schoolLabel, schoolYearLabel, sectionsLabel, coordinatorName, link)
         try:
             return send_email(body, plainTextBody, subject, email)
         except Exception as e:

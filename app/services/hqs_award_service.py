@@ -49,11 +49,12 @@ def average_iaa(indexes):
 
 
 def build_school_row(schoolId, name, pecaId, coordinator, lapse3,
-                     iaaRaw, percentages):
+                     iaaRaw, percentages, yearbookDownloadEnabled=False):
     """
     Arma la fila de una escuela del reporte.
     lapse3: resumen de diagnósticos del lapso 3 (o None).
     percentages: porcentajes de las coevaluaciones completas.
+    yearbookDownloadEnabled: si el anuario del PECA está habilitado para descarga.
     """
     components = {"iaa": iaa_percentage(iaaRaw)}
     for key, field in ACADEMIC_FIELDS.items():
@@ -65,7 +66,7 @@ def build_school_row(schoolId, name, pecaId, coordinator, lapse3,
     if teacherIndex is None:
         missing = missing + ["teacherIndex"]
     finalIdx = final_index(integral, teacherIndex)
-    award = get_award(finalIdx)
+    award = get_award(integral, teacherIndex)
 
     if award:
         status, awardLabel = STATUS_AWARDED, award["label"]
@@ -90,12 +91,24 @@ def build_school_row(schoolId, name, pecaId, coordinator, lapse3,
         "status": status,
         "award": award["code"] if award else None,
         "awardLabel": awardLabel,
+        "yearbookDownloadEnabled": yearbookDownloadEnabled,
     }
 
 
+AWARD_RANK = {"gold": 0, "silver": 1, "bronze": 2}
+
+
+def _rank(school):
+    if school["award"]:
+        return AWARD_RANK[school["award"]]
+    return 3 if school["status"] == STATUS_NONE else 4
+
+
 def sort_schools(schools):
-    """finalIndex descendente (None al final) y luego nombre sin mayúsculas."""
+    """Por nivel (oro, plata, bronce, sin premio, incompleto), luego finalIndex
+    descendente (None al final) y luego nombre sin mayúsculas."""
     schools.sort(key=lambda s: (
+        _rank(s),
         s["finalIndex"] is None,
         -(s["finalIndex"] or 0),
         (s["name"] or "").lower()))
@@ -129,7 +142,7 @@ class HqsAwardService():
             pecaFilter["project__school__id"] = schoolId
         # Solo lo necesario: sin school.sections (estudiantes embebidos, pesados).
         pecas = [peca for peca in PecaProject.objects(**pecaFilter).only(
-            'id', 'project', 'school.diagnostics')
+            'id', 'project', 'school.diagnostics', 'yearbookDownloadEnabled')
             if peca.project and peca.project.school]
         pecaIds = [str(peca.id) for peca in pecas]
 
@@ -161,7 +174,8 @@ class HqsAwardService():
                 coordinator=coordinator.name if coordinator else None,
                 lapse3=lapse3,
                 iaaRaw=average_iaa(iaaByPeca.get(pecaId, [])),
-                percentages=percentagesByPeca.get(pecaId, [])))
+                percentages=percentagesByPeca.get(pecaId, []),
+                yearbookDownloadEnabled=bool(peca.yearbookDownloadEnabled)))
 
         sort_schools(schools)
         return {

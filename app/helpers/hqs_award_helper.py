@@ -8,10 +8,10 @@ Reglas:
 - IAA: promedio crudo sobre IAA_MAX (35) -> porcentaje.
 - Índice integral: promedio simple de los 4 componentes (COMPONENTS).
   Si falta alguno no hay índice integral.
-- Índice final: promedio del índice integral y el índice de coevaluación
-  docente (teacherIndex). Si falta alguno no hay índice final.
-- Premio: primer nivel de AWARD_LEVELS cuyo minPercentage sea <= índice final;
-  por debajo de 40 no hay premio.
+- Índice final: promedio informativo del índice integral y el índice de
+  coevaluación docente (teacherIndex). Si falta alguno no hay índice final.
+- Premio: primer nivel cuyo minPercentage cumplen a la vez el índice integral y
+  el índice docente; si alguno es < 40 no hay premio.
 """
 from __future__ import division
 
@@ -63,11 +63,11 @@ def final_index(integral, teacherIndex):
     return round((integral + teacherIndex) / 2, 2)
 
 
-def get_award(finalIndex):
-    """Devuelve el nivel de premio alcanzado o None."""
-    if finalIndex is None:
+def get_award(integral, teacherIndex):
+    """Primer nivel que cumplen a la vez ambos índices (>=); None si no hay."""
+    if integral is None or teacherIndex is None:
         return None
     for level in AWARD_LEVELS:
-        if finalIndex >= level["minPercentage"]:
+        if integral >= level["minPercentage"] and teacherIndex >= level["minPercentage"]:
             return level
     return None

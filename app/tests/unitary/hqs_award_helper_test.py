@@ -38,15 +38,17 @@ class HqsAwardHelperTest(unittest.TestCase):
         self.assertIsNone(final_index(80, None))
         self.assertEqual(final_index(75.0, 84.0), 79.5)
 
-    def test_award_boundaries(self):
-        self.assertEqual(get_award(100)["code"], "gold")
-        self.assertEqual(get_award(80.0)["code"], "gold")
-        self.assertEqual(get_award(79.99)["code"], "silver")
-        self.assertEqual(get_award(60.0)["code"], "silver")
-        self.assertEqual(get_award(59.99)["code"], "bronze")
-        self.assertEqual(get_award(40.0)["code"], "bronze")
-        self.assertIsNone(get_award(39.99))
-        self.assertIsNone(get_award(None))
+    def test_award_requires_both_indexes(self):
+        self.assertEqual(get_award(100, 100)["code"], "gold")
+        self.assertEqual(get_award(80.0, 80.0)["code"], "gold")
+        self.assertEqual(get_award(95.0, 79.99)["code"], "silver")
+        self.assertEqual(get_award(79.99, 95.0)["code"], "silver")
+        self.assertEqual(get_award(60.0, 100)["code"], "silver")
+        self.assertEqual(get_award(100, 59.99)["code"], "bronze")
+        self.assertEqual(get_award(40.0, 40.0)["code"], "bronze")
+        self.assertIsNone(get_award(90.0, 39.99))  # promedio 64,99, pero docente < 40
+        self.assertIsNone(get_award(None, 90))
+        self.assertIsNone(get_award(90, None))
 
 
 if __name__ == "__main__":

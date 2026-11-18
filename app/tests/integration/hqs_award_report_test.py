@@ -44,8 +44,9 @@ class HqsAwardReportTest(unittest.TestCase):
 
     # ------------------------------------------------------------- helpers
 
-    def newPeca(self, lapse3=None, deleted=False):
+    def newPeca(self, lapse3=None, deleted=False, yearbookDownloadEnabled=False):
         peca = PecaProject(
+            yearbookDownloadEnabled=yearbookDownloadEnabled,
             schoolYear=self.schoolYear,
             schoolYearName=self.schoolYear.name,
             project={
@@ -128,6 +129,27 @@ class HqsAwardReportTest(unittest.TestCase):
         self.assertEqual(s["finalIndex"], 43.75)  # integral (40+50+50+50)/4 = 47.5; docentes 40
         self.assertEqual(s["award"], "bronze")
 
+    def test_high_integral_low_teacher_is_silver(self):
+        peca = self.newPeca(lapse3={"wordsPerMinIndex": 100.0, "multiplicationsPerMinIndex": 100.0,
+                                    "operationsPerMinIndex": 100.0})
+        self.addEvaluator(peca, 35)          # IAA 100 %
+        self.addCoevaluation(peca, "t1", 3)  # 60 %
+        s = self.get()[1]["schools"][0]
+        self.assertEqual(s["integralIndex"], 100.0)
+        self.assertEqual(s["teacherIndex"], 60.0)
+        self.assertEqual(s["finalIndex"], 80.0)  # antes habría sido ORO por promedio
+        self.assertEqual(s["award"], "silver")
+
+    def test_one_index_below_40_has_no_award(self):
+        peca = self.newPeca(lapse3={"wordsPerMinIndex": 100.0, "multiplicationsPerMinIndex": 100.0,
+                                    "operationsPerMinIndex": 100.0})
+        self.addEvaluator(peca, 35)          # IAA 100 %
+        self.addCoevaluation(peca, "t1", 1)  # 20 %
+        s = self.get()[1]["schools"][0]
+        self.assertEqual(s["finalIndex"], 60.0)
+        self.assertEqual(s["status"], "none")
+        self.assertIsNone(s["award"])
+
     def test_missing_lapse3_is_incomplete(self):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 90.0})
         self.addEvaluator(peca, 30)
@@ -161,6 +183,12 @@ class HqsAwardReportTest(unittest.TestCase):
         self.assertEqual(s["finalIndex"], 20.0)
         self.assertEqual(s["status"], "none")
         self.assertEqual(s["awardLabel"], u"Sin premio")
+        self.assertIs(s["yearbookDownloadEnabled"], False)
+
+    def test_row_reports_yearbook_download_flag(self):
+        self.newPeca(yearbookDownloadEnabled=True)
+        s = self.get()[1]["schools"][0]
+        self.assertIs(s["yearbookDownloadEnabled"], True)
 
     def test_errors_deleted_peca_and_school_filter(self):
         self.newPeca(deleted=True)

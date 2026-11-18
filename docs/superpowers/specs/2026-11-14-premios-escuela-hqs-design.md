@@ -13,8 +13,12 @@ exportable a PDF y Excel.
    2 minutos) y 60LM (lógica-matemática). Cada índice que pase de 100 cuenta como 100.
 2. **Índice de Docentes HQS** = promedio de los % de las coevaluaciones completas de la
    escuela en ese PECA (el mismo `school_index` del reporte de coevaluación).
-3. **Promedio final** = (Índice Integral + Índice de Docentes HQS) / 2.
-4. **Premio:** Oro 80–100 %, Plata 60–79 %, Bronce 40–59 %.
+3. **Promedio final** = (Índice Integral + Índice de Docentes HQS) / 2. Desde el 2026-11-18 es
+   solo informativo (columna "Promedio").
+4. **Premio (cambio del 2026-11-18):** cada índice debe cumplir el corte por separado.
+   Oro si Integral ≥ 80 **y** Docentes ≥ 80; Plata si ambos ≥ 60; Bronce si ambos ≥ 40.
+   La tabla se ordena por nivel y luego por promedio. Ver
+   `docs/superpowers/plans/2026-11-18-premios-hqs-criterio-doble-y-amblemario.md`.
 
 ## Decisiones (confirmadas por el Ing. Fidel el 2026-11-14)
 - **D1 · Escala del IAA.** El IAA guardado es la suma de 5 indicadores de 0 a 7 (máximo 35;
@@ -27,8 +31,9 @@ exportable a PDF y Excel.
 - **D3 · Datos incompletos.** Si falta cualquiera de los 4 índices o no hay ninguna
   coevaluación completa, la escuela **no recibe premio** y figura como "Datos incompletos",
   indicando qué falta. No se promedia con lo disponible.
-- **D4 · Huecos de los rangos.** Se compara el promedio final redondeado a 2 decimales:
-  `>= 80` Oro, `>= 60` Plata, `>= 40` Bronce, `< 40` "Sin premio".
+- **D4 · Huecos de los rangos.** Cortes inclusivos sobre cada índice redondeado a 2 decimales:
+  `>= 80` Oro, `>= 60` Plata, `>= 40` Bronce; si alguno es `< 40`, "Sin premio"
+  (antes se comparaba el promedio final; cambio del 2026-11-18).
 - **D5 · Cálculo al vuelo.** No se guarda nada en BD: el reporte se calcula en cada consulta.
 - **D6 · Etiquetas.** El término correcto es **"60LM"** (confirmado por el Ing. Fidel). Los reportes de pines del backoffice y del front decían "L60M" y ya se corrigieron.
 

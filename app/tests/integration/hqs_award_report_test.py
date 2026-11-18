@@ -15,6 +15,7 @@ from app.helpers.handler_seeds import create_entities
 from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
 from app.models.peca_project_model import PecaProject
 from app.models.project_model import Project
+from app.models.state_model import State
 from app.models.teacher_coevaluation_model import TeacherCoevaluation
 
 
@@ -44,7 +45,8 @@ class HqsAwardReportTest(unittest.TestCase):
 
     # ------------------------------------------------------------- helpers
 
-    def newPeca(self, lapse3=None, deleted=False, yearbookDownloadEnabled=False):
+    def newPeca(self, lapse3=None, deleted=False, yearbookDownloadEnabled=False,
+                addressState=None):
         peca = PecaProject(
             yearbookDownloadEnabled=yearbookDownloadEnabled,
             schoolYear=self.schoolYear,
@@ -61,6 +63,7 @@ class HqsAwardReportTest(unittest.TestCase):
                 "name": self.school.name,
                 "code": self.school.code,
                 "diagnostics": {"lapse3": lapse3 or {}},
+                "addressState": addressState,
             },
             isDeleted=deleted)
         peca.save()
@@ -84,10 +87,12 @@ class HqsAwardReportTest(unittest.TestCase):
         coevaluation.save()
         return coevaluation
 
-    def get(self, schoolId=None):
+    def get(self, schoolId=None, stateId=None):
         url = '/statistics/hqsawardsreport/{}'.format(self.schoolYear.id)
         if schoolId:
             url += '?schoolId={}'.format(schoolId)
+        if stateId:
+            url += '{}stateId={}'.format('&' if schoolId else '?', stateId)
         res = self.client().get(url)
         return res.status_code, json.loads(res.data)
 
@@ -199,6 +204,31 @@ class HqsAwardReportTest(unittest.TestCase):
         self.newPeca()
         self.assertEqual(len(self.get(schoolId=str(self.school.id))[1]["schools"]), 1)
         self.assertEqual(self.get(schoolId="0" * 24)[1]["schools"], [])
+
+
+    def test_state_field_and_state_filter(self):
+        self.newPeca(addressState=self.state)
+        other = State(name="Zulia")
+        other.save()
+
+        s = self.get()[1]["schools"][0]
+        self.assertEqual(s["state"], {"id": str(self.state.id), "name": "Lara"})
+
+        status, data = self.get(stateId=str(self.state.id))
+        self.assertEqual(status, 200)
+        self.assertEqual(len(data["schools"]), 1)
+        self.assertEqual(self.get(stateId=str(other.id))[1]["schools"], [])
+        # El filtro de estado se combina con el de escuela.
+        self.assertEqual(len(self.get(schoolId=str(self.school.id),
+                                      stateId=str(self.state.id))[1]["schools"]), 1)
+
+        status, data = self.get(stateId="abc")
+        self.assertEqual(status, 404)
+        self.assertEqual(data["message"], "State not found")
+
+    def test_peca_without_state_has_null_state(self):
+        self.newPeca()
+        self.assertIsNone(self.get()[1]["schools"][0]["state"])
 
 
 if __name__ == '__main__':

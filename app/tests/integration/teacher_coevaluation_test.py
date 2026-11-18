@@ -28,6 +28,7 @@ from app.models.entity_model import Entity
 from app.models.peca_project_model import PecaProject
 from app.models.project_model import Project
 from app.models.role_model import Role
+from app.models.state_model import State
 from app.models.teacher_model import Teacher
 from app.models.teacher_coevaluation_model import TeacherCoevaluation
 from app.services.teacher_coevaluation_service import TeacherCoevaluationService
@@ -397,6 +398,39 @@ class TeacherCoevaluationTest(unittest.TestCase):
             '/statistics/coevaluationsreport/bad').status_code, 404)
         self.assertEqual(self.client().get('/statistics/coevaluationsreport/{}?level=x'.format(
             self.schoolYear.id)).status_code, 400)
+
+    def report(self, query=""):
+        res = self.client().get('/statistics/coevaluationsreport/{}{}'.format(
+            self.schoolYear.id, query))
+        return res.status_code, json.loads(res.data)
+
+    def test_report_state_field_and_state_filter(self):
+        PecaProject.objects(id=self.peca.id).update_one(set__school__addressState=self.state)
+        other = State(name="Zulia")
+        other.save()
+        self.complete(self.teacher, 5, 4)
+        expected = {"id": str(self.state.id), "name": "Lara"}
+
+        status, data = self.report()
+        self.assertEqual(status, 200)
+        self.assertEqual(data["bySchool"][0]["state"], expected)
+        teacher = data["byLevel"][0]["teachers"][0]
+        self.assertEqual(teacher["school"]["state"], expected)
+        # La vista por nivel no repite los 15 ítems (solo van en bySchool).
+        self.assertNotIn("items", teacher)
+        self.assertEqual(len(data["bySchool"][0]["teachers"][0]["items"]), 15)
+
+        self.assertEqual(len(self.report("?stateId={}".format(self.state.id))[1]["bySchool"]), 1)
+        status, data = self.report("?stateId={}".format(other.id))
+        self.assertEqual(data["bySchool"], [])
+        self.assertEqual(data["byLevel"][0]["count"], 0)
+
+        status, data = self.report("?stateId=abc")
+        self.assertEqual(status, 404)
+        self.assertEqual(data["message"], "State not found")
+
+    def test_report_peca_without_state_has_null_state(self):
+        self.assertIsNone(self.report()[1]["bySchool"][0]["state"])
 
     def test_report_past_school_year_lists_only_existing(self):
         self.complete(self.teacher, 3, 3)

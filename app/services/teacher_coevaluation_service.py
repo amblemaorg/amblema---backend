@@ -226,6 +226,7 @@ class TeacherCoevaluationService():
             "emailSentAt": _iso(coevaluation.emailSentAt) if coevaluation else None,
             "emailSentTo": coevaluation.emailSentTo if coevaluation else None,
             "emailSentCount": coevaluation.emailSentCount if coevaluation else 0,
+            "token": coevaluation.token if coevaluation else None,
             "canEvaluate": self._is_active(teacher) and not (coevaluation and coevaluation.coordinatorSubmittedAt),
             "canSendLink": self._is_active(teacher) and bool(teacher.email)
             and not (coevaluation and coevaluation.teacherSubmittedAt),
@@ -250,8 +251,12 @@ class TeacherCoevaluationService():
         records = []
         for coevaluation in TeacherCoevaluation.objects(pecaId=str(peca.id)).only(
                 'teacherId', 'teacherSubmittedAt', 'coordinatorSubmittedAt',
-                'totalScore', 'percentage', 'level'):
-            record = {"teacherId": coevaluation.teacherId}
+                'emailSentAt', 'token', 'totalScore', 'percentage', 'level'):
+            record = {
+                "teacherId": coevaluation.teacherId,
+                "emailSentAt": _iso(coevaluation.emailSentAt),
+                "token": coevaluation.token,
+            }
             record.update(self._results(coevaluation))
             records.append(record)
         return {"records": records}, 200
@@ -319,9 +324,11 @@ class TeacherCoevaluationService():
         if coevaluation.teacherSubmittedAt:
             return _error(u"El docente ya envió su coevaluación.", 409)
 
+        previousToken = coevaluation.token
         previousHash = coevaluation.tokenHash
         token = generate_token()
         self._refresh_snapshot(coevaluation, peca, school, teacher)
+        coevaluation.token = token
         coevaluation.tokenHash = hash_token(token)
         coevaluation.save()
 
@@ -329,6 +336,7 @@ class TeacherCoevaluationService():
         result = self._send_email(coevaluation, email, link)
         if result is not True:
             # El enlace anterior (si lo había) sigue siendo el válido.
+            coevaluation.token = previousToken
             coevaluation.tokenHash = previousHash
             coevaluation.save()
             current_app.logger.error(

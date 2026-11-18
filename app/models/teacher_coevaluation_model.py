@@ -47,9 +47,10 @@ class TeacherCoevaluation(Document):
         fields.IntField(min_value=MIN_SCORE, max_value=MAX_SCORE), default=list)
     teacherSubmittedAt = fields.DateTimeField(null=True)
 
-    # Solo el hash SHA-256 del token vigente. Sin null=True a propósito: así
-    # MongoEngine omite el campo cuando es None y el índice único sparse no
+    # Token vigente y su hash SHA-256. tokenHash va sin null=True a propósito:
+    # así MongoEngine omite el campo cuando es None y el índice único sparse no
     # choca entre coevaluaciones sin enlace activo.
+    token = fields.StringField(null=True)
     tokenHash = fields.StringField()
     emailSentAt = fields.DateTimeField(null=True)
     emailSentTo = fields.StringField(null=True)

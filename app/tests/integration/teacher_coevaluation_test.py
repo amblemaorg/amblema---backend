@@ -200,10 +200,17 @@ class TeacherCoevaluationTest(unittest.TestCase):
         self.assertEqual(sendMock.call_args[0][3], "luisa@test.com")
         self.assertIn(token, sendMock.call_args[0][0])
 
-        # Solo se guarda el hash, nunca el token
+        # El token vigente y su hash quedan registrados
         coevaluation = self.coevaluation()
+        self.assertEqual(coevaluation.token, token)
         self.assertEqual(coevaluation.tokenHash, hash_token(token))
         self.assertNotEqual(coevaluation.tokenHash, token)
+
+        statuses = json.loads(
+            self.client().get('/pecaprojects/coevaluations/{}'.format(self.peca.id)).data
+        )["records"]
+        self.assertEqual(statuses[0]["token"], token)
+        self.assertIsNotNone(statuses[0]["emailSentAt"])
 
         res = self.client().get('/coevaluations/public/' + token)
         self.assertEqual(res.status_code, 200)

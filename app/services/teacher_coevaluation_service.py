@@ -20,20 +20,36 @@ from mongoengine.errors import NotUniqueError
 from app.models.peca_project_model import PecaProject
 from app.models.school_user_model import SchoolUser
 from app.models.school_year_model import SchoolYear
+from app.models.state_model import State
 from app.models.teacher_coevaluation_model import (
     TeacherCoevaluation, CoevaluationTeacher, CoevaluationCoordinator)
 from app.schemas.teacher_coevaluation_schema import (
     CoevaluationScoresSchema, scores_to_list, scores_to_items)
 from app.helpers.coevaluation_helper import (
     get_instrument, get_level, get_level_label, school_index, sections_label,
-    generate_token, hash_token, LEVELS, LEVEL_CODES, N_ITEMS,
-    STATUS_LABELS, STATUS_NOT_STARTED, STATUS_COMPLETED)
+    generate_token, hash_token, field_value, coevaluation_status, LEVELS, LEVEL_CODES,
+    N_ITEMS, STATUS_LABELS, STATUS_NOT_STARTED, STATUS_COMPLETED)
 from app.helpers.handler_authorization import is_admin
 from app.helpers.handler_emails import send_email
 
 
 PERMISSION = "teacher_coevaluation"
 INVALID_LINK_MSG = u"El enlace no es válido o la coevaluación ya fue enviada."
+
+# Campos del PECA que usa cada operación: el documento completo trae las secciones
+# con sus estudiantes embebidos (cientos de KB) y aquí no se usan.
+PECA_ACCESS_FIELDS = ('id', 'project')
+PECA_EVALUATION_FIELDS = (
+    'id', 'project', 'schoolYear', 'schoolYearName',
+    'school.sections.grade', 'school.sections.name',
+    'school.sections.teacher', 'school.sections.isDeleted')
+# Campos de la coevaluación para el reporte (sin token ni datos de envío de correo).
+REPORT_COEVALUATION_FIELDS = (
+    'pecaId', 'teacherId', 'teacher', 'sections', 'coordinator',
+    'coordinatorSubmittedAt', 'teacherSubmittedAt',
+    'teacherScores', 'coordinatorScores', 'averages', 'totalScore', 'percentage', 'level')
+REPORT_TEACHER_FIELDS = tuple('teachers.' + name for name in (
+    'id', 'firstName', 'lastName', 'cardType', 'cardId', 'email', 'phone', 'status', 'isDeleted'))
 
 
 def _error(message, status_code, **extra):
@@ -50,10 +66,10 @@ class TeacherCoevaluationService():
 
     # ------------------------------------------------------------------ helpers
 
-    def _get_peca(self, pecaId):
+    def _get_peca(self, pecaId, fields):
         if not ObjectId.is_valid(pecaId):
             return None
-        return PecaProject.objects(id=pecaId, isDeleted=False).first()
+        return PecaProject.objects(id=pecaId, isDeleted=False).only(*fields).first()
 
     def _get_school(self, peca):
         if not peca.project or not peca.project.school or not peca.project.school.id:
@@ -67,7 +83,9 @@ class TeacherCoevaluationService():
         return school.teachers.filter(id=ObjectId(teacherId)).first()
 
     def _is_active(self, teacher):
-        return bool(teacher and not teacher.isDeleted and teacher.status == "1")
+        """Docente activo; acepta el documento o el dict crudo (defaults del modelo Teacher)."""
+        return bool(teacher and not field_value(teacher, "isDeleted", False)
+                    and field_value(teacher, "status", "1") == "1")
 
     def check_access(self, caller, peca):
         """
@@ -124,7 +142,7 @@ class TeacherCoevaluationService():
 
     def _load(self, pecaId, teacherId):
         """(peca, school, teacher) o una respuesta de error."""
-        peca = self._get_peca(pecaId)
+        peca = self._get_peca(pecaId, PECA_EVALUATION_FIELDS)
         if not peca:
             return None, _error("Peca project not found", 404, pecaId=pecaId)
         school = self._get_school(peca)
@@ -147,9 +165,10 @@ class TeacherCoevaluationService():
     # ------------------------------------------------------------- serializers
 
     def _items(self, coevaluation):
-        teacherScores = coevaluation.teacherScores if coevaluation else []
-        coordinatorScores = coevaluation.coordinatorScores if coevaluation else []
-        averages = coevaluation.averages if coevaluation else []
+        """coevaluation: documento, dict crudo o None."""
+        teacherScores = field_value(coevaluation, "teacherScores") or []
+        coordinatorScores = field_value(coevaluation, "coordinatorScores") or []
+        averages = field_value(coevaluation, "averages") or []
         items = []
         for index in range(N_ITEMS):
             items.append({
@@ -161,13 +180,16 @@ class TeacherCoevaluationService():
         return items
 
     def _results(self, coevaluation):
-        status = coevaluation.status if coevaluation else STATUS_NOT_STARTED
-        level = coevaluation.level if coevaluation else None
+        """coevaluation: documento, dict crudo o None."""
+        status = coevaluation_status(
+            field_value(coevaluation, "teacherSubmittedAt"),
+            field_value(coevaluation, "coordinatorSubmittedAt")) if coevaluation else STATUS_NOT_STARTED
+        level = field_value(coevaluation, "level")
         return {
             "status": status,
             "statusLabel": STATUS_LABELS[status],
-            "totalScore": coevaluation.totalScore if coevaluation else None,
-            "percentage": coevaluation.percentage if coevaluation else None,
+            "totalScore": field_value(coevaluation, "totalScore"),
+            "percentage": field_value(coevaluation, "percentage"),
             "level": level,
             "levelLabel": get_level_label(level),
         }
@@ -218,14 +240,16 @@ class TeacherCoevaluationService():
     # --------------------------------------------------------------- PECA (JWT)
 
     def get_statuses(self, pecaId, caller=None):
-        peca = self._get_peca(pecaId)
+        peca = self._get_peca(pecaId, PECA_ACCESS_FIELDS)
         if not peca:
             return _error("Peca project not found", 404, pecaId=pecaId)
         denied = self.check_access(caller, peca)
         if denied:
             return denied
         records = []
-        for coevaluation in TeacherCoevaluation.objects(pecaId=str(peca.id)):
+        for coevaluation in TeacherCoevaluation.objects(pecaId=str(peca.id)).only(
+                'teacherId', 'teacherSubmittedAt', 'coordinatorSubmittedAt',
+                'totalScore', 'percentage', 'level'):
             record = {"teacherId": coevaluation.teacherId}
             record.update(self._results(coevaluation))
             records.append(record)
@@ -404,32 +428,36 @@ class TeacherCoevaluationService():
     # --------------------------------------------------------- Reporte (admin)
 
     def _row(self, coevaluation=None, teacher=None, sections="", coordinatorName=None):
-        """Fila de docente para el reporte, desde la coevaluación o desde SchoolUser."""
+        """
+        Fila de docente para el reporte, desde la coevaluación o desde SchoolUser.
+        Ambos llegan como dicts crudos (as_pymongo).
+        """
         if coevaluation:
-            snapshot = coevaluation.teacher or CoevaluationTeacher()
+            snapshot = coevaluation.get("teacher") or {}
+            coordinator = coevaluation.get("coordinator")
             row = {
-                "teacherId": coevaluation.teacherId,
-                "firstName": snapshot.firstName,
-                "lastName": snapshot.lastName,
-                "cardType": snapshot.cardType,
-                "cardId": snapshot.cardId,
-                "email": snapshot.email,
-                "phone": snapshot.phone,
-                "sections": coevaluation.sections,
-                "coordinator": coevaluation.coordinator.name if coevaluation.coordinator else coordinatorName,
-                "coordinatorSubmittedAt": _iso(coevaluation.coordinatorSubmittedAt),
-                "teacherSubmittedAt": _iso(coevaluation.teacherSubmittedAt),
+                "teacherId": coevaluation.get("teacherId"),
+                "firstName": snapshot.get("firstName"),
+                "lastName": snapshot.get("lastName"),
+                "cardType": snapshot.get("cardType"),
+                "cardId": snapshot.get("cardId"),
+                "email": snapshot.get("email"),
+                "phone": snapshot.get("phone"),
+                "sections": coevaluation.get("sections", ""),
+                "coordinator": coordinator.get("name") if coordinator else coordinatorName,
+                "coordinatorSubmittedAt": _iso(coevaluation.get("coordinatorSubmittedAt")),
+                "teacherSubmittedAt": _iso(coevaluation.get("teacherSubmittedAt")),
                 "items": self._items(coevaluation),
             }
         else:
             row = {
-                "teacherId": str(teacher.id),
-                "firstName": teacher.firstName,
-                "lastName": teacher.lastName,
-                "cardType": teacher.cardType,
-                "cardId": teacher.cardId,
-                "email": teacher.email,
-                "phone": teacher.phone,
+                "teacherId": str(teacher.get("id")),
+                "firstName": teacher.get("firstName"),
+                "lastName": teacher.get("lastName"),
+                "cardType": teacher.get("cardType"),
+                "cardId": teacher.get("cardId"),
+                "email": teacher.get("email"),
+                "phone": teacher.get("phone"),
                 "sections": sections,
                 "coordinator": coordinatorName,
                 "coordinatorSubmittedAt": None,
@@ -455,43 +483,54 @@ class TeacherCoevaluationService():
             pecaFilter["project__school__id"] = schoolId
         if stateId:
             pecaFilter["school__addressState"] = ObjectId(stateId)
-        # Sin los estudiantes embebidos en las secciones (pesados y no se usan aquí).
-        pecas = PecaProject.objects(**pecaFilter).only(
-            'id', 'project', 'schoolYearName',
+        # Lectura cruda (as_pymongo) y solo los campos usados: construir documentos
+        # MongoEngine y dereferenciar las referencias de cada docente era el grueso del tiempo.
+        pecas = list(PecaProject.objects(**pecaFilter).only(
+            'id', 'project.school', 'project.coordinator', 'school.addressState',
             'school.sections.grade', 'school.sections.name',
-            'school.sections.teacher', 'school.sections.isDeleted')
+            'school.sections.teacher', 'school.sections.isDeleted').as_pymongo())
 
         coevaluationsByPeca = {}
         for coevaluation in TeacherCoevaluation.objects(
-                pecaId__in=[str(peca.id) for peca in pecas]):
-            coevaluationsByPeca.setdefault(coevaluation.pecaId, {})[coevaluation.teacherId] = coevaluation
+                pecaId__in=[str(peca["_id"]) for peca in pecas]).only(
+                *REPORT_COEVALUATION_FIELDS).as_pymongo():
+            coevaluationsByPeca.setdefault(coevaluation["pecaId"], {})[coevaluation["teacherId"]] = coevaluation
 
         # Los docentes viven en SchoolUser sin histórico por año: los "Sin iniciar"
         # solo se listan en el año escolar activo.
         includeNotStarted = schoolYear.status == "1"
-        schoolIds = [peca.project.school.id for peca in pecas
-                     if peca.project and peca.project.school]
+        schoolIds = [peca["project"]["school"]["id"] for peca in pecas
+                     if (peca.get("project") or {}).get("school")]
+        statesById = dict((str(state.id), {"id": str(state.id), "name": state.name})
+                          for state in State.objects(isDeleted=False).only('id', 'name'))
+
         schoolsById = {}
-        for school in SchoolUser.objects(id__in=schoolIds).only('id', 'name', 'code', 'teachers'):
-            schoolsById[str(school.id)] = school
+        for school in SchoolUser.objects(id__in=schoolIds).only(
+                'id', 'name', 'code', *REPORT_TEACHER_FIELDS).as_pymongo():
+            schoolsById[str(school["_id"])] = school
 
         schools = []
         byLevel = dict((code, []) for code in LEVEL_CODES)
         for peca in pecas:
-            if not peca.project or not peca.project.school:
+            pecaId = str(peca["_id"])
+            project = peca.get("project") or {}
+            projectSchool = project.get("school")
+            if not projectSchool:
                 continue
-            school = schoolsById.get(peca.project.school.id)
-            coordinatorName = peca.project.coordinator.name if peca.project.coordinator else None
-            coevaluations = coevaluationsByPeca.get(str(peca.id), {})
+            pecaSchool = peca.get("school") or {}
+            school = schoolsById.get(projectSchool.get("id"))
+            coordinator = project.get("coordinator")
+            coordinatorName = coordinator.get("name") if coordinator else None
+            coevaluations = coevaluationsByPeca.get(pecaId, {})
 
             rows = [self._row(coevaluation=c, coordinatorName=coordinatorName)
                     for c in coevaluations.values()]
             if includeNotStarted and school:
-                for teacher in school.teachers:
-                    if self._is_active(teacher) and str(teacher.id) not in coevaluations:
+                for teacher in school.get("teachers") or []:
+                    if self._is_active(teacher) and str(teacher.get("id")) not in coevaluations:
                         rows.append(self._row(
                             teacher=teacher, coordinatorName=coordinatorName,
-                            sections=sections_label(peca.school.sections, teacher.id)))
+                            sections=sections_label(pecaSchool.get("sections"), teacher.get("id"))))
             if not rows:
                 continue
 
@@ -503,12 +542,15 @@ class TeacherCoevaluationService():
                     if index >= lvl["minPercentage"]:
                         indexLevel = lvl["code"]
                         break
+            source = school if school else projectSchool
+            addressState = pecaSchool.get("addressState")
             schoolInfo = {
-                "schoolId": peca.project.school.id,
-                "name": school.name if school else peca.project.school.name,
-                "code": school.code if school else peca.project.school.code,
-                "pecaId": str(peca.id),
+                "schoolId": projectSchool.get("id"),
+                "name": source.get("name"),
+                "code": source.get("code"),
+                "pecaId": pecaId,
                 "coordinator": coordinatorName,
+                "state": statesById.get(str(addressState)) if addressState else None,
             }
             levelCounts = dict((code, 0) for code in LEVEL_CODES)
             statusCounts = dict((code, 0) for code in STATUS_LABELS)
@@ -519,7 +561,9 @@ class TeacherCoevaluationService():
 
             for row in completed:
                 if not level or row["level"] == level:
-                    entry = dict(row)
+                    # Sin los 15 ítems: la vista por nivel no los usa y duplicaban
+                    # buena parte de la respuesta (ya van en bySchool).
+                    entry = dict((key, value) for key, value in row.items() if key != "items")
                     entry["school"] = schoolInfo
                     byLevel[row["level"]].append(entry)
 

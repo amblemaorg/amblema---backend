@@ -15,6 +15,7 @@ from bson import ObjectId
 
 from app.models.peca_project_model import PecaProject
 from app.models.school_year_model import SchoolYear
+from app.models.state_model import State
 from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
 from app.models.teacher_coevaluation_model import TeacherCoevaluation
 from app.helpers.coevaluation_helper import school_index
@@ -49,16 +50,17 @@ def average_iaa(indexes):
 
 
 def build_school_row(schoolId, name, pecaId, coordinator, lapse3,
-                     iaaRaw, percentages, yearbookDownloadEnabled=False):
+                     iaaRaw, percentages, yearbookDownloadEnabled=False,
+                     state=None):
     """
     Arma la fila de una escuela del reporte.
-    lapse3: resumen de diagnósticos del lapso 3 (o None).
+    lapse3: resumen de diagnósticos del lapso 3 como dict crudo (o None).
     percentages: porcentajes de las coevaluaciones completas.
     yearbookDownloadEnabled: si el anuario del PECA está habilitado para descarga.
     """
     components = {"iaa": iaa_percentage(iaaRaw)}
     for key, field in ACADEMIC_FIELDS.items():
-        value = getattr(lapse3, field, None) if lapse3 is not None else None
+        value = lapse3.get(field) if lapse3 else None
         components[key] = cap_index(value)
 
     integral, missing = integral_index(components)
@@ -92,6 +94,7 @@ def build_school_row(schoolId, name, pecaId, coordinator, lapse3,
         "award": award["code"] if award else None,
         "awardLabel": awardLabel,
         "yearbookDownloadEnabled": yearbookDownloadEnabled,
+        "state": state,
     }
 
 
@@ -145,42 +148,49 @@ class HqsAwardService():
             pecaFilter["project__school__id"] = schoolId
         if stateId:
             pecaFilter["school__addressState"] = ObjectId(stateId)
-        # Solo lo necesario: sin school.sections (estudiantes embebidos, pesados).
+        # Lectura cruda (as_pymongo) y solo lo necesario: sin school.sections (estudiantes
+        # embebidos, pesados). Construir documentos MongoEngine era el grueso del tiempo.
         pecas = [peca for peca in PecaProject.objects(**pecaFilter).only(
-            'id', 'project', 'school.diagnostics', 'yearbookDownloadEnabled')
-            if peca.project and peca.project.school]
-        pecaIds = [str(peca.id) for peca in pecas]
+            'id', 'project.school', 'project.coordinator', 'school.diagnostics.lapse3',
+            'school.addressState', 'yearbookDownloadEnabled').as_pymongo()
+            if (peca.get("project") or {}).get("school")]
+        pecaIds = [str(peca["_id"]) for peca in pecas]
 
         iaaByPeca = {}
         if pecaIds:
             for evaluator in EnvironmentalDiagnosticEvaluator.objects(
                     pecaId__in=pecaIds, lapse="3", isDeleted=False,
-                    hasEvaluated=True).only('pecaId', 'index'):
-                iaaByPeca.setdefault(evaluator.pecaId, []).append(evaluator.index)
+                    hasEvaluated=True).only('pecaId', 'index').as_pymongo():
+                iaaByPeca.setdefault(evaluator["pecaId"], []).append(evaluator.get("index"))
 
         percentagesByPeca = {}
         if pecaIds:
             for coevaluation in TeacherCoevaluation.objects(
                     pecaId__in=pecaIds, teacherSubmittedAt__ne=None,
-                    coordinatorSubmittedAt__ne=None).only('pecaId', 'percentage'):
-                percentagesByPeca.setdefault(coevaluation.pecaId, []).append(
-                    coevaluation.percentage)
+                    coordinatorSubmittedAt__ne=None).only('pecaId', 'percentage').as_pymongo():
+                percentagesByPeca.setdefault(coevaluation["pecaId"], []).append(
+                    coevaluation.get("percentage"))
+
+        statesById = dict((str(state.id), {"id": str(state.id), "name": state.name})
+                          for state in State.objects(isDeleted=False).only('id', 'name'))
 
         schools = []
         for peca in pecas:
-            pecaId = str(peca.id)
-            diagnostics = peca.school.diagnostics if peca.school else None
-            lapse3 = diagnostics.lapse3 if diagnostics else None
-            coordinator = peca.project.coordinator
+            pecaId = str(peca["_id"])
+            projectSchool = peca["project"]["school"]
+            coordinator = peca["project"].get("coordinator")
+            pecaSchool = peca.get("school") or {}
+            addressState = pecaSchool.get("addressState")
             schools.append(build_school_row(
-                schoolId=peca.project.school.id,
-                name=peca.project.school.name,
+                schoolId=projectSchool.get("id"),
+                name=projectSchool.get("name"),
                 pecaId=pecaId,
-                coordinator=coordinator.name if coordinator else None,
-                lapse3=lapse3,
+                coordinator=coordinator.get("name") if coordinator else None,
+                lapse3=(pecaSchool.get("diagnostics") or {}).get("lapse3"),
                 iaaRaw=average_iaa(iaaByPeca.get(pecaId, [])),
                 percentages=percentagesByPeca.get(pecaId, []),
-                yearbookDownloadEnabled=bool(peca.yearbookDownloadEnabled)))
+                yearbookDownloadEnabled=bool(peca.get("yearbookDownloadEnabled", False)),
+                state=statesById.get(str(addressState)) if addressState else None))
 
         sort_schools(schools)
         return {

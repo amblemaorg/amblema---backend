@@ -6,9 +6,7 @@ from datetime import datetime
 from mongoengine import Document, EmbeddedDocument, fields
 
 from app.helpers.coevaluation_helper import (
-    INSTRUMENT_VERSION, MIN_SCORE, MAX_SCORE, compute_results,
-    STATUS_NOT_STARTED, STATUS_PENDING_TEACHER, STATUS_PENDING_COORDINATOR,
-    STATUS_COMPLETED)
+    INSTRUMENT_VERSION, MIN_SCORE, MAX_SCORE, compute_results, coevaluation_status)
 
 
 class CoevaluationTeacher(EmbeddedDocument):
@@ -78,15 +76,7 @@ class TeacherCoevaluation(Document):
 
     @property
     def status(self):
-        hasTeacher = self.teacherSubmittedAt is not None
-        hasCoordinator = self.coordinatorSubmittedAt is not None
-        if hasTeacher and hasCoordinator:
-            return STATUS_COMPLETED
-        if hasCoordinator:
-            return STATUS_PENDING_TEACHER
-        if hasTeacher:
-            return STATUS_PENDING_COORDINATOR
-        return STATUS_NOT_STARTED
+        return coevaluation_status(self.teacherSubmittedAt, self.coordinatorSubmittedAt)
 
     def refreshResults(self):
         results = compute_results(self.teacherScores, self.coordinatorScores)

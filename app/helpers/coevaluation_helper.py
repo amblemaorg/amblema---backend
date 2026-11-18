@@ -168,15 +168,44 @@ def school_index(percentages):
     return round(sum(values) / len(values), 2)
 
 
+def field_value(obj, name, default=None):
+    """Lee un campo de un documento MongoEngine o de un dict crudo (as_pymongo)."""
+    if obj is None:
+        return default
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
+def coevaluation_status(teacherSubmittedAt, coordinatorSubmittedAt):
+    """Estatus según quién ya envió su evaluación."""
+    hasTeacher = teacherSubmittedAt is not None
+    hasCoordinator = coordinatorSubmittedAt is not None
+    if hasTeacher and hasCoordinator:
+        return STATUS_COMPLETED
+    if hasCoordinator:
+        return STATUS_PENDING_TEACHER
+    if hasTeacher:
+        return STATUS_PENDING_COORDINATOR
+    return STATUS_NOT_STARTED
+
+
 def sections_label(sections, teacherId):
-    """Grados y secciones del PECA asignados al docente, p. ej. '3er Grado A, 4to Grado B'."""
+    """
+    Grados y secciones del PECA asignados al docente, p. ej. '3er Grado A, 4to Grado B'.
+    sections: documentos Section o dicts crudos.
+    """
     labels = []
-    for section in sorted(sections, key=lambda s: (s.grade or "", s.name or "")):
-        if getattr(section, "isDeleted", False):
+    ordered = sorted(sections or [], key=lambda s: (
+        field_value(s, "grade") or "", field_value(s, "name") or ""))
+    for section in ordered:
+        if field_value(section, "isDeleted", False):
             continue
-        if section.teacher and str(section.teacher.id) == str(teacherId):
+        teacher = field_value(section, "teacher")
+        if teacher and str(field_value(teacher, "id")) == str(teacherId):
+            grade = field_value(section, "grade")
             labels.append(u"{} {}".format(
-                GRADE_NAMES.get(section.grade, section.grade or ""), section.name or "").strip())
+                GRADE_NAMES.get(grade, grade or ""), field_value(section, "name") or "").strip())
     return u", ".join(labels)
 
 

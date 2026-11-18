@@ -140,8 +140,13 @@ class VademecumLibraryTest(unittest.TestCase):
         self.assertEqual(self.favorites(self.mariaHeaders).get_json()["pagination"]["total"], 2)
 
     def test_removing_a_favorite_is_idempotent(self):
+        from unittest import mock
+        from mongoengine import NotUniqueError
+        from app.models.vademecum import VademecumFavorite
         sheet = self.create_sheet(41)
         self.put_favorite(sheet.id)
+        with mock.patch.object(VademecumFavorite, "objects", side_effect=NotUniqueError("dup")):
+            self.assertEqual(self.put_favorite(sheet.id).status_code, 204)
         self.assertEqual(self.delete_favorite(sheet.id).status_code, 204)
         self.assertEqual(self.delete_favorite(sheet.id).status_code, 204)
         self.assertEqual(self.favorites(self.mariaHeaders).get_json()["pagination"]["total"], 0)

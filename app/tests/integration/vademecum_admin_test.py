@@ -117,9 +117,18 @@ class VademecumAdminSheetTypeTest(VademecumAdminBase):
                          [(str(used.id), True)])
 
     def test_unknown_series_id_is_rejected(self):
+        from mongoengine import ValidationError as ModelValidationError
+        from app.services.vademecum.taxonomy_admin_service import _model_errors
         res = self.call("PUT", "/sheet-types/{}".format(self.hora.id), self.payload(
             series=[{"id": str(ObjectId()), "name": "A", "code": "1", "grades": []}]))
         self.assertEqual(res.status_code, 400)
+        res = self.call("POST", "/sheet-types", self.payload(
+            series=[{"id": str(ObjectId()), "name": "A", "code": "1", "grades": []}]))
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(self.call("PUT", "/sheet-types/{}".format(self.hora.id), {}).status_code,
+                         400)
+        self.assertEqual(self.call("DELETE", "/sheet-types/{}".format(ObjectId())).status_code, 404)
+        self.assertEqual(_model_errors(ModelValidationError("fallo general"))[1], 400)
 
     def test_type_with_sheets_cannot_be_deleted(self):
         self.sheet(1)
@@ -151,6 +160,10 @@ class VademecumAdminAreaTest(VademecumAdminBase):
         self.assertEqual(sheet.areas, [])
         names = [a["name"] for a in self.call("GET", "/areas").get_json()["records"]]
         self.assertNotIn(u"Ortografía y acentos", names)
+        self.assertEqual(self.call("POST", "/areas", {}).status_code, 400)
+        self.assertEqual(self.call("PUT", "/areas/{}".format(areaId),
+                                   {"name": u"X", "sort": 1}).status_code, 404)
+        self.assertEqual(self.call("DELETE", "/areas/{}".format(areaId)).status_code, 404)
 
 
 class VademecumAdminSheetTest(VademecumAdminBase):
@@ -170,6 +183,11 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         found = self.call("GET", "/sheets?q=POES").get_json()["records"]
         self.assertEqual([r["code"] for r in found], ["HT-5"])
         self.assertEqual(self.call("GET", "/sheets?q=.*").get_json()["records"], [])
+        self.assertEqual(self.call("GET", "/sheets?sheetTypeId={}".format(self.hora.id))
+                         .status_code, 200)
+        for query in ("?status=bad", "?sheetTypeId=bad", "?seriesId=bad", "?q=" + "a" * 101,
+                      "?page=bad", "?page=0", "?pageSize=101"):
+            self.assertEqual(self.call("GET", "/sheets" + query).status_code, 400, query)
 
     def test_edit_sheet(self):
         sheet = self.sheet(1)
@@ -184,6 +202,9 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         self.assertEqual(body["areas"][0]["id"], lectora)
         self.assertEqual(self.call("PUT", "/sheets/{}".format(sheet.id),
                                    {"areaIds": [str(ObjectId())]}).status_code, 400)
+        for bad in ({"title": ""}, {"number": 0}, {"seriesId": "no-es-oid"},
+                    {"areaIds": ["no-es-oid"]}):
+            self.assertEqual(self.call("PUT", "/sheets/{}".format(sheet.id), bad).status_code, 400)
 
     def test_duplicated_number_answers_112(self):
         self.sheet(1)
@@ -257,6 +278,7 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         self.assertEqual((res.status_code, res.get_data()), (200, b"%PDF-1.4 borrador"))
         res.close()
         self.assertEqual(VademecumDownload.objects.count(), 0)
+        self.assertEqual(self.call("GET", "/sheets/{}/file".format(ObjectId())).status_code, 404)
 
 
 class VademecumAdminSiteContentTest(VademecumAdminBase):
@@ -274,6 +296,8 @@ class VademecumAdminSiteContentTest(VademecumAdminBase):
                          u'<a href="https://amblema.org" target="_blank" '
                          u'rel="noopener noreferrer">bien</a><h2>Título</h2>')
         self.assertEqual(self.call("PUT", "/site-content/otra", {"title": "x"}).status_code, 404)
+        self.assertEqual(self.call("PUT", "/site-content/home", {"title": "x" * 151}).status_code,
+                         400)
 
 
 if __name__ == "__main__":

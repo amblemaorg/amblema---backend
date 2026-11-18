@@ -186,14 +186,43 @@ class VademecumRatingsTest(VademecumAdminTestBase):
                          res.get_data(as_text=True))
 
     def test_moderation_errors_and_permission(self):
+        from unittest import mock
+        from mongoengine import NotUniqueError
+        from app.models.vademecum import VademecumRating
+        from app.services.vademecum.rating_service import author_name
+        self.assertIsNone(author_name(None))
         self.rate(self.mariaHeaders, {"stars": 5})
-        self.assert_error(self.bo("POST", "/ratings/{}/approve".format(self.rating_id(self.maria))),
+        ratingId = self.rating_id(self.maria)
+        self.assert_error(self.bo("POST", "/ratings/{}/approve".format(ratingId)),
                           400, "comment", "1")
+        self.assert_error(self.bo("POST", "/ratings/{}/approve".format(ratingId),
+                                  {"updatedAt": "no-es-fecha"}), 400, "updatedAt", "1")
         self.assert_error(self.bo("POST", "/ratings/{}/hide".format(ObjectId())),
                           404, "general", "5")
+        self.assertEqual(self.bo("GET", "/ratings?sheetId=x").status_code, 400)
+        self.assertEqual(self.bo("GET", "/ratings?page=abc").status_code, 400)
+        self.assertEqual(
+            self.client.get("/vademecum/sheets/{}/comments?page=0".format(self.sheet.id))
+            .status_code, 400)
         coordinator = self.create_user("coord@test.com", "10000002", "coordinator")
         res = self.bo("GET", "/ratings", headers=self.headers(coordinator))
         self.assertEqual(res.status_code, 403)
+
+        # Concurrencia al guardar y al moderar
+        with mock.patch("app.models.vademecum.rating_model.VademecumRating.objects") as mObj:
+            mObj.return_value.first.return_value = VademecumRating.objects.get(id=ratingId)
+            mObj.return_value.update_one.return_value = 0
+            self.assert_error(self.rate(self.mariaHeaders, {"stars": 4}), 409, "general", "1")
+
+        self.rate(self.mariaHeaders, {"stars": 5, "comment": u"Con comentario"})
+        with mock.patch("app.models.vademecum.rating_model.VademecumRating.objects") as mObj:
+            mObj.return_value.first.return_value = VademecumRating.objects.get(id=ratingId)
+            mObj.return_value.update_one.return_value = 0
+            self.assert_error(self.bo("POST", "/ratings/{}/approve".format(ratingId)),
+                              409, "general", "120")
+
+        with mock.patch.object(VademecumRating, "save", side_effect=NotUniqueError("dup")):
+            self.assert_error(self.rate(self.joseHeaders, {"stars": 5}), 409, "general", "1")
 
     def test_public_comments_of_unpublished_sheet_are_not_found(self):
         draft = self.create_sheet(44, status="draft")

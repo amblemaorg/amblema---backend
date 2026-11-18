@@ -175,9 +175,9 @@ class VademecumCatalogTest(unittest.TestCase):
                          {"page": 2, "pageSize": 2, "total": 5, "pages": 3})
 
     def test_invalid_parameters_answer_400(self):
-        cases = ({"sheetTypeId": "x"}, {"grade": "9"}, {"areaId": "x"}, {"sort": "relevance"},
-                 {"sort": "rare"}, {"pageSize": 101}, {"page": 0}, {"page": "a"},
-                 {"q": "a" * 101})
+        cases = ({"sheetTypeId": "x"}, {"seriesId": "x"}, {"grade": "9"}, {"areaId": "x"},
+                 {"sort": "relevance"}, {"sort": "rare"}, {"pageSize": 101}, {"page": 0},
+                 {"page": "a"}, {"q": "a" * 101})
         for params in cases:
             res = self.get("/vademecum/sheets", **params)
             self.assertEqual(res.status_code, 400, params)

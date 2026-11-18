@@ -88,10 +88,14 @@ class VademecumSheetCreateTest(VademecumAdminTestBase):
     # --- Rechazos ---
 
     def test_duplicate_is_rejected_before_receiving_the_file(self):
+        from unittest import mock
+        from mongoengine import NotUniqueError
+        from app.models.vademecum import VademecumSheet
+        with mock.patch.object(VademecumSheet, "save", side_effect=NotUniqueError("dup")):
+            self.assert_error(self.create(), 409, "number", "112")
         self.assertEqual(self.create().status_code, 201)
         res = self.create()
         self.assert_error(res, 409, "number", "112")
-        from app.models.vademecum import VademecumSheet
         self.assertEqual(VademecumSheet.objects.count(), 1)
 
     def test_invalid_files(self):

@@ -256,7 +256,8 @@ class VademecumActivityModelsTest(unittest.TestCase):
 
     def test_activity_collections(self):
         from app.models.vademecum import (
-            VademecumDownload, VademecumFavorite, VademecumRating, VademecumSiteContent)
+            VademecumDownload, VademecumFavorite, VademecumRating, VademecumSiteContent,
+            VademecumTeacherAccount, VademecumSheet)
         self.assertEqual(
             [m._meta["collection"] for m in (VademecumDownload, VademecumFavorite,
                                              VademecumRating, VademecumSiteContent)],
@@ -267,6 +268,20 @@ class VademecumActivityModelsTest(unittest.TestCase):
         self.assertTrue(_index_spec(VademecumSiteContent, ["key"]).get("unique"))
         self.assertIsNotNone(
             _index_spec(VademecumDownload, ["account.id", "schoolYear.id", "createdAt"]))
+        fav = VademecumFavorite(account=VademecumTeacherAccount(id=ObjectId()),
+                                sheet=VademecumSheet(id=ObjectId()))
+        fav.clean()
+        self.assertIsNotNone(fav.updatedAt)
+
+    def test_auth_schema_and_html_sanitizer_edge_cases(self):
+        from marshmallow import ValidationError as SchemaValidationError
+        from app.schemas.vademecum.auth_schema import RegisterSchema
+        from app.helpers.vademecum_html import sanitize_html
+        with self.assertRaises(SchemaValidationError):
+            RegisterSchema().load(["no-es-dict"])
+        self.assertIsNone(sanitize_html(None))
+        self.assertEqual(sanitize_html(u"<p/>Hola<br/></em><strong>abierto"),
+                         u"<p></p>Hola<br><strong>abierto</strong>")
 
 
 if __name__ == "__main__":

@@ -65,6 +65,8 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
         res = self.request_access(firstName="", institution="", email="x")
         self.assertEqual(res.status_code, 400)
         self.assertEqual(set(res.get_json()), {"firstName", "institution", "email"})
+        with mock.patch.dict(self.app.config, {"RECAPTCHA_SECRET_KEY": "secret"}):
+            self.assert_error(self.request_access(), 400, "general", "105")
 
     def test_enrolled_email_does_not_need_a_request(self):
         enroll_vademecum_teacher(self.year, EMAIL)
@@ -96,7 +98,12 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
         self.assertEqual(body["records"][0]["schoolYear"]["name"], "2026 - 2027")
         found = self.bo("GET", "/access-requests?q=v-999").get_json()["records"]
         self.assertEqual([r["email"] for r in found], ["ana@test.com"])
-        self.assertEqual(self.bo("GET", "/access-requests?status=x").status_code, 400)
+        self.assertEqual(
+            self.bo("GET", "/access-requests?schoolYearId={}".format(self.year.id)).status_code,
+            200)
+        for query in ("?status=x", "?schoolYearId=x", "?q=" + "a" * 101, "?page=x",
+                      "?page=0", "?pageSize=101"):
+            self.assertEqual(self.bo("GET", "/access-requests" + query).status_code, 400, query)
 
     def test_approve_creates_pending_account_authorization_and_emails_the_link(self):
         requestId = self.first_request_id()
@@ -116,7 +123,9 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
                           409, "general", "118")
 
     def test_approve_reuses_an_active_account_and_notifies(self):
-        from app.models.vademecum import VademecumTeacherAccount
+        from mongoengine import NotUniqueError
+        from app.models.vademecum import VademecumAccessRequest, VademecumTeacherAccount
+        from app.services.vademecum.access_request_service import AccessRequestService
         account = VademecumTeacherAccount(email=EMAIL, firstName="Luis", lastName="G",
                                           status="1", emailVerifiedAt=datetime.utcnow())
         account.set_password("clave-segura")
@@ -128,6 +137,33 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
         self.assertEqual(self.mail_account_service.call_count, 0)
         self.assertIn("aprobado", self.mail_access_request_service.call_args[0][2])
 
+        # Cuenta borrada lógicamente se reactiva como pending; colisión concurrente la recupera
+        deletedAcc = VademecumTeacherAccount(email="borrada@test.com", firstName="B",
+                                             lastName="C", status="1", isDeleted=True)
+        deletedAcc.set_password("clave-segura")
+        deletedAcc.save()
+        reqDeleted = VademecumAccessRequest(email="borrada@test.com", firstName="B", lastName="C",
+                                            institution="UE", schoolYear=self.year)
+        restored = AccessRequestService()._account_for(reqDeleted)
+        self.assertEqual((restored.isDeleted, restored.status), (False, "pending"))
+
+        reqRace = VademecumAccessRequest(email="race@test.com", firstName="R", lastName="C",
+                                         institution="UE", schoolYear=self.year)
+        raceAcc = VademecumTeacherAccount(email="race@test.com", firstName="R", lastName="C")
+        realFirst = VademecumTeacherAccount.objects
+        calls = []
+
+        def fake_objects(**kw):
+            calls.append(kw)
+            if len(calls) == 1:
+                return mock.MagicMock(first=lambda: None)
+            return mock.MagicMock(first=lambda: raceAcc)
+
+        with mock.patch.object(VademecumTeacherAccount, "objects", side_effect=fake_objects), \
+                mock.patch.object(VademecumTeacherAccount, "save",
+                                  side_effect=NotUniqueError("dup")):
+            self.assertIs(AccessRequestService()._account_for(reqRace), raceAcc)
+
     def test_reject_requires_reason_and_emails_it(self):
         requestId = self.first_request_id()
         self.assert_error(self.bo("POST", "/access-requests/{}/reject".format(requestId),
@@ -136,6 +172,8 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
                          {"reason": u"No es docente"})
         self.assertEqual((res.get_json()["status"], res.get_json()["rejectionReason"]),
                          ("rejected", u"No es docente"))
+        self.assert_error(self.bo("POST", "/access-requests/{}/reject".format(requestId),
+                                     {"reason": u"Otra vez"}), 409, "general", "118")
         self.assertIn(u"No es docente", self.mail_access_request_service.call_args[0][1])
         from app.models.vademecum import VademecumTeacherAccount
         self.assertEqual(VademecumTeacherAccount.objects.count(), 0)
@@ -143,11 +181,14 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
         self.assertEqual(self.request_access().status_code, 201)
 
     def test_email_failure_does_not_undo_the_review(self):
+        from app.services.vademecum.access_request_service import notify
         self.mail_access_request_service.return_value = ({"msg": "Gmail down"}, 400)
         requestId = self.first_request_id()
         res = self.bo("POST", "/access-requests/{}/reject".format(requestId),
                          {"reason": "x"})
         self.assertEqual(res.status_code, 200)
+        self.mail_access_request_service.side_effect = RuntimeError("smtp down")
+        self.assertFalse(notify("a@b.co", "A", "Subj", ["Texto"]))
 
     def test_review_requires_admin(self):
         requestId = self.first_request_id()
@@ -186,10 +227,13 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
         # Nuevo año vigente: la autorización anterior ya no da acceso
         self.year.status = "2"
         self.year.save()
+        self.assertEqual(self.bo("GET", "/authorizations").get_json()["records"], [])
+        self.assertEqual(self.bo("GET", "/authorizations?schoolYearId=x").status_code, 400)
         create_school_year(name="2027 - 2028", start=datetime(2027, 9, 15),
                            end=datetime(2028, 7, 31))
         self.assertEqual(self.me(token)["access"]["origin"], "none")
         self.assertEqual(self.bo("GET", "/authorizations").get_json()["records"], [])
+        self.assertEqual(self.bo("GET", "/authorizations?page=0").status_code, 400)
         old = self.bo("GET", "/authorizations?schoolYearId={}".format(self.year.id))
         self.assertEqual(len(old.get_json()["records"]), 1)
 

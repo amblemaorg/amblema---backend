@@ -341,6 +341,8 @@ class VademecumDownloadTest(unittest.TestCase):
         self.sheet.file = SheetFile(pdfPath=os.path.relpath(outside.name, self.storage))
         self.sheet.save()
         self.assert_error(self.download(), 404, "general", "5")
+        with mock.patch.dict(self.app.config, {"VADEMECUM_STORAGE_PATH": None}):
+            self.assert_error(self.download(), 404, "general", "5")
 
     def test_filename_keeps_accents_and_drops_unsafe_characters(self):
         self.enroll()

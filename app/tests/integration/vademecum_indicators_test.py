@@ -234,7 +234,22 @@ class VademecumIndicatorsTest(VademecumAdminTestBase):
 
     def test_export_without_current_year_returns_empty(self):
         from app.models.school_year_model import SchoolYear
+        from app.services.vademecum.indicator_service import _school_ref
+        self.assertIsNone(_school_ref(None))
+        self.assert_error(self.get("?top=abc"), 400, "top", "1")
+        self.assert_error(self.get("/teachers?schoolYearId=x"), 400, "schoolYearId", "1")
+        self.assert_error(self.get("/teachers?page=abc"), 400, "page", "1")
+        self.assert_error(self.get("/teachers?page=0"), 400, "page", "1")
+        self.assert_error(
+            self.get("/teachers/{}/downloads?schoolYearId=x".format(self.maria.id)),
+            400, "schoolYearId", "1")
+        self.assert_error(
+            self.get("/teachers/{}/downloads?page=0".format(self.maria.id)),
+            400, "page", "1")
         SchoolYear.objects(id=self.year.id).update(set__status="2")
+        self.assertEqual(self.ok("/teachers")["records"], [])
+        self.assertEqual(
+            self.ok("/teachers/{}/downloads".format(self.maria.id))["records"], [])
         data = self.ok("/teachers/export")
         self.assertIsNone(data["schoolYear"])
         self.assertEqual((data["total"], data["records"]), (0, []))

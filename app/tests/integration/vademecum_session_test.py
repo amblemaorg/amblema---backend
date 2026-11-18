@@ -236,6 +236,13 @@ class VademecumPasswordTest(VademecumSessionBase):
         res = self.forgot("nadie@gmail.com")
         self.assertEqual((res.status_code, res.get_json()), (200, {"msg": "ok"}))
         self.sendEmail.assert_not_called()
+        self.assertEqual(self.forgot("").status_code, 400)
+        self.assertEqual(self.request("POST", "/vademecum/auth/login", {}).status_code, 400)
+        self.assertEqual(self.request("POST", "/vademecum/auth/reset-password", {}).status_code,
+                         400)
+        with mock.patch.dict(self.app.config, {"RECAPTCHA_SECRET_KEY": "secret"}):
+            self.assertEqual(self.login().status_code, 400)
+            self.assertEqual(self.forgot().status_code, 400)
 
     def test_reset_password_changes_it_and_invalidates_old_tokens(self):
         self.create_account()
@@ -276,6 +283,7 @@ class VademecumPasswordTest(VademecumSessionBase):
     def test_change_password_with_session(self):
         self.create_account()
         token = self.login().get_json()["accessToken"]
+        self.assertEqual(self.request("PUT", "/vademecum/me/password", {}, token).status_code, 400)
         bad = self.request("PUT", "/vademecum/me/password",
                            {"currentPassword": "mala", "newPassword": "nueva-clave"}, token)
         self.assertEqual(bad.get_json()["currentPassword"][0]["status"], "103")

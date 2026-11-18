@@ -179,9 +179,16 @@ class VademecumRegisterTest(unittest.TestCase):
     # --- Reenvío ---
 
     def test_resend_always_answers_ok(self):
+        from mongoengine import NotUniqueError
+        from app.models.vademecum import VademecumTeacherAccount
         res = self.post("resend-verification", {"email": "nadie@gmail.com"})
         self.assertEqual((res.status_code, res.get_json()), (200, {"msg": "ok"}))
         self.sendEmail.assert_not_called()
+        self.assertEqual(self.post("resend-verification", {}).status_code, 400)
+        with mock.patch.object(VademecumTeacherAccount, "save", side_effect=NotUniqueError("dup")):
+            self.assertEqual(self.register().get_json()["result"], "verification_sent")
+        self.sendEmail.side_effect = RuntimeError("smtp down")
+        self.assertEqual(self.register().status_code, 200)
 
     def test_resend_sends_new_link_to_pending_account(self):
         self.register()

@@ -188,9 +188,27 @@ class VademecumEnrollmentTest(unittest.TestCase):
         self.assertFalse(self.resolve("borrado@test.com").is_enrolled)
 
     def test_c8_inactive_or_deleted_school_does_not_count(self):
+        from unittest import mock
+        from app.models.peca_project_model import PecaProject
+        from app.services.vademecum.enrollment_service import EnrollmentService, _as_object_id
+        oid = ObjectId()
+        self.assertEqual(_as_object_id(oid), oid)
+        self.assertEqual(_as_object_id(str(oid)), oid)
+        self.assertIsNone(_as_object_id("no-es-oid"))
         self.school("Escuela Inactiva", [teacher("ana@test.com")], status="2")
         self.school("Escuela Borrada", [teacher("ana@test.com")], isDeleted=True)
         self.assertFalse(self.resolve("ana@test.com").is_enrolled)
+        self.assertFalse(EnrollmentService().is_enrolled("ana@test.com", self.year))
+
+        # Dos años con status 1: toma el más reciente y registra advertencia
+        create_school_year(name="2027 - 2028", status="1")
+        self.assertIsNotNone(EnrollmentService().current_school_year())
+
+        # Proyecto PECA sin school.id válido se ignora defensivamente
+        self.school("Escuela Activa", [teacher("defensivo@test.com")])
+        with mock.patch.object(PecaProject._get_collection(), "find",
+                               return_value=[{"project": {}}]):
+            self.assertEqual(self.resolve("defensivo@test.com").schools, [])
 
     # --- Índice ---
 

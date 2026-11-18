@@ -439,7 +439,7 @@ class TeacherCoevaluationService():
         row.update(self._results(coevaluation))
         return row
 
-    def report(self, schoolYearId, schoolId=None, level=None):
+    def report(self, schoolYearId, schoolId=None, level=None, stateId=None):
         if not ObjectId.is_valid(schoolYearId):
             return _error("School year not found", 404, schoolYearId=schoolYearId)
         schoolYear = SchoolYear.objects(id=schoolYearId, isDeleted=False).first()
@@ -447,10 +447,14 @@ class TeacherCoevaluationService():
             return _error("School year not found", 404, schoolYearId=schoolYearId)
         if level and level not in LEVEL_CODES:
             return _error("Invalid level", 400, level=level)
+        if stateId and not ObjectId.is_valid(stateId):
+            return _error("State not found", 404, stateId=stateId)
 
         pecaFilter = {"schoolYear": schoolYear.id, "isDeleted": False}
         if schoolId:
             pecaFilter["project__school__id"] = schoolId
+        if stateId:
+            pecaFilter["school__addressState"] = ObjectId(stateId)
         # Sin los estudiantes embebidos en las secciones (pesados y no se usan aquí).
         pecas = PecaProject.objects(**pecaFilter).only(
             'id', 'project', 'schoolYearName',

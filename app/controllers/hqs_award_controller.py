@@ -17,4 +17,5 @@ class HqsAwardReportController(Resource):
     def get(self, schoolYearId):
         return self.service.report(
             schoolYearId,
-            schoolId=request.args.get('schoolId') or None)
+            schoolId=request.args.get('schoolId') or None,
+            stateId=request.args.get('stateId') or None)

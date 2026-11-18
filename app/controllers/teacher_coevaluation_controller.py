@@ -80,4 +80,5 @@ class TeacherCoevaluationReportController(Resource):
         return self.service.report(
             schoolYearId,
             schoolId=request.args.get('schoolId') or None,
-            level=request.args.get('level') or None)
+            level=request.args.get('level') or None,
+            stateId=request.args.get('stateId') or None)

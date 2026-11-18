@@ -130,16 +130,21 @@ def count_schools(schools):
 
 class HqsAwardService():
 
-    def report(self, schoolYearId, schoolId=None):
+    def report(self, schoolYearId, schoolId=None, stateId=None):
         if not ObjectId.is_valid(schoolYearId):
             return _error("School year not found", 404, schoolYearId=schoolYearId)
         schoolYear = SchoolYear.objects(id=schoolYearId, isDeleted=False).first()
         if not schoolYear:
             return _error("School year not found", 404, schoolYearId=schoolYearId)
 
+        if stateId and not ObjectId.is_valid(stateId):
+            return _error("State not found", 404, stateId=stateId)
+
         pecaFilter = {"schoolYear": schoolYear.id, "isDeleted": False}
         if schoolId:
             pecaFilter["project__school__id"] = schoolId
+        if stateId:
+            pecaFilter["school__addressState"] = ObjectId(stateId)
         # Solo lo necesario: sin school.sections (estudiantes embebidos, pesados).
         pecas = [peca for peca in PecaProject.objects(**pecaFilter).only(
             'id', 'project', 'school.diagnostics', 'yearbookDownloadEnabled')

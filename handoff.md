@@ -1,7 +1,7 @@
 # handoff — amblema---backend
 
 ## Estado actual
-Rama `master`, cambios sin commit (IAA del AmbLeMario). Batería: 290 pruebas OK.
+Rama `fix/iaa-amblemario-sync` (commit `d251b65`), PR #126 abierto contra `master`. Batería: 290 pruebas OK.
 
 ## Hecho
 - 2026-11-19 — IAA (diagnóstico de ambiente) en cero en el AmbLeMario (`/pdf-template/yearbook`):
@@ -16,7 +16,7 @@ Rama `master`, cambios sin commit (IAA del AmbLeMario). Batería: 290 pruebas OK
     `unitary/environmental_diagnostic_test.py` (llama a la sync con el `pecaId` del evaluador).
 
 ## Pendiente
-- Commit/push cuando el Ing. Fidel lo indique (rama propia, no `master`).
+- Revisar y fusionar el PR #126.
 - Producción: desplegar el cambio y luego correr el script (primero `--dry-run`).
 
 ## Decisiones y notas

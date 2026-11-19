@@ -22,5 +22,6 @@ Rama `fix/iaa-amblemario-sync` (commit `d251b65`), PR #126 abierto contra `maste
 ## Decisiones y notas
 - `update_yearbook_data_in_approval` actualiza la solicitud pendiente y solo la aprobación más reciente
   (también reescribe `sections` y `diagnosticSummary`, como ya hacían los otros diagnósticos).
+- El script toma la raíz del backend desde su propia ruta (no `/home`): en producción vive en `~/amblema-back`.
 - Devuelve `False` si no hay aprobación en `yearbook_approval` aunque haya actualizado la pendiente; el script lo
   cuenta como "omitido".

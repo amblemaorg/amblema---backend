@@ -9,27 +9,74 @@ evaluadores enviaron sus resultados despues de la ultima aprobacion.
 Solo toca los PECA que tienen al menos un evaluador con evaluacion enviada. Por cada uno
 llama a update_yearbook_data_in_approval (pendiente + ultimo aprobado), igual que el backend.
 
-Compatible con Python 2.7 y 3.6. Uso (desde la raiz del backend, con el venv activo):
+Compatible con Python 2.7 y 3.5+. Uso (desde la raiz del backend, con el venv activo):
 
     python scripts/refresh_environmental_summaries.py --dry-run      # solo lista
     python scripts/refresh_environmental_summaries.py                # ano escolar activo
     python scripts/refresh_environmental_summaries.py --all-years    # todos los anos
 
-La instancia sale de la variable de entorno INSTANCE (por defecto 'development').
+Variables (DB_URL, INSTANCE, ...), por prioridad:
+  1. Las ya definidas en el entorno (p. ej. INSTANCE=production en la linea de comando).
+  2. environment= del programa de supervisor (/etc/supervisor/conf.d/gunicorn.conf, o la ruta en
+     SUPERVISOR_CONF): las mismas que usa gunicorn en el servidor.
+  3. El .env de la raiz del backend (entorno local).
+No se imprime ningun valor.
 """
+import io
 import os
+import re
 import sys
 
 # Raiz del backend (carpeta padre de scripts/), sirva en Docker (/home) o en el servidor (~/amblema-back)
 BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BACKEND_ROOT)
 
+SUPERVISOR_CONF = os.getenv('SUPERVISOR_CONF', '/etc/supervisor/conf.d/gunicorn.conf')
 
-def load_env_file(path):
-    """Carga KEY=VALUE del .env sin pisar variables ya definidas (en el servidor no se exportan solas)."""
-    if not os.path.exists(path):
-        return
-    with open(path) as env_file:
+# KEY="valor" | KEY='valor' | KEY=valor (formato de environment= en supervisor)
+SUPERVISOR_PAIR = re.compile(r'([A-Za-z_][A-Za-z0-9_]*)=("(?:[^"\\]|\\.)*"|\'[^\']*\'|[^,\s]*)')
+
+
+def set_missing(variables):
+    """Define solo las variables que aun no existen; devuelve cuantas se cargaron."""
+    loaded = 0
+    for key, value in variables:
+        if key and not os.getenv(key):
+            os.environ[key] = value
+            loaded += 1
+    return loaded
+
+
+def read_supervisor_environment(path):
+    """Pares (clave, valor) de environment= en la config de supervisor (admite lineas de continuacion)."""
+    with io.open(path, encoding='utf-8') as conf_file:
+        lines = conf_file.read().splitlines()
+
+    value_lines = []
+    collecting = False
+    for line in lines:
+        if collecting:
+            # En supervisor, una linea indentada continua el valor anterior
+            if line[:1] in (' ', '\t') and line.strip() and not line.strip().startswith(('#', ';')):
+                value_lines.append(line.strip())
+                continue
+            collecting = False
+        match = re.match(r'\s*environment\s*=\s*(.*)$', line)
+        if match:
+            value_lines.append(match.group(1))
+            collecting = True
+
+    pairs = []
+    for key, value in SUPERVISOR_PAIR.findall(' '.join(value_lines)):
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            value = value[1:-1]
+        pairs.append((key, value))
+    return pairs
+
+
+def read_env_file(path):
+    pairs = []
+    with io.open(path, encoding='utf-8') as env_file:
         for line in env_file:
             line = line.strip()
             if not line or line.startswith('#') or '=' not in line:
@@ -37,14 +84,30 @@ def load_env_file(path):
             if line.startswith('export '):
                 line = line[len('export '):]
             key, value = line.split('=', 1)
-            key = key.strip()
-            value = value.strip().strip('"').strip("'")
-            if key and not os.getenv(key):
-                os.environ[key] = value
-    print("Variables cargadas desde {}".format(path))
+            pairs.append((key.strip(), value.strip().strip('"').strip("'")))
+    return pairs
 
 
-load_env_file(os.path.join(BACKEND_ROOT, '.env'))
+def load_environment():
+    if os.path.exists(SUPERVISOR_CONF):
+        try:
+            loaded = set_missing(read_supervisor_environment(SUPERVISOR_CONF))
+            print("Variables de supervisor ({}): {} cargadas".format(SUPERVISOR_CONF, loaded))
+        except (IOError, OSError) as e:
+            print("No se pudo leer {} ({}). Ejecute con un usuario que pueda leerlo "
+                  "o exporte DB_URL antes de correr el script.".format(SUPERVISOR_CONF, e.strerror or e))
+
+    env_path = os.path.join(BACKEND_ROOT, '.env')
+    if os.path.exists(env_path):
+        loaded = set_missing(read_env_file(env_path))
+        print("Variables de {}: {} cargadas".format(env_path, loaded))
+
+    if not os.getenv('DB_URL'):
+        print("ERROR: DB_URL no esta definida (ni en el entorno, ni en {}, ni en .env).".format(SUPERVISOR_CONF))
+        sys.exit(1)
+
+
+load_environment()
 
 from app import create_app
 

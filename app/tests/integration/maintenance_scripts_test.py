@@ -3,6 +3,7 @@
 
 import unittest
 from datetime import datetime
+from unittest.mock import patch
 
 from app import create_app
 from app.tests.base import drop_testing_database
@@ -15,6 +16,7 @@ from app.helpers.utilities_helpers import (
     refresh_role_permissions)
 from app.helpers.peca_yearbook_helper import update_yearbook_data_in_approval
 from app.models.entity_model import Entity, Action
+from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
 from app.models.peca_project_model import PecaProject
 from app.models.peca_section_model import Section
 from app.models.peca_student_model import Student
@@ -164,6 +166,52 @@ class MaintenanceScriptsTest(unittest.TestCase):
         create_school_year()
         _, peca = self.enrolledProject()
         self.assertFalse(update_yearbook_data_in_approval(PecaProject.objects(id=peca.id).first()))
+
+    # -- IAA (diagnóstico de ambiente) en el AmbLeMario --
+
+    def pendingYearbookWithEvaluator(self, token="tok1"):
+        create_school_year()
+        project, peca = self.enrolledProject()
+        RequestContentApproval._get_collection().insert_one({
+            "type": "7", "status": "1", "isDeleted": False, "createdAt": datetime.utcnow(),
+            "project": {"id": str(project.id)},
+            "detail": {"pecaId": str(peca.id), "sections": [],
+                       "lapse1": {"environmentalSummary": [0, 0, 0, 0, 0]}}})
+        EnvironmentalDiagnosticEvaluator(
+            pecaId=str(peca.id), lapse="1", name="Eva", email="eva@test.com", phone="0412", token=token).save()
+        return peca
+
+    @staticmethod
+    def environmentalPayload(value):
+        counts = {"cleanlinessAndCareOfSpaces": 3, "wasteManagement": 3, "biodiversityConservation": 3,
+                  "waterUse": 3, "communityRelations": 2}
+        ids = {"cleanlinessAndCareOfSpaces": "1", "wasteManagement": "2", "biodiversityConservation": "3",
+               "waterUse": "4", "communityRelations": "5"}
+        return {"results": {
+            key: {"subcriteria": {"{}.{}".format(ids[key], n): {"value": value, "observation": ""}
+                                  for n in range(1, count + 1)}}
+            for key, count in counts.items()}}
+
+    def test_environmental_submission_updates_yearbook_summary(self):
+        from app.services.environmental_diagnostic_service import EnvironmentalDiagnosticService
+        self.pendingYearbookWithEvaluator()
+
+        _, status = EnvironmentalDiagnosticService().submit_evaluation("tok1", self.environmentalPayload(5))
+
+        self.assertEqual(status, 200)
+        request = RequestContentApproval.objects(type="7").first()
+        self.assertEqual(request.detail['lapse1']['environmentalSummary'], [5.0, 5.0, 5.0, 5.0, 5.0])
+
+    def test_environmental_submission_survives_yearbook_sync_failure(self):
+        from app.services.environmental_diagnostic_service import EnvironmentalDiagnosticService
+        self.pendingYearbookWithEvaluator()
+
+        with patch("app.services.environmental_diagnostic_service.update_yearbook_data_in_approval",
+                   side_effect=RuntimeError("boom")):
+            _, status = EnvironmentalDiagnosticService().submit_evaluation("tok1", self.environmentalPayload(5))
+
+        self.assertEqual(status, 200)
+        self.assertTrue(EnvironmentalDiagnosticEvaluator.objects(token="tok1").first().hasEvaluated)
 
 
 if __name__ == "__main__":

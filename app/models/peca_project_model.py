@@ -46,6 +46,7 @@ class PecaProject(Document):
     yearbook = fields.EmbeddedDocumentField(Yearbook, default=Yearbook)
     environmentalProject = fields.EmbeddedDocumentField(
         EnvironmentalProjectPeca)
+    yearbookDownloadEnabled = fields.BooleanField(default=False)
     isDeleted = fields.BooleanField(default=False)
     createdAt = fields.DateTimeField(default=datetime.utcnow)
     updatedAt = fields.DateTimeField(default=datetime.utcnow)

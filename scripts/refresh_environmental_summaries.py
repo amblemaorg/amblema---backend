@@ -21,7 +21,30 @@ import os
 import sys
 
 # Raiz del backend (carpeta padre de scripts/), sirva en Docker (/home) o en el servidor (~/amblema-back)
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BACKEND_ROOT)
+
+
+def load_env_file(path):
+    """Carga KEY=VALUE del .env sin pisar variables ya definidas (en el servidor no se exportan solas)."""
+    if not os.path.exists(path):
+        return
+    with open(path) as env_file:
+        for line in env_file:
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            if line.startswith('export '):
+                line = line[len('export '):]
+            key, value = line.split('=', 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and not os.getenv(key):
+                os.environ[key] = value
+    print("Variables cargadas desde {}".format(path))
+
+
+load_env_file(os.path.join(BACKEND_ROOT, '.env'))
 
 from app import create_app
 

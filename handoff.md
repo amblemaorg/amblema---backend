@@ -1,7 +1,8 @@
 # handoff — amblema---backend
 
 ## Estado actual
-Rama `fix/iaa-amblemario-sync` (commit `d251b65`), PR #126 abierto contra `master`. Batería: 290 pruebas OK.
+Rama `master` al día con `origin/master` (`521b0e1`). Arreglo del IAA del AmbLeMario fusionado (PR #126, #127 y #128).
+Falta confirmar la corrida del script en producción. Batería: 290 pruebas OK.
 
 ## Hecho
 - 2026-11-19 — IAA (diagnóstico de ambiente) en cero en el AmbLeMario (`/pdf-template/yearbook`):
@@ -9,22 +10,24 @@ Rama `fix/iaa-amblemario-sync` (commit `d251b65`), PR #126 abierto contra `maste
     así que las evaluaciones enviadas después de aprobar quedaban fuera (`environmentalSummary` en `[0,0,0,0,0]`).
   - `services/environmental_diagnostic_service.py`: tras guardar la evaluación llama a
     `update_yearbook_data_in_approval` (vía `_sync_yearbook`; si falla, solo lo registra y la evaluación se guarda igual).
-    Se añadió `# -*- coding: utf-8 -*-` (el archivo tenía tildes sin cabecera: SyntaxError en Python 2.7).
-  - `scripts/refresh_environmental_summaries.py` (Python 2.7/3.6): resincroniza el IAA de los PECA con evaluaciones
-    enviadas. `--dry-run` lista, `--all-years` incluye años anteriores. Ejecutado en la BD local: 26 PECA actualizados.
+    Se añadió `# -*- coding: utf-8 -*-` (el archivo tenía tildes sin cabecera).
+  - `scripts/refresh_environmental_summaries.py`: resincroniza el IAA de los PECA con evaluaciones enviadas.
+    `--dry-run` lista, `--all-years` incluye años anteriores. Ejecutado en local (26 PECA).
   - Pruebas: `maintenance_scripts_test.py` (envío actualiza la solicitud pendiente; fallo de sync no rompe el envío) y
     `unitary/environmental_diagnostic_test.py` (llama a la sync con el `pecaId` del evaluador).
 
 ## Pendiente
-- PR #126 fusionado. #127 fusionado. Falta fusionar el PR #128 (variables desde supervisor).
-- Producción: desplegar el cambio y luego correr el script (primero `--dry-run`).
+- Confirmar que el script se corrió en producción (sin `--dry-run`) y verificar el PDF del AmbLeMario de U.E.E.R. La Esperanza 2026-2027 (IAA del lapso 1 con datos).
+- Opcional: índice compuesto `(pecaId, lapse)` en `environmental_diagnostic_evaluators`.
 
 ## Decisiones y notas
 - `update_yearbook_data_in_approval` actualiza la solicitud pendiente y solo la aprobación más reciente
   (también reescribe `sections` y `diagnosticSummary`, como ya hacían los otros diagnósticos).
-- El script toma la raíz del backend desde su propia ruta (no `/home`): en producción vive en `~/amblema-back`.
-- En el servidor las variables no están en la shell: viven en `environment=` de `/etc/supervisor/conf.d/gunicorn.conf`
-  (ruta cambiable con `SUPERVISOR_CONF`). El script las lee de ahí; prioridad: entorno > supervisor > `.env` (local).
-  No pisa las ya definidas (p. ej. `INSTANCE=production`). El venv de producción es Python 3.5 (no 2.7).
-- Devuelve `False` si no hay aprobación en `yearbook_approval` aunque haya actualizado la pendiente; el script lo
-  cuenta como "omitido".
+  Devuelve `False` si no hay aprobación en `yearbook_approval` aunque haya actualizado la pendiente.
+- Servidor de producción: backend en `/home/amblema/amblema-back`, venv con **Python 3.5** (no 2.7), variables en
+  `environment=` de `/etc/supervisor/conf.d/gunicorn.conf` (no en la shell ni en `.env`).
+- Los scripts para producción deben: resolver la raíz del backend desde su propia ruta (no `/home`) y leer las variables
+  de supervisor. Prioridad en `refresh_environmental_summaries.py`: entorno > supervisor (`SUPERVISOR_CONF`) > `.env`.
+- `master` está protegida (requiere revisión): los PR los fusiona el Ing. Fidel.
+- Skill `.claude/skills/script-produccion-backend/` (2026-11-19): flujo para scripts que se corren en el servidor, con
+  `check_script.py` (sintaxis 3.5, cabecera utf-8, rutas fijas a `/home`) y prueba con un `gunicorn.conf` falso.

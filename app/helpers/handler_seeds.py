@@ -217,6 +217,11 @@ def create_entities():
                 "name": "teacher_delete",
                 "label": "Eliminar",
                 "sort": 4
+            },
+            {
+                "name": "teacher_coevaluation",
+                "label": "Coevaluar",
+                "sort": 5
             }
         ]
     ).save()

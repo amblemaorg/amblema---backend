@@ -248,9 +248,10 @@ class StatisticsDiagnosticService():
                             if initial_index is None:
                                 initial_index = sectionSummary[diag]['lapse2']['indexAverage']
 
+                            # puntos porcentuales: indice final - indice inicial
                             sectionSummary[diag]['improvementPercentage'] = (
-                                round(((final_index - initial_index) * 100 / initial_index), 2)
-                                if initial_index and initial_index > 0 and final_index is not None else 0
+                                round(final_index - initial_index, 2)
+                                if initial_index is not None and final_index is not None else 0
                             )
                             valid_indices = [
                                 sectionSummary[diag]['lapse{}'.format(k)]['indexAverage']
@@ -340,9 +341,10 @@ class StatisticsDiagnosticService():
                         if initial_index is None:
                             initial_index = diagSummary['lapse2IndexAverage']
 
+                        # puntos porcentuales: indice final - indice inicial
                         diagSummary['improvementPercentageAverage'] = (
-                            round(((final_index - initial_index) * 100 / initial_index), 2)
-                            if initial_index and initial_index > 0 and final_index is not None else 0
+                            round(final_index - initial_index, 2)
+                            if initial_index is not None and final_index is not None else 0
                         )
                         diagSummary['totalResultAverage'] = (
                             resultAverageAcum / resultAverageCount

@@ -3,8 +3,9 @@ from unittest.mock import MagicMock, patch
 
 class EnvironmentalDiagnosticServiceUnitTest(unittest.TestCase):
 
+    @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticService._sync_yearbook')
     @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticEvaluator')
-    def test_submit_evaluation_calculations(self, mock_evaluator_cls):
+    def test_submit_evaluation_calculations(self, mock_evaluator_cls, mock_sync):
         mock_evaluator = MagicMock()
         mock_evaluator.hasEvaluated = False
         mock_evaluator_cls.objects.return_value.first.return_value = mock_evaluator
@@ -74,8 +75,9 @@ class EnvironmentalDiagnosticServiceUnitTest(unittest.TestCase):
         # Verify Total Index: 6.0 + 6.0 + 5.0 + 7.0 + 5.0 = 29.0 (Satisfactorio)
         self.assertEqual(mock_evaluator.index, 29.0)
 
+    @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticService._sync_yearbook')
     @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticEvaluator')
-    def test_submit_evaluation_with_zero_no_aplica(self, mock_evaluator_cls):
+    def test_submit_evaluation_with_zero_no_aplica(self, mock_evaluator_cls, mock_sync):
         mock_evaluator = MagicMock()
         mock_evaluator.hasEvaluated = False
         mock_evaluator_cls.objects.return_value.first.return_value = mock_evaluator
@@ -109,6 +111,20 @@ class EnvironmentalDiagnosticServiceUnitTest(unittest.TestCase):
 
         # Indicator 4: 4.1=7, 4.2=7, 4.3=0. Subtotal=14. Applied count=2. Average = 14/2 = 7.0
         self.assertEqual(mock_evaluator.results['waterUse']['average'], 7.0)
+
+    @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticService._sync_yearbook')
+    @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticEvaluator')
+    def test_submit_evaluation_syncs_yearbook_of_its_peca(self, mock_evaluator_cls, mock_sync):
+        mock_evaluator = MagicMock()
+        mock_evaluator.hasEvaluated = False
+        mock_evaluator.pecaId = "peca123"
+        mock_evaluator_cls.objects.return_value.first.return_value = mock_evaluator
+
+        from app.services.environmental_diagnostic_service import EnvironmentalDiagnosticService
+        _, code = EnvironmentalDiagnosticService().submit_evaluation("dummy_token", {"results": {}})
+
+        self.assertEqual(code, 200)
+        mock_sync.assert_called_once_with("peca123")
 
     @patch('app.services.environmental_diagnostic_service.PecaProject')
     @patch('app.services.environmental_diagnostic_service.EnvironmentalDiagnosticEvaluator')

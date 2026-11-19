@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 # app/services/environmental_diagnostic_service.py
 
+import logging
 import os
 import uuid
 from datetime import datetime
@@ -9,6 +11,9 @@ from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEva
 from app.models.peca_project_model import PecaProject
 from app.helpers.error_helpers import RegisterNotFound
 from app.helpers.handler_emails import send_email
+from app.helpers.peca_yearbook_helper import update_yearbook_data_in_approval
+
+logger = logging.getLogger(__name__)
 
 
 class EnvironmentalDiagnosticService():
@@ -277,6 +282,7 @@ class EnvironmentalDiagnosticService():
         evaluator.hasEvaluated = True
         evaluator.evaluatedAt = datetime.utcnow()
         evaluator.save()
+        self._sync_yearbook(evaluator.pecaId)
 
         return {
             "message": "Resultados registrados exitosamente.",
@@ -286,6 +292,16 @@ class EnvironmentalDiagnosticService():
                 "results": evaluator.results
             }
         }, 200
+
+    def _sync_yearbook(self, pecaId):
+        """Refresca el IAA (environmentalSummary) del AmbLeMario pendiente y del último aprobado.
+        Un fallo aquí no debe impedir que se registre la evaluación."""
+        try:
+            peca = PecaProject.objects(id=pecaId, isDeleted=False).first()
+            if peca:
+                update_yearbook_data_in_approval(peca)
+        except Exception:
+            logger.exception("No se pudo sincronizar el AmbLeMario del PECA %s", pecaId)
 
     def delete_evaluator(self, pecaId, lapse, evaluatorId):
         peca = PecaProject.objects(id=pecaId, isDeleted=False).first()

@@ -9,7 +9,7 @@ evaluadores enviaron sus resultados despues de la ultima aprobacion.
 Solo toca los PECA que tienen al menos un evaluador con evaluacion enviada. Por cada uno
 llama a update_yearbook_data_in_approval (pendiente + ultimo aprobado), igual que el backend.
 
-Compatible con Python 2.7 y 3.6. Uso (desde /home, con el venv activo):
+Compatible con Python 2.7 y 3.6. Uso (desde la raiz del backend, con el venv activo):
 
     python scripts/refresh_environmental_summaries.py --dry-run      # solo lista
     python scripts/refresh_environmental_summaries.py                # ano escolar activo
@@ -20,7 +20,8 @@ La instancia sale de la variable de entorno INSTANCE (por defecto 'development')
 import os
 import sys
 
-sys.path.append('/home')
+# Raiz del backend (carpeta padre de scripts/), sirva en Docker (/home) o en el servidor (~/amblema-back)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app
 

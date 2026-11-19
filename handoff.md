@@ -16,12 +16,15 @@ Rama `fix/iaa-amblemario-sync` (commit `d251b65`), PR #126 abierto contra `maste
     `unitary/environmental_diagnostic_test.py` (llama a la sync con el `pecaId` del evaluador).
 
 ## Pendiente
-- Revisar y fusionar el PR #126.
+- PR #126 fusionado. #127 fusionado. Falta fusionar el PR #128 (variables desde supervisor).
 - Producción: desplegar el cambio y luego correr el script (primero `--dry-run`).
 
 ## Decisiones y notas
 - `update_yearbook_data_in_approval` actualiza la solicitud pendiente y solo la aprobación más reciente
   (también reescribe `sections` y `diagnosticSummary`, como ya hacían los otros diagnósticos).
 - El script toma la raíz del backend desde su propia ruta (no `/home`): en producción vive en `~/amblema-back`.
+- En el servidor las variables no están en la shell: viven en `environment=` de `/etc/supervisor/conf.d/gunicorn.conf`
+  (ruta cambiable con `SUPERVISOR_CONF`). El script las lee de ahí; prioridad: entorno > supervisor > `.env` (local).
+  No pisa las ya definidas (p. ej. `INSTANCE=production`). El venv de producción es Python 3.5 (no 2.7).
 - Devuelve `False` si no hay aprobación en `yearbook_approval` aunque haya actualizado la pendiente; el script lo
   cuenta como "omitido".

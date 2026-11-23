@@ -165,8 +165,7 @@ class DownloadService(object):
         return DownloadSheet(
             id=str(sheet.id), code=sheet.code, title=sheet.title,
             sheetTypeId=str(sheetType.id) if sheetType else None,
-            sheetTypeName=sheetType.name if sheetType else None,
-            seriesId=str(sheet.seriesId) if sheet.seriesId else None)
+            sheetTypeName=sheetType.name if sheetType else None)
 
     def _school_snapshot(self, school):
         stateId = stateName = None

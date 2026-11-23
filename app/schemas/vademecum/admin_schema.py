@@ -27,14 +27,6 @@ CODE = _pattern(r"^[A-Za-z0-9]{1,4}$", "Invalid code")
 COLOR = _pattern(HEX_COLOR_REGEX, "Invalid color")
 
 
-class SeriesInputSchema(StrictSchema):
-    id = fields.Str(load_default=None, allow_none=True)
-    name = fields.Str(required=True, validate=(not_blank, Length(max=60)))
-    code = fields.Str(required=True, validate=(not_blank, CODE))
-    grades = fields.List(fields.Str(validate=GRADE), required=True)
-    sort = fields.Int(load_default=0)
-
-
 class SheetTypeInputSchema(StrictSchema):
     name = fields.Str(required=True, validate=(not_blank, Length(max=60)))
     headerName = fields.Str(required=True, validate=(not_blank, Length(max=60)))
@@ -44,13 +36,13 @@ class SheetTypeInputSchema(StrictSchema):
     sectionText = fields.Str(load_default=None, allow_none=True, validate=Length(max=5000))
     sort = fields.Int(required=True)
     status = fields.Str(load_default="1", validate=STATUS)
-    series = fields.List(fields.Nested(SeriesInputSchema), load_default=list)
 
 
 class AreaInputSchema(StrictSchema):
     name = fields.Str(required=True, validate=(not_blank, Length(max=80)))
     sort = fields.Int(required=True)
     status = fields.Str(load_default="1", validate=STATUS)
+    sheetTypeIds = fields.List(fields.Str(), required=True, validate=Length(min=1))
 
 
 class SheetInputSchema(StrictSchema):
@@ -61,7 +53,6 @@ class SheetInputSchema(StrictSchema):
     grades = fields.List(fields.Str(validate=GRADE))
     areaIds = fields.List(fields.Str())
     sheetTypeId = fields.Str(validate=not_blank)
-    seriesId = fields.Str(allow_none=True)
 
 
 class SiteContentInputSchema(StrictSchema):
@@ -78,7 +69,6 @@ class SheetCreateSchema(StrictSchema):
     number = fields.Int(required=True, validate=Range(min=1, max=999))
     title = fields.Str(required=True, validate=(not_blank, Length(max=150)))
     sheetTypeId = fields.Str(required=True, validate=not_blank)
-    seriesId = fields.Str(load_default=None, allow_none=True)
     description = fields.Str(load_default=None, allow_none=True, validate=Length(max=2000))
     grades = fields.List(fields.Str(validate=GRADE), load_default=list)
     areaIds = fields.List(fields.Str(), load_default=list)

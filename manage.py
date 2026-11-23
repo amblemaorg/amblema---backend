@@ -138,6 +138,20 @@ def create_vademecum_seeds():
 
 
 @manager.command
+def link_vademecum_area_types():
+    """Áreas sin tipo de ficha: se les dan todos los tipos activos (idempotente)."""
+    from app.helpers.vademecum_seeds import link_vademecum_area_types as link
+    print('Vademecum area types: {}'.format(link()))
+
+
+@manager.command
+def remove_vademecum_series():
+    """Retiro de las series (2026-11-23): limpia una base con datos previos (idempotente)."""
+    from app.helpers.vademecum_seeds import remove_vademecum_series as remove
+    print('Vademecum series removed: {}'.format(remove()))
+
+
+@manager.command
 def ensure_vademecum_permission():
     """BO-01: entidad "Vademécum" y su acción, activa en superadmin y admin (idempotente)."""
     from app.helpers.vademecum_seeds import ensure_vademecum_permission as ensure

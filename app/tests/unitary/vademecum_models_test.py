@@ -28,38 +28,21 @@ class VademecumCatalogModelsTest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             self._sheet_type(color="azul").validate()
 
-    def test_series_rejects_unknown_grade(self):
-        from app.models.vademecum import SheetSeries
-        sheetType = self._sheet_type(
-            series=[SheetSeries(name="7", code="7", grades=["7"], sort=1)])
-        with self.assertRaises(ValidationError):
-            sheetType.validate()
-
-    def test_get_series_returns_match_or_none(self):
-        from app.models.vademecum import SheetSeries
-        series = [SheetSeries(name="3.º y 4.º grado", code="34", grades=["3", "4"], sort=1),
-                  SheetSeries(name="5.º y 6.º grado", code="56", grades=["5", "6"], sort=2)]
-        sheetType = self._sheet_type(series=series)
-        self.assertIs(sheetType.get_series(series[1].id), series[1])
-        self.assertIs(sheetType.get_series(str(series[1].id)), series[1])
-        self.assertIsNone(sheetType.get_series(ObjectId()))
-        self.assertIsNone(sheetType.get_series(None))
-
-    def test_series_codes_must_be_unique_within_type(self):
-        from app.models.vademecum import SheetSeries
-        sheetType = self._sheet_type(series=[
-            SheetSeries(name="A", code="34", grades=["3", "4"], sort=1),
-            SheetSeries(name="B", code="34", grades=["3", "4"], sort=2)])
-        with self.assertRaises(ValidationError):
-            sheetType.validate()
-        sheetType.series[1].isDeleted = True
-        sheetType.validate()
-
     def test_area_defaults(self):
         from app.models.vademecum import VademecumArea
         area = VademecumArea(name="Geometría", sort=1)
         self.assertEqual(area.status, "1")
         self.assertIs(area.isDeleted, False)
+        self.assertEqual(area.sheetTypes, [])
+
+    def test_area_applies_to_its_sheet_types(self):
+        from app.models.vademecum import VademecumArea
+        hora = self._sheet_type(id=ObjectId())
+        ingenio = self._sheet_type(id=ObjectId(), codePrefix="IM")
+        area = VademecumArea(name="Lectura", sort=1, sheetTypes=[hora])
+        self.assertTrue(area.applies_to(hora))
+        self.assertTrue(area.applies_to(hora.id))
+        self.assertFalse(area.applies_to(ingenio))
 
     def test_meta_collections_and_unique_partial_indexes(self):
         from app.models.vademecum import VademecumSheetType, VademecumArea
@@ -85,36 +68,19 @@ class VademecumSheetModelsTest(unittest.TestCase):
 
     def test_build_sheet_code(self):
         from app.models.vademecum.sheet_model import build_sheet_code
-        self.assertEqual(build_sheet_code("HT", None, 41), "HT-41")
-        self.assertEqual(build_sheet_code("IM", "34", 1), "IM34-1")
+        self.assertEqual(build_sheet_code("HT", 41), "HT-41")
 
-    def test_clean_sets_code_from_type_and_series(self):
-        from app.models.vademecum import SheetSeries, VademecumSheetType
-        series = SheetSeries(name="3.º y 4.º grado", code="34", grades=["3", "4"], sort=1)
-        sheetType = VademecumSheetType(id=ObjectId(), name="Ingenio Matemático",
-                                       headerName="Ingenio Matemático", codePrefix="IM",
-                                       color="#2F80ED", sort=2, series=[series])
-        sheet = self._sheet(sheetType=sheetType, seriesId=series.id, number=1)
+    def test_clean_sets_code_from_type_prefix(self):
+        sheet = self._sheet()
         sheet.clean()
-        self.assertEqual(sheet.code, "IM34-1")
-        plain = self._sheet()
-        plain.clean()
-        self.assertEqual(plain.code, "HT-41")
+        self.assertEqual(sheet.code, "HT-41")
 
-    def _ingenio(self):
-        from app.models.vademecum import SheetSeries, VademecumSheetType
-        series = SheetSeries(name="3.º y 4.º grado", code="34", grades=["3", "4"], sort=1)
-        return VademecumSheetType(id=ObjectId(), name="Ingenio Matemático",
-                                  headerName="Ingenio Matemático", codePrefix="IM",
-                                  color="#2F80ED", sort=2, series=[series])
-
-    def test_sheet_rejects_series_from_another_type(self):
-        with self.assertRaises(ValidationError):
-            self._sheet(sheetType=self._ingenio(), seriesId=ObjectId(), number=1).validate()
-
-    def test_sheet_requires_series_when_type_has_series(self):
-        with self.assertRaises(ValidationError):
-            self._sheet(sheetType=self._ingenio(), number=1).validate()
+    def test_models_have_no_series(self):
+        from app.models.vademecum import VademecumSheet, VademecumSheetType
+        from app.models.vademecum.download_model import DownloadSheet
+        self.assertNotIn("series", VademecumSheetType._fields)
+        self.assertNotIn("seriesId", VademecumSheet._fields)
+        self.assertNotIn("seriesId", DownloadSheet._fields)
 
     def test_sheet_rejects_unknown_status_and_grade(self):
         with self.assertRaises(ValidationError):
@@ -141,7 +107,7 @@ class VademecumSheetModelsTest(unittest.TestCase):
     def test_sheet_indexes(self):
         from app.models.vademecum import VademecumSheet
         self.assertEqual(VademecumSheet._meta["collection"], "vademecum_sheets")
-        for fields in (["sheetType", "seriesId", "number"], ["code"]):
+        for fields in (["sheetType", "number"], ["code"]):
             spec = _index_spec(VademecumSheet, fields)
             self.assertIsNotNone(spec, fields)
             self.assertTrue(spec.get("unique"))

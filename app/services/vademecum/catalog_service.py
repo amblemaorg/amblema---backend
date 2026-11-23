@@ -20,7 +20,7 @@ from app.models.vademecum.constants import GRADE_LABELS, GRADES
 
 SORTS = {
     "newest": ("-publishedAt", "-id"),
-    "number": ("sheetType", "seriesId", "number"),
+    "number": ("sheetType", "number"),
     "popular": ("-downloadCount", "-publishedAt"),
 }
 HOME_SIZE = 8
@@ -28,7 +28,7 @@ DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 MAX_QUERY_LENGTH = 100
 # Campos que el listado necesita: deja fuera searchText, sourcePages y rutas de archivos
-SUMMARY_FIELDS = ("id", "code", "number", "title", "sheetType", "seriesId", "grades", "areas",
+SUMMARY_FIELDS = ("id", "code", "number", "title", "sheetType", "grades", "areas",
                   "publishedAt", "fileReplacedAt", "ratingCount", "ratingSum",
                   "file.thumbnailPath", "file.previewPath")
 
@@ -52,13 +52,6 @@ def object_id(value):
         return None
 
 
-def series_dict(series, full=False):
-    data = {"id": str(series.id), "name": series.name, "code": series.code}
-    if full:
-        data.update(grades=list(series.grades), sort=series.sort)
-    return data
-
-
 def image_url(sheet, kind):
     """URL pública de la imagen con ?v= para invalidar caché, o None si no existe."""
     path = sheet.file and (sheet.file.thumbnailPath if kind == "thumbnail"
@@ -70,7 +63,7 @@ def image_url(sheet, kind):
     return "/vademecum/sheets/{}/{}.webp{}".format(sheet.id, kind, suffix)
 
 
-# Código de ficha escrito por el docente: "IM56", "IM56-3", "HT-41", "ht41". Prefijo de 2 a 4
+# Código de ficha escrito por el docente: "HT-41", "ht41", "HT4" (empieza por). Prefijo de 2 a 4
 # letras y al menos una cifra (una palabra sola sigue yendo a la búsqueda de texto)
 CODE_QUERY = re.compile(r"^(?P<prefix>[A-Za-z]{2,4})(?P<rest>-?\d[\d-]{0,7})$")
 
@@ -83,7 +76,7 @@ def code_query(q):
     prefix, rest = match.group("prefix").upper(), match.group("rest")
     patterns = ["^" + re.escape(prefix + rest)]
     if "-" not in rest:
-        # "HT41" también es "HT-41" (tipo sin serie): el guion es opcional al buscar
+        # "HT41" también es "HT-41": el guion es opcional al buscar
         patterns.append("^" + re.escape(prefix + "-" + rest))
     return {"$or": [{"code": {"$regex": pattern, "$options": "i"}} for pattern in patterns]}
 
@@ -98,7 +91,6 @@ class CatalogService(object):
     def summary(self, sheet, types, areas):
         sheetType = types.get(sheet.sheetType.id if hasattr(sheet.sheetType, "id")
                               else sheet.sheetType)
-        series = sheetType.get_series(sheet.seriesId) if sheetType else None
         sheetAreas = []
         for ref in sheet.areas:
             area = areas.get(ref.id if hasattr(ref, "id") else ref)
@@ -112,7 +104,6 @@ class CatalogService(object):
             "sheetType": ({"id": str(sheetType.id), "name": sheetType.name,
                            "codePrefix": sheetType.codePrefix, "color": sheetType.color}
                           if sheetType else None),
-            "series": series_dict(series) if series else None,
             "grades": list(sheet.grades),
             "areas": sheetAreas,
             "thumbnailUrl": image_url(sheet, "thumbnail"),
@@ -129,10 +120,9 @@ class CatalogService(object):
             sheetTypes.append({
                 "id": str(t.id), "name": t.name, "codePrefix": t.codePrefix, "color": t.color,
                 "sectionTitle": t.sectionTitle, "sectionText": t.sectionText, "sort": t.sort,
-                "series": [series_dict(s, full=True)
-                           for s in sorted(t.active_series(), key=lambda s: s.sort)],
             })
-        areas = [{"id": str(a.id), "name": a.name, "sort": a.sort}
+        areas = [{"id": str(a.id), "name": a.name, "sort": a.sort,
+                  "sheetTypeIds": [str(getattr(t, "id", t)) for t in a.sheetTypes]}
                  for a in VademecumArea.objects(isDeleted=False, status="1").order_by("sort")]
         grades = [{"value": g, "label": GRADE_LABELS[g]} for g in GRADES]
         return {"sheetTypes": sheetTypes, "areas": areas, "grades": grades}, 200
@@ -195,11 +185,6 @@ class CatalogService(object):
             query["sheetType"] = object_id(sheetTypeId)
             if not query["sheetType"]:
                 return invalid("sheetTypeId")
-        seriesId = args.get("seriesId")
-        if seriesId:
-            query["seriesId"] = object_id(seriesId)
-            if not query["seriesId"]:
-                return invalid("seriesId")
         grades = [g for g in args.getlist("grade") if g]
         if grades:
             if any(g not in GRADES for g in grades):
@@ -242,7 +227,7 @@ class CatalogService(object):
             elif q:
                 sheets = sheets.search_text(q, language="spanish")
             if sort == "relevance" and byCode:
-                sheets = sheets.order_by("sheetType", "seriesId", "number")  # IM56-2 antes que IM56-10
+                sheets = sheets.order_by("sheetType", "number")  # HT-2 antes que HT-10
             elif sort == "relevance":
                 sheets = sheets.order_by("$text_score")
             else:

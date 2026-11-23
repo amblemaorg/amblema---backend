@@ -18,7 +18,6 @@ class VademecumSheetCreateTest(VademecumAdminTestBase):
         super(VademecumSheetCreateTest, self).setUp()
         from app.models.vademecum import VademecumArea
         self.area = VademecumArea.objects.first()
-        self.series = self.ingenio.active_series()[0]
 
     def data(self, **values):
         base = {"number": 41, "title": u"Identifica la Palabra", "sheetTypeId": str(self.hora.id)}
@@ -76,14 +75,14 @@ class VademecumSheetCreateTest(VademecumAdminTestBase):
         from app.models.vademecum import VademecumSheet
         self.assertEqual(VademecumSheet.objects.count(), 0)
 
-    def test_series_gives_code_and_is_required(self):
+    def test_code_comes_from_type_and_series_is_ignored(self):
         res = self.create(self.data(sheetTypeId=str(self.ingenio.id), number=3))
-        self.assertEqual(res.status_code, 400)
-        self.assertIn("seriesId", res.get_json())
-        res = self.create(self.data(sheetTypeId=str(self.ingenio.id), number=3,
-                                    seriesId=str(self.series.id)))
         self.assertEqual(res.status_code, 201)
-        self.assertEqual(res.get_json()["code"], "IM{}-3".format(self.series.code))
+        self.assertEqual(res.get_json()["code"], "IM-3")
+        # Ya no existen series: un seriesId de un cliente viejo se ignora (unknown=EXCLUDE)
+        res = self.create(self.data(number=4, seriesId="5f0000000000000000000000"))
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.get_json()["code"], "HT-4")
 
     # --- Rechazos ---
 

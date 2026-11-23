@@ -370,8 +370,9 @@ class SchoolPecaTest(unittest.TestCase):
         self.assertEqual(66.67,
                          round(result['yearSummary']
                                ['reading']['totalResultAverage'], 2))
-        # Mejora sobre los promedios de indice ya redondeados a 2 decimales (0.86 -> 1.05)
-        self.assertEqual(22.09,
+        # Mejora en puntos porcentuales: indice del lapso 3 menos el del lapso 1, sobre los
+        # promedios ya redondeados a 2 decimales (1.05 - 0.86)
+        self.assertEqual(0.19,
                          round(result['yearSummary']
                                ['reading']['improvementPercentageAverage'], 2))
         self.assertEqual(1,

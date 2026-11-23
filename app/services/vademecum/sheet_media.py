@@ -33,6 +33,8 @@ THUMBNAIL_WIDTH = 480        # tarjeta del catálogo a 240 px con pantallas 2x
 THUMBNAIL_QUALITY = 82
 PREVIEW_WIDTH = 900
 PREVIEW_BLUR_RADIUS = 6      # se lee la composición, no el contenido
+PREVIEW_SHARP_UNTIL = 0.20   # el 20 % superior queda nítido (encabezado y título)
+PREVIEW_FADE_UNTIL = 0.35    # entre el 20 % y el 35 % el difuminado entra en degradado
 PREVIEW_QUALITY = 60
 MAX_SEARCH_TEXT = 20000
 DEFAULT_GHOSTSCRIPT_TIMEOUT = 300
@@ -105,9 +107,22 @@ def render_thumbnail(page, target):
     save_webp(page_image(page, THUMBNAIL_WIDTH), target, THUMBNAIL_QUALITY)
 
 
+def blur_mask(size):
+    """Máscara "L": 0 (nítido) arriba, 255 (difuminado) abajo, con un degradado entre ambos."""
+    width, height = size
+    start = int(height * PREVIEW_SHARP_UNTIL)
+    end = max(start + 1, int(height * PREVIEW_FADE_UNTIL))
+    column = [0 if row < start else min(255, (row - start) * 255 // (end - start))
+              for row in range(height)]
+    mask = Image.new("L", (1, height))
+    mask.putdata(column)
+    return mask.resize((width, height))
+
+
 def render_preview(page, target):
-    image = page_image(page, PREVIEW_WIDTH).filter(ImageFilter.GaussianBlur(PREVIEW_BLUR_RADIUS))
-    save_webp(image, target, PREVIEW_QUALITY)
+    sharp = page_image(page, PREVIEW_WIDTH)
+    blurred = sharp.filter(ImageFilter.GaussianBlur(PREVIEW_BLUR_RADIUS))
+    save_webp(Image.composite(blurred, sharp, blur_mask(sharp.size)), target, PREVIEW_QUALITY)
 
 
 # --- Texto ---

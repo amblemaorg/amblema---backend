@@ -99,11 +99,20 @@ class VademecumSheetMediaTest(VademecumAdminTestBase):
         document.close()
 
     def test_without_ghostscript_the_pdf_is_kept(self):
-        from app.services.vademecum.sheet_media import compress_pdf
+        from unittest import mock
+        from app.services.vademecum.sheet_media import (
+            DEFAULT_GHOSTSCRIPT_TIMEOUT, build_sheet_files, compress_pdf, ghostscript_timeout)
         self.app.config["VADEMECUM_GHOSTSCRIPT"] = "/no/existe/gs"
+        self.app.config["VADEMECUM_GHOSTSCRIPT_TIMEOUT"] = "invalido"
+        self.assertEqual(ghostscript_timeout(), DEFAULT_GHOSTSCRIPT_TIMEOUT)
         source = write(os.path.join(self.work, "in.pdf"), make_pdf(2))
         target = os.path.join(self.work, "out.pdf")
         self.assertFalse(compress_pdf(source, target))
+        with mock.patch("app.services.vademecum.sheet_media.ghostscript_binary", return_value=None):
+            self.assertFalse(compress_pdf(source, target))
+        with mock.patch.dict(self.app.config, {"VADEMECUM_STORAGE_PATH": None}):
+            with self.assertRaises(RuntimeError):
+                build_sheet_files(source, "abc123")
         with open(source, "rb") as a, open(target, "rb") as b:
             self.assertEqual(a.read(), b.read())
         self.assertEqual(sorted(os.listdir(self.work)), ["in.pdf", "out.pdf"])
@@ -191,16 +200,41 @@ class VademecumReplaceSheetFileTest(VademecumAdminTestBase):
         pdf.close()
 
     def test_invalid_file_is_rejected(self):
+        from unittest import mock
+        from werkzeug.datastructures import FileStorage
+        from app.services.vademecum.pdf_upload import (
+            DEFAULT_MAX_UPLOAD_MB, InvalidPdf, ReceivedPdf, check_pdf, max_upload_bytes,
+            save_pdf_stream)
         res = self.replace(b"no es un pdf")
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.get_json()["file"][0]["status"], "115")
         # %PDF- pero dañado
         res = self.replace(b"%PDF-1.7\nbasura")
         self.assertEqual(res.get_json()["file"][0]["status"], "115")
+        # PDF con contraseña
+        doc = fitz.open()
+        doc.new_page()
+        encrypted = doc.tobytes(encryption=fitz.PDF_ENCRYPT_AES_256, user_pw="1", owner_pw="1")
+        doc.close()
+        self.assertEqual(self.replace(encrypted).get_json()["file"][0]["status"], "115")
         self.sheet.reload()
         self.assertIsNone(self.sheet.file)
         self.assertEqual(os.listdir(os.path.join(self.storage, "incoming")), [])
         self.assertFalse(os.path.exists(os.path.join(self.storage, "sheets")))
+
+        with mock.patch.dict(self.app.config, {"VADEMECUM_MAX_UPLOAD_MB": "invalido"}):
+            self.assertEqual(max_upload_bytes(), DEFAULT_MAX_UPLOAD_MB * 1024 * 1024)
+        tmpTarget = os.path.join(self.storage, "stream.pdf")
+        with self.assertRaises(InvalidPdf):
+            save_pdf_stream(io.BytesIO(b"%PDF-123456"), tmpTarget, 4)
+        with mock.patch.dict("sys.modules", {"fitz": None}):
+            with self.assertRaises(ImportError):
+                check_pdf(tmpTarget)
+        fs = FileStorage(stream=io.BytesIO(make_pdf(1)), filename="ok.pdf")
+        with ReceivedPdf(fs) as received:
+            os.remove(received.path)  # ya borrado al salir del with
+        with mock.patch.dict(self.app.config, {"VADEMECUM_STORAGE_PATH": None}):
+            self.assertEqual(self.replace(make_pdf(1)).status_code, 500)
 
     def test_missing_file(self):
         res = self.replace(None)

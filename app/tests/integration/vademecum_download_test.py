@@ -230,6 +230,89 @@ class VademecumDownloadTest(unittest.TestCase):
         self.assert_error(self.download(), 403, "general", "108")
         self.assertEqual(self.records(), [])
 
+    # --- Redescarga sin acceso vigente (API-06) ---
+
+    def revoke_authorizations(self):
+        from app.models.vademecum import VademecumAuthorization
+        VademecumAuthorization.objects.update(set__revokedAt=datetime.utcnow())
+
+    def test_authorization_lost_still_delivers_what_was_already_downloaded(self):
+        self.authorize()
+        self.assertEqual(self.download().headers["X-Vademecum-Redownload"], "false")
+        self.revoke_authorizations()
+        again = self.download()
+        self.assertEqual(again.status_code, 200, again.get_data(as_text=True))
+        self.assertEqual(again.headers["X-Vademecum-Redownload"], "true")
+        self.assertEqual(again.get_data(), PDF_BYTES)
+        self.assertEqual([(r.origin, r.isRedownload) for r in self.records()],
+                         [("external", False), ("external", True)])
+        self.assertEqual(self.download_count(), 1)
+
+    def test_lost_enrollment_keeps_the_original_origin_and_school(self):
+        from app.models.peca_project_model import PecaProject
+        schoolId = self.enroll()
+        self.download()
+        original = self.records()[0]
+        PecaProject._get_collection().update_many({}, {"$set": {"isDeleted": True}})
+        again = self.download()
+        self.assertEqual(again.status_code, 200, again.get_data(as_text=True))
+        redownload = self.records()[1]
+        self.assertEqual((redownload.isRedownload, redownload.origin, redownload.school.id,
+                          redownload.teacherId),
+                         (True, "enrollment", schoolId, original.teacherId))
+        self.assertEqual(self.download_count(), 1)
+
+    def test_download_from_a_previous_year_is_redelivered_in_the_current_year_without_counting(self):
+        from app.models.vademecum import VademecumDownload
+        oldYear = create_school_year(name="2025 - 2026", status="2")
+        VademecumDownload(
+            sheet={"id": str(self.sheet.id), "code": self.sheet.code, "title": self.sheet.title},
+            account={"id": str(self.account.id), "email": self.account.email},
+            school={"id": "5f1a2b3c4d5e6f7081920a01", "name": u"Escuela Vieja", "code": "OD9",
+                    "stateId": "5ef4fc557c9ea07f98fed0ec", "stateName": u"Lara"},
+            teacherId="5f1a2b3c4d5e6f7081920a77", schoolYear={"id": str(oldYear.id),
+                                                              "name": oldYear.name},
+            origin="enrollment", isRedownload=False,
+            createdAt=datetime(2026, 3, 1)).save()
+        res = self.download()
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(res.headers["X-Vademecum-Redownload"], "true")
+        last = self.records()[-1]
+        self.assertEqual((last.isRedownload, last.origin, last.schoolYear.id, last.school.id,
+                          last.school.stateName, last.teacherId),
+                         (True, "enrollment", str(self.year.id), "5f1a2b3c4d5e6f7081920a01",
+                          u"Lara", "5f1a2b3c4d5e6f7081920a77"))
+        self.assertEqual(self.download_count(), 0)
+        # Insistir en el mismo año sigue siendo redescarga, nunca una descarga nueva
+        self.download()
+        self.assertEqual([r.isRedownload for r in self.records()], [False, True, True])
+        self.assertEqual(self.download_count(), 0)
+
+    def test_a_sheet_never_downloaded_stays_closed_without_access(self):
+        other = self.create_sheet(42)
+        self.authorize()
+        self.download()
+        self.revoke_authorizations()
+        self.assert_error(self.download(sheetId=other.id), 403, "general", "108")
+        self.assertEqual(len(self.records()), 1)
+
+    def test_an_unpublished_sheet_is_not_redelivered_even_if_it_was_downloaded(self):
+        self.authorize()
+        self.download()
+        self.revoke_authorizations()
+        self.sheet.status = "unpublished"
+        self.sheet.save()
+        self.assertEqual(self.download().status_code, 404)
+        self.assertEqual(len(self.records()), 1)
+
+    def test_redelivery_without_the_pdf_on_disk_is_not_recorded(self):
+        self.authorize()
+        self.download()
+        self.revoke_authorizations()
+        os.remove(os.path.join(self.storage, "sheets/41.pdf"))
+        self.assertEqual(self.download().status_code, 404)
+        self.assertEqual(len(self.records()), 1)
+
     def test_without_current_school_year_answers_117(self):
         self.enroll()
         self.year.status = "2"
@@ -258,6 +341,8 @@ class VademecumDownloadTest(unittest.TestCase):
         self.sheet.file = SheetFile(pdfPath=os.path.relpath(outside.name, self.storage))
         self.sheet.save()
         self.assert_error(self.download(), 404, "general", "5")
+        with mock.patch.dict(self.app.config, {"VADEMECUM_STORAGE_PATH": None}):
+            self.assert_error(self.download(), 404, "general", "5")
 
     def test_filename_keeps_accents_and_drops_unsafe_characters(self):
         self.enroll()

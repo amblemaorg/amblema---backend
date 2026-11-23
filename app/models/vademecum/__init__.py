@@ -2,7 +2,7 @@
 # app/models/vademecum/__init__.py
 """Modelos del módulo Vademécum. Importa todas las clases para registrarlas en MongoEngine."""
 
-from app.models.vademecum.sheet_type_model import SheetSeries, VademecumSheetType
+from app.models.vademecum.sheet_type_model import VademecumSheetType
 from app.models.vademecum.area_model import VademecumArea
 from app.models.vademecum.sheet_model import SheetFile, VademecumSheet
 from app.models.vademecum.teacher_account_model import AccountToken, VademecumTeacherAccount

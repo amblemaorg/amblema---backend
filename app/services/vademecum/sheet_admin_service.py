@@ -30,7 +30,7 @@ from app.services.vademecum.pdf_upload import ReceivedPdf
 logger = logging.getLogger(__name__)
 
 DUPLICATED_SHEET = ({"number": [{"status": "112",
-                                 "msg": "Duplicated sheet for type, series and number"}]}, 409)
+                                 "msg": "Duplicated sheet for type and number"}]}, 409)
 MAX_QUERY_LENGTH = 100
 
 
@@ -65,12 +65,11 @@ class SheetAdminService(object):
             if status not in SHEET_STATUSES:
                 return invalid("status")
             query["status"] = status
-        for param, field in (("sheetTypeId", "sheetType"), ("seriesId", "seriesId")):
-            value = args.get(param)
-            if value:
-                query[field] = object_id(value)
-                if not query[field]:
-                    return invalid(param)
+        sheetTypeId = args.get("sheetTypeId")
+        if sheetTypeId:
+            query["sheetType"] = object_id(sheetTypeId)
+            if not query["sheetType"]:
+                return invalid("sheetTypeId")
         q = (args.get("q") or "").strip()
         if len(q) > MAX_QUERY_LENGTH:
             return {"q": [{"status": "13", "msg": "Invalid length"}]}, 400
@@ -86,7 +85,7 @@ class SheetAdminService(object):
         if q:
             pattern = {"$regex": re.escape(q), "$options": "i"}
             sheets = sheets.filter(__raw__={"$or": [{"code": pattern}, {"title": pattern}]})
-        sheets = sheets.exclude("searchText").order_by("sheetType", "seriesId", "number")
+        sheets = sheets.exclude("searchText").order_by("sheetType", "number")
         total = sheets.count()
         types, areas = CatalogService()._types_and_areas()
         records = sheets.skip((page - 1) * pageSize).limit(pageSize)
@@ -119,14 +118,6 @@ class SheetAdminService(object):
             if not sheetType:
                 return invalid("sheetTypeId")
             sheet.sheetType = sheetType
-        if "seriesId" in data:
-            if data["seriesId"]:
-                seriesId = object_id(data["seriesId"])
-                if not seriesId:
-                    return invalid("seriesId")
-                sheet.seriesId = seriesId
-            else:
-                sheet.seriesId = None
         if "areaIds" in data:
             ids = [object_id(a) for a in data["areaIds"]]
             if not all(ids):
@@ -138,6 +129,12 @@ class SheetAdminService(object):
         for field in ("number", "title", "description", "grades"):
             if field in data:
                 setattr(sheet, field, data[field])
+        if ("areaIds" in data or "sheetTypeId" in data) and sheet.sheetType:
+            # Solo áreas del tipo de la ficha (2026-11-23): "Análisis matemático" no va en Hora TAL
+            wrong = [str(a.id) for a in sheet.areas if not a.applies_to(sheet.sheetType)]
+            if wrong:
+                return {"areaIds": [{"status": "121",
+                                     "msg": "Area does not belong to the sheet type"}]}, 400
         return None
 
     def create(self, fileStorage, form):
@@ -164,7 +161,7 @@ class SheetAdminService(object):
         if failure:
             return failure
         try:
-            sheet.validate()  # tipo y serie coherentes antes de recibir el archivo
+            sheet.validate()  # datos válidos antes de recibir el archivo
         except ModelValidationError as exc:
             return _model_errors(exc)
         if publish:
@@ -173,7 +170,7 @@ class SheetAdminService(object):
             if errors:
                 return errors, 400
         if VademecumSheet.objects(__raw__={
-                "sheetType": sheet.sheetType.id, "seriesId": sheet.seriesId,
+                "sheetType": sheet.sheetType.id,
                 "number": sheet.number, "isDeleted": False}).first():
             return DUPLICATED_SHEET
 

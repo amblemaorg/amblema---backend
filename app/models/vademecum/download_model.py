@@ -16,7 +16,6 @@ class DownloadSheet(EmbeddedDocument):
     title = fields.StringField()
     sheetTypeId = fields.StringField()
     sheetTypeName = fields.StringField()
-    seriesId = fields.StringField(null=True)
 
 
 class DownloadAccount(EmbeddedDocument):

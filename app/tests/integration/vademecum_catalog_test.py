@@ -62,15 +62,16 @@ class VademecumCatalogTest(unittest.TestCase):
 
     # --- Opciones ---
 
-    def test_catalog_options_lists_active_types_series_areas_and_grades(self):
+    def test_catalog_options_lists_active_types_areas_and_grades(self):
         self.hora.status = "2"
         self.hora.save()
         body = self.get("/vademecum/catalog-options").get_json()
         prefixes = [t["codePrefix"] for t in body["sheetTypes"]]
         self.assertEqual(prefixes, ["IM", "MX", "AM"])
-        self.assertEqual([s["code"] for s in body["sheetTypes"][0]["series"]], ["34", "56"])
-        self.assertEqual(body["sheetTypes"][0]["series"][0]["grades"], ["3", "4"])
+        self.assertNotIn("series", body["sheetTypes"][0])
         self.assertEqual(len(body["areas"]), 4)
+        # Cada área dice a qué tipos aplica, para filtrar en la web docente
+        self.assertEqual(body["areas"][0]["sheetTypeIds"], [str(self.hora.id)])
         self.assertEqual(body["grades"][0], {"value": "0", "label": "Preescolar"})
         self.assertEqual(body["grades"][-1], {"value": "all", "label": "Todos"})
 
@@ -88,11 +89,10 @@ class VademecumCatalogTest(unittest.TestCase):
                          {"page": 1, "pageSize": 20, "total": 1, "pages": 1})
 
     def test_summary_is_light_and_never_exposes_the_pdf(self):
-        self.sheet(self.ingenio, 7, seriesId=self.ingenio.series[0].id,
-                   areas=[self.lectora], ratingCount=2, ratingSum=9)
+        self.sheet(self.ingenio, 7, areas=[self.lectora], ratingCount=2, ratingSum=9)
         record = self.get("/vademecum/sheets").get_json()["records"][0]
-        self.assertEqual(record["code"], "IM34-7")
-        self.assertEqual(record["series"]["code"], "34")
+        self.assertEqual(record["code"], "IM-7")
+        self.assertNotIn("series", record)
         self.assertEqual(record["sheetType"]["codePrefix"], "IM")
         self.assertEqual(record["areas"], [{"id": str(self.lectora.id),
                                             "name": u"Comprensión lectora"}])
@@ -103,16 +103,13 @@ class VademecumCatalogTest(unittest.TestCase):
         for hidden in (".pdf", "pdfPath", "searchText", "texto oculto", "description"):
             self.assertNotIn(hidden, raw)
 
-    def test_filter_by_type_and_series(self):
+    def test_filter_by_type(self):
         self.sheet(self.hora, 1)
-        self.sheet(self.ingenio, 1, seriesId=self.ingenio.series[0].id)
-        self.sheet(self.ingenio, 2, seriesId=self.ingenio.series[1].id)
+        self.sheet(self.ingenio, 1)
+        self.sheet(self.ingenio, 2)
         self.assertEqual(sorted(self.codes(self.get("/vademecum/sheets",
                                                     sheetTypeId=str(self.ingenio.id)))),
-                         ["IM34-1", "IM56-2"])
-        self.assertEqual(self.codes(self.get("/vademecum/sheets",
-                                             seriesId=str(self.ingenio.series[1].id))),
-                         ["IM56-2"])
+                         ["IM-1", "IM-2"])
 
     def test_filter_by_grades_always_includes_all(self):
         self.sheet(self.hora, 1, grades=["3"])
@@ -149,18 +146,17 @@ class VademecumCatalogTest(unittest.TestCase):
                          ["HT-1", "HT-2", "HT-3"])
 
     def test_search_by_code(self):
-        series = self.ingenio.active_series()[0]
-        for n in (1, 2, 10):
-            self.sheet(self.ingenio, n, seriesId=series.id)
+        for n in (1, 2, 10, 12):
+            self.sheet(self.ingenio, n)
         self.sheet(self.hora, 41, title=u"Identifica la palabra")
         self.sheet(self.hora, 4, title=u"Rimas", status="draft")  # no publicada: no aparece
-        prefix = "IM{}".format(series.code)
-        # Prefijo de serie: todas, en orden de número (2 antes que 10) con relevancia
-        self.assertEqual(self.codes(self.get("/vademecum/sheets", q=prefix, sort="relevance")),
-                         ["{}-1".format(prefix), "{}-2".format(prefix), "{}-10".format(prefix)])
-        # Código exacto, sin mayúsculas y con o sin guion
-        self.assertEqual(sorted(self.codes(self.get("/vademecum/sheets", q=prefix.lower() + "-1"))),
-                         ["{}-1".format(prefix), "{}-10".format(prefix)])
+        # Código que empieza por: en orden de número (10 antes que 12) con relevancia
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", q="IM-1", sort="relevance")),
+                         ["IM-1", "IM-10", "IM-12"])
+        # Sin mayúsculas y con o sin guion
+        self.assertEqual(sorted(self.codes(self.get("/vademecum/sheets", q="im1"))),
+                         ["IM-1", "IM-10", "IM-12"])
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", q="IM-2")), ["IM-2"])
         self.assertEqual(self.codes(self.get("/vademecum/sheets", q="ht41")), ["HT-41"])
         self.assertEqual(self.codes(self.get("/vademecum/sheets", q="HT-4")), ["HT-41"])
         # Una palabra sigue siendo búsqueda de texto
@@ -175,9 +171,9 @@ class VademecumCatalogTest(unittest.TestCase):
                          {"page": 2, "pageSize": 2, "total": 5, "pages": 3})
 
     def test_invalid_parameters_answer_400(self):
-        cases = ({"sheetTypeId": "x"}, {"grade": "9"}, {"areaId": "x"}, {"sort": "relevance"},
-                 {"sort": "rare"}, {"pageSize": 101}, {"page": 0}, {"page": "a"},
-                 {"q": "a" * 101})
+        cases = ({"sheetTypeId": "x"}, {"grade": "9"}, {"areaId": "x"},
+                 {"sort": "relevance"}, {"sort": "rare"}, {"pageSize": 101}, {"page": 0},
+                 {"page": "a"}, {"q": "a" * 101})
         for params in cases:
             res = self.get("/vademecum/sheets", **params)
             self.assertEqual(res.status_code, 400, params)

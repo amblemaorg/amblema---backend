@@ -108,6 +108,10 @@ from app.controllers.peca_project_controller import (
     PecaProjectHandlerController
 )
 from app.controllers.peca_project_print_controller import PecaProjectHandlerPrintOptionsController
+from app.controllers.yearbook_download_controller import (
+    YearbookDownloadListController,
+    YearbookDownloadController
+)
 from app.controllers.peca_school_controller import SchoolController
 from app.controllers.peca_activities_slider_controller import ActivitiesSliderController
 from app.controllers.peca_amblecoins_controller import (
@@ -156,6 +160,15 @@ from app.controllers.environmental_diagnostic_controller import (
 from app.controllers.teacher_testimonial_controller import (
     TeacherTestimonialController
 )
+from app.controllers.teacher_coevaluation_controller import (
+    TeacherCoevaluationListController,
+    TeacherCoevaluationController,
+    TeacherCoevaluationCoordinatorController,
+    TeacherCoevaluationSendController,
+    TeacherCoevaluationPublicController,
+    TeacherCoevaluationReportController
+)
+from app.controllers.hqs_award_controller import HqsAwardReportController
 from app.controllers.olympics_history_controller import OlympicsHistoryController
 from app.controllers.peca_special_lapse_activity_controller import (
     PecaSpecialActivityController
@@ -360,6 +373,8 @@ def create_app(config_instance):
     api.add_resource(PecaProjectController, '/pecaprojects')
     api.add_resource(PecaProjectHandlerController, '/pecaprojects/<string:id>')
     api.add_resource(PecaProjectHandlerPrintOptionsController, '/pecaprojects/<string:id>/printoptions')
+    api.add_resource(YearbookDownloadListController, '/pecaprojects/yearbook-download')
+    api.add_resource(YearbookDownloadController, '/pecaprojects/<string:id>/yearbook-download')
     api.add_resource(ReqContentApprovalController,
                      '/requestscontentapproval')
     api.add_resource(ReqContentApprovalHandlerController,
@@ -431,6 +446,20 @@ def create_app(config_instance):
                      '/statistics/diagnosticsreport/<string:schoolYearId>/<string:schoolId>')
     api.add_resource(PinsReportController,
                      '/statistics/pinsreport/<string:schoolYearId>')
+    api.add_resource(TeacherCoevaluationReportController,
+                     '/statistics/coevaluationsreport/<string:schoolYearId>')
+    api.add_resource(HqsAwardReportController,
+                     '/statistics/hqsawardsreport/<string:schoolYearId>')
+    api.add_resource(TeacherCoevaluationListController,
+                     '/pecaprojects/coevaluations/<string:pecaId>')
+    api.add_resource(TeacherCoevaluationController,
+                     '/pecaprojects/coevaluations/<string:pecaId>/<string:teacherId>')
+    api.add_resource(TeacherCoevaluationCoordinatorController,
+                     '/pecaprojects/coevaluations/<string:pecaId>/<string:teacherId>/coordinator')
+    api.add_resource(TeacherCoevaluationSendController,
+                     '/pecaprojects/coevaluations/<string:pecaId>/<string:teacherId>/send')
+    api.add_resource(TeacherCoevaluationPublicController,
+                     '/coevaluations/public/<string:token>')
     api.add_resource(ActiveSponsorsGraphicController,
                      '/statistics/activesponsorsgraphic/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(InactiveSponsorsGraphicController,

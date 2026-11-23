@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 # app/services/vademecum/taxonomy_admin_service.py
-"""Administración de tipos de ficha (con series) y áreas (API-12, GES-03)."""
+"""Administración de tipos de ficha y áreas (API-12, GES-03)."""
 
-from bson import ObjectId
 from marshmallow import ValidationError
 from mongoengine.errors import NotUniqueError
 from mongoengine.errors import ValidationError as ModelValidationError
 
-from app.models.vademecum import SheetSeries, VademecumArea, VademecumSheet, VademecumSheetType
+from app.models.vademecum import VademecumArea, VademecumSheet, VademecumSheetType
 from app.schemas.vademecum.admin_schema import AreaInputSchema, SheetTypeInputSchema
-from app.services.vademecum.catalog_service import object_id, series_dict
+from app.services.vademecum.catalog_service import object_id
 
 DUPLICATED = [{"status": "1", "msg": "Duplicated record found"}]
 IN_USE = ({"general": [{"status": "119", "msg": "Record has associated sheets"}]}, 409)
@@ -45,8 +44,6 @@ def sheet_type_dict(sheetType, sheetCount=0):
         "codePrefix": sheetType.codePrefix, "color": sheetType.color,
         "sectionTitle": sheetType.sectionTitle, "sectionText": sheetType.sectionText,
         "sort": sheetType.sort, "status": sheetType.status, "sheetCount": sheetCount,
-        "series": [series_dict(s, full=True)
-                   for s in sorted(sheetType.active_series(), key=lambda s: s.sort)],
     }
 
 
@@ -68,9 +65,7 @@ class SheetTypeAdminService(object):
         except ValidationError as err:
             return err.messages, 400
         sheetType = VademecumSheetType()
-        failure = self._apply(sheetType, data)
-        if failure:
-            return failure
+        self._apply(sheetType, data)
         return self._save(sheetType, created=True)
 
     def update(self, sheetType, jsonData):
@@ -78,13 +73,11 @@ class SheetTypeAdminService(object):
             data = SheetTypeInputSchema().load(jsonData or {})
         except ValidationError as err:
             return err.messages, 400
-        before = self._codes(sheetType)
-        failure = self._apply(sheetType, data)
-        if failure:
-            return failure
+        before = sheetType.codePrefix
+        self._apply(sheetType, data)
         response = self._save(sheetType)
-        if response[1] == 200 and self._codes(sheetType) != before:
-            # El código de la ficha sale del prefijo y la serie: se recalcula (clean)
+        if response[1] == 200 and sheetType.codePrefix != before:
+            # El código de la ficha sale del prefijo: se recalcula (clean)
             for sheet in VademecumSheet.objects(sheetType=sheetType.id, isDeleted=False):
                 sheet.save()
         return response
@@ -94,44 +87,15 @@ class SheetTypeAdminService(object):
             return IN_USE
         sheetType.isDeleted = True
         sheetType.save()
+        # Las áreas dejan de ofrecerse para el tipo borrado
+        VademecumArea.objects(sheetTypes=sheetType.id).update(pull__sheetTypes=sheetType.id)
         return "", 204
-
-    def _codes(self, sheetType):
-        return (sheetType.codePrefix,
-                tuple(sorted((str(s.id), s.code) for s in sheetType.series)))
 
     def _apply(self, sheetType, data):
         for field in ("name", "headerName", "codePrefix", "color", "sectionTitle",
                       "sectionText", "sort", "status"):
             setattr(sheetType, field, data[field])
         sheetType.codePrefix = data["codePrefix"].upper()
-
-        existing = {str(s.id): s for s in sheetType.series}
-        kept = set()
-        series = []
-        for item in data["series"]:
-            if item.get("id"):
-                current = existing.get(item["id"])
-                if not current:
-                    return {"series": [{"status": "1", "msg": "Series not found"}]}, 400
-                kept.add(item["id"])
-            else:
-                current = SheetSeries(id=ObjectId())
-            current.name, current.code = item["name"], item["code"]
-            current.grades, current.sort = item["grades"], item["sort"]
-            current.isDeleted = False
-            series.append(current)
-        # Las series que no vienen se borran; si tienen fichas, solo se ocultan
-        used = set()
-        if sheetType.id:
-            used = set(str(v) for v in VademecumSheet.objects(
-                sheetType=sheetType.id, isDeleted=False).distinct("seriesId") if v)
-        for seriesId, current in existing.items():
-            if seriesId not in kept and seriesId in used:
-                current.isDeleted = True
-                series.append(current)
-        sheetType.series = series
-        return None
 
     def _save(self, sheetType, created=False):
         try:
@@ -148,7 +112,9 @@ class SheetTypeAdminService(object):
 
 def area_dict(area, sheetCount=0):
     return {"id": str(area.id), "name": area.name, "sort": area.sort, "status": area.status,
-            "sheetCount": sheetCount}
+            "sheetCount": sheetCount,
+            "sheetTypes": [{"id": str(t.id), "name": t.name}
+                           for t in area.sheetTypes if getattr(t, "id", None)]}
 
 
 class AreaAdminService(object):
@@ -173,11 +139,21 @@ class AreaAdminService(object):
             data = AreaInputSchema().load(jsonData or {})
         except ValidationError as err:
             return err.messages, 400
+        typeIds = [object_id(t) for t in data["sheetTypeIds"]]
+        sheetTypes = list(VademecumSheetType.objects(id__in=[t for t in typeIds if t],
+                                                     isDeleted=False))
+        if not all(typeIds) or len(sheetTypes) != len(set(typeIds)):
+            return {"sheetTypeIds": [{"status": "1", "msg": "Invalid field"}]}, 400
         area.name, area.sort, area.status = data["name"], data["sort"], data["status"]
+        area.sheetTypes = sheetTypes
         try:
             area.save()
         except NotUniqueError:
             return {"name": DUPLICATED}, 400
+        if area.id:
+            # Si deja de servir para un tipo, se quita de las fichas de ese tipo (como al borrar)
+            VademecumSheet.objects(areas=area.id, sheetType__nin=[t.id for t in sheetTypes]) \
+                .update(pull__areas=area.id)
         count = VademecumSheet.objects(areas=area.id, isDeleted=False).count()
         return area_dict(area, count), 201 if created else 200
 

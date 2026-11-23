@@ -15,19 +15,20 @@ from bson import ObjectId
 from bson.errors import InvalidId
 
 from app.models.vademecum import (
-    VademecumArea, VademecumRating, VademecumSheet, VademecumSheetType)
+    VademecumArea, VademecumRating, VademecumSheet, VademecumSheetType, VademecumSiteContent)
 from app.models.vademecum.constants import GRADE_LABELS, GRADES
 
 SORTS = {
     "newest": ("-publishedAt", "-id"),
-    "number": ("sheetType", "seriesId", "number"),
+    "number": ("sheetType", "number"),
     "popular": ("-downloadCount", "-publishedAt"),
 }
+HOME_SIZE = 8
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 MAX_QUERY_LENGTH = 100
 # Campos que el listado necesita: deja fuera searchText, sourcePages y rutas de archivos
-SUMMARY_FIELDS = ("id", "code", "number", "title", "sheetType", "seriesId", "grades", "areas",
+SUMMARY_FIELDS = ("id", "code", "number", "title", "sheetType", "grades", "areas",
                   "publishedAt", "fileReplacedAt", "ratingCount", "ratingSum",
                   "file.thumbnailPath", "file.previewPath")
 
@@ -51,13 +52,6 @@ def object_id(value):
         return None
 
 
-def series_dict(series, full=False):
-    data = {"id": str(series.id), "name": series.name, "code": series.code}
-    if full:
-        data.update(grades=list(series.grades), sort=series.sort)
-    return data
-
-
 def image_url(sheet, kind):
     """URL pública de la imagen con ?v= para invalidar caché, o None si no existe."""
     path = sheet.file and (sheet.file.thumbnailPath if kind == "thumbnail"
@@ -69,7 +63,7 @@ def image_url(sheet, kind):
     return "/vademecum/sheets/{}/{}.webp{}".format(sheet.id, kind, suffix)
 
 
-# Código de ficha escrito por el docente: "IM56", "IM56-3", "HT-41", "ht41". Prefijo de 2 a 4
+# Código de ficha escrito por el docente: "HT-41", "ht41", "HT4" (empieza por). Prefijo de 2 a 4
 # letras y al menos una cifra (una palabra sola sigue yendo a la búsqueda de texto)
 CODE_QUERY = re.compile(r"^(?P<prefix>[A-Za-z]{2,4})(?P<rest>-?\d[\d-]{0,7})$")
 
@@ -82,7 +76,7 @@ def code_query(q):
     prefix, rest = match.group("prefix").upper(), match.group("rest")
     patterns = ["^" + re.escape(prefix + rest)]
     if "-" not in rest:
-        # "HT41" también es "HT-41" (tipo sin serie): el guion es opcional al buscar
+        # "HT41" también es "HT-41": el guion es opcional al buscar
         patterns.append("^" + re.escape(prefix + "-" + rest))
     return {"$or": [{"code": {"$regex": pattern, "$options": "i"}} for pattern in patterns]}
 
@@ -97,7 +91,6 @@ class CatalogService(object):
     def summary(self, sheet, types, areas):
         sheetType = types.get(sheet.sheetType.id if hasattr(sheet.sheetType, "id")
                               else sheet.sheetType)
-        series = sheetType.get_series(sheet.seriesId) if sheetType else None
         sheetAreas = []
         for ref in sheet.areas:
             area = areas.get(ref.id if hasattr(ref, "id") else ref)
@@ -111,7 +104,6 @@ class CatalogService(object):
             "sheetType": ({"id": str(sheetType.id), "name": sheetType.name,
                            "codePrefix": sheetType.codePrefix, "color": sheetType.color}
                           if sheetType else None),
-            "series": series_dict(series) if series else None,
             "grades": list(sheet.grades),
             "areas": sheetAreas,
             "thumbnailUrl": image_url(sheet, "thumbnail"),
@@ -128,15 +120,64 @@ class CatalogService(object):
             sheetTypes.append({
                 "id": str(t.id), "name": t.name, "codePrefix": t.codePrefix, "color": t.color,
                 "sectionTitle": t.sectionTitle, "sectionText": t.sectionText, "sort": t.sort,
-                "series": [series_dict(s, full=True)
-                           for s in sorted(t.active_series(), key=lambda s: s.sort)],
             })
-        areas = [{"id": str(a.id), "name": a.name, "sort": a.sort}
+        areas = [{"id": str(a.id), "name": a.name, "sort": a.sort,
+                  "sheetTypeIds": [str(getattr(t, "id", t)) for t in a.sheetTypes]}
                  for a in VademecumArea.objects(isDeleted=False, status="1").order_by("sort")]
         grades = [{"value": g, "label": GRADE_LABELS[g]} for g in GRADES]
         return {"sheetTypes": sheetTypes, "areas": areas, "grades": grades}, 200
 
-    def list_sheets(self, args):
+    def site_content(self):
+        """Textos editables de las secciones del sitio, por clave (el HTML ya viene saneado)."""
+        return {"records": [
+            {"key": c.key, "title": c.title, "body": c.body, "updatedAt": isoformat(c.updatedAt)}
+            for c in VademecumSiteContent.objects.order_by("key")]}, 200
+
+    def teacher_grades(self, account):
+        """Grados del docente en el año vigente, según su matrícula; [] si no hay sesión o matrícula."""
+        if not account:
+            return []
+        from app.services.vademecum.enrollment_service import EnrollmentService
+        return EnrollmentService().resolve(account.email).grades
+
+    def _prioritized_page(self, sheets, order, grades, skip, limit):
+        """(fichas de la página, total): primero las de `grades` y las de todos los grados.
+
+        Es prioridad, no restricción: después de esas siguen las demás, cada grupo con el orden
+        pedido. La página se arma sobre los dos grupos como si fueran una sola lista.
+        """
+        wanted = list(set(grades) | {"all"})
+        first = sheets.filter(grades__in=wanted).order_by(*order)
+        rest = sheets.filter(grades__nin=wanted).order_by(*order)
+        nFirst = first.count()
+        records = list(first.skip(skip).limit(limit)) if skip < nFirst else []
+        missing = limit - len(records)
+        if missing > 0:
+            records += list(rest.skip(max(0, skip - nFirst)).limit(missing))
+        return records, nFirst + rest.count()
+
+    def home(self, account=None):
+        """Los 8 lanzamientos más recientes y las 8 fichas más descargadas (sin redescargas).
+
+        `downloadCount` solo suma la primera descarga por cuenta, ficha y año. Con matrícula,
+        cada lista muestra primero las fichas de los grados del docente.
+        """
+        base = VademecumSheet.objects(status="published", isDeleted=False).only(*SUMMARY_FIELDS)
+        grades = self.teacher_grades(account)
+
+        def eight(sheets, order):
+            if grades:
+                return self._prioritized_page(sheets, order, grades, 0, HOME_SIZE)[0]
+            return list(sheets.order_by(*order).limit(HOME_SIZE))
+
+        types, areas = self._types_and_areas()
+        return {
+            "newReleases": [self.summary(s, types, areas) for s in eight(base, SORTS["newest"])],
+            "featured": [self.summary(s, types, areas)
+                         for s in eight(base.filter(downloadCount__gt=0), SORTS["popular"])],
+        }, 200
+
+    def list_sheets(self, args, account=None):
         query = {"status": "published", "isDeleted": False}
 
         sheetTypeId = args.get("sheetTypeId")
@@ -144,11 +185,6 @@ class CatalogService(object):
             query["sheetType"] = object_id(sheetTypeId)
             if not query["sheetType"]:
                 return invalid("sheetTypeId")
-        seriesId = args.get("seriesId")
-        if seriesId:
-            query["seriesId"] = object_id(seriesId)
-            if not query["seriesId"]:
-                return invalid("seriesId")
         grades = [g for g in args.getlist("grade") if g]
         if grades:
             if any(g not in GRADES for g in grades):
@@ -177,19 +213,27 @@ class CatalogService(object):
             return invalid("pageSize" if page >= 1 else "page")
 
         sheets = VademecumSheet.objects(**query).only(*SUMMARY_FIELDS)
-        byCode = code_query(q) if q else None
-        if byCode:
-            sheets = sheets.filter(__raw__=byCode)
-        elif q:
-            sheets = sheets.search_text(q, language="spanish")
-        if sort == "relevance" and byCode:
-            sheets = sheets.order_by("sheetType", "seriesId", "number")  # IM56-2 antes que IM56-10
-        elif sort == "relevance":
-            sheets = sheets.order_by("$text_score")
+        # CON-03: un docente con matrícula ve primero las fichas de sus grados, sin ocultar el
+        # resto. Solo si no filtró por grado ni buscó texto (en ese caso manda su criterio).
+        teacherGrades = [] if grades or q else self.teacher_grades(account)
+        if teacherGrades:
+            skip = (page - 1) * pageSize
+            records, total = self._prioritized_page(
+                sheets, SORTS[sort], teacherGrades, skip, pageSize)
         else:
-            sheets = sheets.order_by(*SORTS[sort])
-        total = sheets.count()
-        records = sheets.skip((page - 1) * pageSize).limit(pageSize)
+            byCode = code_query(q) if q else None
+            if byCode:
+                sheets = sheets.filter(__raw__=byCode)
+            elif q:
+                sheets = sheets.search_text(q, language="spanish")
+            if sort == "relevance" and byCode:
+                sheets = sheets.order_by("sheetType", "number")  # HT-2 antes que HT-10
+            elif sort == "relevance":
+                sheets = sheets.order_by("$text_score")
+            else:
+                sheets = sheets.order_by(*SORTS[sort])
+            total = sheets.count()
+            records = sheets.skip((page - 1) * pageSize).limit(pageSize)
         types, areas = self._types_and_areas()
         return {
             "records": [self.summary(s, types, areas) for s in records],

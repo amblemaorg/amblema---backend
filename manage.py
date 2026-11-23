@@ -77,6 +77,11 @@ def refresh_role_permissions():
     return refresh_role_permissions()
 
 @manager.command
+def add_teacher_coevaluation_permission():
+    from app.helpers.utilities_helpers import add_teacher_coevaluation_permission
+    print(add_teacher_coevaluation_permission())
+
+@manager.command
 def copy_steps():
     from app.helpers.utilities_helpers import copy_steps
     return copy_steps()
@@ -130,6 +135,20 @@ def ensure_vademecum_indexes():
 def create_vademecum_seeds():
     from app.helpers.vademecum_seeds import seed_vademecum
     print('Vademecum seeds created: {}'.format(seed_vademecum()))
+
+
+@manager.command
+def link_vademecum_area_types():
+    """Áreas sin tipo de ficha: se les dan todos los tipos activos (idempotente)."""
+    from app.helpers.vademecum_seeds import link_vademecum_area_types as link
+    print('Vademecum area types: {}'.format(link()))
+
+
+@manager.command
+def remove_vademecum_series():
+    """Retiro de las series (2026-11-23): limpia una base con datos previos (idempotente)."""
+    from app.helpers.vademecum_seeds import remove_vademecum_series as remove
+    print('Vademecum series removed: {}'.format(remove()))
 
 
 @manager.command

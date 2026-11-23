@@ -56,8 +56,7 @@ class VademecumAdminSheetTypeTest(VademecumAdminBase):
 
     def payload(self, **extra):
         data = {"name": u"Lectura Viva", "headerName": u"Lectura Viva", "codePrefix": "lv",
-                "color": "#AA00CC", "sort": 5, "sectionTitle": u"Lectura",
-                "series": [{"name": u"1.º y 2.º", "code": "12", "grades": ["1", "2"]}]}
+                "color": "#AA00CC", "sort": 5, "sectionTitle": u"Lectura"}
         data.update(extra)
         return data
 
@@ -77,7 +76,7 @@ class VademecumAdminSheetTypeTest(VademecumAdminBase):
         self.assertEqual(res.status_code, 201, res.get_data(as_text=True))
         body = res.get_json()
         self.assertEqual((body["codePrefix"], body["status"], body["sheetCount"]), ("LV", "1", 0))
-        self.assertEqual(body["series"][0]["code"], "12")
+        self.assertNotIn("series", body)
         self.assertEqual(self.call("POST", "/sheet-types", self.payload()).get_json(),
                          {"codePrefix": [{"status": "1", "msg": "Duplicated record found"}]})
         bad = self.call("POST", "/sheet-types", self.payload(codePrefix="X", color="rojo",
@@ -85,41 +84,27 @@ class VademecumAdminSheetTypeTest(VademecumAdminBase):
         self.assertEqual(bad.status_code, 400)
         self.assertEqual(set(bad.get_json()), {"color", "name"})
 
-    def test_duplicated_series_codes_are_rejected(self):
-        series = [{"name": "A", "code": "12", "grades": ["1"]},
-                  {"name": "B", "code": "12", "grades": ["2"]}]
-        res = self.call("POST", "/sheet-types", self.payload(series=series))
-        self.assertEqual(res.status_code, 400)
-        self.assertIn("series", res.get_json())
-
-    def test_changing_codes_recomputes_sheet_codes(self):
-        third = self.ingenio.series[0]
-        sheet = self.sheet(7, self.ingenio, seriesId=third.id)
-        self.assertEqual(sheet.code, "IM34-7")
-        series = [{"id": str(s.id), "name": s.name, "code": "X" + s.code, "grades": s.grades,
-                   "sort": s.sort} for s in self.ingenio.series]
+    def test_changing_prefix_recomputes_sheet_codes(self):
+        sheet = self.sheet(7, self.ingenio)
+        self.assertEqual(sheet.code, "IM-7")
         res = self.call("PUT", "/sheet-types/{}".format(self.ingenio.id), {
             "name": u"Ingenio Matemático", "headerName": u"Ingenio Matemático",
-            "codePrefix": "IN", "color": "#2F80ED", "sort": 2, "series": series})
+            "codePrefix": "IN", "color": "#2F80ED", "sort": 2})
         self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
         sheet.reload()
-        self.assertEqual(sheet.code, "INX34-7")
+        self.assertEqual(sheet.code, "IN-7")
 
-    def test_series_with_sheets_is_hidden_not_removed(self):
-        used, unused = self.ingenio.series
-        self.sheet(1, self.ingenio, seriesId=used.id)
-        res = self.call("PUT", "/sheet-types/{}".format(self.ingenio.id), {
-            "name": u"Ingenio Matemático", "headerName": u"Ingenio Matemático",
-            "codePrefix": "IM", "color": "#2F80ED", "sort": 2, "series": []})
-        self.assertEqual(res.get_json()["series"], [])
-        self.ingenio.reload()
-        self.assertEqual([(str(s.id), s.isDeleted) for s in self.ingenio.series],
-                         [(str(used.id), True)])
-
-    def test_unknown_series_id_is_rejected(self):
-        res = self.call("PUT", "/sheet-types/{}".format(self.hora.id), self.payload(
-            series=[{"id": str(ObjectId()), "name": "A", "code": "1", "grades": []}]))
-        self.assertEqual(res.status_code, 400)
+    def test_series_field_is_ignored_and_bad_payloads_are_rejected(self):
+        from mongoengine import ValidationError as ModelValidationError
+        from app.services.vademecum.taxonomy_admin_service import _model_errors
+        res = self.call("POST", "/sheet-types", self.payload(
+            series=[{"name": "A", "code": "1", "grades": []}]))
+        self.assertEqual(res.status_code, 201, res.get_data(as_text=True))
+        self.assertNotIn("series", res.get_json())
+        self.assertEqual(self.call("PUT", "/sheet-types/{}".format(self.hora.id), {}).status_code,
+                         400)
+        self.assertEqual(self.call("DELETE", "/sheet-types/{}".format(ObjectId())).status_code, 404)
+        self.assertEqual(_model_errors(ModelValidationError("fallo general"))[1], 400)
 
     def test_type_with_sheets_cannot_be_deleted(self):
         self.sheet(1)
@@ -133,24 +118,57 @@ class VademecumAdminSheetTypeTest(VademecumAdminBase):
 
 class VademecumAdminAreaTest(VademecumAdminBase):
 
+    def area(self, name=u"Ortografía", sort=9, types=None):
+        return {"name": name, "sort": sort,
+                "sheetTypeIds": [str(t.id) for t in (types or [self.hora])]}
+
     def test_area_crud_and_delete_removes_it_from_sheets(self):
-        res = self.call("POST", "/areas", {"name": u"Ortografía", "sort": 9})
+        res = self.call("POST", "/areas", self.area())
         self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.get_json()["sheetTypes"], [{"id": str(self.hora.id), "name": u"Hora TAL"}])
         areaId = res.get_json()["id"]
-        self.assertEqual(self.call("POST", "/areas", {"name": u"Ortografía", "sort": 1})
+        self.assertEqual(self.call("POST", "/areas", self.area(sort=1))
                          .get_json(), {"name": [{"status": "1",
                                                  "msg": "Duplicated record found"}]})
         from app.models.vademecum import VademecumArea
         area = VademecumArea.objects.get(id=areaId)
         sheet = self.sheet(1, areas=[area])
         res = self.call("PUT", "/areas/{}".format(areaId),
-                        {"name": u"Ortografía y acentos", "sort": 9, "status": "2"})
+                        dict(self.area(u"Ortografía y acentos"), status="2"))
         self.assertEqual((res.get_json()["status"], res.get_json()["sheetCount"]), ("2", 1))
         self.assertEqual(self.call("DELETE", "/areas/{}".format(areaId)).status_code, 204)
         sheet.reload()
         self.assertEqual(sheet.areas, [])
         names = [a["name"] for a in self.call("GET", "/areas").get_json()["records"]]
         self.assertNotIn(u"Ortografía y acentos", names)
+        self.assertEqual(self.call("POST", "/areas", {}).status_code, 400)
+        self.assertEqual(self.call("PUT", "/areas/{}".format(areaId),
+                                   self.area(u"X", 1)).status_code, 404)
+        self.assertEqual(self.call("DELETE", "/areas/{}".format(areaId)).status_code, 404)
+
+    def test_area_requires_valid_sheet_types(self):
+        for types in ([], ["no-es-oid"], [str(ObjectId())]):
+            res = self.call("POST", "/areas", {"name": u"Sin tipo", "sort": 1, "sheetTypeIds": types})
+            self.assertEqual(res.status_code, 400, types)
+            self.assertIn("sheetTypeIds", res.get_json())
+
+    def test_removing_a_type_from_an_area_removes_it_from_those_sheets(self):
+        from app.models.vademecum import VademecumArea
+        areaId = self.call("POST", "/areas", self.area(types=[self.hora, self.ingenio])).get_json()["id"]
+        area = VademecumArea.objects.get(id=areaId)
+        lectura = self.sheet(1, areas=[area])
+        calculo = self.sheet(2, self.ingenio, areas=[area])
+        res = self.call("PUT", "/areas/{}".format(areaId), self.area(types=[self.hora]))
+        self.assertEqual((res.status_code, res.get_json()["sheetCount"]), (200, 1))
+        lectura.reload()
+        calculo.reload()
+        self.assertEqual(([a.id for a in lectura.areas], calculo.areas), ([area.id], []))
+
+    def test_deleting_a_type_removes_it_from_areas(self):
+        from app.models.vademecum import VademecumArea
+        areaId = self.call("POST", "/areas", self.area(types=[self.hora, self.ingenio])).get_json()["id"]
+        self.assertEqual(self.call("DELETE", "/sheet-types/{}".format(self.ingenio.id)).status_code, 204)
+        self.assertEqual([t.id for t in VademecumArea.objects.get(id=areaId).sheetTypes], [self.hora.id])
 
 
 class VademecumAdminSheetTest(VademecumAdminBase):
@@ -170,6 +188,11 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         found = self.call("GET", "/sheets?q=POES").get_json()["records"]
         self.assertEqual([r["code"] for r in found], ["HT-5"])
         self.assertEqual(self.call("GET", "/sheets?q=.*").get_json()["records"], [])
+        self.assertEqual(self.call("GET", "/sheets?sheetTypeId={}".format(self.hora.id))
+                         .status_code, 200)
+        for query in ("?status=bad", "?sheetTypeId=bad", "?q=" + "a" * 101,
+                      "?page=bad", "?page=0", "?pageSize=101"):
+            self.assertEqual(self.call("GET", "/sheets" + query).status_code, 400, query)
 
     def test_edit_sheet(self):
         sheet = self.sheet(1)
@@ -184,6 +207,19 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         self.assertEqual(body["areas"][0]["id"], lectora)
         self.assertEqual(self.call("PUT", "/sheets/{}".format(sheet.id),
                                    {"areaIds": [str(ObjectId())]}).status_code, 400)
+        # Un área de otro tipo se rechaza con 121 (Geometría es de Ingenio y Momento X)
+        geometria = [a["id"] for a in self.call("GET", "/areas").get_json()["records"]
+                     if a["name"] == u"Geometría"][0]
+        res = self.call("PUT", "/sheets/{}".format(sheet.id), {"areaIds": [geometria]})
+        self.assertEqual((res.status_code, res.get_json()["areaIds"][0]["status"]), (400, "121"))
+        # También al cambiar de tipo si conserva áreas que no aplican
+        res = self.call("PUT", "/sheets/{}".format(sheet.id), {"sheetTypeId": str(self.ingenio.id)})
+        self.assertEqual((res.status_code, res.get_json()["areaIds"][0]["status"]), (400, "121"))
+        res = self.call("PUT", "/sheets/{}".format(sheet.id),
+                        {"sheetTypeId": str(self.ingenio.id), "areaIds": [geometria]})
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        for bad in ({"title": ""}, {"number": 0}, {"areaIds": ["no-es-oid"]}):
+            self.assertEqual(self.call("PUT", "/sheets/{}".format(sheet.id), bad).status_code, 400)
 
     def test_duplicated_number_answers_112(self):
         self.sheet(1)
@@ -191,16 +227,12 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         res = self.call("PUT", "/sheets/{}".format(sheet.id), {"number": 1})
         self.assertEqual((res.status_code, res.get_json()["number"][0]["status"]), (409, "112"))
 
-    def test_moving_to_a_type_with_series_requires_one(self):
+    def test_moving_to_another_type_changes_the_code(self):
         sheet = self.sheet(1)
         res = self.call("PUT", "/sheets/{}".format(sheet.id),
                         {"sheetTypeId": str(self.ingenio.id)})
-        self.assertEqual(res.status_code, 400)
-        self.assertIn("seriesId", res.get_json())
-        res = self.call("PUT", "/sheets/{}".format(sheet.id),
-                        {"sheetTypeId": str(self.ingenio.id),
-                         "seriesId": str(self.ingenio.series[1].id)})
-        self.assertEqual(res.get_json()["code"], "IM56-1")
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(res.get_json()["code"], "IM-1")
 
     def test_publish_and_unpublish(self):
         sheet = self.sheet(1, description=None)
@@ -257,6 +289,7 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         self.assertEqual((res.status_code, res.get_data()), (200, b"%PDF-1.4 borrador"))
         res.close()
         self.assertEqual(VademecumDownload.objects.count(), 0)
+        self.assertEqual(self.call("GET", "/sheets/{}/file".format(ObjectId())).status_code, 404)
 
 
 class VademecumAdminSiteContentTest(VademecumAdminBase):
@@ -274,6 +307,8 @@ class VademecumAdminSiteContentTest(VademecumAdminBase):
                          u'<a href="https://amblema.org" target="_blank" '
                          u'rel="noopener noreferrer">bien</a><h2>Título</h2>')
         self.assertEqual(self.call("PUT", "/site-content/otra", {"title": "x"}).status_code, 404)
+        self.assertEqual(self.call("PUT", "/site-content/home", {"title": "x" * 151}).status_code,
+                         400)
 
 
 if __name__ == "__main__":

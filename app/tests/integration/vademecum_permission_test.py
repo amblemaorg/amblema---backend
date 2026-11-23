@@ -92,9 +92,14 @@ class VademecumPermissionApiTest(VademecumAdminTestBase):
         self.assertEqual(self.list_uploads(headers).status_code, 200)
 
     def test_inactive_role_is_rejected(self):
+        from flask_jwt_extended import create_access_token
         from app.models.role_model import Role
         Role.objects(devName="admin").update_one(set__status="2")
         self.assertEqual(self.list_uploads(self.adminHeaders).status_code, 403)
+        with self.app.app_context():
+            badToken = create_access_token(identity="no-es-usuario-backoffice")
+        self.assertEqual(
+            self.list_uploads({"Authorization": "Bearer " + badToken}).status_code, 403)
 
 
 if __name__ == "__main__":

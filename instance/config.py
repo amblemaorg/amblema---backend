@@ -14,6 +14,7 @@ class Config(object):
     }
     SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     SERVER_URL = os.getenv('SERVER_URL')  # for image url
+    WEB_URL = os.getenv('WEB_URL')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=15)
     JWT_TOKEN_LOCATION = ['headers']
@@ -58,6 +59,7 @@ class TestingConfig(Config):
     TESTING = True
     DEBUG = True
     ENV = 'development'
+    WEB_URL = os.getenv('WEB_URL') or 'http://localhost:2005'
     MONGODB_SETTINGS = {
         'host': os.getenv('TESTING_DB_URL')
     }
@@ -72,6 +74,7 @@ class DevelopmentConfig(Config):
     """Configurations for Development."""
     DEBUG = True
     ENV = 'development'
+    WEB_URL = os.getenv('WEB_URL') or 'http://localhost:2005'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
 
 
@@ -90,6 +93,7 @@ class ProductionConfig(Config):
     DEBUG = True
     TESTING = False
     JWT_COOKIE_SECURE = True
+    WEB_URL = os.getenv('WEB_URL') or 'https://amblema.org'
 
 class SupportConfig(Config):
     """Configurations for Support."""

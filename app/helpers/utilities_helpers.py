@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 
 def refresh_projects():
@@ -242,3 +243,39 @@ def refresh_role_permissions():
             Role._get_collection() \
                 .bulk_write(bulk_operations, ordered=False)
 
+
+
+def add_teacher_coevaluation_permission():
+    """
+    Idempotente. Agrega la acción teacher_coevaluation a la entidad Teacher
+    (el pre_save de Entity la propaga a los roles con allowed=False) y la
+    habilita en los roles superadmin, admin y coordinator.
+    """
+    from app.models.entity_model import Entity, Action
+    from app.models.role_model import Role, ActionHandler
+
+    actionName = "teacher_coevaluation"
+    entity = Entity.objects(devName="Teacher", isDeleted=False).first()
+    if not entity:
+        return "Teacher entity not found"
+
+    if not [action for action in entity.actions if action.name == actionName]:
+        entity.actions.append(Action(name=actionName, label="Coevaluar", sort=5))
+        entity.save()
+
+    # Por si algún rol no recibió la acción (roles sin el permiso de la entidad).
+    refresh_role_permissions()
+
+    enabled = []
+    for role in Role.objects(isDeleted=False, devName__in=['superadmin', 'admin', 'coordinator']):
+        permission = role.permissions.filter(entityId=str(entity.id)).first()
+        if not permission:
+            continue
+        action = permission.actions.filter(name=actionName).first()
+        if not action:
+            action = ActionHandler(name=actionName, label="Coevaluar", sort=5)
+            permission.actions.append(action)
+        action.allowed = True
+        role.save()
+        enabled.append(role.devName)
+    return "ok: enabled for {}".format(", ".join(sorted(enabled)))

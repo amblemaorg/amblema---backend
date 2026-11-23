@@ -3,16 +3,16 @@
 
 from datetime import datetime
 
-from mongoengine import Document, EmbeddedDocument, ValidationError, fields
+from mongoengine import Document, EmbeddedDocument, fields
 
 from app.models.vademecum.constants import GRADES, SHEET_STATUSES, NOT_DELETED
 
 PUBLISH_ERROR_STATUS = "113"
 
 
-def build_sheet_code(codePrefix, seriesCode, number):
-    """HT-41 without series, IM34-1 with series."""
-    return u"{}{}-{}".format(codePrefix, seriesCode or u"", number)
+def build_sheet_code(codePrefix, number):
+    """Prefijo del tipo y número: HT-41."""
+    return u"{}-{}".format(codePrefix, number)
 
 
 class SheetFile(EmbeddedDocument):
@@ -28,7 +28,6 @@ class SheetFile(EmbeddedDocument):
 class VademecumSheet(Document):
     code = fields.StringField()
     sheetType = fields.ReferenceField("VademecumSheetType", required=True)
-    seriesId = fields.ObjectIdField(null=True)
     number = fields.IntField(required=True, min_value=1)
     title = fields.StringField(required=True)
     description = fields.StringField(null=True)
@@ -49,8 +48,7 @@ class VademecumSheet(Document):
     meta = {
         "collection": "vademecum_sheets",
         "indexes": [
-            # seriesId ausente cuenta como null: Hora TAL 41 tampoco se repite
-            {"fields": ["sheetType", "seriesId", "number"], "unique": True,
+            {"fields": ["sheetType", "number"], "unique": True,
              "partialFilterExpression": NOT_DELETED},
             {"fields": ["code"], "unique": True, "partialFilterExpression": NOT_DELETED},
             {"fields": ["$title", "$description", "$searchText"],
@@ -65,15 +63,7 @@ class VademecumSheet(Document):
     def clean(self):
         self.updatedAt = datetime.utcnow()
         if self.sheetType and self.number:
-            series = self.sheetType.get_series(self.seriesId)
-            if self.seriesId and series is None:
-                raise ValidationError("Series does not belong to the sheet type",
-                                      errors={"seriesId": "Series not found in sheet type"})
-            if not self.seriesId and self.sheetType.active_series():
-                raise ValidationError("Sheet type requires a series",
-                                      errors={"seriesId": "Series is required"})
-            self.code = build_sheet_code(
-                self.sheetType.codePrefix, series.code if series else None, self.number)
+            self.code = build_sheet_code(self.sheetType.codePrefix, self.number)
 
     def publish_errors(self):
         """Missing data to publish, in the API error format; {} when it can be published."""

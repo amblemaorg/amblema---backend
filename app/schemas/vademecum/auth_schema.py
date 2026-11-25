@@ -2,7 +2,7 @@
 # app/schemas/vademecum/auth_schema.py
 """Validación de los payloads de autenticación del docente (GES-03)."""
 
-from marshmallow import EXCLUDE, Schema, fields, pre_load
+from marshmallow import EXCLUDE, Schema, ValidationError, fields, pre_load, validates_schema
 
 from app.helpers.ma_schema_validators import Length, not_blank, validate_email
 
@@ -23,10 +23,23 @@ class _Strict(Schema):
 
 
 class RegisterSchema(_Strict):
-    firstName = fields.Str(required=True, validate=(not_blank, NAME_LENGTH))
-    lastName = fields.Str(required=True, validate=(not_blank, NAME_LENGTH))
+    firstName = fields.Str(load_default=None, allow_none=True, validate=(not_blank, NAME_LENGTH))
+    lastName = fields.Str(load_default=None, allow_none=True, validate=(not_blank, NAME_LENGTH))
+    schoolId = fields.Str(load_default=None, allow_none=True, validate=not_blank)
     email = fields.Str(required=True, validate=(not_blank, validate_email))
     recaptchaToken = fields.Str(load_default=None, allow_none=True)
+
+    @validates_schema(skip_on_field_errors=False)
+    def require_names_without_school(self, data, **kwargs):
+        if data.get("schoolId"):
+            return
+        errors = {}
+        if not data.get("firstName"):
+            errors["firstName"] = [{"status": "2", "msg": "Missing data for required field."}]
+        if not data.get("lastName"):
+            errors["lastName"] = [{"status": "2", "msg": "Missing data for required field."}]
+        if errors:
+            raise ValidationError(errors)
 
 
 class EmailSchema(_Strict):

@@ -156,3 +156,75 @@ class EnrollmentService(object):
 
     def is_enrolled(self, email, schoolYear=None):
         return self.resolve(email, schoolYear).is_enrolled
+
+    def list_active_schools(self, schoolYear=None):
+        """Escuelas activas con PecaProject en el año escolar vigente."""
+        schoolYear = schoolYear or self.current_school_year()
+        if not schoolYear:
+            return {"schoolYear": None, "schools": []}
+
+        pecas = PecaProject._get_collection().find(
+            {"schoolYear": {"$in": [schoolYear.id, str(schoolYear.id)]}, "isDeleted": False},
+            {"project.school.id": 1})
+        schoolObjectIds = []
+        seen = set()
+        for peca in pecas:
+            rawId = ((peca.get("project") or {}).get("school") or {}).get("id")
+            oid = _as_object_id(rawId)
+            if oid and oid not in seen:
+                seen.add(oid)
+                schoolObjectIds.append(oid)
+
+        if not schoolObjectIds:
+            return {
+                "schoolYear": {"id": str(schoolYear.id), "name": schoolYear.name},
+                "schools": [],
+            }
+
+        schoolsCursor = User._get_collection().find(
+            {"_cls": SCHOOL_USER_CLS, "status": "1", "isDeleted": False,
+             "_id": {"$in": schoolObjectIds}},
+            {"name": 1, "code": 1})
+        schools = []
+        for school in schoolsCursor:
+            name = (school.get("name") or "").strip()
+            if not name:
+                continue
+            schools.append({
+                "id": str(school["_id"]),
+                "name": name,
+                "code": (school.get("code") or "").strip(),
+            })
+        schools.sort(key=lambda s: s["name"].lower())
+        return {
+            "schoolYear": {"id": str(schoolYear.id), "name": schoolYear.name},
+            "schools": schools,
+        }
+
+    def get_teacher_names(self, email, schoolId=None):
+        """Obtiene firstName y lastName del registro de docente en la escuela."""
+        email = normalize_email(email)
+        query = {
+            "_cls": SCHOOL_USER_CLS,
+            "status": "1",
+            "isDeleted": False,
+            "teachers.email": email,
+        }
+        oid = _as_object_id(schoolId)
+        if oid:
+            query["_id"] = oid
+        school = User._get_collection().find_one(
+            query,
+            {"teachers.firstName": 1, "teachers.lastName": 1, "teachers.email": 1,
+             "teachers.status": 1, "teachers.isDeleted": 1},
+            collation=CASE_INSENSITIVE)
+        if not school:
+            return ("Docente", "AmbLeMa")
+        for teacher in school.get("teachers") or []:
+            if (normalize_email(teacher.get("email")) == email
+                    and teacher.get("status") == "1"
+                    and not teacher.get("isDeleted")):
+                firstName = (teacher.get("firstName") or "").strip() or "Docente"
+                lastName = (teacher.get("lastName") or "").strip() or "AmbLeMa"
+                return (firstName, lastName)
+        return ("Docente", "AmbLeMa")

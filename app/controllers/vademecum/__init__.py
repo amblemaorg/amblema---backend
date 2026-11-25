@@ -10,8 +10,10 @@ def _routes(path):
 
 def register_vademecum_resources(api):
     from app.controllers.vademecum.auth_controller import (
-        RegisterController, VerifyEmailController, ResendVerificationController)
+        ActiveSchoolsController, RegisterController, VerifyEmailController,
+        ResendVerificationController)
 
+    api.add_resource(ActiveSchoolsController, *_routes("/vademecum/auth/schools"))
     api.add_resource(RegisterController, *_routes("/vademecum/auth/register"))
     api.add_resource(VerifyEmailController, *_routes("/vademecum/auth/verify-email"))
     api.add_resource(ResendVerificationController,

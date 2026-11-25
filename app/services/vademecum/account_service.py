@@ -97,6 +97,9 @@ class AccountService(object):
     def __init__(self, enrollmentService=None):
         self.enrollment = enrollmentService or EnrollmentService()
 
+    def list_active_schools(self):
+        return self.enrollment.list_active_schools(), 200
+
     def register(self, jsonData):
         try:
             data = RegisterSchema().load(jsonData or {})
@@ -109,6 +112,14 @@ class AccountService(object):
             return error("general", "117", "No current school year", 409)
 
         email = normalize_email(data["email"])
+        schoolId = data.get("schoolId")
+        enrollment = self.enrollment.resolve(email, schoolYear)
+
+        if schoolId and not enrollment.school(schoolId):
+            if enrollment.is_enrolled:
+                return {"result": "not_in_selected_school"}, 200
+            return {"result": "not_enrolled"}, 200
+
         account = VademecumTeacherAccount.objects(email=email).first()
         if account:
             if account.isDeleted or account.status != "pending":
@@ -118,11 +129,18 @@ class AccountService(object):
                 send_verification(account)
             return {"result": "verification_sent"}, 200
 
-        if not self.enrollment.resolve(email, schoolYear).is_enrolled:
+        if not enrollment.is_enrolled:
             return {"result": "not_enrolled"}, 200
 
+        firstName = data.get("firstName")
+        lastName = data.get("lastName")
+        if not firstName or not lastName:
+            fallbackFirst, fallbackLast = self.enrollment.get_teacher_names(email, schoolId)
+            firstName = firstName or fallbackFirst
+            lastName = lastName or fallbackLast
+
         account = VademecumTeacherAccount(
-            email=email, firstName=data["firstName"], lastName=data["lastName"],
+            email=email, firstName=firstName, lastName=lastName,
             status="pending")
         try:
             account.save()

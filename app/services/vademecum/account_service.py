@@ -41,10 +41,11 @@ def account_dict(account):
             "lastName": account.lastName, "emailVerifiedAt": isoformat(account.emailVerifiedAt)}
 
 
-def session_payload(account):
+def session_payload(account, enrollmentService=None):
+    service = enrollmentService or EnrollmentService()
     return {"accessToken": token_service.issue_access_token(account),
             "refreshToken": token_service.issue_refresh_token(account),
-            "account": account_dict(account)}
+            "account": service.enrich_account(account_dict(account), account.email)}
 
 
 def web_link(path, token):
@@ -179,4 +180,4 @@ class AccountService(object):
         account.emailVerification.usedAt = now
         account.lastLoginAt = now
         account.save()
-        return session_payload(account), 200
+        return session_payload(account, self.enrollment), 200

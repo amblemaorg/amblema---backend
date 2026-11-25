@@ -44,7 +44,7 @@ class SessionService(object):
             return error("general", "101", "Account blocked", 403)
         account.lastLoginAt = datetime.utcnow()
         account.save()
-        return session_payload(account), 200
+        return session_payload(account, self.enrollment), 200
 
     def refresh(self, account):
         """`account` ya validado con el token de renovación."""
@@ -94,7 +94,7 @@ class SessionService(object):
         account.passwordReset.usedAt = now
         account.lastLoginAt = now
         account.save()
-        return session_payload(account), 200
+        return session_payload(account, self.enrollment), 200
 
     def change_password(self, account, jsonData):
         try:
@@ -105,7 +105,7 @@ class SessionService(object):
             return error("currentPassword", "103", "Invalid password")
         account.set_password(data["newPassword"])
         account.save()
-        return session_payload(account), 200
+        return session_payload(account, self.enrollment), 200
 
     def update_profile(self, account, jsonData):
         try:
@@ -118,13 +118,13 @@ class SessionService(object):
         account.save()
         return account_dict(account), 200
 
-    def access(self, account):
+    def access(self, account, enrollment=None, schoolYear=None):
         """Acceso vigente: matrícula > autorización del año > ninguno (GES-02 4.3).
 
         La escuela no se guarda en la cuenta: se calcula en cada consulta.
         """
-        schoolYear = self.enrollment.current_school_year()
-        enrollment = self.enrollment.resolve(account.email, schoolYear)
+        schoolYear = schoolYear or self.enrollment.current_school_year()
+        enrollment = enrollment or self.enrollment.resolve(account.email, schoolYear)
         access = enrollment.to_dict()
         if enrollment.is_enrolled:
             access["origin"] = "enrollment"
@@ -136,4 +136,7 @@ class SessionService(object):
         return access
 
     def me(self, account):
-        return {"account": account_dict(account), "access": self.access(account)}, 200
+        schoolYear = self.enrollment.current_school_year()
+        enrollment = self.enrollment.resolve(account.email, schoolYear)
+        profile = self.enrollment.enrich_account(account_dict(account), account.email, enrollment)
+        return {"account": profile, "access": self.access(account, enrollment, schoolYear)}, 200

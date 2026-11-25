@@ -12,7 +12,7 @@ from bson import ObjectId
 
 from app import create_app
 from app.tests.base import drop_testing_database
-from app.tests.fixtures import create_school_year, enroll_vademecum_teacher
+from app.tests.fixtures import create_location, create_school_year, enroll_vademecum_teacher
 
 SEND_EMAIL = "app.services.vademecum.account_service.send_email"
 PASSWORD = "clave-segura"
@@ -73,6 +73,15 @@ class VademecumLoginTest(VademecumSessionBase):
         self.assertEqual(body["account"]["email"], "maria.perez@gmail.com")
         me = self.request("GET", "/vademecum/me", token=body["accessToken"])
         self.assertEqual(me.status_code, 200)
+
+    def test_login_uses_institutional_name_of_the_enrolled_teacher(self):
+        enroll_vademecum_teacher(
+            self.year, "maria.perez@gmail.com",
+            teacher={"firstName": "Yarcelis", "lastName": "Balderrama"})
+        self.create_account()  # la cuenta tiene "María Pérez"
+        account = self.login().get_json()["account"]
+        self.assertEqual((account["firstName"], account["lastName"]),
+                         ("Yarcelis", "Balderrama"))
 
     def test_wrong_password_or_unknown_email_answer_103(self):
         self.create_account()
@@ -310,6 +319,42 @@ class VademecumMeTest(VademecumSessionBase):
         self.assertEqual(access["schoolYear"], {"id": str(self.year.id), "name": "2026 - 2027"})
         self.assertEqual(access["schools"][0]["id"], schoolId)
         self.assertEqual(access["grades"], ["3", "4"])
+
+    def test_me_returns_institutional_profile_data_of_the_teacher(self):
+        state, municipality = create_location()
+        enroll_vademecum_teacher(
+            self.year, "maria.perez@gmail.com", grades=("4",),
+            teacher={"firstName": "Yarcelis", "lastName": "Balderrama",
+                     "cardId": "12345678", "gender": "2", "phone": "04241234567",
+                     "addressState": state.id, "addressMunicipality": municipality.id})
+        account = self.request("GET", "/vademecum/me", token=self.token()).get_json()["account"]
+        self.assertEqual((account["firstName"], account["lastName"]),
+                         ("Yarcelis", "Balderrama"))
+        self.assertEqual(account["cardId"], "12345678")
+        self.assertEqual(account["gender"], "Masculino")
+        self.assertEqual(account["phone"], "04241234567")
+        self.assertEqual(account["state"], "Lara")
+        self.assertEqual(account["municipality"], "Iribarren")
+
+    def test_me_without_enrollment_keeps_the_account_name(self):
+        account = self.request("GET", "/vademecum/me", token=self.token()).get_json()["account"]
+        self.assertEqual((account["firstName"], account["lastName"]), ("María", "Pérez"))
+        self.assertNotIn("cardId", account)
+
+    def test_me_uses_the_matching_teacher_when_the_school_has_several(self):
+        from app.models.user_model import User
+        schoolId = enroll_vademecum_teacher(
+            self.year, "maria.perez@gmail.com",
+            teacher={"firstName": "Yarcelis", "lastName": "Balderrama", "cardId": "18757267"})
+        User._get_collection().update_one(
+            {"_id": ObjectId(schoolId)},
+            {"$push": {"teachers": {"$each": [{
+                "id": ObjectId(), "firstName": "Jenny", "lastName": "Arriechi",
+                "email": "otra@test.com", "status": "1", "isDeleted": False,
+                "cardId": "11111111"}], "$position": 0}}})
+        account = self.request("GET", "/vademecum/me", token=self.token()).get_json()["account"]
+        self.assertEqual((account["firstName"], account["lastName"]), ("Yarcelis", "Balderrama"))
+        self.assertEqual(account["cardId"], "18757267")
 
     def test_me_shows_external_with_authorization_of_the_year(self):
         from app.models.vademecum import VademecumAuthorization

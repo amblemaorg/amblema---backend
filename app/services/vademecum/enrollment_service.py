@@ -13,6 +13,7 @@ from bson.errors import InvalidId
 
 from app.models.peca_project_model import PecaProject
 from app.models.school_year_model import SchoolYear
+from app.models.state_model import Municipality, State
 from app.models.user_model import User
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ SCHOOL_USER_CLS = "User.SchoolUser"
 TEACHER_EMAIL_INDEX = "vademecum_teachers_email_ci"
 CASE_INSENSITIVE = {"locale": "en", "strength": 2}
 GRADE_ORDER = ("0", "1", "2", "3", "4", "5", "6")
+GENDER_LABELS = {"1": "Femenino", "2": "Masculino"}
 
 
 def normalize_email(email):
@@ -228,3 +230,65 @@ class EnrollmentService(object):
                 lastName = (teacher.get("lastName") or "").strip() or "AmbLeMa"
                 return (firstName, lastName)
         return ("Docente", "AmbLeMa")
+
+    def _location_name(self, model, value):
+        oid = _as_object_id(value)
+        if not oid:
+            return None
+        doc = model._get_collection().find_one(
+            {"_id": oid, "isDeleted": False}, {"name": 1})
+        if not doc:
+            return None
+        return (doc.get("name") or "").strip() or None
+
+    def teacher_identity(self, enrollment, schoolId=None):
+        """Datos institucionales del docente ya resuelto en `enrollment`.
+
+        No vuelve a buscar por email: reutiliza schoolId + teacherId de resolve().
+        """
+        if not enrollment or not enrollment.is_enrolled:
+            return None
+        school = enrollment.school(schoolId) if schoolId else enrollment.schools[0]
+        if not school:
+            return None
+        teacherId = _as_object_id(enrollment.teacherIds.get(_key(school["id"])))
+        if not teacherId:
+            return None
+        doc = User._get_collection().find_one(
+            {"_id": _as_object_id(school["id"]), "teachers.id": teacherId},
+            {"teachers.$": 1})
+        if not doc:
+            return None
+        teachers = doc.get("teachers") or []
+        if not teachers:
+            return None
+        teacher = teachers[0]
+        if teacher.get("status") != "1" or teacher.get("isDeleted"):
+            return None
+        identity = {}
+        for key in ("firstName", "lastName"):
+            value = (teacher.get(key) or "").strip()
+            if value:
+                identity[key] = value
+        for key in ("cardId", "phone"):
+            value = teacher.get(key)
+            if value not in (None, ""):
+                identity[key] = value
+        gender = _key(teacher.get("gender"))
+        if gender:
+            identity["gender"] = GENDER_LABELS.get(gender, gender)
+        state = self._location_name(State, teacher.get("addressState"))
+        municipality = self._location_name(Municipality, teacher.get("addressMunicipality"))
+        if state:
+            identity["state"] = state
+        if municipality:
+            identity["municipality"] = municipality
+        return identity or None
+
+    def enrich_account(self, accountData, email, enrollment=None):
+        """Añade al `account` del portal los datos del docente de la escuela."""
+        enrollment = enrollment or self.resolve(email)
+        identity = self.teacher_identity(enrollment)
+        if identity:
+            accountData.update(identity)
+        return accountData

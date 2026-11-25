@@ -73,21 +73,25 @@ def seed_base():
     create_initial_steps()
 
 
-def enroll_vademecum_teacher(schoolYear, email, grades=(), schoolName="Escuela Uno"):
+def enroll_vademecum_teacher(schoolYear, email, grades=(), schoolName="Escuela Uno", teacher=None):
     """Escuela activa con PECA del año y un docente vigente con secciones en esos grados.
 
-    Se inserta con la forma real de la BD (sin los servicios de PECA). Devuelve el id de la
-    escuela como texto.
+    Se inserta con la forma real de la BD (sin los servicios de PECA). `teacher` permite
+    sobreescribir campos del docente (por ejemplo cardId o referencias de ubicación).
+    Devuelve el id de la escuela como texto.
     """
     from bson import ObjectId
     from app.models.user_model import User
     from app.models.peca_project_model import PecaProject
     teacherId = ObjectId()
+    teacherData = {"id": teacherId, "firstName": "Ana", "lastName": "Docente",
+                   "email": email, "status": "1", "isDeleted": False}
+    if teacher:
+        teacherData.update(teacher)
     schoolId = User._get_collection().insert_one({
         "_cls": "User.SchoolUser", "name": schoolName, "code": "OD1",
         "email": "{}@escuela.test".format(teacherId), "status": "1", "isDeleted": False,
-        "teachers": [{"id": teacherId, "firstName": "Ana", "lastName": "Docente",
-                      "email": email, "status": "1", "isDeleted": False}],
+        "teachers": [teacherData],
     }).inserted_id
     PecaProject._get_collection().insert_one({
         "schoolYear": schoolYear.id,

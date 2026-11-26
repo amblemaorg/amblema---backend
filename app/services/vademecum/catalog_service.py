@@ -30,8 +30,8 @@ MAX_PAGE_SIZE = 100
 MAX_QUERY_LENGTH = 100
 # Campos que el listado necesita: deja fuera searchText, sourcePages y rutas de archivos
 SUMMARY_FIELDS = ("id", "code", "number", "title", "sheetType", "grades", "areas",
-                  "publishedAt", "fileReplacedAt", "ratingCount", "ratingSum",
-                  "file.thumbnailPath", "file.previewPath")
+                  "publishedAt", "fileReplacedAt", "downloadCount", "ratingCount", "ratingSum",
+                  "file.pageCount", "file.thumbnailPath", "file.previewPath")
 
 
 def invalid(field, msg="Invalid field"):
@@ -113,6 +113,8 @@ class CatalogService(object):
             "ratingAverage": (round(float(sheet.ratingSum) / sheet.ratingCount, 1)
                               if sheet.ratingCount else None),
             "ratingCount": sheet.ratingCount,
+            "downloadCount": sheet.downloadCount or 0,
+            "pageCount": sheet.file.pageCount if sheet.file else None,
         }
 
     def catalog_options(self):

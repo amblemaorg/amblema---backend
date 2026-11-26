@@ -29,7 +29,7 @@ DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 MAX_QUERY_LENGTH = 100
 # Campos que el listado necesita: deja fuera searchText, sourcePages y rutas de archivos
-SUMMARY_FIELDS = ("id", "code", "number", "title", "sheetType", "grades", "areas",
+SUMMARY_FIELDS = ("id", "code", "number", "title", "description", "sheetType", "grades", "areas",
                   "publishedAt", "fileReplacedAt", "downloadCount", "ratingCount", "ratingSum",
                   "file.pageCount", "file.thumbnailPath", "file.previewPath")
 
@@ -113,6 +113,7 @@ class CatalogService(object):
             "code": sheet.code,
             "number": sheet.number,
             "title": sheet.title,
+            "description": sheet.description,
             "sheetType": ({"id": str(sheetType.id), "name": sheetType.name,
                            "codePrefix": sheetType.codePrefix, "color": sheetType.color}
                           if sheetType else None),

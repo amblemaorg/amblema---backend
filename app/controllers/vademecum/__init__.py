@@ -32,7 +32,8 @@ def register_vademecum_resources(api):
 
     from app.controllers.vademecum.catalog_controller import (
         CatalogOptionsController, SiteContentController, HomeController, SheetListController,
-        SheetDetailController, SheetThumbnailController, SheetPreviewController)
+        SheetDetailController, SheetThumbnailController, SheetPreviewController,
+        SheetPageController)
 
     api.add_resource(CatalogOptionsController, *_routes("/vademecum/catalog-options"))
     api.add_resource(HomeController, *_routes("/vademecum/home"))
@@ -42,6 +43,8 @@ def register_vademecum_resources(api):
     api.add_resource(SheetThumbnailController,
                      "/vademecum/sheets/<string:sheetId>/thumbnail.webp")
     api.add_resource(SheetPreviewController, "/vademecum/sheets/<string:sheetId>/preview.webp")
+    api.add_resource(SheetPageController,
+                     "/vademecum/sheets/<string:sheetId>/pages/<int:pageNumber>.webp")
 
     from app.controllers.vademecum.download_controller import SheetDownloadController
 

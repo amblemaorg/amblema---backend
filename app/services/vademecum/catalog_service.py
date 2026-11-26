@@ -159,8 +159,94 @@ class CatalogService(object):
             records += list(rest.skip(max(0, skip - nFirst)).limit(missing))
         return records, nFirst + rest.count()
 
+    def home_indicators(self):
+        """Indicadores públicos del Home: fichas, docentes activos, escuelas vinculadas y descargas."""
+        from app.models.vademecum import VademecumDownload, VademecumTeacherAccount
+        from app.services.vademecum.enrollment_service import EnrollmentService
+
+        sheets = VademecumSheet.objects(status="published", isDeleted=False).count()
+        teachers = VademecumTeacherAccount.objects(status="1", isDeleted=False).count()
+        schools = len(EnrollmentService().list_active_schools().get("schools") or [])
+        downloads = VademecumDownload.objects(isRedownload=False).count()
+        return {
+            "sheets": sheets,
+            "teachers": teachers,
+            "schools": schools,
+            "downloads": downloads,
+        }
+
+    def home_comments(self, types, limit=3):
+        """Últimos comentarios aprobados y resumen global de valoraciones del catálogo."""
+        from app.models.vademecum import VademecumTeacherAccount
+        from app.services.vademecum.rating_service import author_name
+
+        # Resumen global de valoraciones sobre fichas publicadas
+        agg = list(VademecumSheet._get_collection().aggregate([
+            {"$match": {"status": "published", "isDeleted": False, "ratingCount": {"$gt": 0}}},
+            {"$group": {"_id": None,
+                        "count": {"$sum": "$ratingCount"},
+                        "sum": {"$sum": "$ratingSum"}}},
+        ]))
+        totalCount = agg[0]["count"] if agg else 0
+        totalSum = agg[0]["sum"] if agg else 0
+        ratingSummary = {
+            "average": round(float(totalSum) / totalCount, 1) if totalCount else None,
+            "count": totalCount,
+        }
+
+        ratings = list(VademecumRating.objects(
+            commentStatus="approved", comment__ne=None
+        ).order_by("-updatedAt").limit(limit * 3))
+        if not ratings:
+            return [], ratingSummary
+
+        sheetIds = list({r.sheet.id if hasattr(r.sheet, "id") else r.sheet for r in ratings})
+        accountIds = list({r.account.id if hasattr(r.account, "id") else r.account
+                           for r in ratings})
+        sheetsById = {
+            s.id: s for s in VademecumSheet.objects(
+                id__in=sheetIds, status="published", isDeleted=False
+            ).only("id", "code", "title", "sheetType", "publishedAt", "fileReplacedAt",
+                   "file.thumbnailPath", "file.previewPath")
+        }
+        accountsById = {
+            a.id: a for a in VademecumTeacherAccount.objects(
+                id__in=accountIds
+            ).only("id", "firstName", "lastName")
+        }
+
+        comments = []
+        for r in ratings:
+            sid = r.sheet.id if hasattr(r.sheet, "id") else r.sheet
+            sheet = sheetsById.get(sid)
+            if not sheet:
+                continue
+            aid = r.account.id if hasattr(r.account, "id") else r.account
+            account = accountsById.get(aid)
+            stId = sheet.sheetType.id if hasattr(sheet.sheetType, "id") else sheet.sheetType
+            sheetType = types.get(stId)
+            comments.append({
+                "id": str(r.id),
+                "stars": r.stars,
+                "comment": r.comment,
+                "updatedAt": isoformat(r.updatedAt),
+                "authorName": author_name(account) or u"Docente",
+                "sheet": {
+                    "id": str(sheet.id),
+                    "code": sheet.code,
+                    "title": sheet.title,
+                    "sheetTypeName": sheetType.name if sheetType else None,
+                    "color": sheetType.color if sheetType else None,
+                    "thumbnailUrl": image_url(sheet, "thumbnail"),
+                    "previewUrl": image_url(sheet, "preview"),
+                },
+            })
+            if len(comments) >= limit:
+                break
+        return comments, ratingSummary
+
     def home(self, account=None):
-        """Los 8 lanzamientos más recientes y las 8 fichas más descargadas (sin redescargas).
+        """Los 8 lanzamientos más recientes, las 8 fichas más descargadas, indicadores y comentarios.
 
         `downloadCount` solo suma la primera descarga por cuenta, ficha y año. Con matrícula,
         cada lista muestra primero las fichas de los grados del docente.
@@ -174,10 +260,14 @@ class CatalogService(object):
             return list(sheets.order_by(*order).limit(HOME_SIZE))
 
         types, areas = self._types_and_areas()
+        comments, ratingSummary = self.home_comments(types)
         return {
             "newReleases": [self.summary(s, types, areas) for s in eight(base, SORTS["newest"])],
             "featured": [self.summary(s, types, areas)
                          for s in eight(base.filter(downloadCount__gt=0), SORTS["popular"])],
+            "indicators": self.home_indicators(),
+            "comments": comments,
+            "ratingSummary": ratingSummary,
         }, 200
 
     def list_sheets(self, args, account=None):

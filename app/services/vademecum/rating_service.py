@@ -186,6 +186,7 @@ class RatingService(object):
             seen = seen.replace(tzinfo=None, microsecond=0)
             if rating.updatedAt.replace(microsecond=0) != seen:
                 return error(*CHANGED_SINCE_SEEN)
+        previousStatus = rating.commentStatus
         # Condicionada a la versión leída: si el docente edita a la vez, no se pisa su cambio
         now = datetime.utcnow()
         updated = VademecumRating.objects(id=rating.id, updatedAt=rating.updatedAt).update_one(
@@ -195,7 +196,49 @@ class RatingService(object):
         rating.reload()
         accounts = self._accounts([rating])
         sheets = {s.id: s for s in VademecumSheet.objects(id=self._sheet_id(rating))}
+        if previousStatus != status:
+            self._notify_moderation(
+                accounts.get(self._account_id(rating)),
+                sheets.get(self._sheet_id(rating)),
+                status,
+            )
         return self._admin_dict(rating, accounts, sheets), 200
+
+    @staticmethod
+    def _notify_moderation(account, sheet, status):
+        """Avisa por correo al docente cuando su comentario se aprueba o se oculta."""
+        if not account or not account.email or status not in ("approved", "hidden"):
+            return
+        from flask import current_app
+        from app.services.vademecum.access_request_service import notify
+
+        sheetLabel = (
+            u"{} · {}".format(sheet.code, sheet.title)
+            if sheet and sheet.code and sheet.title
+            else (sheet.title if sheet and sheet.title else u"una ficha del catálogo")
+        )
+        baseUrl = (current_app.config.get("VADEMECUM_WEB_URL") or u"").rstrip("/")
+        sheetUrl = u"{}/ficha/{}".format(baseUrl, sheet.id) if baseUrl and sheet else None
+
+        if status == "approved":
+            subject = u"Tu comentario en el Vademécum AmbLeMa fue publicado"
+            paragraphs = [
+                u"¡Gracias por compartir tu experiencia! Tu comentario en la ficha {} fue aprobado y ya es visible para otros docentes.".format(
+                    sheetLabel),
+            ]
+            if sheetUrl:
+                paragraphs.append(u"Puedes verla aquí: {}".format(sheetUrl))
+        else:
+            subject = u"Actualización sobre tu comentario en el Vademécum AmbLeMa"
+            paragraphs = [
+                u"Tu comentario en la ficha {} no fue aprobado para publicación pública.".format(
+                    sheetLabel),
+                u"Si lo deseas, puedes entrar a la ficha y editarlo para enviarlo nuevamente a revisión.",
+            ]
+            if sheetUrl:
+                paragraphs.append(u"Abrir ficha: {}".format(sheetUrl))
+
+        notify(account.email, account.firstName, subject, paragraphs)
 
     # --- Utilidades ---
 

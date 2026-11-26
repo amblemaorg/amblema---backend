@@ -77,6 +77,11 @@ def refresh_role_permissions():
     return refresh_role_permissions()
 
 @manager.command
+def add_teacher_coevaluation_permission():
+    from app.helpers.utilities_helpers import add_teacher_coevaluation_permission
+    print(add_teacher_coevaluation_permission())
+
+@manager.command
 def copy_steps():
     from app.helpers.utilities_helpers import copy_steps
     return copy_steps()

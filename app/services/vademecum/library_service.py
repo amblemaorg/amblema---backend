@@ -15,7 +15,8 @@ from datetime import datetime
 from bson import ObjectId
 from mongoengine.errors import NotUniqueError
 
-from app.models.vademecum import VademecumDownload, VademecumFavorite, VademecumSheet
+from app.models.vademecum import (
+    VademecumDownload, VademecumFavorite, VademecumRating, VademecumSheet)
 from app.services.vademecum.catalog_service import (
     SUMMARY_FIELDS, CatalogService, invalid, isoformat, not_found, object_id)
 from app.services.vademecum.enrollment_service import EnrollmentService
@@ -34,6 +35,30 @@ class LibraryService(object):
             id__in=ids, status="published", isDeleted=False).only(*SUMMARY_FIELDS)
         return {sheet.id: sheet for sheet in sheets}
 
+    @staticmethod
+    def _user_reviews_by_sheet(account, sheetIds):
+        """{ObjectId: {rating, commentStatus}} con las valoraciones de esta cuenta."""
+        if not sheetIds:
+            return {}
+        ratings = VademecumRating.objects(
+            account=account.id, sheet__in=list(sheetIds)
+        ).only("sheet", "stars", "commentStatus")
+        result = {}
+        for r in ratings:
+            sid = r._data["sheet"].id if hasattr(r._data["sheet"], "id") else r._data["sheet"]
+            result[sid] = {"rating": r.stars, "commentStatus": r.commentStatus}
+        return result
+
+    @staticmethod
+    def _downloaded_sheet_ids(account, sheetIds):
+        """Conjunto de sheetIds (str) descargados alguna vez por esta cuenta."""
+        if not sheetIds:
+            return set()
+        strIds = [str(sid) for sid in sheetIds]
+        found = VademecumDownload._get_collection().distinct(
+            "sheet.id", {"account.id": str(account.id), "sheet.id": {"$in": strIds}})
+        return set(found)
+
     # --- Favoritos ---
 
     def list_favorites(self, account, args):
@@ -47,10 +72,18 @@ class LibraryService(object):
         sheets = self._published_by_id([row["sheet"] for row in rows])
         visible = [row for row in rows if row["sheet"] in sheets]
         pageRows = visible[(page - 1) * pageSize:page * pageSize]
+        pageSheetIds = [row["sheet"] for row in pageRows]
         types, areas = self.catalog._types_and_areas()
+        commentCounts = self.catalog._approved_comment_counts(pageSheetIds)
+        userReviews = self._user_reviews_by_sheet(account, pageSheetIds)
+        downloadedIds = self._downloaded_sheet_ids(account, pageSheetIds)
         return {
-            "records": [{"sheet": self.catalog.summary(sheets[row["sheet"]], types, areas),
-                         "createdAt": isoformat(row["createdAt"])} for row in pageRows],
+            "records": [{
+                "sheet": self.catalog.summary(sheets[row["sheet"]], types, areas, commentCounts),
+                "createdAt": isoformat(row["createdAt"]),
+                "hasDownloaded": str(row["sheet"]) in downloadedIds,
+                "userReview": userReviews.get(row["sheet"]),
+            } for row in pageRows],
             "pagination": _pagination(page, pageSize, len(visible)),
         }, 200
 
@@ -111,12 +144,16 @@ class LibraryService(object):
         sheets = self._published_by_id([ObjectId(row["_id"]) for row in rows])
         visible = [row for row in rows if ObjectId(row["_id"]) in sheets]
         pageRows = visible[(page - 1) * pageSize:page * pageSize]
+        pageSheetIds = [ObjectId(row["_id"]) for row in pageRows]
         types, areas = self.catalog._types_and_areas()
+        commentCounts = self.catalog._approved_comment_counts(pageSheetIds)
+        userReviews = self._user_reviews_by_sheet(account, pageSheetIds)
         records = []
         for row in pageRows:
+            sheetOid = ObjectId(row["_id"])
             school = row.get("school")
             records.append({
-                "sheet": self.catalog.summary(sheets[ObjectId(row["_id"])], types, areas),
+                "sheet": self.catalog.summary(sheets[sheetOid], types, areas, commentCounts),
                 "schoolYear": {"id": row["schoolYear"]["id"], "name": row["schoolYear"].get("name")},
                 # MongoEngine omite los campos nulos: el nombre o el código pueden faltar
                 "school": ({"id": school["id"], "name": school.get("name"),
@@ -124,6 +161,7 @@ class LibraryService(object):
                 "origin": row["origin"],
                 "lastDownloadedAt": isoformat(row["lastDownloadedAt"]),
                 "timesDownloaded": row["timesDownloaded"],
+                "userReview": userReviews.get(sheetOid),
             })
         return {"years": years, "records": records,
                 "pagination": _pagination(page, pageSize, len(visible))}, 200

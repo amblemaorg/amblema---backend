@@ -29,7 +29,7 @@ DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 MAX_QUERY_LENGTH = 100
 # Campos que el listado necesita: deja fuera searchText, sourcePages y rutas de archivos
-SUMMARY_FIELDS = ("id", "code", "number", "title", "sheetType", "grades", "areas",
+SUMMARY_FIELDS = ("id", "code", "number", "title", "description", "sheetType", "grades", "areas",
                   "publishedAt", "fileReplacedAt", "downloadCount", "ratingCount", "ratingSum",
                   "file.pageCount", "file.thumbnailPath", "file.previewPath")
 
@@ -89,7 +89,18 @@ class CatalogService(object):
         areas = {a.id: a for a in VademecumArea.objects(isDeleted=False)}
         return types, areas
 
-    def summary(self, sheet, types, areas):
+    def _approved_comment_counts(self, sheetIds):
+        """{sheetId: total de comentarios aprobados} en una sola consulta agregada."""
+        ids = list({sid for sid in sheetIds if sid})
+        if not ids:
+            return {}
+        rows = VademecumRating._get_collection().aggregate([
+            {"$match": {"sheet": {"$in": ids}, "commentStatus": "approved"}},
+            {"$group": {"_id": "$sheet", "count": {"$sum": 1}}},
+        ])
+        return {row["_id"]: row["count"] for row in rows}
+
+    def summary(self, sheet, types, areas, commentCounts=None):
         sheetType = types.get(sheet.sheetType.id if hasattr(sheet.sheetType, "id")
                               else sheet.sheetType)
         sheetAreas = []
@@ -102,6 +113,7 @@ class CatalogService(object):
             "code": sheet.code,
             "number": sheet.number,
             "title": sheet.title,
+            "description": sheet.description,
             "sheetType": ({"id": str(sheetType.id), "name": sheetType.name,
                            "codePrefix": sheetType.codePrefix, "color": sheetType.color}
                           if sheetType else None),
@@ -113,6 +125,7 @@ class CatalogService(object):
             "ratingAverage": (round(float(sheet.ratingSum) / sheet.ratingCount, 1)
                               if sheet.ratingCount else None),
             "ratingCount": sheet.ratingCount,
+            "commentCount": (commentCounts.get(sheet.id, 0) if commentCounts is not None else 0),
             "downloadCount": sheet.downloadCount or 0,
             "pageCount": sheet.file.pageCount if sheet.file else None,
         }
@@ -261,10 +274,12 @@ class CatalogService(object):
 
         types, areas = self._types_and_areas()
         comments, ratingSummary = self.home_comments(types)
+        newReleases = eight(base, SORTS["newest"])
+        featured = eight(base.filter(downloadCount__gt=0), SORTS["popular"])
+        commentCounts = self._approved_comment_counts([s.id for s in newReleases + featured])
         return {
-            "newReleases": [self.summary(s, types, areas) for s in eight(base, SORTS["newest"])],
-            "featured": [self.summary(s, types, areas)
-                         for s in eight(base.filter(downloadCount__gt=0), SORTS["popular"])],
+            "newReleases": [self.summary(s, types, areas, commentCounts) for s in newReleases],
+            "featured": [self.summary(s, types, areas, commentCounts) for s in featured],
             "indicators": self.home_indicators(),
             "comments": comments,
             "ratingSummary": ratingSummary,
@@ -327,9 +342,11 @@ class CatalogService(object):
                 sheets = sheets.order_by(*SORTS[sort])
             total = sheets.count()
             records = sheets.skip((page - 1) * pageSize).limit(pageSize)
+        records = list(records)
         types, areas = self._types_and_areas()
+        commentCounts = self._approved_comment_counts([s.id for s in records])
         return {
-            "records": [self.summary(s, types, areas) for s in records],
+            "records": [self.summary(s, types, areas, commentCounts) for s in records],
             "pagination": {"page": page, "pageSize": pageSize, "total": total,
                            "pages": int(math.ceil(float(total) / pageSize))},
         }, 200

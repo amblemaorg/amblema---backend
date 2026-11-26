@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 THUMBNAIL_WIDTH = 480        # tarjeta del catálogo a 240 px con pantallas 2x
 THUMBNAIL_QUALITY = 82
+PAGE_VIEW_WIDTH = 1200       # visor protegido del docente: legible incluso con zoom
+PAGE_VIEW_QUALITY = 85
 PREVIEW_WIDTH = 900
 PREVIEW_BLUR_RADIUS = 6      # se lee la composición, no el contenido
 PREVIEW_SHARP_UNTIL = 0.20   # el 20 % superior queda nítido (encabezado y título)
@@ -123,6 +125,22 @@ def render_preview(page, target):
     sharp = page_image(page, PREVIEW_WIDTH)
     blurred = sharp.filter(ImageFilter.GaussianBlur(PREVIEW_BLUR_RADIUS))
     save_webp(Image.composite(blurred, sharp, blur_mask(sharp.size)), target, PREVIEW_QUALITY)
+
+
+def render_pdf_page(pdf_file_path, page_number, target):
+    """Renderiza una página específica (1-based) del PDF en WebP nítido para el visor."""
+    if page_number < 1:
+        return False
+    import fitz  # PyMuPDF
+    document = fitz.open(pdf_file_path)
+    try:
+        if page_number > document.page_count:
+            return False
+        page = document.load_page(page_number - 1)
+        save_webp(page_image(page, PAGE_VIEW_WIDTH), target, PAGE_VIEW_QUALITY)
+        return True
+    finally:
+        document.close()
 
 
 # --- Texto ---

@@ -9,6 +9,7 @@ previa de baja resolución que genera API-10.
 
 import calendar
 import math
+import os
 import re
 
 from bson import ObjectId
@@ -269,3 +270,24 @@ class CatalogService(object):
         if not sheet or not sheet.file:
             return None
         return sheet.file.thumbnailPath if kind == "thumbnail" else sheet.file.previewPath
+
+    def page_image_path(self, sheetId, pageNumber):
+        """Ruta absoluta de la imagen WebP nítida de una cara (1-based) del PDF, o None."""
+        if not isinstance(pageNumber, int) or pageNumber < 1:
+            return None
+        sheet = self.published_sheet(sheetId)
+        if not sheet or not sheet.file:
+            return None
+        if sheet.file.pageCount and pageNumber > sheet.file.pageCount:
+            return None
+        from app.services.vademecum.download_service import pdf_path
+        from app.services.vademecum.sheet_media import render_pdf_page
+
+        pdf = pdf_path(sheet)
+        if not pdf:
+            return None
+        target = os.path.join(os.path.dirname(pdf), "page-{}.webp".format(pageNumber))
+        if not os.path.isfile(target) or os.path.getmtime(target) < os.path.getmtime(pdf):
+            if not render_pdf_page(pdf, pageNumber, target):
+                return None
+        return target

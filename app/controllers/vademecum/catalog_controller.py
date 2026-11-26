@@ -7,7 +7,7 @@ import os
 from flask import current_app, g, request, send_from_directory
 from flask_restful import Resource
 
-from app.helpers.vademecum_auth import vademecum_teacher_optional
+from app.helpers.vademecum_auth import vademecum_teacher_optional, vademecum_teacher_required
 from app.services.vademecum.catalog_service import CatalogService, not_found
 
 IMAGE_MAX_AGE = 60 * 60 * 24 * 365  # la URL lleva ?v=, así que la caché puede ser larga
@@ -64,3 +64,15 @@ class SheetThumbnailController(Resource):
 class SheetPreviewController(Resource):
     def get(self, sheetId):
         return _send_image(sheetId, "preview")
+
+
+class SheetPageController(Resource):
+    @vademecum_teacher_required
+    def get(self, sheetId, pageNumber):
+        path = CatalogService().page_image_path(sheetId, pageNumber)
+        if not path:
+            return not_found()
+        response = send_from_directory(os.path.dirname(path), os.path.basename(path),
+                                       mimetype="image/webp", cache_timeout=0)
+        response.headers["Cache-Control"] = "private, no-store"
+        return response

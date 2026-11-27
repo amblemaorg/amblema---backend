@@ -178,7 +178,7 @@ class TeacherCoevaluationTest(unittest.TestCase):
     def test_coordinator_invalid_scores(self):
         res = self.post(self.url(suffix="/coordinator"), scores_payload([3] * 14))
         self.assertEqual(res.status_code, 400)
-        res = self.post(self.url(suffix="/coordinator"), scores_payload([6] + [3] * 14))
+        res = self.post(self.url(suffix="/coordinator"), scores_payload([8] + [3] * 14))
         self.assertEqual(res.status_code, 400)
         self.assertIsNone(self.coevaluation())
 
@@ -194,11 +194,12 @@ class TeacherCoevaluationTest(unittest.TestCase):
     # ------------------------------------------------------ enlace docente
 
     def test_full_flow_and_public_link_hides_coordinator_scores(self):
-        self.post(self.url(suffix="/coordinator"), scores_payload(4))
+        self.post(self.url(suffix="/coordinator"), scores_payload(6))
         res, token, sendMock = self.send()
         self.assertEqual(res.status_code, 200)
         self.assertEqual(sendMock.call_args[0][3], "luisa@test.com")
         self.assertIn(token, sendMock.call_args[0][0])
+        self.assertIn("0 a 7", sendMock.call_args[0][0])
 
         # El token vigente y su hash quedan registrados
         coevaluation = self.coevaluation()
@@ -220,28 +221,28 @@ class TeacherCoevaluationTest(unittest.TestCase):
         self.assertNotIn("items", public)
         self.assertNotIn("coordinatorScores", json.dumps(public))
 
-        res = self.post('/coevaluations/public/' + token, scores_payload(3))
+        res = self.post('/coevaluations/public/' + token, scores_payload(5))
         self.assertEqual(res.status_code, 200)
 
         coevaluation = self.coevaluation()
         self.assertEqual(coevaluation.status, "completed")
         self.assertIsNone(coevaluation.tokenHash)
-        # Promedio por ítem = parte entera de (3 + 4) / 2 = 3
-        self.assertEqual(coevaluation.averages, [3] * 15)
-        self.assertEqual(coevaluation.totalScore, 45)
-        self.assertEqual(coevaluation.percentage, 60.0)
+        # Promedio por ítem = parte entera de (5 + 6) / 2 = 5
+        self.assertEqual(coevaluation.averages, [5] * 15)
+        self.assertEqual(coevaluation.totalScore, 75)
+        self.assertEqual(coevaluation.percentage, 71.43)
         self.assertEqual(coevaluation.level, "commitment")
 
         # Token de un solo uso
         self.assertEqual(self.client().get('/coevaluations/public/' + token).status_code, 404)
         self.assertEqual(self.post('/coevaluations/public/' + token,
-                                   scores_payload(5)).status_code, 404)
-        self.assertEqual(self.coevaluation().teacherScores, [3] * 15)
+                                   scores_payload(7)).status_code, 404)
+        self.assertEqual(self.coevaluation().teacherScores, [5] * 15)
 
         detail = json.loads(self.client().get(self.url()).data)
         self.assertEqual(detail["levelLabel"], u"Docente HQS con Compromiso")
-        self.assertEqual(detail["items"][0], {"number": 1, "teacher": 3,
-                                              "coordinator": 4, "average": 3})
+        self.assertEqual(detail["items"][0], {"number": 1, "teacher": 5,
+                                              "coordinator": 6, "average": 5})
         self.assertFalse(detail["canSendLink"])
 
         # No se puede reenviar después de que el docente guardó
@@ -251,12 +252,12 @@ class TeacherCoevaluationTest(unittest.TestCase):
 
     def test_teacher_first_then_coordinator(self):
         res, token, _ = self.send()
-        self.post('/coevaluations/public/' + token, scores_payload(5))
+        self.post('/coevaluations/public/' + token, scores_payload(7))
         self.assertEqual(self.coevaluation().status, "pending_coordinator")
-        res = self.post(self.url(suffix="/coordinator"), scores_payload(5))
+        res = self.post(self.url(suffix="/coordinator"), scores_payload(7))
         data = json.loads(res.data)
         self.assertEqual(data["status"], "completed")
-        self.assertEqual(data["totalScore"], 75)
+        self.assertEqual(data["totalScore"], 105)
         self.assertEqual(data["level"], "excellence")
 
     def test_resend_generates_new_token_and_invalidates_previous(self):
@@ -348,7 +349,7 @@ class TeacherCoevaluationTest(unittest.TestCase):
     # ------------------------------------------------------------- reporte
 
     def test_report_by_school_and_by_level(self):
-        self.complete(self.teacher, 5, 4)  # (5 + 4) // 2 = 4 -> 60 pts, 80 % -> excelencia
+        self.complete(self.teacher, 7, 6)  # (7 + 6) // 2 = 6 -> 90 pts, 85.71 % -> excelencia
         self.post(self.url(self.teacher2, "/coordinator"), scores_payload(2))  # pendiente docente
 
         res = self.client().get('/statistics/coevaluationsreport/{}'.format(self.schoolYear.id))
@@ -360,14 +361,14 @@ class TeacherCoevaluationTest(unittest.TestCase):
         # Activos: Luisa, Marta y Rosa (sin correo); Pedro inactivo queda fuera.
         self.assertEqual(school["nTeachers"], 3)
         self.assertEqual(school["nCompleted"], 1)
-        self.assertEqual(school["index"], 80.0)
+        self.assertEqual(school["index"], 85.71)
         self.assertEqual(school["indexLevel"], "excellence")
         self.assertEqual(school["statusCounts"]["completed"], 1)
         self.assertEqual(school["statusCounts"]["pending_teacher"], 1)
         self.assertEqual(school["statusCounts"]["not_started"], 1)
         self.assertEqual(school["levelCounts"]["excellence"], 1)
         self.assertEqual(school["teachers"][0]["firstName"], "Luisa")
-        self.assertEqual(school["teachers"][0]["items"][0]["average"], 4)
+        self.assertEqual(school["teachers"][0]["items"][0]["average"], 6)
 
         levels = dict((lvl["code"], lvl) for lvl in data["byLevel"])
         self.assertEqual([lvl["code"] for lvl in data["byLevel"]],
@@ -380,7 +381,7 @@ class TeacherCoevaluationTest(unittest.TestCase):
         self.assertEqual(levels["commitment"]["count"], 0)
 
     def test_report_level_filter(self):
-        self.complete(self.teacher, 5, 4)
+        self.complete(self.teacher, 7, 6)
         res = self.client().get('/statistics/coevaluationsreport/{}?level=beginning'.format(
             self.schoolYear.id))
         data = json.loads(res.data)
@@ -415,7 +416,7 @@ class TeacherCoevaluationTest(unittest.TestCase):
         PecaProject.objects(id=self.peca.id).update_one(set__school__addressState=self.state)
         other = State(name="Zulia")
         other.save()
-        self.complete(self.teacher, 5, 4)
+        self.complete(self.teacher, 7, 6)
         expected = {"id": str(self.state.id), "name": "Lara"}
 
         status, data = self.report()

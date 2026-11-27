@@ -28,7 +28,7 @@ from app.schemas.teacher_coevaluation_schema import (
 from app.helpers.coevaluation_helper import (
     get_instrument, get_level, get_level_label, school_index, sections_label,
     generate_token, hash_token, field_value, coevaluation_status, LEVELS, LEVEL_CODES,
-    N_ITEMS, STATUS_LABELS, STATUS_NOT_STARTED, STATUS_COMPLETED)
+    MIN_SCORE, MAX_SCORE, N_ITEMS, STATUS_LABELS, STATUS_NOT_STARTED, STATUS_COMPLETED)
 from app.helpers.handler_authorization import is_admin
 from app.helpers.handler_emails import send_email
 
@@ -396,8 +396,8 @@ class TeacherCoevaluationService():
               </p>
               <p style="margin: 0 0 22px 0; font-size: 14px; line-height: 1.65; color: #364f54;">
                 Lo/la invitamos a completar su parte de la <strong>Coevaluación Docente AmbLeMa HQS</strong>.
-                Este instrumento consta de <strong>15 prácticas pedagógicas</strong> valoradas en una escala de
-                <strong>0 a 5</strong>; su coordinador/a AmbLeMa realizará la misma valoración para luego
+                Este instrumento consta de <strong>{nItems} prácticas pedagógicas</strong> valoradas en una escala de
+                <strong>{minScore} a {maxScore}</strong>; su coordinador/a AmbLeMa realizará la misma valoración para luego
                 conversar juntos sobre los resultados.
               </p>
 
@@ -494,7 +494,8 @@ class TeacherCoevaluationService():
 </body>
 </html>""".format(teacher=teacherName, schoolYear=schoolYearLabel,
                   school=schoolLabel, sections=sectionsLabel,
-                  coordinator=coordinatorName, link=link)
+                  coordinator=coordinatorName, link=link,
+                  nItems=N_ITEMS, minScore=MIN_SCORE, maxScore=MAX_SCORE)
         plainTextBody = (
             u"Hola {}, complete su parte de la coevaluación docente AmbLeMa HQS ({}, {}). "
             u"Grado / Sección: {}. Coordinador/a: {}. "

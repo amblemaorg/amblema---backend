@@ -18,7 +18,7 @@ class CoevaluationScoreSchema(Schema):
 
 
 class CoevaluationScoresSchema(Schema):
-    """Payload de guardado: los 15 ítems, cada uno una sola vez, puntaje entero 0-5."""
+    """Payload de guardado: los 15 ítems, cada uno una sola vez, puntaje entero 0-7."""
     scores = fields.List(fields.Nested(CoevaluationScoreSchema), required=True)
 
     class Meta:

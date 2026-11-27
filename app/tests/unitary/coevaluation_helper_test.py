@@ -22,30 +22,32 @@ def payload(scores):
 
 class CoevaluationHelperTest(unittest.TestCase):
 
-    def test_instrument_has_15_items_and_max_75(self):
+    def test_instrument_has_15_items_and_max_105(self):
         self.assertEqual(N_ITEMS, 15)
-        self.assertEqual(MAX_TOTAL, 75)
+        self.assertEqual(MAX_TOTAL, 105)
         self.assertEqual([item["number"] for item in ITEMS], list(range(1, 16)))
+        self.assertEqual(ITEMS[10]["title"], u"Asistencia")
+        self.assertEqual(ITEMS[14]["title"], u"Feria AmbLeMa")
         instrument = get_instrument()
-        self.assertEqual(len(instrument["scale"]), 6)
+        self.assertEqual(len(instrument["scale"]), 8)
         self.assertEqual([d["code"] for d in instrument["dimensions"]], ["A", "B", "C"])
 
     def test_averages_take_integer_part(self):
-        # (4 + 3) / 2 = 3.5 -> 3 por ítem; total 45 / 75 = 60 %
-        results = compute_results([4] * 15, [3] * 15)
-        self.assertEqual(results["averages"], [3] * 15)
-        self.assertEqual(results["totalScore"], 45)
-        self.assertEqual(results["percentage"], 60.0)
+        # (6 + 5) / 2 = 5.5 -> 5 por ítem; total 75 / 105 = 71.43 %
+        results = compute_results([6] * 15, [5] * 15)
+        self.assertEqual(results["averages"], [5] * 15)
+        self.assertEqual(results["totalScore"], 75)
+        self.assertEqual(results["percentage"], 71.43)
         self.assertEqual(results["level"], "commitment")
 
     def test_averages_are_integers_per_item(self):
-        teacher = [5, 1, 0, 5, 2] + [0] * 10
-        coordinator = [4, 0, 0, 5, 5] + [1] * 10
+        teacher = [7, 1, 0, 7, 2] + [0] * 10
+        coordinator = [6, 0, 0, 7, 5] + [1] * 10
         results = compute_results(teacher, coordinator)
-        self.assertEqual(results["averages"][:5], [4, 0, 0, 5, 3])
+        self.assertEqual(results["averages"][:5], [6, 0, 0, 7, 3])
         self.assertEqual(results["averages"][5:], [0] * 10)
         self.assertTrue(all(isinstance(a, int) for a in results["averages"]))
-        self.assertEqual(results["totalScore"], 12)
+        self.assertEqual(results["totalScore"], 16)
         self.assertIsInstance(results["totalScore"], int)
 
     def test_missing_side_returns_none(self):
@@ -55,23 +57,24 @@ class CoevaluationHelperTest(unittest.TestCase):
 
     def test_level_boundaries(self):
         cases = [
-            (75, "excellence"), (60, "excellence"), (59.5, "commitment"),
-            (45, "commitment"), (44.5, "progress"), (30, "progress"),
-            (29.5, "beginning"), (0, "beginning"),
+            (105, "excellence"), (84, "excellence"), (83.5, "commitment"),
+            (63, "commitment"), (62.5, "progress"), (42, "progress"),
+            (41.5, "beginning"), (0, "beginning"),
         ]
         for total, code in cases:
             self.assertEqual(get_level(total)["code"], code, total)
         self.assertIsNone(get_level(None))
 
     def test_percentage_of_boundary_case(self):
-        # (3 + 2) / 2 = 2.5 -> 2: 44 pts = 58.67 % -> En avance (no Compromiso)
-        results = compute_results([3] * 15, [3] * 14 + [2])
-        self.assertEqual(results["totalScore"], 44)
-        self.assertEqual(results["percentage"], 58.67)
+        # 62 pts = 59.05 % -> En avance (no Compromiso)
+        results = compute_results([5] * 2 + [4] * 13, [5] * 2 + [4] * 13)
+        self.assertEqual(results["totalScore"], 62)
+        self.assertEqual(results["percentage"], 59.05)
         self.assertEqual(results["level"], "progress")
-        # 45 pts justos -> Compromiso
-        results = compute_results([3] * 15, [3] * 15)
-        self.assertEqual(results["totalScore"], 45)
+        # 63 pts justos = 60.0 % -> Compromiso
+        results = compute_results([5] * 3 + [4] * 12, [5] * 3 + [4] * 12)
+        self.assertEqual(results["totalScore"], 63)
+        self.assertEqual(results["percentage"], 60.0)
         self.assertEqual(results["level"], "commitment")
 
     def test_school_index_ignores_none(self):
@@ -102,10 +105,11 @@ class CoevaluationHelperTest(unittest.TestCase):
 class CoevaluationScoresSchemaTest(unittest.TestCase):
 
     def test_valid_payload_is_ordered(self):
-        data = payload(list(range(5)) * 3)
+        expected = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6]
+        data = payload(expected)
         data["scores"].reverse()
         loaded = CoevaluationScoresSchema().load(data)
-        self.assertEqual(scores_to_list(loaded), list(range(5)) * 3)
+        self.assertEqual(scores_to_list(loaded), expected)
 
     def test_rejects_missing_or_duplicated_items(self):
         data = payload([3] * 14)
@@ -117,7 +121,7 @@ class CoevaluationScoresSchemaTest(unittest.TestCase):
             CoevaluationScoresSchema().load(data)
 
     def test_rejects_out_of_range_and_non_integer(self):
-        for bad in (6, -1, 3.5, "3"):
+        for bad in (8, -1, 3.5, "3"):
             data = payload([3] * 15)
             data["scores"][0]["score"] = bad
             with self.assertRaises(ValidationError, msg=repr(bad)):

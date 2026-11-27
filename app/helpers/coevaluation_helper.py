@@ -16,7 +16,7 @@ import os
 
 INSTRUMENT_VERSION = 1
 MIN_SCORE = 0
-MAX_SCORE = 5
+MAX_SCORE = 7
 
 DIMENSIONS = [
     {"code": "A", "name": u"Aplicación de las estrategias ordinarias de AmbLeMa"},
@@ -32,55 +32,59 @@ ITEMS = [
     {"number": 3, "dimension": "A", "title": u"Ingenio Matemático",
      "question": u"¿Promueve y ejercita el momento de Ingenio Matemático cada día?"},
     {"number": 4, "dimension": "A", "title": u"Actividades de formación docente",
-     "question": u"¿Participa activamente en alguna o algunas de las propuestas formativas a lo largo del año? Por ejemplo, Programa Papagayo, Khan Academy, JumpMath u otras."},
+     "question": u"¿Participa activamente en alguna o algunas de las propuestas formativas a lo largo del año (Programa Papagayo, Khan Academy, JUMP Math u otras)?"},
     {"number": 5, "dimension": "A", "title": u"Módulo ambiental",
-     "question": u"¿Propone y participa en estrategias o actividades que mejoren los indicadores del IAA (Índice Ambiental AmbLeMa) de la escuela? (Limpieza de la escuela, separación de desechos, cuidado de la biodiversidad, buen uso del agua e impacto en la limpieza de la comunidad)"},
+     "question": u"¿Propone y participa en estrategias o actividades que mejoren los indicadores del IAA (Índice Ambiental AmbLeMa) de la escuela: limpieza de la escuela, separación de desechos, cuidado de la biodiversidad, buen uso del agua e impacto en la comunidad?"},
     {"number": 6, "dimension": "A", "title": u"ProAmb (Proyecto Ambiental AmbLeMa)",
-     "question": u"¿Planifica y desarrolla, con sus estudiantes, los diferentes EcoTemas del ProAmb del año escolar? (Bosque de Chocolate, Venezuela Megadiversa o Feria Científica)"},
+     "question": u"¿Planifica y desarrolla, con sus estudiantes, los diferentes ecotemas del ProAmb del año escolar (Bosque de Chocolate, Venezuela Megadiversa o Feria Científica)?"},
     {"number": 7, "dimension": "B", "title": u"Uso del Vademécum",
      "question": u"¿Consulta y utiliza el Vademécum AmbLeMa como guía de sus actividades?"},
     {"number": 8, "dimension": "B", "title": u"Conocer y comunicar diagnósticos",
-     "question": u"¿Conoce, analiza y tiene presentes los resultados de los diagnósticos de sus estudiantes?"},
+     "question": u"¿Conoce, analiza y tiene presente los resultados de los diagnósticos de sus estudiantes?"},
     {"number": 9, "dimension": "B", "title": u"Mejora en diagnósticos",
      "question": u"¿Conoce las metas propuestas para su grado y busca estrategias para que sus estudiantes mejoren en los resultados?"},
     {"number": 10, "dimension": "B", "title": u"AAA (Aula Activa AmbLeMa)",
-     "question": u"¿Planifica y prepara con anticipación la participación de su grupo de estudiantes en la AAA?"},
-    {"number": 11, "dimension": "C", "title": u"Actividad especial 2do lapso",
-     "question": u"¿Apoya y colabora activamente en la organización de la actividad especial del 2do lapso?"},
-    {"number": 12, "dimension": "C", "title": u"Feriamblema",
-     "question": u"¿Prepara y participa con su grupo en la realización de la Feriamblema?"},
-    {"number": 13, "dimension": "C", "title": u"Amblemonedas",
-     "question": u"¿Implementa el sistema de Amblemonedas como incentivo pedagógico en el grupo?"},
-    {"number": 14, "dimension": "C", "title": u"Bodega AmbLeMa",
-     "question": u"¿Participa y aporta ideas para el buen desarrollo de las Bodegas AmbLeMa?"},
-    {"number": 15, "dimension": "C", "title": u"Asistencia",
+     "question": u"¿Planifica y prepara con anticipación la participación de sus estudiantes en la AAA?"},
+    {"number": 11, "dimension": "C", "title": u"Asistencia",
      "question": u"¿Mantiene una asistencia constante y puntual a las actividades escolares y de AmbLeMa?"},
+    {"number": 12, "dimension": "C", "title": u"Amblemonedas",
+     "question": u"¿Implementa el sistema de Amblemonedas como incentivo pedagógico en el grupo?"},
+    {"number": 13, "dimension": "C", "title": u"Bodega AmbLeMa",
+     "question": u"¿Participa y aporta ideas para el buen desarrollo de las Bodegas AmbLeMa?"},
+    {"number": 14, "dimension": "C", "title": u"Actividad especial 2do lapso",
+     "question": u"¿Apoya y colabora activamente en la organización de la actividad especial del 2do lapso?"},
+    {"number": 15, "dimension": "C", "title": u"Feria AmbLeMa",
+     "question": u"¿Planifica con su grupo la participación en la Feria AmbLeMa?"},
 ]
 
 N_ITEMS = len(ITEMS)
-MAX_TOTAL = N_ITEMS * MAX_SCORE  # 75
+MAX_TOTAL = N_ITEMS * MAX_SCORE  # 105
 
 SCALE = [
-    {"score": 0, "label": u"No iniciado / No",
-     "description": u"No se ejecuta la práctica o no hay evidencia."},
-    {"score": 1, "label": u"Inicial",
-     "description": u"Se realiza en forma muy ocasional o esporádica."},
-    {"score": 2, "label": u"En proceso",
-     "description": u"Se aplica con cierta frecuencia, pero requiere más constancia o acompañamiento."},
-    {"score": 3, "label": u"Aceptable / Consolidándose",
-     "description": u"Se cumple regularmente siguiendo los lineamientos básicos."},
-    {"score": 4, "label": u"Avanzado",
-     "description": u"Cumplimiento constante, con alto nivel de compromiso e integración."},
-    {"score": 5, "label": u"Excelente / Modélico",
-     "description": u"Aplicación continua, sobresaliente, autónoma e innovadora."},
+    {"score": 0, "label": u"No iniciado / Sin evidencia",
+     "description": u"No se ejecuta la práctica ni existe evidencia de aplicación en el aula."},
+    {"score": 1, "label": u"Arranque Incipiente",
+     "description": u"Se realiza de forma muy esporádica o aislada; requiere orientación inicial constante."},
+    {"score": 2, "label": u"En Desarrollo Temprano",
+     "description": u"Se observa la intención y activación básica, pero con baja frecuencia."},
+    {"score": 3, "label": u"En Proceso de Consolidación",
+     "description": u"Se aplica con cierta regularidad, aunque requiere mayor constancia y seguimiento."},
+    {"score": 4, "label": u"Aceptable / Básico",
+     "description": u"Se cumple regularmente siguiendo los lineamientos fundamentales de la herramienta."},
+    {"score": 5, "label": u"Funcional / Sólido",
+     "description": u"Cumplimiento constante, estructurado y adecuado de lo esperado en el estándar."},
+    {"score": 6, "label": u"Desempeño Avanzado",
+     "description": u"Alto nivel de compromiso, integración fluida y resultados evidentes en el grupo."},
+    {"score": 7, "label": u"Excelente / Óptimo",
+     "description": u"Aplicación continua, sobresaliente, totalmente autónoma e innovadora."},
 ]
 
-# Ordenados de mayor a menor; minTotal en puntos sobre 75 (equivale a 80/60/40 %).
+# Ordenados de mayor a menor; minTotal en puntos sobre 105 (equivale a 80/60/40 %).
 LEVELS = [
-    {"code": "excellence", "label": u"Docente HQS con Excelencia", "minTotal": 60, "minPercentage": 80},
-    {"code": "commitment", "label": u"Docente HQS con Compromiso", "minTotal": 45, "minPercentage": 60},
-    {"code": "progress", "label": u"Docente HQS en Avance", "minTotal": 30, "minPercentage": 40},
-    {"code": "beginning", "label": u"Docente HQS en Inicio", "minTotal": 0, "minPercentage": 0},
+    {"code": "excellence", "label": u"Docente HQS con Excelencia", "minTotal": 84, "minPercentage": 80},
+    {"code": "commitment", "label": u"Docente HQS con Compromiso", "minTotal": 63, "minPercentage": 60},
+    {"code": "progress", "label": u"Docente HQS en Avance", "minTotal": 42, "minPercentage": 40},
+    {"code": "beginning", "label": u"Docente en Fase Inicial (Requiere acompañamiento prioritario)", "minTotal": 0, "minPercentage": 0},
 ]
 LEVEL_CODES = [level["code"] for level in LEVELS]
 
@@ -121,7 +125,7 @@ def get_instrument():
 
 
 def get_level(total):
-    """Nivel según el puntaje total (0-75). None si no hay total."""
+    """Nivel según el puntaje total (0-105). None si no hay total."""
     if total is None:
         return None
     for level in LEVELS:
@@ -139,7 +143,7 @@ def get_level_label(code):
 
 def compute_results(teacherScores, coordinatorScores):
     """
-    Promedio por ítem, total (sobre 75), porcentaje y nivel.
+    Promedio por ítem, total (sobre 105), porcentaje y nivel.
     El promedio de cada ítem es la parte entera de (docente + coordinador) / 2,
     por lo que el total también es entero. Devuelve None si falta algún lado.
     """

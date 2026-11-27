@@ -57,10 +57,10 @@ from app.models.school_year_model import SchoolYear
 from app.models.teacher_coevaluation_model import TeacherCoevaluation
 from app.services.teacher_coevaluation_service import TeacherCoevaluationService
 
-LOW, HIGH = 1, 5
-# Excelencia = más de 80 %: total >= 61 de 75 (el promedio por ítem es (t + c) // 2).
+LOW, HIGH = 1, 7
+# Excelencia = más de 80 %: total >= 85 de 105 (el promedio por ítem es (t + c) // 2).
 EXCELLENCE_MIN_TOTAL = int(MAX_TOTAL * 0.8) + 1
-BEGINNING_MAX_TOTAL = 29  # "En inicio": < 30 pts
+BEGINNING_MAX_TOTAL = 41  # "Fase inicial": < 42 pts
 
 
 def normalize(name):
@@ -76,9 +76,12 @@ def random_pair(profile):
     """(puntajes docente, puntajes coordinador) según el perfil: excellence | beginning | other."""
     while True:
         if profile == "excellence":
-            # 4 o 5 en todos los ítems: cada promedio es >= 4 y el total >= 60.
-            teacher = [random.choice((4, 5)) for _ in range(N_ITEMS)]
-            coordinator = [random.choice((4, 5)) for _ in range(N_ITEMS)]
+            # 6 o 7 en todos los ítems: cada promedio es >= 6 y el total >= 90.
+            teacher = [random.choice((6, 7)) for _ in range(N_ITEMS)]
+            coordinator = [random.choice((6, 7)) for _ in range(N_ITEMS)]
+        elif profile == "beginning":
+            teacher = [random.randint(0, 3) for _ in range(N_ITEMS)]
+            coordinator = [random.randint(0, 3) for _ in range(N_ITEMS)]
         else:
             teacher = [random.randint(LOW, HIGH) for _ in range(N_ITEMS)]
             coordinator = [random.randint(LOW, HIGH) for _ in range(N_ITEMS)]

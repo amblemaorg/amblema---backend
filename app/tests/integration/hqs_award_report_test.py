@@ -78,10 +78,11 @@ class HqsAwardReportTest(unittest.TestCase):
         return evaluator
 
     def addCoevaluation(self, peca, teacherId, score, complete=True):
+        scores = score if isinstance(score, list) else [score] * 15
         coevaluation = TeacherCoevaluation(
             pecaId=str(peca.id), schoolYearId=str(self.schoolYear.id),
             schoolId=str(self.school.id), teacherId=teacherId,
-            teacherScores=[score] * 15, coordinatorScores=[score] * 15,
+            teacherScores=scores, coordinatorScores=scores,
             teacherSubmittedAt=datetime.utcnow(),
             coordinatorSubmittedAt=datetime.utcnow() if complete else None)
         coevaluation.save()
@@ -101,9 +102,9 @@ class HqsAwardReportTest(unittest.TestCase):
     def test_report_caps_and_awards_gold(self):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 130.0, "multiplicationsPerMinIndex": 90.0,
                                     "operationsPerMinIndex": 80.0})
-        self.addEvaluator(peca, 35)          # IAA 100 %
-        self.addCoevaluation(peca, "t1", 5)  # 100 %
-        self.addCoevaluation(peca, "t2", 4)  # 80 %
+        self.addEvaluator(peca, 35)                        # IAA 100 %
+        self.addCoevaluation(peca, "t1", 7)                # 105/105 = 100 %
+        self.addCoevaluation(peca, "t2", [6] * 9 + [5] * 6)  # 84/105 = 80 %
         status, data = self.get()
         self.assertEqual(status, 200)
         s = data["schools"][0]
@@ -126,8 +127,8 @@ class HqsAwardReportTest(unittest.TestCase):
         self.addEvaluator(peca, 35, lapse="2")        # otro lapso
         self.addEvaluator(peca, 35, evaluated=False)  # sin evaluar
         self.addEvaluator(peca, 35, deleted=True)     # borrado
-        self.addEvaluator(peca, None)                 # sin índice
-        self.addCoevaluation(peca, "t1", 2)           # 40 %
+        self.addEvaluator(peca, None)                          # sin índice
+        self.addCoevaluation(peca, "t1", [3] * 12 + [2] * 3)   # 42/105 = 40 %
         s = self.get()[1]["schools"][0]
         self.assertEqual(s["iaaRaw"], 14.0)
         self.assertEqual(s["components"]["iaa"], 40.0)
@@ -137,8 +138,8 @@ class HqsAwardReportTest(unittest.TestCase):
     def test_high_integral_low_teacher_is_silver(self):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 100.0, "multiplicationsPerMinIndex": 100.0,
                                     "operationsPerMinIndex": 100.0})
-        self.addEvaluator(peca, 35)          # IAA 100 %
-        self.addCoevaluation(peca, "t1", 3)  # 60 %
+        self.addEvaluator(peca, 35)                          # IAA 100 %
+        self.addCoevaluation(peca, "t1", [5] * 3 + [4] * 12)  # 63/105 = 60 %
         s = self.get()[1]["schools"][0]
         self.assertEqual(s["integralIndex"], 100.0)
         self.assertEqual(s["teacherIndex"], 60.0)
@@ -148,8 +149,8 @@ class HqsAwardReportTest(unittest.TestCase):
     def test_one_index_below_40_has_no_award(self):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 100.0, "multiplicationsPerMinIndex": 100.0,
                                     "operationsPerMinIndex": 100.0})
-        self.addEvaluator(peca, 35)          # IAA 100 %
-        self.addCoevaluation(peca, "t1", 1)  # 20 %
+        self.addEvaluator(peca, 35)                          # IAA 100 %
+        self.addCoevaluation(peca, "t1", [2] * 6 + [1] * 9)  # 21/105 = 20 %
         s = self.get()[1]["schools"][0]
         self.assertEqual(s["finalIndex"], 60.0)
         self.assertEqual(s["status"], "none")
@@ -182,8 +183,8 @@ class HqsAwardReportTest(unittest.TestCase):
     def test_low_score_has_no_award(self):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 20.0, "multiplicationsPerMinIndex": 20.0,
                                     "operationsPerMinIndex": 20.0})
-        self.addEvaluator(peca, 7)           # 20 %
-        self.addCoevaluation(peca, "t1", 1)  # 20 %
+        self.addEvaluator(peca, 7)                           # 20 %
+        self.addCoevaluation(peca, "t1", [2] * 6 + [1] * 9)  # 21/105 = 20 %
         s = self.get()[1]["schools"][0]
         self.assertEqual(s["finalIndex"], 20.0)
         self.assertEqual(s["status"], "none")

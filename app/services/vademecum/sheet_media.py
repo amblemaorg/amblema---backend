@@ -103,8 +103,21 @@ def page_image(page, width):
 
 def save_webp(image, target, quality):
     temporary = target + ".tmp"
-    image.save(temporary, "WEBP", quality=quality, method=4)
+    image.save(temporary, "WEBP", quality=quality, method=2)
     os.replace(temporary, target)
+
+
+def resize_to_width(image, width):
+    """Redimensiona manteniendo la relación de aspecto con filtro LANCZOS."""
+    if image.width == width:
+        return image
+    height = max(1, int(round(image.height * (float(width) / image.width))))
+    return image.resize((width, height), Image.LANCZOS)
+
+
+def _save_preview_from_image(sharp, target):
+    blurred = sharp.filter(ImageFilter.GaussianBlur(PREVIEW_BLUR_RADIUS))
+    save_webp(Image.composite(blurred, sharp, blur_mask(sharp.size)), target, PREVIEW_QUALITY)
 
 
 def render_thumbnail(page, target):
@@ -124,9 +137,7 @@ def blur_mask(size):
 
 
 def render_preview(page, target):
-    sharp = page_image(page, PREVIEW_WIDTH)
-    blurred = sharp.filter(ImageFilter.GaussianBlur(PREVIEW_BLUR_RADIUS))
-    save_webp(Image.composite(blurred, sharp, blur_mask(sharp.size)), target, PREVIEW_QUALITY)
+    _save_preview_from_image(page_image(page, PREVIEW_WIDTH), target)
 
 
 def render_pdf_page(pdf_file_path, page_number, target):
@@ -181,31 +192,38 @@ def build_sheet_files(source, sheetId, pages=None):
     work = os.path.join(target, "tmp-{}".format(uuid.uuid4().hex))
     os.makedirs(work)
     try:
-        raw = os.path.join(work, "raw.pdf")
-        original = fitz.open(source)
-        try:
-            if pages is None:
-                original.save(raw, garbage=3, deflate=True)
-            else:
+        if pages is None:
+            # El backoffice ya envía la ficha separada: evitar re-guardar con garbage=3
+            # antes de Ghostscript ahorra E/S y CPU sin cambiar el PDF final.
+            compress_source = source
+        else:
+            raw = os.path.join(work, "raw.pdf")
+            original = fitz.open(source)
+            try:
                 extracted = fitz.open()
                 extracted.insert_pdf(original, from_page=pages[0], to_page=pages[-1])
                 extracted.save(raw, garbage=3, deflate=True)
                 extracted.close()
-        finally:
-            original.close()
+            finally:
+                original.close()
+            compress_source = raw
 
-        compress_pdf(raw, os.path.join(work, "sheet.pdf"))
+        compress_pdf(compress_source, os.path.join(work, "sheet.pdf"))
         document = fitz.open(os.path.join(work, "sheet.pdf"))
         try:
-            first = document.load_page(0)
-            render_thumbnail(first, os.path.join(work, "thumbnail.webp"))
-            render_preview(first, os.path.join(work, "preview.webp"))
             searchText = extract_text(document)
             pageCount = document.page_count
             # Caras nítidas 1..N (1200 px) que el visor pide con token; ninguna se renderiza
-            # al abrir la ficha.
-            pageNames = []
-            for number in range(1, pageCount + 1):
+            # al abrir la ficha. La página 1 se rasteriza una sola vez a 1200 px y se
+            # redimensiona en memoria para miniatura (480 px) y vista previa (900 px).
+            firstImage = page_image(document.load_page(0), PAGE_VIEW_WIDTH)
+            save_webp(firstImage, os.path.join(work, "page-1.webp"), PAGE_VIEW_QUALITY)
+            save_webp(resize_to_width(firstImage, THUMBNAIL_WIDTH),
+                      os.path.join(work, "thumbnail.webp"), THUMBNAIL_QUALITY)
+            _save_preview_from_image(resize_to_width(firstImage, PREVIEW_WIDTH),
+                                     os.path.join(work, "preview.webp"))
+            pageNames = ["page-1.webp"]
+            for number in range(2, pageCount + 1):
                 name = "page-{}.webp".format(number)
                 image = page_image(document.load_page(number - 1), PAGE_VIEW_WIDTH)
                 save_webp(image, os.path.join(work, name), PAGE_VIEW_QUALITY)

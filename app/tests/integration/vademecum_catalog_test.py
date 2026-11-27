@@ -264,6 +264,23 @@ class VademecumCatalogTest(unittest.TestCase):
         self.assertEqual(sorted(self.codes(self.get("/vademecum/sheets", q="oculto"))),
                          ["HT-1", "HT-2", "HT-3"])
 
+    def test_partial_text_search_matches_prefixes_and_ignores_accents(self):
+        self.sheet(self.hora, 1, title=u"Medidas de peso", description=u"Uso de la balanza en el aula")
+        self.sheet(self.hora, 2, title=u"La balanza mágica", description=u"Equilibrio y equivalencias")
+        self.sheet(self.hora, 3, title=u"Geografía de Venezuela", description=u"Regiones naturales")
+        self.sheet(self.hora, 4, title=u"Sumas", description=u"Operaciones básicas")
+
+        # Prefijo parcial ('balan' -> 'balanza') prioriza título sobre descripción en relevance
+        res = self.get("/vademecum/sheets", q="balan", sort="relevance")
+        self.assertEqual(self.codes(res), ["HT-2", "HT-1"])
+        # Insensible a tildes en prefijo parcial ('geogra' -> 'Geografía')
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", q="geogra")), ["HT-3"])
+        # También funciona combinado con filtros agregados (minRating / sort=rating)
+        self.sheet(self.ingenio, 5, title=u"Balanza numérica", description=u"Reto",
+                   ratingSum=10, ratingCount=2)
+        resAgg = self.get("/vademecum/sheets", q="balan", minRating="rated", sort="relevance")
+        self.assertEqual(self.codes(resAgg), ["IM-5"])
+
     def test_search_by_code(self):
         for n in (1, 2, 10, 12):
             self.sheet(self.ingenio, n)

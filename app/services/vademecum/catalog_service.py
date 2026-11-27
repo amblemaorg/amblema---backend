@@ -11,6 +11,7 @@ import calendar
 import math
 import os
 import re
+import unicodedata
 from datetime import datetime, timedelta
 
 from bson import ObjectId
@@ -89,6 +90,53 @@ def code_query(q):
         # "HT41" también es "HT-41": el guion es opcional al buscar
         patterns.append("^" + re.escape(prefix + "-" + rest))
     return {"$or": [{"code": {"$regex": pattern, "$options": "i"}} for pattern in patterns]}
+
+
+ACCENT_CLASSES = {
+    u"a": u"[aáàäâ]",
+    u"e": u"[eéèëê]",
+    u"i": u"[iíìïî]",
+    u"o": u"[oóòöô]",
+    u"u": u"[uúùüû]",
+    u"n": u"[nñ]",
+}
+
+
+def accent_insensitive_pattern(token):
+    """Regex que ignora tildes/diéresis y mayúsculas (p. ej. 'balan' matchea 'Balanza')."""
+    if isinstance(token, bytes):
+        token = token.decode("utf-8", "ignore")
+    normalized = unicodedata.normalize("NFD", token).lower()
+    parts = []
+    for ch in normalized:
+        if unicodedata.category(ch) == "Mn":
+            continue
+        parts.append(ACCENT_CLASSES.get(ch, re.escape(ch)))
+    return u"".join(parts)
+
+
+def partial_text_query(q):
+    """Filtro Mongo parcial sobre título, descripción y código cuando `$text` no halla raíz."""
+    tokens = [t for t in re.split(r"\s+", (q or u"").strip()) if t]
+    clauses = []
+    for token in tokens:
+        pattern = accent_insensitive_pattern(token)
+        if not pattern:
+            continue
+        regex = {"$regex": pattern, "$options": "i"}
+        clauses.append({"$or": [{"title": regex}, {"description": regex}, {"code": regex}]})
+    if not clauses:
+        return None
+    return clauses[0] if len(clauses) == 1 else {"$and": clauses}
+
+
+def title_match_regex(q):
+    """Regex del primer token para priorizar coincidencias en título durante el fallback parcial."""
+    tokens = [t for t in re.split(r"\s+", (q or u"").strip()) if t]
+    if not tokens:
+        return None
+    pattern = accent_insensitive_pattern(tokens[0])
+    return re.compile(pattern, re.IGNORECASE) if pattern else None
 
 
 class CatalogService(object):
@@ -372,18 +420,26 @@ class CatalogService(object):
             records, total = self._aggregated_page(
                 query, typeIds, wantedGrades, areaObjectIds, byCode, q, sort, onlyNew,
                 onlyPopular, onlyCommented, minRating, teacherGrades, page, pageSize)
+            if total == 0 and q and not byCode:
+                partial = partial_text_query(q)
+                if partial:
+                    records, total = self._aggregated_page(
+                        query, typeIds, wantedGrades, areaObjectIds, partial, None, sort,
+                        onlyNew, onlyPopular, onlyCommented, minRating, teacherGrades,
+                        page, pageSize, isPartialFallback=True)
         else:
-            sheets = VademecumSheet.objects(**query).only(*SUMMARY_FIELDS)
+            baseSheets = VademecumSheet.objects(**query).only(*SUMMARY_FIELDS)
             if onlyNew:
-                sheets = sheets.filter(
+                baseSheets = baseSheets.filter(
                     publishedAt__gte=datetime.utcnow() - timedelta(days=NEW_SHEET_WINDOW_DAYS))
             if onlyPopular:
-                sheets = sheets.filter(downloadCount__gt=0)
+                baseSheets = baseSheets.filter(downloadCount__gt=0)
             if teacherGrades:
                 skip = (page - 1) * pageSize
                 records, total = self._prioritized_page(
-                    sheets, SORTS[sort], teacherGrades, skip, pageSize)
+                    baseSheets, SORTS[sort], teacherGrades, skip, pageSize)
             else:
+                sheets = baseSheets
                 if byCode:
                     sheets = sheets.filter(__raw__=byCode)
                 elif q:
@@ -396,6 +452,23 @@ class CatalogService(object):
                     sheets = sheets.order_by(*SORTS[sort])
                 total = sheets.count()
                 records = list(sheets.skip((page - 1) * pageSize).limit(pageSize))
+                if total == 0 and q and not byCode:
+                    partial = partial_text_query(q)
+                    if partial:
+                        fallback = baseSheets.filter(__raw__=partial)
+                        total = fallback.count()
+                        if total > 0:
+                            if sort == "relevance":
+                                titleRx = title_match_regex(q)
+                                matched = list(fallback.order_by(*SORTS["newest"]))
+                                if titleRx:
+                                    matched.sort(key=lambda s: 0 if titleRx.search(s.title or u"")
+                                                 else 1)
+                                start = (page - 1) * pageSize
+                                records = matched[start:start + pageSize]
+                            else:
+                                records = list(fallback.order_by(*SORTS[sort])
+                                               .skip((page - 1) * pageSize).limit(pageSize))
         records = list(records)
         types, areas = self._types_and_areas()
         commentCounts = self._approved_comment_counts([s.id for s in records])
@@ -406,7 +479,8 @@ class CatalogService(object):
         }, 200
 
     def _aggregated_page(self, query, typeIds, grades, areaIds, byCode, q, sort, onlyNew,
-                         onlyPopular, onlyCommented, minRating, teacherGrades, page, pageSize):
+                         onlyPopular, onlyCommented, minRating, teacherGrades, page, pageSize,
+                         isPartialFallback=False):
         """Pipeline único para `sort=rating|commented` y los filtros calculados.
 
         `$text`, si hay búsqueda, va siempre primero. El total sale de un `$facet` sobre la
@@ -477,9 +551,9 @@ class CatalogService(object):
             order += [("ratingAverage", -1), ("ratingCount", -1), ("publishedAt", -1)]
         elif sort == "commented":
             order += [("commentCount", -1), ("ratingAverage", -1), ("publishedAt", -1)]
-        elif sort == "number" or (sort == "relevance" and byCode):
+        elif sort == "number" or (sort == "relevance" and byCode and not isPartialFallback):
             order += [("sheetType", 1), ("number", 1)]
-        elif sort == "relevance":
+        elif sort == "relevance" and not isPartialFallback:
             order += [("_text_score", {"$meta": "textScore"})]
         elif sort == "popular":
             order += [("downloadCount", -1), ("publishedAt", -1)]

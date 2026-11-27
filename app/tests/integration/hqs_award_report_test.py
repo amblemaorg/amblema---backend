@@ -12,6 +12,7 @@ from app.tests.fixtures import (
     seed_base, create_location, create_coordinator, create_sponsor, create_school,
     create_school_year)
 from app.helpers.handler_seeds import create_entities
+from app.models.coordinator_evaluation_model import CoordinatorEvaluation
 from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
 from app.models.peca_project_model import PecaProject
 from app.models.project_model import Project
@@ -45,8 +46,8 @@ class HqsAwardReportTest(unittest.TestCase):
 
     # ------------------------------------------------------------- helpers
 
-    def newPeca(self, lapse3=None, deleted=False, yearbookDownloadEnabled=False,
-                addressState=None):
+    def newPeca(self, lapse3=None, deleted=False, yearbookDownloadEnabled=True,
+                addressState=None, sections=None):
         peca = PecaProject(
             yearbookDownloadEnabled=yearbookDownloadEnabled,
             schoolYear=self.schoolYear,
@@ -63,6 +64,7 @@ class HqsAwardReportTest(unittest.TestCase):
                 "name": self.school.name,
                 "code": self.school.code,
                 "diagnostics": {"lapse3": lapse3 or {}},
+                "sections": sections or [],
                 "addressState": addressState,
             },
             isDeleted=deleted)
@@ -88,6 +90,15 @@ class HqsAwardReportTest(unittest.TestCase):
         coevaluation.save()
         return coevaluation
 
+    def addCoordinatorEvaluation(self, peca, options=None):
+        evaluation = CoordinatorEvaluation(
+            pecaId=str(peca.id), schoolYearId=str(self.schoolYear.id),
+            schoolId=str(self.school.id),
+            answers=options or ["never", "never", "never", "never"],
+            submittedAt=datetime.utcnow())
+        evaluation.save()
+        return evaluation
+
     def get(self, schoolId=None, stateId=None):
         url = '/statistics/hqsawardsreport/{}'.format(self.schoolYear.id)
         if schoolId:
@@ -103,8 +114,9 @@ class HqsAwardReportTest(unittest.TestCase):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 130.0, "multiplicationsPerMinIndex": 90.0,
                                     "operationsPerMinIndex": 80.0})
         self.addEvaluator(peca, 35)                        # IAA 100 %
-        self.addCoevaluation(peca, "t1", 7)                # 105/105 = 100 %
-        self.addCoevaluation(peca, "t2", [6] * 9 + [5] * 6)  # 84/105 = 80 %
+        self.addCoevaluation(peca, "t1", 7)                # 100 %
+        self.addCoevaluation(peca, "t2", [6] * 9 + [5] * 6)  # 80 % -> promedio 90 %
+        self.addCoordinatorEvaluation(peca, ["never"] * 4)  # 100 %
         status, data = self.get()
         self.assertEqual(status, 200)
         s = data["schools"][0]
@@ -112,12 +124,39 @@ class HqsAwardReportTest(unittest.TestCase):
                                            "multiplicationsPerMin": 90.0, "operationsPerMin": 80.0})
         self.assertEqual(s["integralIndex"], 92.5)
         self.assertEqual(s["teacherIndex"], 90.0)
+        self.assertEqual(s["coordinatorIndex"], 100.0)
         self.assertEqual(s["nCompletedCoevaluations"], 2)
-        self.assertEqual(s["finalIndex"], 91.25)
+        # 92.5 * 0.4 + 90.0 * 0.4 + 100.0 * 0.2 = 37 + 36 + 20 = 93.0
+        self.assertEqual(s["finalIndex"], 93.0)
         self.assertEqual(s["status"], "awarded")
         self.assertEqual(s["award"], "gold")
         self.assertEqual(s["awardLabel"], u"Escuela HQS – Nivel ORO")
         self.assertEqual(data["counts"]["gold"], 1)
+
+    def test_grade_adjustment_under_40_from_sections(self):
+        sections = [
+            {"grade": "1", "name": "A", "diagnostics": {"lapse3": {
+                "wordsPerMinIndex": 20.0, "wordsPerMinCount": 10,
+                "multiplicationsPerMinIndex": 80.0, "multiplicationsPerMinCount": 10,
+                "operationsPerMinIndex": 80.0, "operationsPerMinCount": 10,
+            }}},
+            {"grade": "2", "name": "A", "diagnostics": {"lapse3": {
+                "wordsPerMinIndex": 80.0, "wordsPerMinCount": 10,
+                "multiplicationsPerMinIndex": 80.0, "multiplicationsPerMinCount": 10,
+                "operationsPerMinIndex": 80.0, "operationsPerMinCount": 10,
+            }}},
+        ]
+        peca = self.newPeca(sections=sections)
+        self.addEvaluator(peca, 35)  # IAA 100
+        self.addCoevaluation(peca, "t1", [6] * 9 + [5] * 6)  # 80 %
+        self.addCoordinatorEvaluation(peca, ["rarely", "rarely", "frequently", "never"])  # 66.67 %
+        s = self.get()[1]["schools"][0]
+        # PPM: (20*10*0.5 + 80*10*1) / (10*0.5 + 10*1) = 900 / 15 = 60.0 (sin ajuste sería 50.0)
+        self.assertEqual(s["components"]["wordsPerMin"], 60.0)
+        self.assertEqual(s["integralIndex"], 80.0)  # (100+60+80+80)/4
+        # 80*0.4 + 80*0.4 + 66.67*0.2 = 32 + 32 + 13.334 = 77.33 -> PLATA
+        self.assertEqual(s["finalIndex"], 77.33)
+        self.assertEqual(s["award"], "silver")
 
     def test_iaa_uses_only_valid_lapse3_evaluators(self):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 50.0, "multiplicationsPerMinIndex": 50.0,
@@ -127,39 +166,48 @@ class HqsAwardReportTest(unittest.TestCase):
         self.addEvaluator(peca, 35, lapse="2")        # otro lapso
         self.addEvaluator(peca, 35, evaluated=False)  # sin evaluar
         self.addEvaluator(peca, 35, deleted=True)     # borrado
-        self.addEvaluator(peca, None)                          # sin índice
-        self.addCoevaluation(peca, "t1", [3] * 12 + [2] * 3)   # 42/105 = 40 %
+        self.addEvaluator(peca, None)                 # sin índice
+        self.addCoevaluation(peca, "t1", [3] * 12 + [2] * 3)   # 40 %
+        self.addCoordinatorEvaluation(peca, ["rarely", "rarely", "rarely", "always"])  # 50 %
         s = self.get()[1]["schools"][0]
         self.assertEqual(s["iaaRaw"], 14.0)
         self.assertEqual(s["components"]["iaa"], 40.0)
-        self.assertEqual(s["finalIndex"], 43.75)  # integral (40+50+50+50)/4 = 47.5; docentes 40
+        # integral 47.5*0.4 + docentes 40*0.4 + coord 50*0.2 = 19 + 16 + 10 = 45.0
+        self.assertEqual(s["finalIndex"], 45.0)
         self.assertEqual(s["award"], "bronze")
 
-    def test_high_integral_low_teacher_is_silver(self):
-        peca = self.newPeca(lapse3={"wordsPerMinIndex": 100.0, "multiplicationsPerMinIndex": 100.0,
-                                    "operationsPerMinIndex": 100.0})
-        self.addEvaluator(peca, 35)                          # IAA 100 %
-        self.addCoevaluation(peca, "t1", [5] * 3 + [4] * 12)  # 63/105 = 60 %
+    def test_missing_yearbook_blocks_award(self):
+        peca = self.newPeca(
+            lapse3={"wordsPerMinIndex": 100.0, "multiplicationsPerMinIndex": 100.0,
+                    "operationsPerMinIndex": 100.0},
+            yearbookDownloadEnabled=False)
+        self.addEvaluator(peca, 35)
+        self.addCoevaluation(peca, "t1", 7)
+        self.addCoordinatorEvaluation(peca, ["never"] * 4)
         s = self.get()[1]["schools"][0]
-        self.assertEqual(s["integralIndex"], 100.0)
-        self.assertEqual(s["teacherIndex"], 60.0)
-        self.assertEqual(s["finalIndex"], 80.0)  # antes habría sido ORO por promedio
-        self.assertEqual(s["award"], "silver")
-
-    def test_one_index_below_40_has_no_award(self):
-        peca = self.newPeca(lapse3={"wordsPerMinIndex": 100.0, "multiplicationsPerMinIndex": 100.0,
-                                    "operationsPerMinIndex": 100.0})
-        self.addEvaluator(peca, 35)                          # IAA 100 %
-        self.addCoevaluation(peca, "t1", [2] * 6 + [1] * 9)  # 21/105 = 20 %
-        s = self.get()[1]["schools"][0]
-        self.assertEqual(s["finalIndex"], 60.0)
-        self.assertEqual(s["status"], "none")
+        self.assertEqual(s["finalIndex"], 100.0)
+        self.assertEqual(s["status"], "incomplete")
+        self.assertEqual(s["missing"], ["yearbook"])
+        self.assertEqual(s["missingLabels"], [u"AmbLeMario"])
         self.assertIsNone(s["award"])
+
+    def test_missing_coordinator_evaluation_is_incomplete(self):
+        peca = self.newPeca(lapse3={"wordsPerMinIndex": 90.0, "multiplicationsPerMinIndex": 90.0,
+                                    "operationsPerMinIndex": 90.0})
+        self.addEvaluator(peca, 35)
+        self.addCoevaluation(peca, "t1", 7)
+        s = self.get()[1]["schools"][0]
+        self.assertIsNone(s["coordinatorIndex"])
+        self.assertIsNone(s["finalIndex"])
+        self.assertEqual(s["missing"], ["coordinatorIndex"])
+        self.assertEqual(s["missingLabels"], [u"Valoración Coord."])
+        self.assertEqual(s["status"], "incomplete")
 
     def test_missing_lapse3_is_incomplete(self):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 90.0})
         self.addEvaluator(peca, 30)
-        self.addCoevaluation(peca, "t1", 5)
+        self.addCoevaluation(peca, "t1", 7)
+        self.addCoordinatorEvaluation(peca)
         s = self.get()[1]["schools"][0]
         self.assertIsNone(s["integralIndex"])
         self.assertIsNone(s["finalIndex"])
@@ -173,7 +221,8 @@ class HqsAwardReportTest(unittest.TestCase):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 90.0, "multiplicationsPerMinIndex": 90.0,
                                     "operationsPerMinIndex": 90.0})
         self.addEvaluator(peca, 35)
-        self.addCoevaluation(peca, "t1", 5, complete=False)
+        self.addCoevaluation(peca, "t1", 7, complete=False)
+        self.addCoordinatorEvaluation(peca)
         s = self.get()[1]["schools"][0]
         self.assertIsNone(s["teacherIndex"])
         self.assertEqual(s["nCompletedCoevaluations"], 0)
@@ -184,17 +233,19 @@ class HqsAwardReportTest(unittest.TestCase):
         peca = self.newPeca(lapse3={"wordsPerMinIndex": 20.0, "multiplicationsPerMinIndex": 20.0,
                                     "operationsPerMinIndex": 20.0})
         self.addEvaluator(peca, 7)                           # 20 %
-        self.addCoevaluation(peca, "t1", [2] * 6 + [1] * 9)  # 21/105 = 20 %
+        self.addCoevaluation(peca, "t1", [2] * 6 + [1] * 9)  # 20 %
+        self.addCoordinatorEvaluation(peca, ["always"] * 4)  # 0 %
         s = self.get()[1]["schools"][0]
-        self.assertEqual(s["finalIndex"], 20.0)
+        # 20*0.4 + 20*0.4 + 0*0.2 = 16.0
+        self.assertEqual(s["finalIndex"], 16.0)
         self.assertEqual(s["status"], "none")
         self.assertEqual(s["awardLabel"], u"Sin premio")
-        self.assertIs(s["yearbookDownloadEnabled"], False)
+        self.assertIs(s["yearbookDownloadEnabled"], True)
 
     def test_row_reports_yearbook_download_flag(self):
-        self.newPeca(yearbookDownloadEnabled=True)
+        self.newPeca(yearbookDownloadEnabled=False)
         s = self.get()[1]["schools"][0]
-        self.assertIs(s["yearbookDownloadEnabled"], True)
+        self.assertIs(s["yearbookDownloadEnabled"], False)
 
     def test_errors_deleted_peca_and_school_filter(self):
         self.newPeca(deleted=True)
@@ -205,7 +256,6 @@ class HqsAwardReportTest(unittest.TestCase):
         self.newPeca()
         self.assertEqual(len(self.get(schoolId=str(self.school.id))[1]["schools"]), 1)
         self.assertEqual(self.get(schoolId="0" * 24)[1]["schools"], [])
-
 
     def test_state_field_and_state_filter(self):
         self.newPeca(addressState=self.state)
@@ -228,8 +278,7 @@ class HqsAwardReportTest(unittest.TestCase):
         self.assertEqual(data["message"], "State not found")
 
     def test_peca_without_state_has_null_state(self):
-        self.newPeca()
-        self.assertIsNone(self.get()[1]["schools"][0]["state"])
+        self.assertIsNone(self.get()[1]["schools"][0]["state"] if self.newPeca() else None)
 
 
 if __name__ == '__main__':

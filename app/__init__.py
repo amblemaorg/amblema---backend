@@ -168,6 +168,9 @@ from app.controllers.teacher_coevaluation_controller import (
     TeacherCoevaluationPublicController,
     TeacherCoevaluationReportController
 )
+from app.controllers.coordinator_evaluation_controller import (
+    CoordinatorEvaluationController
+)
 from app.controllers.hqs_award_controller import HqsAwardReportController
 from app.controllers.olympics_history_controller import OlympicsHistoryController
 from app.controllers.peca_special_lapse_activity_controller import (
@@ -459,6 +462,8 @@ def create_app(config_instance):
                      '/pecaprojects/coevaluations/<string:pecaId>/<string:teacherId>/send')
     api.add_resource(TeacherCoevaluationPublicController,
                      '/coevaluations/public/<string:token>')
+    api.add_resource(CoordinatorEvaluationController,
+                     '/pecaprojects/<string:pecaId>/coordinator-evaluation')
     api.add_resource(ActiveSponsorsGraphicController,
                      '/statistics/activesponsorsgraphic/<string:startPeriodId>/<string:endPeriodId>')
     api.add_resource(InactiveSponsorsGraphicController,

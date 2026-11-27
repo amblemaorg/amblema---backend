@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 # app/services/hqs_award_service.py
 """
-Reporte de premios Escuela HQS por año escolar.
+Reporte de premios Escuela HQS por año escolar (Metodología 26-11).
 
 Por cada PECA del año combina:
-- Académicos: índices del lapso 3 del PECA (school.diagnostics.lapse3).
+- Académicos: índices del lapso 3 por grado (school.sections.diagnostics.lapse3)
+  con ajuste < 40 (peso 0.5), o fallback a school.diagnostics.lapse3 si no hay desglose.
 - IAA: promedio de los evaluadores válidos del lapso 3 del diagnóstico ambiental.
 - Docentes: índice de las coevaluaciones completas (school_index).
+- Coordinador: valoración cerrada del coordinador (CoordinatorEvaluation.totalScore).
+- AmbLeMario: requisito obligatorio (yearbookDownloadEnabled).
 Las reglas de cálculo viven en app.helpers.hqs_award_helper.
 """
 from __future__ import division
@@ -18,17 +21,19 @@ from app.models.school_year_model import SchoolYear
 from app.models.state_model import State
 from app.models.environmental_diagnostic_model import EnvironmentalDiagnosticEvaluator
 from app.models.teacher_coevaluation_model import TeacherCoevaluation
+from app.models.coordinator_evaluation_model import CoordinatorEvaluation
 from app.helpers.coevaluation_helper import school_index
 from app.helpers.hqs_award_helper import (
     AWARD_LEVELS, COMPONENT_LABELS, NO_AWARD_LABEL, INCOMPLETE_LABEL,
-    cap_index, iaa_percentage, integral_index, final_index, get_award)
+    cap_index, iaa_percentage, sections_area_index, integral_index,
+    final_index, get_award)
 
 
-# Componente del índice integral -> campo del resumen de diagnósticos del lapso 3.
+# Componente del índice integral -> (campo índice, campo participantes) del lapso 3.
 ACADEMIC_FIELDS = {
-    "wordsPerMin": "wordsPerMinIndex",
-    "multiplicationsPerMin": "multiplicationsPerMinIndex",
-    "operationsPerMin": "operationsPerMinIndex",
+    "wordsPerMin": ("wordsPerMinIndex", "wordsPerMinCount"),
+    "multiplicationsPerMin": ("multiplicationsPerMinIndex", "multiplicationsPerMinCount"),
+    "operationsPerMin": ("operationsPerMinIndex", "operationsPerMinCount"),
 }
 STATUS_AWARDED = "awarded"
 STATUS_NONE = "none"
@@ -51,24 +56,35 @@ def average_iaa(indexes):
 
 def build_school_row(schoolId, name, pecaId, coordinator, lapse3,
                      iaaRaw, percentages, yearbookDownloadEnabled=False,
-                     state=None):
+                     state=None, sections=None, coordinatorIndex=None):
     """
     Arma la fila de una escuela del reporte.
     lapse3: resumen de diagnósticos del lapso 3 como dict crudo (o None).
+    sections: lista de dicts crudos de secciones (sin students) para ajuste < 40 por grado.
     percentages: porcentajes de las coevaluaciones completas.
-    yearbookDownloadEnabled: si el anuario del PECA está habilitado para descarga.
+    coordinatorIndex: puntaje total (0-100) de la valoración del coordinador (o None).
+    yearbookDownloadEnabled: requisito obligatorio (sine qua non) para optar a premio.
     """
     components = {"iaa": iaa_percentage(iaaRaw)}
-    for key, field in ACADEMIC_FIELDS.items():
-        value = lapse3.get(field) if lapse3 else None
-        components[key] = cap_index(value)
+    for key, (indexField, countField) in ACADEMIC_FIELDS.items():
+        adjusted = sections_area_index(sections, indexField, countField)
+        if adjusted is not None:
+            components[key] = adjusted
+        else:
+            value = lapse3.get(indexField) if lapse3 else None
+            components[key] = cap_index(value)
 
     integral, missing = integral_index(components)
     teacherIndex = school_index(percentages)
     if teacherIndex is None:
         missing = missing + ["teacherIndex"]
-    finalIdx = final_index(integral, teacherIndex)
-    award = get_award(integral, teacherIndex)
+    if coordinatorIndex is None:
+        missing = missing + ["coordinatorIndex"]
+    if not yearbookDownloadEnabled:
+        missing = missing + ["yearbook"]
+
+    finalIdx = final_index(integral, teacherIndex, coordinatorIndex)
+    award = get_award(finalIdx, yearbookDownloadEnabled)
 
     if award:
         status, awardLabel = STATUS_AWARDED, award["label"]
@@ -86,6 +102,7 @@ def build_school_row(schoolId, name, pecaId, coordinator, lapse3,
         "components": components,
         "integralIndex": integral,
         "teacherIndex": teacherIndex,
+        "coordinatorIndex": coordinatorIndex,
         "nCompletedCoevaluations": len([p for p in percentages if p is not None]),
         "finalIndex": finalIdx,
         "missing": missing,
@@ -148,10 +165,13 @@ class HqsAwardService():
             pecaFilter["project__school__id"] = schoolId
         if stateId:
             pecaFilter["school__addressState"] = ObjectId(stateId)
-        # Lectura cruda (as_pymongo) y solo lo necesario: sin school.sections (estudiantes
-        # embebidos, pesados). Construir documentos MongoEngine era el grueso del tiempo.
+        # Lectura cruda (as_pymongo) sin school.sections.students (pesados): solo
+        # grade, isDeleted y diagnostics.lapse3 de cada sección para el ajuste < 40.
         pecas = [peca for peca in PecaProject.objects(**pecaFilter).only(
-            'id', 'project.school', 'project.coordinator', 'school.diagnostics.lapse3',
+            'id', 'project.school', 'project.coordinator',
+            'school.diagnostics.lapse3',
+            'school.sections.grade', 'school.sections.isDeleted',
+            'school.sections.diagnostics.lapse3',
             'school.addressState', 'yearbookDownloadEnabled').as_pymongo()
             if (peca.get("project") or {}).get("school")]
         pecaIds = [str(peca["_id"]) for peca in pecas]
@@ -170,6 +190,12 @@ class HqsAwardService():
                     coordinatorSubmittedAt__ne=None).only('pecaId', 'percentage').as_pymongo():
                 percentagesByPeca.setdefault(coevaluation["pecaId"], []).append(
                     coevaluation.get("percentage"))
+
+        coordinatorByPeca = {}
+        if pecaIds:
+            for evaluation in CoordinatorEvaluation.objects(
+                    pecaId__in=pecaIds, submittedAt__ne=None).only('pecaId', 'totalScore').as_pymongo():
+                coordinatorByPeca[evaluation["pecaId"]] = evaluation.get("totalScore")
 
         statesById = dict((str(state.id), {"id": str(state.id), "name": state.name})
                           for state in State.objects(isDeleted=False).only('id', 'name'))
@@ -190,7 +216,9 @@ class HqsAwardService():
                 iaaRaw=average_iaa(iaaByPeca.get(pecaId, [])),
                 percentages=percentagesByPeca.get(pecaId, []),
                 yearbookDownloadEnabled=bool(peca.get("yearbookDownloadEnabled", False)),
-                state=statesById.get(str(addressState)) if addressState else None))
+                state=statesById.get(str(addressState)) if addressState else None,
+                sections=pecaSchool.get("sections"),
+                coordinatorIndex=coordinatorByPeca.get(pecaId)))
 
         sort_schools(schools)
         return {

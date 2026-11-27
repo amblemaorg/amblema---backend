@@ -2,13 +2,18 @@
 # app/services/vademecum/taxonomy_admin_service.py
 """Administración de tipos de ficha y áreas (API-12, GES-03)."""
 
+from datetime import datetime
+
 from marshmallow import ValidationError
 from mongoengine.errors import NotUniqueError
 from mongoengine.errors import ValidationError as ModelValidationError
+from pymongo import UpdateOne
 
 from app.models.vademecum import VademecumArea, VademecumSheet, VademecumSheetType
+from app.models.vademecum.sheet_model import build_sheet_code
 from app.schemas.vademecum.admin_schema import AreaInputSchema, SheetTypeInputSchema
 from app.services.vademecum.catalog_service import object_id
+from app.services.vademecum.ref_cache import ref_id, refs
 
 DUPLICATED = [{"status": "1", "msg": "Duplicated record found"}]
 IN_USE = ({"general": [{"status": "119", "msg": "Record has associated sheets"}]}, 409)
@@ -77,9 +82,18 @@ class SheetTypeAdminService(object):
         self._apply(sheetType, data)
         response = self._save(sheetType)
         if response[1] == 200 and sheetType.codePrefix != before:
-            # El código de la ficha sale del prefijo: se recalcula (clean)
-            for sheet in VademecumSheet.objects(sheetType=sheetType.id, isDeleted=False):
-                sheet.save()
+            # El código de la ficha sale del prefijo: se recalcula como en clean(), pero en un
+            # solo viaje. `code` depende del número de cada ficha: hace falta un UpdateOne por ficha.
+            now = datetime.utcnow()
+            sheets = VademecumSheet.objects(sheetType=sheetType.id, isDeleted=False)\
+                .only("id", "number")
+            operations = [UpdateOne(
+                {"_id": sheet.id},
+                {"$set": {"code": build_sheet_code(sheetType.codePrefix, sheet.number),
+                          "updatedAt": now}})
+                for sheet in sheets]
+            if operations:
+                VademecumSheet._get_collection().bulk_write(operations, ordered=False)
         return response
 
     def delete(self, sheetType):
@@ -110,11 +124,18 @@ class SheetTypeAdminService(object):
 
 # --- Áreas ---
 
-def area_dict(area, sheetCount=0):
+def area_dict(area, sheetCount=0, typesById=None):
+    """`typesById` resuelve todos los tipos del listado en una sola consulta."""
+    if typesById is None:
+        typesById = refs(VademecumSheetType, area.sheetTypes, ("id", "name"))
+    sheetTypes = []
+    for ref in area.sheetTypes:
+        typeId = ref_id(ref)
+        sheetType = typesById.get(str(typeId)) if typeId is not None else None
+        if sheetType:
+            sheetTypes.append({"id": str(sheetType.id), "name": sheetType.name})
     return {"id": str(area.id), "name": area.name, "sort": area.sort, "status": area.status,
-            "sheetCount": sheetCount,
-            "sheetTypes": [{"id": str(t.id), "name": t.name}
-                           for t in area.sheetTypes if getattr(t, "id", None)]}
+            "sheetCount": sheetCount, "sheetTypes": sheetTypes}
 
 
 class AreaAdminService(object):
@@ -125,8 +146,10 @@ class AreaAdminService(object):
 
     def list(self):
         counts = _sheet_counts("areas")
-        areas = VademecumArea.objects(isDeleted=False).order_by("sort", "name")
-        return {"records": [area_dict(a, counts.get(a.id, 0)) for a in areas]}, 200
+        areas = list(VademecumArea.objects(isDeleted=False).order_by("sort", "name"))
+        typesById = refs(VademecumSheetType,
+                         [t for area in areas for t in area.sheetTypes], ("id", "name"))
+        return {"records": [area_dict(a, counts.get(a.id, 0), typesById) for a in areas]}, 200
 
     def create(self, jsonData):
         return self._save(VademecumArea(), jsonData, created=True)

@@ -243,18 +243,35 @@ class SheetAdminService(object):
             data = SheetIdsSchema().load(jsonData or {})
         except ValidationError as err:
             return err.messages, 400
-        published, failed = [], []
-        for sheetId in data["sheetIds"]:
-            sheet = self.get(sheetId)
+        requested = data["sheetIds"]
+        objectIds = [object_id(value) for value in requested]
+        sheetsById = {sheet.id: sheet for sheet in VademecumSheet.objects(
+            id__in=[value for value in objectIds if value], isDeleted=False)}
+
+        published, failed, publishable = [], [], []
+        for sheetId, sheetObjectId in zip(requested, objectIds):
+            sheet = sheetsById.get(sheetObjectId)
             if not sheet:
                 failed.append({"sheetId": sheetId, "errors": {
                     "general": [{"status": "5", "msg": "Record not found"}]}})
                 continue
-            body, status = self.publish(sheet)
-            if status == 200:
-                published.append(str(sheet.id))
-            else:
-                failed.append({"sheetId": str(sheet.id), "errors": body})
+            # Misma validación que publish(); clean() no cambia el código al publicar.
+            errors = sheet.publish_errors()
+            if errors:
+                failed.append({"sheetId": str(sheet.id), "errors": errors})
+                continue
+            published.append(str(sheet.id))
+            if sheetObjectId not in publishable:
+                publishable.append(sheetObjectId)
+
+        if publishable:
+            now = datetime.utcnow()
+            collection = VademecumSheet._get_collection()
+            match = {"_id": {"$in": publishable}, "isDeleted": False}
+            collection.update_many(match, {"$set": {"status": "published", "updatedAt": now}})
+            # Volver a publicar conserva la primera fecha (publish no la convertía en nueva).
+            collection.update_many(
+                dict(match, publishedAt=None), {"$set": {"publishedAt": now}})
         return {"published": published, "failed": failed}, 200
 
 

@@ -158,9 +158,13 @@ class VademecumRatingsTest(VademecumAdminTestBase):
         self.assertEqual([r["comment"] for r in records], [u"Primero", u"Segundo"])
         self.assertEqual(records[0]["account"]["email"], "maria@test.com")
         self.assertEqual(records[0]["sheet"]["id"], str(self.sheet.id))
+        self.assertEqual(set(records[0]),
+                         {"id", "sheet", "account", "stars", "comment", "commentStatus",
+                          "moderatedBy", "moderatedAt", "updatedAt"})
         self.bo("POST", "/ratings/{}/approve".format(self.rating_id(self.jose)))
         approved = self.bo("GET", "/ratings?commentStatus=approved").get_json()
         self.assertEqual([r["comment"] for r in approved["records"]], [u"Segundo"])
+        self.assertEqual(approved["records"][0]["moderatedBy"]["id"], str(self.admin.id))
         other = self.bo("GET", "/ratings?sheetId={}".format(ObjectId())).get_json()
         self.assertEqual(other["pagination"]["total"], 0)
         self.assert_error(self.bo("GET", "/ratings?commentStatus=x"), 400, "commentStatus", "1")

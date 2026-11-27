@@ -11,6 +11,7 @@ import calendar
 import math
 import os
 import re
+from datetime import datetime, timedelta
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -24,6 +25,9 @@ SORTS = {
     "number": ("sheetType", "number"),
     "popular": ("-downloadCount", "-publishedAt"),
 }
+# Estos dos se calculan en el servidor (decisión 0.5): los enviaba la web.
+AGG_SORTS = ("rating", "commented")
+NEW_SHEET_WINDOW_DAYS = 30
 HOME_SIZE = 8
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
@@ -51,6 +55,11 @@ def object_id(value):
         return ObjectId(str(value))
     except (InvalidId, TypeError):
         return None
+
+
+def truthy(value):
+    """Los filtros booleanos de query aceptan `1`, `true` o `yes`."""
+    return str(value or "").strip().lower() in ("1", "true", "yes")
 
 
 def image_url(sheet, kind):
@@ -174,12 +183,25 @@ class CatalogService(object):
 
     def home_indicators(self):
         """Indicadores públicos del Home: fichas, docentes activos, escuelas vinculadas y descargas."""
+        from app.models.peca_project_model import PecaProject
         from app.models.vademecum import VademecumDownload, VademecumTeacherAccount
         from app.services.vademecum.enrollment_service import EnrollmentService
 
         sheets = VademecumSheet.objects(status="published", isDeleted=False).count()
         teachers = VademecumTeacherAccount.objects(status="1", isDeleted=False).count()
-        schools = len(EnrollmentService().list_active_schools().get("schools") or [])
+        # Solo hace falta el número: un $group en el año vigente evita traer nombres y después
+        # descartar escuelas inactivas como hacía list_active_schools().
+        schoolYear = EnrollmentService().current_school_year()
+        schools = 0
+        if schoolYear:
+            rows = list(PecaProject._get_collection().aggregate([
+                {"$match": {"schoolYear": {"$in": [schoolYear.id, str(schoolYear.id)]},
+                            "isDeleted": False,
+                            "project.school.id": {"$exists": True, "$ne": None}}},
+                {"$group": {"_id": "$project.school.id"}},
+                {"$count": "count"},
+            ]))
+            schools = rows[0]["count"] if rows else 0
         downloads = VademecumDownload.objects(isRedownload=False).count()
         return {
             "sheets": sheets,
@@ -207,9 +229,15 @@ class CatalogService(object):
             "count": totalCount,
         }
 
+        publishedIds = [s.id for s in VademecumSheet.objects(
+            status="published", isDeleted=False).only("id")]
+        if not publishedIds:
+            return [], ratingSummary
+        # Se filtra por fichas publicadas antes de limitar: si no, los comentarios de fichas
+        # despublicadas consumen el cupo y /home devuelve menos de `limit`.
         ratings = list(VademecumRating.objects(
-            commentStatus="approved", comment__ne=None
-        ).order_by("-updatedAt").limit(limit * 3))
+            commentStatus="approved", comment__ne=None, sheet__in=publishedIds
+        ).order_by("-updatedAt").limit(limit))
         if not ratings:
             return [], ratingSummary
 
@@ -288,30 +316,45 @@ class CatalogService(object):
     def list_sheets(self, args, account=None):
         query = {"status": "published", "isDeleted": False}
 
-        sheetTypeId = args.get("sheetTypeId")
-        if sheetTypeId:
-            query["sheetType"] = object_id(sheetTypeId)
-            if not query["sheetType"]:
-                return invalid("sheetTypeId")
+        # `sheetTypeId` es repetible y convive con el singular que ya existía.
+        typeIds = [object_id(value) for value in args.getlist("sheetTypeId") if value]
+        if not all(typeIds):
+            return invalid("sheetTypeId")
+        if typeIds:
+            if len(typeIds) == 1:
+                query["sheetType"] = typeIds[0]
+            else:
+                query["sheetType__in"] = typeIds
+
         grades = [g for g in args.getlist("grade") if g]
         if grades:
             if any(g not in GRADES for g in grades):
                 return invalid("grade")
             # Las fichas para todos los grados siempre aparecen
-            query["grades__in"] = list(set(grades) | {"all"})
+            wantedGrades = list(set(grades) | {"all"})
+            query["grades__in"] = wantedGrades
+        else:
+            wantedGrades = []
         areaIds = [a for a in args.getlist("areaId") if a]
+        areaObjectIds = []
         if areaIds:
-            ids = [object_id(a) for a in areaIds]
-            if not all(ids):
+            areaObjectIds = [object_id(a) for a in areaIds]
+            if not all(areaObjectIds):
                 return invalid("areaId")
-            query["areas__in"] = ids
+            query["areas__in"] = areaObjectIds
 
         q = (args.get("q") or "").strip()
         if len(q) > MAX_QUERY_LENGTH:
             return {"q": [{"status": "13", "msg": "Invalid length"}]}, 400
         sort = args.get("sort") or "newest"
-        if sort not in SORTS and not (sort == "relevance" and q):
+        if sort not in SORTS and sort not in AGG_SORTS and not (sort == "relevance" and q):
             return invalid("sort")
+        onlyNew = truthy(args.get("onlyNew"))
+        onlyPopular = truthy(args.get("onlyPopular"))
+        onlyCommented = truthy(args.get("onlyCommented"))
+        minRating = args.get("minRating")
+        if minRating and minRating not in ("3", "4", "rated"):
+            return invalid("minRating")
         try:
             page = int(args.get("page") or 1)
             pageSize = int(args.get("pageSize") or DEFAULT_PAGE_SIZE)
@@ -320,28 +363,39 @@ class CatalogService(object):
         if page < 1 or not 1 <= pageSize <= MAX_PAGE_SIZE:
             return invalid("pageSize" if page >= 1 else "page")
 
-        sheets = VademecumSheet.objects(**query).only(*SUMMARY_FIELDS)
+        byCode = code_query(q) if q else None
         # CON-03: un docente con matrícula ve primero las fichas de sus grados, sin ocultar el
         # resto. Solo si no filtró por grado ni buscó texto (en ese caso manda su criterio).
         teacherGrades = [] if grades or q else self.teacher_grades(account)
-        if teacherGrades:
-            skip = (page - 1) * pageSize
-            records, total = self._prioritized_page(
-                sheets, SORTS[sort], teacherGrades, skip, pageSize)
+
+        if sort in AGG_SORTS or onlyCommented or minRating:
+            records, total = self._aggregated_page(
+                query, typeIds, wantedGrades, areaObjectIds, byCode, q, sort, onlyNew,
+                onlyPopular, onlyCommented, minRating, teacherGrades, page, pageSize)
         else:
-            byCode = code_query(q) if q else None
-            if byCode:
-                sheets = sheets.filter(__raw__=byCode)
-            elif q:
-                sheets = sheets.search_text(q, language="spanish")
-            if sort == "relevance" and byCode:
-                sheets = sheets.order_by("sheetType", "number")  # HT-2 antes que HT-10
-            elif sort == "relevance":
-                sheets = sheets.order_by("$text_score")
+            sheets = VademecumSheet.objects(**query).only(*SUMMARY_FIELDS)
+            if onlyNew:
+                sheets = sheets.filter(
+                    publishedAt__gte=datetime.utcnow() - timedelta(days=NEW_SHEET_WINDOW_DAYS))
+            if onlyPopular:
+                sheets = sheets.filter(downloadCount__gt=0)
+            if teacherGrades:
+                skip = (page - 1) * pageSize
+                records, total = self._prioritized_page(
+                    sheets, SORTS[sort], teacherGrades, skip, pageSize)
             else:
-                sheets = sheets.order_by(*SORTS[sort])
-            total = sheets.count()
-            records = sheets.skip((page - 1) * pageSize).limit(pageSize)
+                if byCode:
+                    sheets = sheets.filter(__raw__=byCode)
+                elif q:
+                    sheets = sheets.search_text(q, language="spanish")
+                if sort == "relevance" and byCode:
+                    sheets = sheets.order_by("sheetType", "number")  # HT-2 antes que HT-10
+                elif sort == "relevance":
+                    sheets = sheets.order_by("$text_score")
+                else:
+                    sheets = sheets.order_by(*SORTS[sort])
+                total = sheets.count()
+                records = list(sheets.skip((page - 1) * pageSize).limit(pageSize))
         records = list(records)
         types, areas = self._types_and_areas()
         commentCounts = self._approved_comment_counts([s.id for s in records])
@@ -351,11 +405,111 @@ class CatalogService(object):
                            "pages": int(math.ceil(float(total) / pageSize))},
         }, 200
 
-    def published_sheet(self, sheetId):
+    def _aggregated_page(self, query, typeIds, grades, areaIds, byCode, q, sort, onlyNew,
+                         onlyPopular, onlyCommented, minRating, teacherGrades, page, pageSize):
+        """Pipeline único para `sort=rating|commented` y los filtros calculados.
+
+        `$text`, si hay búsqueda, va siempre primero. El total sale de un `$facet` sobre la
+        propia colección de fichas, nunca de un recorte en memoria.
+        """
+        pipeline = []
+        if byCode:
+            pipeline.append({"$match": byCode})
+        elif q:
+            pipeline.append({"$match": {"$text": {"$search": q, "$language": "spanish"}}})
+
+        match = {"status": query["status"], "isDeleted": query["isDeleted"]}
+        if typeIds:
+            match["sheetType"] = {"$in": typeIds}
+        if grades:
+            match["grades"] = {"$in": grades}
+        if areaIds:
+            match["areas"] = {"$in": areaIds}
+        if onlyNew:
+            match["publishedAt"] = {
+                "$gte": datetime.utcnow() - timedelta(days=NEW_SHEET_WINDOW_DAYS)}
+        if onlyPopular:
+            match["downloadCount"] = {"$gt": 0}
+        pipeline.append({"$match": match})
+
+        addFields = {"ratingAverage": {"$cond": [
+            {"$gt": ["$ratingCount", 0]},
+            {"$divide": ["$ratingSum", "$ratingCount"]},
+            None,
+        ]}}
+        if sort == "commented" or onlyCommented:
+            pipeline.extend([
+                {"$lookup": {
+                    "from": "vademecum_ratings",
+                    "let": {"sheetId": "$_id"},
+                    "pipeline": [
+                        {"$match": {"$expr": {"$eq": ["$sheet", "$$sheetId"]},
+                                    "commentStatus": "approved"}},
+                        {"$count": "count"},
+                    ],
+                    "as": "_approvedComments",
+                }},
+                {"$addFields": {"commentCount": {
+                    "$ifNull": [{"$arrayElemAt": ["$_approvedComments.count", 0]}, 0]}}},
+            ])
+        pipeline.append({"$addFields": addFields})
+
+        computedMatch = {}
+        if onlyCommented:
+            computedMatch["commentCount"] = {"$gt": 0}
+        if minRating == "rated":
+            computedMatch["ratingCount"] = {"$gt": 0}
+        elif minRating in ("3", "4"):
+            computedMatch["ratingAverage"] = {"$gte": int(minRating)}
+        if computedMatch:
+            pipeline.append({"$match": computedMatch})
+
+        if teacherGrades:
+            wanted = list(set(teacherGrades) | {"all"})
+            pipeline.append({"$addFields": {"_priority": {"$cond": [
+                {"$gt": [{"$size": {"$setIntersection": [
+                    {"$ifNull": ["$grades", []]}, wanted]}}, 0]}, 0, 1]}}})
+
+        order = []
+        if teacherGrades:
+            order.append(("_priority", 1))
+        if sort == "rating":
+            order += [("ratingAverage", -1), ("ratingCount", -1), ("publishedAt", -1)]
+        elif sort == "commented":
+            order += [("commentCount", -1), ("ratingAverage", -1), ("publishedAt", -1)]
+        elif sort == "number" or (sort == "relevance" and byCode):
+            order += [("sheetType", 1), ("number", 1)]
+        elif sort == "relevance":
+            order += [("_text_score", {"$meta": "textScore"})]
+        elif sort == "popular":
+            order += [("downloadCount", -1), ("publishedAt", -1)]
+        else:
+            order += [("publishedAt", -1)]
+        order.append(("_id", -1))
+        pipeline.append({"$sort": dict(order)})
+
+        projection = dict((field, 1) for field in SUMMARY_FIELDS)
+        pipeline.append({"$facet": {
+            "records": [{"$skip": (page - 1) * pageSize}, {"$limit": pageSize},
+                        {"$project": projection}],
+            "total": [{"$count": "count"}],
+        }})
+
+        result = list(VademecumSheet._get_collection().aggregate(pipeline))
+        facet = result[0] if result else {"records": [], "total": []}
+        records = [VademecumSheet._from_son(doc) for doc in facet["records"]]
+        total = facet["total"][0]["count"] if facet["total"] else 0
+        return records, total
+
+    def published_sheet(self, sheetId, fields=None):
+        """Ficha publicada; `fields` proyecta solo lo que necesita el llamador."""
         sheetId = object_id(sheetId)
         if not sheetId:
             return None
-        return VademecumSheet.objects(id=sheetId, status="published", isDeleted=False).first()
+        sheets = VademecumSheet.objects(id=sheetId, status="published", isDeleted=False)
+        if fields is not None:
+            sheets = sheets.only(*fields)
+        return sheets.first()
 
     def sheet_detail(self, sheetId):
         sheet = self.published_sheet(sheetId)
@@ -375,28 +529,30 @@ class CatalogService(object):
 
     def image_path(self, sheetId, kind):
         """Ruta relativa de la imagen de una ficha publicada, o None."""
-        sheet = self.published_sheet(sheetId)
+        sheet = self.published_sheet(
+            sheetId, fields=("id", "file.thumbnailPath", "file.previewPath"))
         if not sheet or not sheet.file:
             return None
         return sheet.file.thumbnailPath if kind == "thumbnail" else sheet.file.previewPath
 
     def page_image_path(self, sheetId, pageNumber):
-        """Ruta absoluta de la imagen WebP nítida de una cara (1-based) del PDF, o None."""
+        """Ruta de la imagen nítida (1200 px) ya generada de una cara (1-based), o None."""
         if not isinstance(pageNumber, int) or pageNumber < 1:
             return None
-        sheet = self.published_sheet(sheetId)
-        if not sheet or not sheet.file:
+        sheet = self.published_sheet(
+            sheetId, fields=("id", "file.pageCount", "file.pdfPath"))
+        if not sheet or not sheet.file or not sheet.file.pdfPath:
             return None
         if sheet.file.pageCount and pageNumber > sheet.file.pageCount:
             return None
-        from app.services.vademecum.download_service import pdf_path
-        from app.services.vademecum.sheet_media import render_pdf_page
+        relative = os.path.join(os.path.dirname(sheet.file.pdfPath),
+                                "page-{}.webp".format(pageNumber))
+        from app.services.vademecum.sheet_media import storage_root
 
-        pdf = pdf_path(sheet)
-        if not pdf:
+        root = storage_root()
+        if not root:
             return None
-        target = os.path.join(os.path.dirname(pdf), "page-{}.webp".format(pageNumber))
-        if not os.path.isfile(target) or os.path.getmtime(target) < os.path.getmtime(pdf):
-            if not render_pdf_page(pdf, pageNumber, target):
-                return None
+        target = os.path.realpath(os.path.join(root, relative))
+        if not target.startswith(root + os.sep) or not os.path.isfile(target):
+            return None
         return target

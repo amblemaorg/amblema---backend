@@ -114,6 +114,16 @@ class VademecumPriorityTest(unittest.TestCase):
         self.assertEqual(self.codes("/vademecum/sheets", self.auth(), sort="popular"),
                          ["HT-5", "HT-2", "HT-3", "HT-6", "HT-4", "HT-1"])
 
+    def test_rating_sort_keeps_the_enrolled_grade_first(self):
+        # HT-2 (grado 3) está peor valorada que HT-1 (grado 5): gana la prioridad CON-03
+        self.seed_catalog()
+        from app.models.vademecum import VademecumSheet
+        VademecumSheet.objects(number=2).update(set__ratingSum=4, set__ratingCount=1)
+        VademecumSheet.objects(number=1).update(set__ratingSum=10, set__ratingCount=2)
+        enroll_vademecum_teacher(self.year, EMAIL, grades=("3", "4"))
+        self.assertEqual(self.codes("/vademecum/sheets", self.auth(), sort="rating"),
+                         ["HT-2", "HT-3", "HT-5", "HT-6", "HT-1", "HT-4"])
+
     def test_an_explicit_grade_filter_wins_over_the_priority(self):
         self.seed_catalog()
         enroll_vademecum_teacher(self.year, EMAIL, grades=("3", "4"))
@@ -167,6 +177,29 @@ class VademecumPriorityTest(unittest.TestCase):
         codes = [r["code"] for r in self.get_home()["featured"]]
         self.assertEqual(codes, ["HT-{}".format(n) for n in range(10, 2, -1)])
         self.assertNotIn("HT-1", codes)
+
+    def test_home_comments_skips_unpublished_sheets(self):
+        from app.models.vademecum import VademecumRating
+        for number in range(1, 6):
+            sheet = self.sheet(number, ["3"], number, ratingCount=1, ratingSum=5)
+            rating = VademecumRating(account=self.account, sheet=sheet, stars=5,
+                                     comment=u"Comentario {}".format(number),
+                                     commentStatus="approved").save()
+            VademecumRating.objects(id=rating.id).update(
+                set__updatedAt=self.base + timedelta(days=number))
+        for number in range(6, 15):
+            sheet = self.sheet(number, ["3"], number, status="unpublished")
+            rating = VademecumRating(account=self.account, sheet=sheet, stars=4,
+                                     comment=u"Comentario oculto {}".format(number),
+                                     commentStatus="approved").save()
+            VademecumRating.objects(id=rating.id).update(
+                set__updatedAt=self.base + timedelta(days=100 + number))
+        body = self.get_home()
+        # Los 9 comentarios más recientes son de fichas despublicadas: /home debe devolver 3
+        # comentarios de fichas publicadas igualmente, no 0.
+        self.assertEqual(len(body["comments"]), 3)
+        self.assertEqual([c["sheet"]["code"] for c in body["comments"]], ["HT-5", "HT-4", "HT-3"])
+        self.assertEqual(body["ratingSummary"]["count"], 5)
 
     def test_home_puts_the_teachers_grades_first_in_both_lists(self):
         self.seed_catalog()

@@ -95,7 +95,13 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
         self.request_access(email="ana@test.com", firstName="Ana", cardId="V-999")
         body = self.bo("GET", "/access-requests?status=pending").get_json()
         self.assertEqual([r["email"] for r in body["records"]], [EMAIL, "ana@test.com"])
-        self.assertEqual(body["records"][0]["schoolYear"]["name"], "2026 - 2027")
+        self.assertEqual(body["records"][0]["schoolYear"],
+                         {"id": str(self.year.id), "name": "2026 - 2027"})
+        self.assertIsNone(body["records"][0]["reviewedBy"])
+        self.assertEqual(set(body["records"][0]),
+                         {"id", "firstName", "lastName", "email", "cardId", "phone",
+                          "institution", "schoolYear", "status", "rejectionReason",
+                          "reviewedBy", "reviewedAt", "createdAt"})
         found = self.bo("GET", "/access-requests?q=v-999").get_json()["records"]
         self.assertEqual([r["email"] for r in found], ["ana@test.com"])
         self.assertEqual(
@@ -223,6 +229,11 @@ class VademecumAccessRequestTest(VademecumAdminTestBase):
         records = self.bo("GET", "/authorizations").get_json()["records"]
         self.assertEqual([r["account"]["email"] for r in records], [EMAIL])
         self.assertEqual(records[0]["accessRequestId"], requestId)
+        self.assertEqual(records[0]["schoolYear"]["id"], str(self.year.id))
+        self.assertEqual(records[0]["approvedBy"]["id"], str(self.admin.id))
+        self.assertEqual(set(records[0]),
+                         {"id", "account", "schoolYear", "accessRequestId", "approvedBy",
+                          "approvedAt", "revokedAt"})
 
         # Nuevo año vigente: la autorización anterior ya no da acceso
         self.year.status = "2"

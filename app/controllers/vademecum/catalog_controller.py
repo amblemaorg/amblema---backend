@@ -66,6 +66,9 @@ class SheetPreviewController(Resource):
         return _send_image(sheetId, "preview")
 
 
+PAGE_IMAGE_MAX_AGE = 60 * 5  # caché privada breve del navegador; evita redescargar al reabrir
+
+
 class SheetPageController(Resource):
     @vademecum_teacher_required
     def get(self, sheetId, pageNumber):
@@ -73,6 +76,6 @@ class SheetPageController(Resource):
         if not path:
             return not_found()
         response = send_from_directory(os.path.dirname(path), os.path.basename(path),
-                                       mimetype="image/webp", cache_timeout=0)
-        response.headers["Cache-Control"] = "private, no-store"
+                                       mimetype="image/webp", cache_timeout=PAGE_IMAGE_MAX_AGE)
+        response.headers["Cache-Control"] = "private, max-age={}".format(PAGE_IMAGE_MAX_AGE)
         return response

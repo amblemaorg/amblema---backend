@@ -6,8 +6,10 @@
   aceptable). Ghostscript 9.x deja pasar los JPEG sin tocarlos; se desactiva para que las
   fotos también se reduzcan. Si Ghostscript no está, falla o el resultado no es más liviano, se conserva el
   PDF sin comprimir: la ficha se genera igual.
-- Miniatura nítida (catálogo) y vista previa difuminada (detalle, no sirve para imprimir),
-  ambas de la primera página. Las miniaturas para revisar el compendio las hace el
+- Vista previa difuminada (sin sesión), miniatura nítida (480 px, con sesión, catálogo e
+  Inicio) y una WebP nítida (1200 px) por cada cara 1..N para el visor (2 + N imágenes).
+  Todas se generan al subir o reemplazar la ficha, en la misma petición; el visor nunca
+  renderiza el PDF bajo demanda. Las miniaturas para revisar el compendio las hace el
   backoffice en el navegador (API-11 rehecho): el compendio no llega al servidor.
 - Texto de todas las páginas para la búsqueda (`searchText`, índice de texto).
 
@@ -101,7 +103,7 @@ def page_image(page, width):
 
 def save_webp(image, target, quality):
     temporary = target + ".tmp"
-    image.save(temporary, "WEBP", quality=quality, method=6)
+    image.save(temporary, "WEBP", quality=quality, method=4)
     os.replace(temporary, target)
 
 
@@ -164,7 +166,7 @@ def sheet_dir(sheetId):
 
 
 def build_sheet_files(source, sheetId, pages=None):
-    """Genera PDF, miniatura, vista previa y texto de una ficha en `sheets/<sheetId>/`.
+    """Genera PDF, vista previa, miniatura, caras 1..N y texto en `sheets/<sheetId>/`.
 
     `source` es la ruta de un PDF; `pages` (índices consecutivos) toma solo esas páginas,
     o todas si es None. Los archivos nuevos reemplazan a los anteriores al final, de forma
@@ -200,11 +202,24 @@ def build_sheet_files(source, sheetId, pages=None):
             render_preview(first, os.path.join(work, "preview.webp"))
             searchText = extract_text(document)
             pageCount = document.page_count
+            # Caras nítidas 1..N (1200 px) que el visor pide con token; ninguna se renderiza
+            # al abrir la ficha.
+            pageNames = []
+            for number in range(1, pageCount + 1):
+                name = "page-{}.webp".format(number)
+                image = page_image(document.load_page(number - 1), PAGE_VIEW_WIDTH)
+                save_webp(image, os.path.join(work, name), PAGE_VIEW_QUALITY)
+                pageNames.append(name)
         finally:
             document.close()
 
-        for name in ("sheet.pdf", "thumbnail.webp", "preview.webp"):
+        for name in ("sheet.pdf", "thumbnail.webp", "preview.webp") + tuple(pageNames):
             os.replace(os.path.join(work, name), os.path.join(target, name))
+        # Si la ficha se reemplaza con menos páginas, sobran caras del PDF anterior.
+        for name in os.listdir(target):
+            match = re.match(r"^page-(\d+)\.webp$", name)
+            if match and int(match.group(1)) > pageCount:
+                _remove(os.path.join(target, name))
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
@@ -216,6 +231,32 @@ def build_sheet_files(source, sheetId, pages=None):
         previewPath=relative + "/preview.webp",
         generatedAt=datetime.utcnow())
     return sheetFile, searchText
+
+
+def regenerate_page_images(sheetFile):
+    """Completa las caras 1..N (1200 px) de una ficha ya subida, sin escribir en la BD.
+
+    Las fichas creadas antes de este cambio solo tienen miniatura y vista previa (o caras 2..N).
+    Devuelve el número de imágenes creadas; llamarlo dos veces no hace nada.
+    """
+    root = storage_root()
+    if not root or not sheetFile or not sheetFile.pdfPath:
+        return 0
+    pdf = os.path.realpath(os.path.join(root, sheetFile.pdfPath))
+    if not pdf.startswith(root + os.sep) or not os.path.isfile(pdf):
+        return 0
+    folder = os.path.dirname(pdf)
+    count = sheetFile.pageCount or 0
+    generated = 0
+    for number in range(1, count + 1):
+        target = os.path.join(folder, "page-{}.webp".format(number))
+        if not os.path.isfile(target) and render_pdf_page(pdf, number, target):
+            generated += 1
+    for name in os.listdir(folder):
+        match = re.match(r"^page-(\d+)\.webp$", name)
+        if match and int(match.group(1)) > count:
+            _remove(os.path.join(folder, name))
+    return generated
 
 
 def _remove(path):

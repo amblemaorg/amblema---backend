@@ -158,5 +158,16 @@ def ensure_vademecum_permission():
     print('Vademecum permission: {}'.format(ensure()))
 
 
+@manager.command
+def generate_vademecum_page_images():
+    """Genera las caras 1..N (1200 px) que faltan en fichas ya subidas (idempotente)."""
+    from app.models.vademecum import VademecumSheet
+    from app.services.vademecum.sheet_media import regenerate_page_images
+    generated = 0
+    for sheet in VademecumSheet.objects(isDeleted=False, file__ne=None):
+        generated += regenerate_page_images(sheet.file)
+    print('Vademecum page images generated: {}'.format(generated))
+
+
 if __name__ == "__main__":
     manager.run()

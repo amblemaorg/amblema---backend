@@ -94,6 +94,20 @@ class VademecumAdminSheetTypeTest(VademecumAdminBase):
         sheet.reload()
         self.assertEqual(sheet.code, "IN-7")
 
+    def test_changing_prefix_updates_twenty_sheet_codes(self):
+        from app.models.vademecum import VademecumSheet
+        for number in range(1, 21):
+            self.sheet(number, self.ingenio)
+        res = self.call("PUT", "/sheet-types/{}".format(self.ingenio.id), {
+            "name": u"Ingenio Matemático", "headerName": u"Ingenio Matemático",
+            "codePrefix": "IN", "color": "#2F80ED", "sort": 2})
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        sheets = list(VademecumSheet.objects(sheetType=self.ingenio.id, isDeleted=False))
+        self.assertEqual(len(sheets), 20)
+        self.assertEqual(sorted(s.code for s in sheets),
+                         sorted("IN-{}".format(number) for number in range(1, 21)))
+        self.assertTrue(all(s.status == "draft" for s in sheets))
+
     def test_series_field_is_ignored_and_bad_payloads_are_rejected(self):
         from mongoengine import ValidationError as ModelValidationError
         from app.services.vademecum.taxonomy_admin_service import _model_errors
@@ -269,6 +283,22 @@ class VademecumAdminSheetTest(VademecumAdminBase):
         self.assertEqual(body["failed"][1]["errors"]["general"][0]["status"], "5")
         self.assertEqual(self.call("POST", "/sheets/publish", {"sheetIds": []}).status_code,
                          400)
+
+    def test_publish_many_keeps_the_final_state_of_twenty_sheets(self):
+        from app.models.vademecum import VademecumSheet
+        sheets = [self.sheet(number) for number in range(1, 21)]
+        ids = [str(s.id) for s in sheets]
+        res = self.call("POST", "/sheets/publish", {"sheetIds": ids})
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(res.get_json(), {"published": ids, "failed": []})
+        published = list(VademecumSheet.objects(id__in=[s.id for s in sheets]))
+        self.assertEqual(len(published), 20)
+        self.assertTrue(all(s.status == "published" and s.publishedAt for s in published))
+        firstDates = {str(s.id): s.publishedAt for s in published}
+        self.assertEqual(self.call("POST", "/sheets/publish", {"sheetIds": ids}).get_json(),
+                         {"published": ids, "failed": []})
+        for sheet in VademecumSheet.objects(id__in=[s.id for s in sheets]):
+            self.assertEqual(sheet.publishedAt, firstDates[str(sheet.id)])
 
     def test_delete_is_logical_and_keeps_downloads(self):
         from app.models.vademecum import VademecumSheet

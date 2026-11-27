@@ -19,6 +19,7 @@ from datetime import datetime
 from marshmallow import ValidationError
 from mongoengine.errors import NotUniqueError
 
+from app.models.user_model import User
 from app.models.vademecum import (
     VademecumDownload, VademecumRating, VademecumSheet, VademecumTeacherAccount)
 from app.models.vademecum.constants import COMMENT_STATUSES
@@ -26,6 +27,7 @@ from app.schemas.vademecum.rating_schema import ModerationSchema, RatingSchema
 from app.services.vademecum.account_service import error
 from app.services.vademecum.catalog_service import (
     DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, CatalogService, invalid, isoformat, not_found, object_id)
+from app.services.vademecum.ref_cache import ref_id, refs
 
 REQUIRES_DOWNLOAD = ("general", "111", "Download the sheet before rating it", 403)
 CHANGED_SINCE_SEEN = ("general", "120", "Rating changed since it was reviewed", 409)
@@ -167,7 +169,9 @@ class RatingService(object):
         accounts = self._accounts(records)
         sheets = {s.id: s for s in VademecumSheet.objects(
             id__in=list({self._sheet_id(r) for r in records}))}
-        return {"records": [self._admin_dict(r, accounts, sheets) for r in records],
+        moderators = refs(User, [r._data.get("moderatedBy") for r in records],
+                          ("id", "firstName", "lastName"))
+        return {"records": [self._admin_dict(r, accounts, sheets, moderators) for r in records],
                 "pagination": _pagination(page, pageSize, total)}, 200
 
     def get(self, ratingId):
@@ -256,10 +260,12 @@ class RatingService(object):
         ids = list({self._account_id(r) for r in ratings})
         return {a.id: a for a in VademecumTeacherAccount.objects(id__in=ids)}
 
-    def _admin_dict(self, rating, accounts, sheets):
+    def _admin_dict(self, rating, accounts, sheets, moderators=None):
         account = accounts.get(self._account_id(rating))
         sheet = sheets.get(self._sheet_id(rating))
-        moderator = rating.moderatedBy if rating._data.get("moderatedBy") else None
+        moderatorId = ref_id(rating._data.get("moderatedBy"))
+        moderator = (moderators.get(str(moderatorId)) if moderators is not None
+                     else (rating.moderatedBy if moderatorId else None))
         return {
             "id": str(rating.id),
             "sheet": ({"id": str(sheet.id), "code": sheet.code, "title": sheet.title}

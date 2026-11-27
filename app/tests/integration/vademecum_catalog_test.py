@@ -99,8 +99,9 @@ class VademecumCatalogTest(unittest.TestCase):
         self.assertEqual((record["ratingAverage"], record["ratingCount"]), (4.5, 2))
         self.assertTrue(record["thumbnailUrl"].startswith(
             "/vademecum/sheets/{}/thumbnail.webp?v=".format(record["id"])))
+        self.assertEqual(record["description"], u"Descripción")
         raw = str(record)
-        for hidden in (".pdf", "pdfPath", "searchText", "texto oculto", "description"):
+        for hidden in (".pdf", "pdfPath", "searchText", "texto oculto"):
             self.assertNotIn(hidden, raw)
 
     def test_filter_by_type(self):
@@ -135,6 +136,124 @@ class VademecumCatalogTest(unittest.TestCase):
                          ["HT-1", "HT-2", "HT-3"])
         self.assertEqual(self.codes(self.get("/vademecum/sheets", sort="popular")),
                          ["HT-3", "HT-1", "HT-2"])
+
+    def test_home_without_published_sheets_has_empty_comments(self):
+        body = self.get("/vademecum/home").get_json()
+        self.assertEqual(body["comments"], [])
+        self.assertIsNone(body["ratingSummary"]["average"])
+        self.assertEqual(body["ratingSummary"]["count"], 0)
+
+    def test_only_new_and_only_popular_work_without_aggregation(self):
+        now = datetime.utcnow()
+        self.sheet(self.hora, 1, publishedAt=now - timedelta(days=1), downloadCount=3)
+        self.sheet(self.hora, 2, publishedAt=now - timedelta(days=60), downloadCount=3)
+        self.sheet(self.hora, 3, publishedAt=now - timedelta(days=1), downloadCount=0)
+        self.assertCountEqual(self.codes(self.get("/vademecum/sheets", onlyNew=1)),
+                              ["HT-1", "HT-3"])
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", onlyPopular=1)),
+                         ["HT-1", "HT-2"])
+
+    def test_aggregated_filters_by_type_grade_area_and_popular(self):
+        self.sheet(self.hora, 1, areas=[self.lectora], grades=["3"],
+                   downloadCount=2, ratingSum=5, ratingCount=1)
+        self.sheet(self.ingenio, 2, areas=[self.lectora], grades=["3"],
+                   downloadCount=2, ratingSum=5, ratingCount=1)
+        self.sheet(self.hora, 3, areas=[self.geometria], grades=["4"],
+                   downloadCount=0, ratingSum=5, ratingCount=1)
+        res = self.get("/vademecum/sheets", sheetTypeId=str(self.hora.id), grade="3",
+                       areaId=str(self.lectora.id), onlyPopular=1, sort="rating")
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(self.codes(res), ["HT-1"])
+        self.assertEqual(res.get_json()["pagination"]["total"], 1)
+
+    def test_aggregated_search_by_code_and_text(self):
+        for number in (1, 2, 10):
+            self.sheet(self.hora, number, ratingSum=5, ratingCount=1)
+        self.assertCountEqual(self.codes(self.get(
+            "/vademecum/sheets", q="HT-1", sort="rating")), ["HT-1", "HT-10"])
+        self.assertEqual(sorted(self.codes(self.get(
+            "/vademecum/sheets", q="oculto", sort="rating"))), ["HT-1", "HT-10", "HT-2"])
+
+    def test_aggregated_sorts_keep_number_popular_and_newest(self):
+        self.sheet(self.hora, 1, days=1, downloadCount=5, ratingSum=9, ratingCount=2)
+        self.sheet(self.hora, 2, days=3, downloadCount=1, ratingSum=8, ratingCount=2)
+        self.sheet(self.hora, 3, days=2, downloadCount=9, ratingSum=7, ratingCount=2)
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", minRating="rated")),
+                         ["HT-2", "HT-3", "HT-1"])
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", minRating="rated",
+                                             sort="number")), ["HT-1", "HT-2", "HT-3"])
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", minRating="rated",
+                                             sort="popular")), ["HT-3", "HT-1", "HT-2"])
+        res = self.get("/vademecum/sheets", q="oculto", minRating="rated", sort="relevance")
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(sorted(self.codes(res)), ["HT-1", "HT-2", "HT-3"])
+
+    def test_only_commented_and_rated_filters_in_aggregation(self):
+        from app.models.vademecum import VademecumRating, VademecumTeacherAccount
+        rated = self.sheet(self.hora, 1, ratingSum=5, ratingCount=1)
+        self.sheet(self.hora, 2)
+        account = VademecumTeacherAccount(email="comentario@test.com", firstName="A",
+                                          lastName="B", status="1")
+        account.save()
+        VademecumRating(account=account, sheet=rated, stars=5, comment=u"Bien",
+                        commentStatus="approved").save()
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", onlyCommented=1)), ["HT-1"])
+        self.assertEqual(self.codes(self.get("/vademecum/sheets", minRating="rated")), ["HT-1"])
+
+    def test_home_indicators_match_catalog(self):
+        from app.models.vademecum import VademecumDownload, VademecumSheet, VademecumTeacherAccount
+        from app.tests.fixtures import create_school_year, enroll_vademecum_teacher
+        year = create_school_year()
+        enroll_vademecum_teacher(year, "ana@escuela.test", grades=("3",))
+        enroll_vademecum_teacher(year, "juan@escuela.test", grades=("4",))
+        self.sheet(self.hora, 1)
+        indicators = self.get("/vademecum/home").get_json()["indicators"]
+        self.assertEqual(set(indicators), {"sheets", "teachers", "schools", "downloads"})
+        self.assertEqual(indicators["sheets"],
+                         VademecumSheet.objects(status="published", isDeleted=False).count())
+        self.assertEqual(indicators["teachers"],
+                         VademecumTeacherAccount.objects(status="1", isDeleted=False).count())
+        self.assertEqual(indicators["downloads"],
+                         VademecumDownload.objects(isRedownload=False).count())
+        # Cada alta crea una escuela con PECA del año: dos escuelas activas, no dos docentes
+        self.assertEqual(indicators["schools"], 2)
+
+    def test_list_sheets_multiple_types_paginates_server_side(self):
+        for number in range(1, 41):
+            self.sheet(self.hora if number <= 20 else self.ingenio, number)
+        res = self.get("/vademecum/sheets",
+                       sheetTypeId=[str(self.hora.id), str(self.ingenio.id)],
+                       page=2, pageSize=20)
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(len(res.get_json()["records"]), 20)
+        self.assertEqual(res.get_json()["pagination"],
+                         {"page": 2, "pageSize": 20, "total": 40, "pages": 2})
+
+    def test_list_sheets_sort_rating_uses_average(self):
+        self.sheet(self.hora, 1, ratingSum=9, ratingCount=2)  # 4,5
+        self.sheet(self.hora, 2, ratingSum=5, ratingCount=1)  # 5,0
+        res = self.get("/vademecum/sheets", sort="rating")
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(self.codes(res), ["HT-2", "HT-1"])
+        self.assertEqual(res.get_json()["records"][0]["ratingAverage"], 5.0)
+
+    def test_list_sheets_filters_combine(self):
+        from app.models.vademecum import VademecumRating, VademecumTeacherAccount
+        now = datetime.utcnow()
+        recent = self.sheet(self.hora, 1, publishedAt=now - timedelta(days=10),
+                            ratingSum=9, ratingCount=2)
+        self.sheet(self.hora, 2, publishedAt=now - timedelta(days=60),
+                   ratingSum=9, ratingCount=2)
+        for index, status in enumerate(("approved", "hidden")):
+            account = VademecumTeacherAccount(email="c{}@test.com".format(index),
+                                              firstName="A", lastName="B", status="1")
+            account.save()
+            VademecumRating(account=account, sheet=recent, stars=5, comment="Texto",
+                            commentStatus=status).save()
+        res = self.get("/vademecum/sheets", onlyNew=1, minRating=4, sort="commented")
+        self.assertEqual(res.status_code, 200, res.get_data(as_text=True))
+        self.assertEqual(self.codes(res), ["HT-1"])
+        self.assertEqual(res.get_json()["records"][0]["commentCount"], 1)
 
     def test_spanish_search_with_relevance(self):
         self.sheet(self.hora, 1, title=u"Lectura de cuentos", description=u"Problemas geométricos sencillos")
@@ -172,7 +291,8 @@ class VademecumCatalogTest(unittest.TestCase):
 
     def test_invalid_parameters_answer_400(self):
         cases = ({"sheetTypeId": "x"}, {"grade": "9"}, {"areaId": "x"},
-                 {"sort": "relevance"}, {"sort": "rare"}, {"pageSize": 101}, {"page": 0},
+                 {"sort": "relevance"}, {"sort": "rare"}, {"minRating": "2"},
+                  {"pageSize": 101}, {"page": 0},
                  {"page": "a"}, {"q": "a" * 101})
         for params in cases:
             res = self.get("/vademecum/sheets", **params)
@@ -195,6 +315,15 @@ class VademecumCatalogTest(unittest.TestCase):
                          (u"Descripción", 2, 1000))
         self.assertEqual(body["commentCount"], 2)
         self.assertNotIn("pdf", str(body).lower())
+
+    def test_detail_still_exposes_file_metadata(self):
+        """Red de seguridad: el detalle no debe perder metadatos al proyectar el listado."""
+        sheet = self.sheet(self.hora, 42)
+        body = self.get("/vademecum/sheets/{}".format(sheet.id)).get_json()
+        self.assertEqual(body["description"], u"Descripción")
+        self.assertEqual(body["pageCount"], 2)
+        self.assertEqual(body["sizeBytes"], 1000)
+        self.assertEqual(body["commentCount"], 0)
 
     def test_detail_of_hidden_or_unknown_sheet_is_404(self):
         draft = self.sheet(self.hora, 1, status="draft")
@@ -221,6 +350,14 @@ class VademecumCatalogTest(unittest.TestCase):
         res.close()
         res = self.get("/vademecum/sheets/{}/preview.webp".format(sheet.id))
         self.assertEqual(res.data, b"preview")
+        res.close()
+
+    def test_thumbnail_uses_file_paths(self):
+        """Red de seguridad: la proyección de imágenes debe conservar `file.*`."""
+        sheet = self.sheet(self.hora, 7)
+        self.write("thumbs/7.webp", b"thumb-7")
+        res = self.get("/vademecum/sheets/{}/thumbnail.webp".format(sheet.id))
+        self.assertEqual((res.status_code, res.data, res.mimetype), (200, b"thumb-7", "image/webp"))
         res.close()
 
     def test_images_of_unpublished_sheets_or_outside_storage_are_404(self):

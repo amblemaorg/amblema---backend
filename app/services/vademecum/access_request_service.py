@@ -17,6 +17,7 @@ from mongoengine.errors import NotUniqueError
 
 from app.helpers.handler_emails import send_email
 from app.models.school_year_model import SchoolYear
+from app.models.user_model import User
 from app.models.vademecum import (
     VademecumAccessRequest, VademecumAuthorization, VademecumTeacherAccount)
 from app.models.vademecum.constants import REQUEST_STATUSES
@@ -26,6 +27,7 @@ from app.services.vademecum.catalog_service import (
     DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, invalid, not_found, object_id)
 from app.services.vademecum.enrollment_service import EnrollmentService, normalize_email
 from app.services.vademecum.recaptcha_service import recaptcha_is_valid
+from app.services.vademecum.ref_cache import ref_id, refs
 
 ALREADY_REQUESTED = ("email", "107", "Pending request or authorization already exists", 409)
 ALREADY_REVIEWED = ("general", "118", "Request already reviewed", 409)
@@ -44,30 +46,41 @@ def _year_ref(year):
     return _ref(year, name=year.name) if year else None
 
 
-def request_dict(accessRequest):
+def request_dict(accessRequest, years=None, users=None):
+    """`years`/`users` son dicts por id del listado; sin ellos se resuelve uno a uno."""
+    yearId = ref_id(accessRequest.schoolYear)
+    reviewerId = ref_id(accessRequest.reviewedBy)
+    year = years.get(str(yearId)) if years is not None else accessRequest.schoolYear
+    reviewer = users.get(str(reviewerId)) if users is not None else accessRequest.reviewedBy
     return {
         "id": str(accessRequest.id),
         "firstName": accessRequest.firstName, "lastName": accessRequest.lastName,
         "email": accessRequest.email, "cardId": accessRequest.cardId,
         "phone": accessRequest.phone, "institution": accessRequest.institution,
-        "schoolYear": _year_ref(accessRequest.schoolYear),
+        "schoolYear": _year_ref(year),
         "status": accessRequest.status, "rejectionReason": accessRequest.rejectionReason,
-        "reviewedBy": _user_ref(accessRequest.reviewedBy),
+        "reviewedBy": _user_ref(reviewer),
         "reviewedAt": isoformat(accessRequest.reviewedAt),
         "createdAt": isoformat(accessRequest.createdAt),
     }
 
 
-def authorization_dict(authorization):
-    account = authorization.account
+def authorization_dict(authorization, years=None, accounts=None, users=None):
+    """Igual que `request_dict`, con las tres referencias resueltas en lote si se dan."""
+    accountId = ref_id(authorization.account)
+    yearId = ref_id(authorization.schoolYear)
+    approverId = ref_id(authorization.approvedBy)
+    requestId = ref_id(authorization.accessRequest)
+    account = accounts.get(str(accountId)) if accounts is not None else authorization.account
+    year = years.get(str(yearId)) if years is not None else authorization.schoolYear
+    approver = users.get(str(approverId)) if users is not None else authorization.approvedBy
     return {
         "id": str(authorization.id),
         "account": _ref(account, email=account.email, firstName=account.firstName,
                         lastName=account.lastName) if account else None,
-        "schoolYear": _year_ref(authorization.schoolYear),
-        "accessRequestId": (str(authorization.accessRequest.id)
-                            if authorization.accessRequest else None),
-        "approvedBy": _user_ref(authorization.approvedBy),
+        "schoolYear": _year_ref(year),
+        "accessRequestId": str(requestId) if requestId is not None else None,
+        "approvedBy": _user_ref(approver),
         "approvedAt": isoformat(authorization.approvedAt),
         "revokedAt": isoformat(authorization.revokedAt),
     }
@@ -84,12 +97,30 @@ def _page_args(args):
     return page, pageSize, None
 
 
-def _page(queryset, page, pageSize, serializer):
+def _page(queryset, page, pageSize, serializer, context=None):
     total = queryset.count()
-    records = queryset.skip((page - 1) * pageSize).limit(pageSize)
-    return {"records": [serializer(r) for r in records],
+    records = list(queryset.skip((page - 1) * pageSize).limit(pageSize))
+    kwargs = context(records) if context else {}
+    return {"records": [serializer(r, **kwargs) for r in records],
             "pagination": {"page": page, "pageSize": pageSize, "total": total,
                            "pages": int(math.ceil(float(total) / pageSize))}}, 200
+
+
+def _request_context(records):
+    """Una consulta por colección referenciada, compartida por toda la página."""
+    return {
+        "years": refs(SchoolYear, [r.schoolYear for r in records], ("id", "name")),
+        "users": refs(User, [r.reviewedBy for r in records], ("id", "name")),
+    }
+
+
+def _authorization_context(records):
+    return {
+        "accounts": refs(VademecumTeacherAccount, [r.account for r in records],
+                         ("id", "email", "firstName", "lastName")),
+        "years": refs(SchoolYear, [r.schoolYear for r in records], ("id", "name")),
+        "users": refs(User, [r.approvedBy for r in records], ("id", "name")),
+    }
 
 
 def notify(email, firstName, subject, paragraphs):
@@ -176,7 +207,7 @@ class AccessRequestService(object):
                 {"cardId": pattern}]})
         # Las pendientes se atienden por orden de llegada
         requests = requests.order_by("createdAt" if status == "pending" else "-createdAt")
-        return _page(requests, page, pageSize, request_dict)
+        return _page(requests, page, pageSize, request_dict, _request_context)
 
     def _review(self, accessRequest, admin, status, **fields):
         """pending → status de forma atómica; None si ya estaba revisada."""
@@ -264,7 +295,8 @@ class AccessRequestService(object):
             return failure
         authorizations = VademecumAuthorization.objects(
             schoolYear=schoolYear.id).order_by("-approvedAt")
-        return _page(authorizations, page, pageSize, authorization_dict)
+        return _page(authorizations, page, pageSize, authorization_dict,
+                     _authorization_context)
 
     def get_authorization(self, authorizationId):
         authorizationId = object_id(authorizationId)

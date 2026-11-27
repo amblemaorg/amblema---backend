@@ -70,7 +70,8 @@ def make_block_pdf():
     """Un bloque negro: su borde es nítido en la miniatura y suave en la vista previa."""
     document = fitz.open()
     page = document.new_page()
-    page.draw_rect(fitz.Rect(100, 100, 400, 400), color=(0, 0, 0), fill=(0, 0, 0))
+    # Por debajo del 20 % superior que la vista previa deja nítida
+    page.draw_rect(fitz.Rect(100, 300, 400, 600), color=(0, 0, 0), fill=(0, 0, 0))
     data = document.tobytes()
     document.close()
     return data
@@ -133,9 +134,34 @@ class VademecumSheetMediaTest(VademecumAdminTestBase):
         self.assertNotIn(u"\n", searchText)
         pdf = os.path.join(self.storage, sheetFile.pdfPath)
         self.assertEqual(os.path.getsize(pdf), sheetFile.sizeBytes)
-        # Sin temporales en la carpeta de la ficha
+        # Sin temporales en la carpeta de la ficha (2 + N imágenes)
         self.assertEqual(sorted(os.listdir(os.path.dirname(pdf))),
-                         ["preview.webp", "sheet.pdf", "thumbnail.webp"])
+                         ["page-1.webp", "page-2.webp", "preview.webp", "sheet.pdf",
+                          "thumbnail.webp"])
+
+    def test_build_sheet_files_generates_all_page_images(self):
+        from app.services.vademecum.sheet_media import PAGE_VIEW_WIDTH, build_sheet_files
+        source = write(os.path.join(self.work, "tres.pdf"), make_pdf(3))
+        sheetFile, _ = build_sheet_files(source, "abc123")
+
+        folder = os.path.join(self.storage, os.path.dirname(sheetFile.pdfPath))
+        for number in (1, 2, 3):
+            path = os.path.join(folder, "page-{}.webp".format(number))
+            self.assertTrue(os.path.isfile(path), path)
+            image = Image.open(path)
+            self.assertEqual((image.format, image.width), ("WEBP", PAGE_VIEW_WIDTH))
+            image.close()
+
+    def test_replacing_pdf_removes_page_images_beyond_the_new_count(self):
+        from app.services.vademecum.sheet_media import build_sheet_files
+        first = write(os.path.join(self.work, "antes.pdf"), make_pdf(3))
+        second = write(os.path.join(self.work, "despues.pdf"), make_pdf(1))
+        build_sheet_files(first, "abc123")
+        sheetFile, _ = build_sheet_files(second, "abc123")
+
+        folder = os.path.join(self.storage, os.path.dirname(sheetFile.pdfPath))
+        self.assertEqual(sorted(os.listdir(folder)),
+                         ["page-1.webp", "preview.webp", "sheet.pdf", "thumbnail.webp"])
 
     def test_thumbnail_is_sharp_and_preview_is_blurred(self):
         from app.services.vademecum.sheet_media import (
@@ -164,6 +190,43 @@ class VademecumSheetMediaTest(VademecumAdminTestBase):
         self.assertEqual(document.page_count, 3)
         document.close()
 
+    def test_page_images_are_served_without_rendering_on_demand(self):
+        from app.models.vademecum import VademecumSheet
+        from app.services.vademecum.catalog_service import CatalogService
+        from app.services.vademecum.sheet_media import build_sheet_files
+
+        source = write(os.path.join(self.work, "dos.pdf"), make_pdf(2))
+        sheetFile, _ = build_sheet_files(source, "abc123")
+        sheet = VademecumSheet(sheetType=self.hora, number=1, title=u"Dos caras",
+                               status="published", file=sheetFile)
+        sheet.save()
+
+        service = CatalogService()
+        faceOne = os.path.join(self.storage, "sheets/abc123/page-1.webp")
+        faceTwo = os.path.join(self.storage, "sheets/abc123/page-2.webp")
+        self.assertEqual(service.page_image_path(str(sheet.id), 1), faceOne)
+        self.assertEqual(service.page_image_path(str(sheet.id), 2), faceTwo)
+        self.assertIsNone(service.page_image_path(str(sheet.id), 3))
+        os.remove(faceTwo)
+        self.assertIsNone(service.page_image_path(str(sheet.id), 2))
+
+    def test_regenerate_page_images_fills_older_sheets(self):
+        from app.services.vademecum.sheet_media import build_sheet_files, regenerate_page_images
+
+        source = write(os.path.join(self.work, "tres.pdf"), make_pdf(3))
+        sheetFile, _ = build_sheet_files(source, "abc123")
+        folder = os.path.join(self.storage, "sheets/abc123")
+        os.remove(os.path.join(folder, "page-1.webp"))
+        os.remove(os.path.join(folder, "page-2.webp"))
+        os.remove(os.path.join(folder, "page-3.webp"))
+        write(os.path.join(folder, "page-4.webp"), b"sobrante")
+
+        self.assertEqual(regenerate_page_images(sheetFile), 3)
+        self.assertEqual(sorted(os.listdir(folder)),
+                         ["page-1.webp", "page-2.webp", "page-3.webp", "preview.webp",
+                          "sheet.pdf", "thumbnail.webp"])
+        self.assertEqual(regenerate_page_images(sheetFile), 0)
+
 
 @unittest.skipUnless(fitz, "PyMuPDF no está instalado")
 class VademecumReplaceSheetFileTest(VademecumAdminTestBase):
@@ -189,7 +252,8 @@ class VademecumReplaceSheetFileTest(VademecumAdminTestBase):
         self.sheet.reload()
         self.assertIn(u"Página de prueba", self.sheet.searchText)
         for path in (self.sheet.file.pdfPath, self.sheet.file.thumbnailPath,
-                     self.sheet.file.previewPath):
+                     self.sheet.file.previewPath, "sheets/{}/page-1.webp".format(self.sheet.id),
+                     "sheets/{}/page-2.webp".format(self.sheet.id)):
             self.assertTrue(os.path.isfile(os.path.join(self.storage, path)), path)
         # Sin el PDF recibido suelto en el almacenamiento
         self.assertEqual(os.listdir(os.path.join(self.storage, "incoming")), [])
